@@ -82,7 +82,9 @@ python llama.cpp/convert-hf-to-gguf.py ./models/modelrepo --outfile output_file.
 
 - https://huggingface.co/spaces/ggml-org/gguf-my-repo
 
-**Note**: Access control to source repo. required???
+**Note**: 
+- Access control to source repo. required???
+- Similar to Ollama CLI, the web UI supports only a subset of quantizations.
 
 ---
 
@@ -97,5 +99,17 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - **Note**: *The official Ollama Docker image [ollama/ollama](https://hub.docker.com/r/ollama/ollama) is available on Docker Hub.*
 
 
-####
+#### Survey of existing Ollama 'built-in" models
+
+| Name (ftune) | sname | Arch. | Size (MB) | Quant. | Ctx. (embed) Len. |
+|:--|:--|---|---|---|---|
+| Llama-3.2-3B-Instruct | llama3.2:latest | llama | 3B | Q8_K | 131072 (3072) |
+| Mistral-7B-Instruct-v0.3 | mistral:latest | llama | 7B | Q4_0 | 32768 (4096) |
+| Qwen2.5 14B () | (Qwen/Qwen2.5-14B) | qwen2 | 14B | Q8_K | 131072 (5120) |
+| Granite 8b Code Instruct 128k (code-instruct-128k) | granite-code:8b | llama | 8B | **Q4_0** | 128000 (4096) |
+| Granite 20b Code Instruct 8k (code-instruct-8k) | granite-code:20b | **starcoder** | 20B | **Q4_0** | 8192 (6144) |
+
+---
+
+
 
