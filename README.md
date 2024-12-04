@@ -50,7 +50,42 @@ The GGUF format is defined in the [GGUF specification](https://github.com/ggerga
 
 ### GGUF Conversion
 
-TBD
+Currently, the primary means to convert from HF SafeTensors format to GGUF will be the canonical llama.cpp tool `convert-hf-to-gguf.py`.
+
+for example:
+
+```
+python llama.cpp/convert-hf-to-gguf.py ./models/modelrepo --outfile output_file.gguf --outtype q8_0
+```
+
+#### Alternatives TODO: investigate
+
+##### Ollama CLI
+
+- https://github.com/ollama/ollama/blob/main/docs/import.md#quantizing-a-model
+
+    ```
+    $ ollama create --quantize q4_K_M mymodel
+    transferring model data
+    quantizing F16 model to Q4_K_M
+    creating new layer sha256:735e246cc1abfd06e9cdcf95504d6789a6cd1ad7577108a70d9902fef503c1bd
+    creating new layer sha256:0853f0ad24e5865173bbf9ffcc7b0f5d56b66fd690ab1009867e45e7d2c4db0f
+    writing manifest
+    success
+    ```
+
+**Note**: The Ollama CLI tool only supports a subset of quantizations:
+    - (rounding): `q4_0`, `q4_1`, `q5_0`, `q5_1`, `q8_0`
+    - k-means: `q3_K_S`, `q3_K_M`, `q3_K_L`, `q4_K_S`, `q4_K_M`, `q5_K_S`, `q5_K_M`, `q6_K`
+
+##### Hugging Face endorsed tool "ggml-org/gguf-my-repo"
+
+- https://huggingface.co/spaces/ggml-org/gguf-my-repo
+
+**Note**: Access control to source repo. required???
+
+---
+
 
 ### GGUF Verification Testing
 
