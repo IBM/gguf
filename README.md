@@ -105,7 +105,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
 |:--|:--|---|---|---|---|
 | Llama-3.2-3B-Instruct | llama3.2:latest | llama | 3B | Q8_K | 131072 (3072) |
 | Mistral-7B-Instruct-v0.3 | mistral:latest | llama | 7B | Q4_0 | 32768 (4096) |
-| Qwen2.5 14B () | (Qwen/Qwen2.5-14B) | qwen2 | 14B | Q8_K | 131072 (5120) |
+| Qwen2.5 14B (unknown) | (Qwen/Qwen2.5-14B) | qwen2 | 14B | Q8_K | 131072 (5120) |
 | Granite 8b Code Instruct 128k (code-instruct-128k) | granite-code:8b | llama | 8B | **Q4_0** | 128000 (4096) |
 | Granite 20b Code Instruct 8k (code-instruct-8k) | granite-code:20b | **starcoder** | 20B | **Q4_0** | 8192 (6144) |
 
