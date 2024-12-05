@@ -156,8 +156,17 @@ As a baseline, each converted model MUST successfully be run in the following pr
 | name (base,tune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
 |:--|:--|---|---|---|---|
 | Qwen2.5.1 Coder 7B Instruct (Qwen2.5.1-Coder, Instruct) | bartowski/Qwen2.5.1-Coder-7B-Instruct-GGUF:latest | qwen2 (gpt2) | 7B | Q8_K (15) | 32768 (3584) |
-|  | hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF:latest |  |  |  () |  () |
-| **Models** (Qwen2.5 14B) (none,none) | hf.co/QuantFactory/Qwen2.5-Coder-14B-GGUF:latest | llama (gpt2) | **15B** |  (10) | 32768 (5130) |
+| **liuhaotian** (Llama-3.2-1B-Instruct) | hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF:latest | llama (llama) | (1B) | Q4_0 (2) | 32768 (4096) |
+| **Models** (Qwen2.5 14B) (none,none) | hf.co/QuantFactory/Qwen2.5-Coder-14B-GGUF:latest | llama (gpt2) | **15B** | **Q2_K** (10) | 32768 (5130) |
+
+**Notes**
+
+- downstream fine tunings or quants. lose identity (in the GGUF file) or drop (pedigree-related) fields or create new ones
+    - `general.name`, `general.basename`, `general.finetune`, etc.
+    - `.size_label` did not match model declared size.
+- when multiple GGUG models are in a repo. Ollama "grabs" the first one (alphanumerically)
+    - e.g., `Qwen2.5-14B-Instruct` repo.: https://huggingface.co/QuantFactory/Qwen2.5-14B-Instruct-GGUF/tree/main
+        - has 14 quantizations... but it **grabbed the quant. `Q2_k`(least precise)**
 
 ---
 
