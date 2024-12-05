@@ -19,7 +19,6 @@ In addition, models should be canonically hosted in an official IBM's repository
 
 The following tables list the current target set of IBM models along with commentary on the rationale for inclusion:
 
-
 #### IBM Granite Collection
 
 See: https://huggingface.co/ibm-granite
@@ -88,7 +87,6 @@ python llama.cpp/convert-hf-to-gguf.py ./models/modelrepo --outfile output_file.
 
 ---
 
-
 ### GGUF Verification Testing
 
 As a baseline, each converted model MUST successfully be run in the following providers:
@@ -132,7 +130,6 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - [Importing a model](https://github.com/ollama/ollama/blob/main/docs/import.md) - includes Safetensors, GGUF.
     - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
     - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
-
 
 ---
 
