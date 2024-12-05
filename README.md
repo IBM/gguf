@@ -148,7 +148,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
 | name (basename,finetune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
 |:--|:--|---|---|---|---|
 | Granite 8b Code Instruct 128k (granite, code-instruct-128k) | granite-code:8b | llama (gpt2) | 8B | **Q4_0** (2) | 128000 (4096) | 
-| Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | granite (gpt2) | 8B | 4096 (4096) | **F16** (1) | 4096 (4096) |
+| Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | granite (gpt2) | 8B | **F16** (1) | 4096 (4096) |
 | Granite 20b Code Instruct 8k (granite, code-instruct-8k) | granite-code:20b | **starcoder** (gpt2) | 20B | **Q4_0** (2) | 8192 (6144) | 
 | Granite 3.0 1b A400M Instruct (granite-3.0, instruct) | granite3-moe:1b | granitemoe (gpt2) | 1B-a400M | Q8_K (15) | 4096 (1024) |
 | Granite 3.0 3b A800M Instruct (granite-3.0, instruct) | granite3-moe:3b | granitemoe (gpt2) | 3B-a800M | Q8_K (15) | 4096 (1536) |
