@@ -137,11 +137,11 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 ##### registry: registry.ollama.ai
 
-| name (base,tune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
+| name (basename,finetune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
 |:--|:--|---|---|---|---|
-| gemma-2-9b-it (none, none) | gemma2:latest | gemma2 (llama) | (9B) | Q4_0 (2) | 8192 (3584) |
+| gemma-2-9b-it (none, none) | [gemma2:latest](https://ollama.com/library/gemma2) | gemma2 (llama) | (9B) | Q4_0 (2) | 8192 (3584) |
 | Granite 8b Code Instruct 128k (granite, code-instruct-128k) | granite-code:8b | llama (gpt2) | 8B | **Q4_0** (2) | 128000 (4096) |
-| | granite3-dense:8b-instruct-fp16 | 
+| Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | 
 | Granite 20b Code Instruct 8k (granite, code-instruct-8k) | granite-code:20b | **starcoder** (gpt2) | 20B | **Q4_0** (2) | 8192 (6144) |
 | Granite 3.0 1b A400M Instruct (granite-3.0, instruct) | granite3-moe:1b | granitemoe (gpt2) | 1B-a400M | Q8_K (15) | 4096 (1024) |
 | Granite 3.0 3b A800M Instruct (granite-3.0, instruct) | granite3-moe:3b | granitemoe (gpt2) | 3B-a800M | Q8_K (15) | 4096 (1536) |
@@ -153,16 +153,18 @@ As a baseline, each converted model MUST successfully be run in the following pr
 **Notes**
 
 - `latest` is relative to Ollama (proprietary) publishing and is not reflected in GGUF header.
+- `basename`, `finetune` may be are different depending on person who created the GGUF even for the same company...
+    - e.g., IBM Granite model "Granite 8b Code Instruct 128k" has a `finetune` name that does not match other IBM models (i.e., `code-instruct-128k`).
 
 ##### registry: huggingface.co (hf.co)
 
 **Note**: "registries" are created using the domain name of the model repo. ref. during a `pull` or `run` command.
 
-| name (base,tune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
+| name (basename,finetune) | local name | arch. (ggml model) | Size (MB) | Quant. | Ctx. (embed) Len. |
 |:--|:--|---|---|---|---|
 | Qwen2.5.1 Coder 7B Instruct (Qwen2.5.1-Coder, Instruct) | bartowski/Qwen2.5.1-Coder-7B-Instruct-GGUF:latest | qwen2 (gpt2) | 7B | Q8_K (15) | 32768 (3584) |
-| **liuhaotian** (Llama-3.2-1B-Instruct) | hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF:latest | llama (llama) | (1B) | Q4_0 (2) | 32768 (4096) |
-| **Models** (Qwen2.5 14B) (none,none) | hf.co/QuantFactory/Qwen2.5-Coder-14B-GGUF:latest | llama (gpt2) | **15B** | **Q2_K** (10) | 32768 (5130) |
+| **liuhaotian** (i.e., Llama-3.2-1B-Instruct) (none,none) | hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF:latest | llama (llama) | (1B) | Q4_0 (2) | 32768 (4096) |
+| **Models** (i.e., Qwen2.5 14B) (none,none) | hf.co/QuantFactory/Qwen2.5-Coder-14B-GGUF:latest | llama (gpt2) | **15B** | **Q2_K** (10) | 32768 (5130) |
 
 **Notes**
 
