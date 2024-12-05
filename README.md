@@ -131,6 +131,9 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
     - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
 
+- Huggingface Granite
+    - Bartowski: https://huggingface.co/bartowski?search_models=granite
+
 ---
 
 #### Survey of Ollama 'built-in" models
@@ -183,4 +186,4 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - `.size_label` did not match model declared size.
 - when multiple GGUF models are in a repo. Ollama "grabs" the first one (alphanumerically)
     - e.g., `Qwen2.5-14B-Instruct` repo.: https://huggingface.co/QuantFactory/Qwen2.5-14B-Instruct-GGUF/tree/main
-        - has 14 quantizations... but it **grabbed the quant. `Q2_k`(least precise)**
+        - has 14 quantizations... but it **grabbed the quant. `Q2_K`(least precise)**
