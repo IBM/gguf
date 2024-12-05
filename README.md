@@ -141,6 +141,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
 |:--|:--|---|---|---|---|
 | gemma-2-9b-it (none, none) | gemma2:latest | gemma2 (llama) | (9B) | Q4_0 (2) | 8192 (3584) |
 | Granite 8b Code Instruct 128k (granite, code-instruct-128k) | granite-code:8b | llama (gpt2) | 8B | **Q4_0** (2) | 128000 (4096) |
+| | granite3-dense:8b-instruct-fp16 | 
 | Granite 20b Code Instruct 8k (granite, code-instruct-8k) | granite-code:20b | **starcoder** (gpt2) | 20B | **Q4_0** (2) | 8192 (6144) |
 | Granite 3.0 1b A400M Instruct (granite-3.0, instruct) | granite3-moe:1b | granitemoe (gpt2) | 1B-a400M | Q8_K (15) | 4096 (1024) |
 | Granite 3.0 3b A800M Instruct (granite-3.0, instruct) | granite3-moe:3b | granitemoe (gpt2) | 3B-a800M | Q8_K (15) | 4096 (1536) |
@@ -148,6 +149,10 @@ As a baseline, each converted model MUST successfully be run in the following pr
 | Meta Llama 3.1 8B Instruct (Meta-Llama-3.1, Instruct) | llama3.1:latest | llama (gpt2) | 8B | Q8_K (15) | 131072 (4096) |
 | Mistral-7B-Instruct-v0.3 (N/A) | mistral:latest | llama (llama) | 7B | Q4_0 (2) | 32768 (4096) |
 | Qwen2.5 7B Instruct (Qwen2.5, Instruct) | qwen2.5:latest | qwen2 (gpt2) | 7B | Q8_K (15) | 32768 (3584) |
+
+**Notes**
+
+- `latest` is relative to Ollama (proprietary) publishing and is not reflected in GGUF header.
 
 ##### registry: huggingface.co (hf.co)
 
@@ -168,8 +173,3 @@ As a baseline, each converted model MUST successfully be run in the following pr
 - when multiple GGUF models are in a repo. Ollama "grabs" the first one (alphanumerically)
     - e.g., `Qwen2.5-14B-Instruct` repo.: https://huggingface.co/QuantFactory/Qwen2.5-14B-Instruct-GGUF/tree/main
         - has 14 quantizations... but it **grabbed the quant. `Q2_k`(least precise)**
-
----
-
-
-
