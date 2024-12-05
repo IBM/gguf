@@ -163,8 +163,9 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 - downstream fine tunings or quants. lose identity (in the GGUF file) or drop (pedigree-related) fields or create new ones
     - `general.name`, `general.basename`, `general.finetune`, etc.
+        - e.g., `general.name=liuhaotian` is the name of the person who created the downstream GGUF **(not the actual model name)** (and it had no `basename`, nor `finetune`)
     - `.size_label` did not match model declared size.
-- when multiple GGUG models are in a repo. Ollama "grabs" the first one (alphanumerically)
+- when multiple GGUF models are in a repo. Ollama "grabs" the first one (alphanumerically)
     - e.g., `Qwen2.5-14B-Instruct` repo.: https://huggingface.co/QuantFactory/Qwen2.5-14B-Instruct-GGUF/tree/main
         - has 14 quantizations... but it **grabbed the quant. `Q2_k`(least precise)**
 
