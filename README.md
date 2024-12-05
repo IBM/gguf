@@ -150,6 +150,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
 | N/A | Granite 8b Code Instruct 128k (granite, code-instruct-128k) | [granite-code:8b](https://ollama.com/library/granite-code) | llama (gpt2) | 8B | **Q4_0** (2) | **128000** (4096) | 
 | N/A | Granite 20b Code Instruct 8k (granite, code-instruct-8k) | [granite-code:20b](https://ollama.com/library/granite-code) | **starcoder** (gpt2) | 20B | **Q4_0** (2) | 8192 (6144) | 
 | 3.0 | Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | granite (gpt2) | 8B | **F16** (1) | 4096 (4096) |
+| 3.0 | Granite Guardian 3.0 8b (granite-guardian-3.0, **none**) | [granite3-guardian:8b](https://ollama.com/library/granite3-guardian) | granite (gpt2) | 8B | **IQ2_XS** (17) | 8192 (4096) |
 | 3.0 | Granite 3.0 1b A400M Instruct (granite-3.0, instruct) | [granite3-moe:1b](https://ollama.com/library/granite3-moe) | granitemoe (gpt2) | 1B-a400M | Q8_K (15) | 4096 (1024) |
 | 3.0 | Granite 3.0 3b A800M Instruct (granite-3.0, instruct) | [granite3-moe:3b](https://ollama.com/library/granite3-moe) | granitemoe (gpt2) | 3B-a800M | Q8_K (15) | 4096 (1536) |
 
@@ -160,6 +161,9 @@ As a baseline, each converted model MUST successfully be run in the following pr
 - `basename`, `finetune` may be are different depending on person who created the GGUF even for the same company...
     - e.g., IBM Granite model "Granite 8b Code Instruct 128k" has a `finetune` name that does not match other IBM models (i.e., `code-instruct-128k`).
 - `context_buffer` (size) not mentioned in `finetune` for Ollama `granite-code` models which have `8k` buffers, but is listed for `128k` buffers.
+- Ollama model `instructlab/granite-7b-lab` is identical to the `granite-7b` model.
+- IQ2_XS quant. may have issues on Apple silicon 
+    - see commentary here: https://www.reddit.com/r/LocalLLaMA/comments/1ba55rj/overview_of_gguf_quantization_methods/
 
 ##### registry: huggingface.co (hf.co)
 
