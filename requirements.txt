@@ -5,6 +5,6 @@
 huggingface_hub
 langchain_community
 langchain_ollama
-langchain-milvus
-docling
-git+https://github.com/ibm-granite-community/utils.git
+# langchain-milvus
+# docling
+# git+https://github.com/ibm-granite-community/utils.git

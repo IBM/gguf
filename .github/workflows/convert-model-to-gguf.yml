@@ -65,8 +65,8 @@ jobs:
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
-        python -m pip install -r ./llamacpp/requirements/requirements-convert_hf_to_gguf.txt
-        python -m pip install -r ./llamacpp/requirements/requirements-convert_lora_to_gguf.txt
+        python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+        python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
       # python -m pip install --upgrade pip
       # python -m pip install flake8 pytest
 
