@@ -11,6 +11,7 @@ Only a select set of IBM models will be converted to GGUF format based upon the 
 
 - The IBM GGUF model needs to be referenced by an AI provider service (i.e., a local AI provider service) as a "supported" model. 
 - The GGUF model is referenced by a public blog, tutorial, demo, or other public use case.
+    - Specifically, if the model is referenced in an  IBM [Granite Snack Cookbook](https://github.com/ibm-granite-community/granite-snack-cookbook)
 
 In addition, models should be canonically hosted in an official IBM's repository. Currently, this includes the following:
 
@@ -28,11 +29,11 @@ See: https://huggingface.co/ibm-granite
 These models are found in the [Granite 3.0 Language Models collection](https://huggingface.co/collections/ibm-granite/granite-30-language-models-66fdb59bbb54785c3512114f) and are designed to respond to general instructions and can be used to build AI assistants for multiple domains, including business applications.
 
 
-| Name | Architecture | Rationale | Details |
-| --- | --- | --- | -- |
-| [granite-3.0-8b-instruct](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct) | GraniteForCausalLM | Consensus default | Models of ~8B size appear as defaults for most local AI providers. |
-| [granite-3.0-2b-instruct](https://huggingface.co/ibm-granite/granite-3.0-2b-instruct)| GraniteForCausalLM | Consensus default | Models of ~2B or 3B size are offered as  built-in alternatives for most local AI providers.
-| [granite-3.0-3b-a800m-base ](https://huggingface.co/ibm-granite/granite-3.0-3b-a800m-base) | GraniteMoeForCausalLM | Small form-factor | Model highlights Granite's capabilities when run on small form-factor CPUs/memory. | 
+| Name | HF, llama.cp (GGUF) Architecture | Rationale | Details | References |
+| --- | --- | --- | --- | --- |
+| [granite-3.0-8b-instruct](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct) | GraniteForCausalLM, llama (gpt2) | Consensus default | Models of ~8B size appear as defaults for most local AI providers. | Ollama |
+| [granite-3.0-2b-instruct](https://huggingface.co/ibm-granite/granite-3.0-2b-instruct) | GraniteForCausalLM, llama (gpt2) | Consensus default | Models of ~2B or 3B size are offered as  built-in alternatives for most local AI providers. | Ollama [granite-code:3b](https://ollama.com/library/granite-code:3b)</br>**Note**:</br><li>*HF model named 2B, actual size 3B (as shown in Ollama)*</li> |
+| [granite-3.0-3b-a800m-base ](https://huggingface.co/ibm-granite/granite-3.0-3b-a800m-base) | GraniteMoeForCausalLM, granitemoe (gpt2) | Small form-factor | Model highlights Granite's capabilities when run on small form-factor CPUs/memory. | Ollama |
 
 *where*:
 - Consensus default:
@@ -41,7 +42,7 @@ These models are found in the [Granite 3.0 Language Models collection](https://h
 - Small form-factor:
     - Model size intended running locally on small form-factor devices such as watches and mobile devices.
 
-**Experimental**
+**RAG LoRA support**
 
 | Name | Architecture | Rationale | Details |
 | --- | --- | --- | -- |

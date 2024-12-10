@@ -1,11 +1,14 @@
 {
     "cSpell.words": [
+        "Aspirationally",
         "finetune",
+        "ggerganov",
         "ggml",
         "GGUF",
         "granitemoe",
         "huggingface",
         "Langchain",
+        "llamacpp",
         "Ollama",
         "quantizations",
         "qwen",
