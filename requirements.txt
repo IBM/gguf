@@ -1,0 +1,5 @@
+huggingface_hub
+langchain_community
+langchain_ollama
+langchain-milvus
+docling
