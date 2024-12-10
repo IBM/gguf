@@ -50,13 +50,15 @@ jobs:
         sparse-checkout: |
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
+          requirements.txt
+          requirements
           scripts
-          ./requirements/requirements-convert_hf_to_gguf.txt
-          ./requirements/requirements-convert_lora_to_gguf.txt
+    #      ./requirements/requirements-convert_hf_to_gguf.txt
+    #      ./requirements/requirements-convert_lora_to_gguf.txt
     # -r ./requirements/requirements-convert_hf_to_gguf.txt
     # -r ./requirements/requirements-convert_lora_to_gguf.txt
     - name: print folder tree
-      run: tree # -s # show file sizes
+      run: tree llamacpp # -s # show file sizes
  
     #- name: Install dependencies
     #  run: |
