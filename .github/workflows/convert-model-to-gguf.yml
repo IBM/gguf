@@ -14,6 +14,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  LLAMACPP_DIR: llamacpp
+
 jobs:
   build:
 
@@ -51,6 +54,7 @@ jobs:
           LICENSE
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
+          requirements/requirements-convert_legacy_llama.txt
           requirements/requirements-convert_hf_to_gguf.txt
           requirements/requirements-convert_lora_to_gguf.txt
           scripts
@@ -59,7 +63,8 @@ jobs:
     # -r ./requirements/requirements-convert_hf_to_gguf.txt
     # -r ./requirements/requirements-convert_lora_to_gguf.txt
     - name: print folder tree
-      run: tree llamacpp # -s # show file sizes
+      run: tree ${{ env.LLAMACPP_DIR }}"
+      # llamacpp # -s # show file sizes
  
     - name: Install dependencies
       run: |
