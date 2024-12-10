@@ -51,8 +51,8 @@ jobs:
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
           requirements.txt
-          requirements
-          scripts
+          ./requirements
+          ./scripts
     - name: print folder tree
       run: tree # -s # show file sizes
  
