@@ -32,7 +32,7 @@ These models are found in the [Granite 3.0 Language Models collection](https://h
 | Name | HF, llama.cp (GGUF) Architecture | Rationale | Details | References |
 | --- | --- | --- | --- | --- |
 | [granite-3.0-8b-instruct](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct) | GraniteForCausalLM, llama (gpt2) | Consensus default | Models of ~8B size appear as defaults for most local AI providers. | Ollama |
-| [granite-3.0-2b-instruct](https://huggingface.co/ibm-granite/granite-3.0-2b-instruct) | GraniteForCausalLM, llama (gpt2) | Consensus default | Models of ~2B or 3B size are offered as  built-in alternatives for most local AI providers. | Ollama [granite-code:3b](https://ollama.com/library/granite-code:3b)</br>**Note**:</br><li>*HF model named 2B, actual size 3B (as shown in Ollama)*</li> |
+| [granite-3.0-2b-instruct](https://huggingface.co/ibm-granite/granite-3.0-2b-instruct) | GraniteForCausalLM, llama (gpt2) | Consensus default | Models of ~2B or 3B size are offered as  built-in alternatives for most local AI providers. | Ollama [granite-code:3b](https://ollama.com/library/granite-code:3b)</br>**Note**:</br> - *HF model named 2B, actual size 3B (as shown in Ollama)* |
 | [granite-3.0-3b-a800m-base ](https://huggingface.co/ibm-granite/granite-3.0-3b-a800m-base) | GraniteMoeForCausalLM, granitemoe (gpt2) | Small form-factor | Model highlights Granite's capabilities when run on small form-factor CPUs/memory. | Ollama |
 
 *where*:
