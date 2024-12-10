@@ -1,0 +1,63 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python package
+
+#on:
+#  release:
+#    types: [created]
+#  workflow_dispatch:
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' 
+    #- run: python my_script.py 
+    #- name: Set up Python ${{ matrix.python-version }}
+    #  uses: actions/setup-python@v5
+    #  with:
+    #    python-version: ${{ matrix.python-version }}
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"        
+    - name: shallow clone llamacpp
+      uses: actions/checkout@v3 
+      with:
+        repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name
+        ref: 'master'  # Specify a branch to checkout
+        fetch-depth: 1
+    - name: Print Folder Tree
+      uses: jaywcjlove/github-action-folder-tree@main
+      id: tree
+      with:
+        path: ./
+        depth: 5        
+    #- name: Install dependencies
+    #  run: |
+    #    python -m pip install --upgrade pip
+    #    python -m pip install flake8 pytest
+    #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    #- name: Lint with flake8
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    #- name: Test with pytest
+    #  run: |
+    #    pytest
