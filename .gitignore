@@ -1,0 +1,11 @@
+# Filesystem
+.DS_Store
+
+# make target file types
+/release
+/temp
+
+# IDEs (e.g., VSCode)
+.vscode/*.log
+
+# Misc

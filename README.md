@@ -46,11 +46,11 @@ These models are found in the [Granite 3.0 Language Models collection](https://h
 | Name | Architecture | Rationale | Details |
 | --- | --- | --- | -- |
 | `granite3-dense:8b` (Ollama) | (GGUF) | default (quantized) models used with RAG LoRA| `granite3_model` |
-| `granite3-rag:8b` (Ollama) | (GGUF) | | `granite3_rag_model` |
+| `granite3-rag:8b` (Ollama) | (GGUF) | **TBD** why can't we build this whenever corr. dense model is updated? | `granite3_rag_model` |
 
 See granite3-dense Ollama model entry:
 - https://ollama.com/library/granite3-dense
-- and is various (tagged) quantizations: https://ollama.com/library/granite3-dense/tags
+- and its various (tagged) quantizations: https://ollama.com/library/granite3-dense/tags
 
 ---
 
@@ -166,8 +166,8 @@ As a baseline, each converted model MUST successfully be run in the following pr
 | 3.0 ([3.0 language](https://huggingface.co/collections/ibm-granite/granite-30-language-models-66fdb59bbb54785c3512114f)) | Granite 3.0 1b A400M Instruct (granite-3.0, instruct) | [granite3-moe:1b](https://ollama.com/library/granite3-moe) | granitemoe (gpt2) | 1B-a400M | Q8_K (15) | 4096 (1024) |
 | 3.0 ([3.0 language](https://huggingface.co/collections/ibm-granite/granite-30-language-models-66fdb59bbb54785c3512114f))| Granite 3.0 3b A800M Instruct (granite-3.0, instruct) | [granite3-moe:3b](https://ollama.com/library/granite3-moe) | granitemoe (gpt2) | 3B-a800M | Q8_K (15) | 4096 (1536) |
 | 3.0 ([guardian](https://huggingface.co/collections/ibm-granite/granite-guardian-models-66db06b1202a56cf7b079562))| Granite Guardian 3.0 8b (granite-guardian-3.0, **none**) | [granite3-guardian:8b](https://ollama.com/library/granite3-guardian) | granite (gpt2) | 8B | **IQ2_XS** (17) | 8192 (4096) |
-| 3.0 (experimental)| Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | granite (gpt2) | 8B | **F16** (1) | 4096 (4096) |
-| 3.0 (experimental) | Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b](https://ollama.com/library/granite3-dense:8b) | granite (gpt2) | 8B | Q8_K (15) | 4096 (4096) |
+| 3.0 ([3.0 language](https://huggingface.co/collections/ibm-granite/granite-30-language-models-66fdb59bbb54785c3512114f)) | [Granite 3.0 8b Instruct](https://huggingface.co/ibm-granite/granite-3.0-8b-instruct) (granite-3.0, instruct) | [granite3-dense:8b](https://ollama.com/library/granite3-dense:8b) | granite (gpt2) | 8B | Q8_K (15) | 4096 (4096) |
+| 3.0 (???)| Granite 3.0 8b Instruct (granite-3.0, instruct) | [granite3-dense:8b-instruct-fp16](https://ollama.com/library/granite3-dense) | granite (gpt2) | 8B | **F16** (1) | 4096 (4096) |
 
 
 **Notes**

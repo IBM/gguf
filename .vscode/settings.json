@@ -1,0 +1,23 @@
+{
+    "cSpell.words": [
+        "finetune",
+        "ggml",
+        "GGUF",
+        "granitemoe",
+        "huggingface",
+        "Langchain",
+        "Ollama",
+        "quantizations",
+        "qwen",
+        "Safetensors",
+        "starcoder"
+    ],
+    "cSpell.ignoreWords": [
+        "bartowski",
+        "ftype",
+        "liuhaotian",
+        "modelrepo",
+        "mymodel",
+        "outtype"
+    ]
+}
