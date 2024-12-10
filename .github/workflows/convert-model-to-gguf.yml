@@ -15,7 +15,7 @@ on:
     branches: [ "main" ]
 
 env:
-  LLAMACPP_DIR: llamacpp
+  LLAMACPP_DIR: llama.cpp
 
 jobs:
   build:
@@ -28,7 +28,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install Tree Command
+    - name: install-linux-commands
       run: |
         sudo apt-get update
         sudo apt-get install -y tree
@@ -40,12 +40,12 @@ jobs:
     #  uses: actions/setup-python@v5
     #  with:
     #    python-version: ${{ matrix.python-version }}
-    - name: Display Python version
+    - name: display-python-version
       run: python -c "import sys; print(sys.version)"        
-    - name: shallow clone llamacpp
+    - name: shallow-clone-llamacpp
       uses: actions/checkout@v3 
       with:
-        path: llamacpp
+        path: ${{ env.LLAMACPP_DIR }}
         repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name
         ref: 'master'  # Specify a branch to checkout
         fetch-depth: 1
@@ -58,22 +58,40 @@ jobs:
           requirements/requirements-convert_hf_to_gguf.txt
           requirements/requirements-convert_lora_to_gguf.txt
           scripts
-    #      ./requirements/requirements-convert_hf_to_gguf.txt
-    #      ./requirements/requirements-convert_lora_to_gguf.txt
-    # -r ./requirements/requirements-convert_hf_to_gguf.txt
-    # -r ./requirements/requirements-convert_lora_to_gguf.txt
-    - name: print folder tree
+    - name: print-llamacpp
       run: tree ${{ env.LLAMACPP_DIR }}
       # llamacpp # -s # show file sizes
  
-    - name: Install dependencies
+    - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llamacpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llamacpp/requirements/requirements-convert_lora_to_gguf.txt
-    #    python -m pip install --upgrade pip
-    #    python -m pip install flake8 pytest
-    #    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      # python -m pip install --upgrade pip
+      # python -m pip install flake8 pytest
+
+    - name: convert-hf-to-gguf
+      run: |
+        python ./llamacpp/convert_hf_to_gguf.py \
+          --model TheBloke/Llama-2-7B-Chat-GGUF \
+          --outfile llama-2-7b-chat.gguf \
+          --outtype q8_0 \
+          --verbose
+      # --model_name "huggingface/llama-7b" \          
+      # --num_tokens 32000 \
+      # --tokenizer_name "huggingface/llama-7b" \
+      # --temperature 0.1 \
+      # --top_k 40 \
+      # --top_p 0.95 \
+      # --repetition_penalty 1.2 \
+      # --max_new_tokens 64 \
+      # --num_threads 8 \
+      # --seed 42 \
+
+    # - name: convert-lora-to-gguf
+    #   run: |
+    #     python ./llamacpp/convert_lora_to_gguf.py \
+
     #- name: Lint with flake8
     #  run: |
     #    # stop the build if there are Python syntax errors or undefined names
