@@ -25,6 +25,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Install Tree Command
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tree
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11' 
@@ -41,12 +45,14 @@ jobs:
         repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name
         ref: 'master'  # Specify a branch to checkout
         fetch-depth: 1
-    - name: Print Folder Tree
-      uses: jaywcjlove/github-action-folder-tree@main
-      id: tree
-      with:
-        path: ./
-        depth: 5        
+    - name: print folder tree
+      run: tree -s
+    # - name: Print Folder Tree
+    #   uses: jaywcjlove/github-action-folder-tree@main
+    #   id: tree
+    #   with:
+    #     path: ./
+    #     depth: 5        
     #- name: Install dependencies
     #  run: |
     #    python -m pip install --upgrade pip
