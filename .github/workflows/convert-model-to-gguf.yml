@@ -46,7 +46,7 @@ jobs:
         repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name
         ref: 'master'  # Specify a branch to checkout
         fetch-depth: 1
-        sparse-checkout-cone-mode: false
+        sparse-checkout-cone-mode: true
         sparse-checkout: |
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
