@@ -14,8 +14,8 @@ def download_model(models_dir=models_dir, repo_id=""):
         return
     local_dir = models_dir + "/" + repo_id
     print(f"local_dir: {local_dir}")
-    folder = snapshot_download(repo_id=repo_id, local_dir=local_dir)
-    print(f"folder: {folder}")
+    download_dir = snapshot_download(repo_id=repo_id, local_dir=local_dir)
+    print(f"download_dir: {download_dir}")
 
 
 if __name__ == "__main__":
