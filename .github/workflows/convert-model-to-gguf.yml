@@ -29,10 +29,10 @@ jobs:
     steps:
     # - uses: actions/checkout@v4
     - name: confirm-os-arch
-        run: |
-          uname -a
-          echo "Operating System: ${{ runner.os }}"
-          echo "Architecture: ${{ runner.arch }}"
+      run: |
+        uname -a
+        echo "Operating System: ${{ runner.os }}"
+        echo "Architecture: ${{ runner.arch }}"
 
     - name: install-linux-commands
       run: |
