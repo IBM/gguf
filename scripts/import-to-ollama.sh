@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 
 model=""
 name=""
@@ -85,7 +85,7 @@ then
 fi
 
 # If the file is not already pre-downloaded and quantized, and the user has
-# requested running docerkized, run all of the pre-import steps in docker
+# requested running dockerized, run all of the pre-import steps in docker
 if ! [ -f $model ] && [ "$docker" == "1" ]
 then
     $docker_cmd inspect $docker_image &>/dev/null ||  $docker_cmd pull $docker_image

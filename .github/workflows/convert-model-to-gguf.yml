@@ -27,7 +27,13 @@ jobs:
         python-version: ["3.11"]
 
     steps:
-    - uses: actions/checkout@v4
+    # - uses: actions/checkout@v4
+    - name: confirm-os-arch
+        run: |
+          uname -a
+          echo "Operating System: ${{ runner.os }}"
+          echo "Architecture: ${{ runner.arch }}"
+
     - name: install-linux-commands
       run: |
         sudo apt-get update
@@ -43,7 +49,7 @@ jobs:
     - name: display-python-version
       run: python -c "import sys; print(sys.version)"        
     - name: shallow-clone-llamacpp
-      uses: actions/checkout@v3 
+      uses: actions/checkout@v4
       with:
         path: ${{ env.LLAMACPP_DIR }}
         repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name

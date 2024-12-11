@@ -3,8 +3,7 @@
 
 # make target file types
 /llama.cpp
-/release
-/temp
+/models
 
 # IDEs (e.g., VSCode)
 .vscode/*.log
