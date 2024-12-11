@@ -36,18 +36,17 @@ jobs:
         echo "Architecture: ${{ runner.arch }}"
         echo "python-version: ${{ matrix.python-version }}"
 
-    - name: alias-tree
-      if: runner.os == 'macOS'
-      run: |
-        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
-        tree
+    # - name: alias-tree
+    #   if: runner.os == 'macOS'
+    #   run: |
+    #     alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+    #     tree
     
-    # or 'macOS'
-    - name: apt-get tree
-      if: ${{ contains(runner.os, 'ubuntu') }}      
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y tree        
+    # - name: apt-get tree
+    #   if: ${{ contains(runner.os, 'ubuntu') }}      
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y tree        
 
     # - name: install-linux-commands
     #   run: |
@@ -80,7 +79,7 @@ jobs:
     - name: print-llamacpp
       run: |
         echo $PATH
-        tree ${{ env.LLAMACPP_DIR }}
+        find ${{ env.LLAMACPP_DIR }} -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'
  
     - name: install-dependencies
       run: |
@@ -97,7 +96,8 @@ jobs:
       run: |
         python /llama.cpp/convert_hf_to_gguf.py \          
            ./models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
-        tree   
+        find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'
+   
 
     # - name: convert-lora-to-gguf
     #   run: |
