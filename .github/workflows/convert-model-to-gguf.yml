@@ -34,7 +34,7 @@ jobs:
         uname -a
         echo "Operating System: ${{ runner.os }}"
         echo "Architecture: ${{ runner.arch }}"
-        echo "python-version: ${{ matrix.python-version }}""
+        echo "python-version: ${{ matrix.python-version }}"
 
     # - name: install-linux-commands
     #   run: |
@@ -67,7 +67,7 @@ jobs:
     - name: print-llamacpp
       run: |
         echo $PATH
-      # tree ${{ env.LLAMACPP_DIR }}
+      # tree # ${{ env.LLAMACPP_DIR }}
  
     - name: install-dependencies
       run: |
