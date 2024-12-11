@@ -60,8 +60,9 @@ jobs:
           gguf-py
           scripts
     - name: print-llamacpp
-      run: echo $PATH
-      run: tree ${{ env.LLAMACPP_DIR }}
+      run: |
+        echo $PATH
+        tree ${{ env.LLAMACPP_DIR }}
       # llamacpp # -s # show file sizes
  
     - name: install-dependencies
