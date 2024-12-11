@@ -2,6 +2,7 @@
 .DS_Store
 
 # make target file types
+/llama.cpp
 /release
 /temp
 
