@@ -36,6 +36,19 @@ jobs:
         echo "Architecture: ${{ runner.arch }}"
         echo "python-version: ${{ matrix.python-version }}"
 
+    - name: alias-tree
+      if: matrix.os == 'macos-latest'
+      run: |
+        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+        tree
+    
+    # or 'macOS'
+    - name: apt-get tree
+      if: ${{ contains(runner.os, 'ubuntu') }}      
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tree        
+
     # - name: install-linux-commands
     #   run: |
     #     sudo apt-get update
@@ -67,7 +80,7 @@ jobs:
     - name: print-llamacpp
       run: |
         echo $PATH
-      # tree # ${{ env.LLAMACPP_DIR }}
+        tree ${{ env.LLAMACPP_DIR }}
  
     - name: install-dependencies
       run: |
@@ -80,20 +93,11 @@ jobs:
       run: |
         python ./scripts/download_model_from_hf.py ibm-granite granite-3.0-8b-instruct
 
-    - name: alias-tree
-      if: ${{ contains(github.event.head_commit.message, 'smoke_test') }}
-      run: |
-        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
-        tree
-
     - name: convert-hf-to-gguf
       run: |
-        python ./llama.cpp/convert_hf_to_gguf.py \
-          --model ibm-granite/granite-3.0-2b-instruct \
-          --outfile granite-3.0-2b-instruct-q4_0\
-          --outtype q4_0 \
-          --verbose
-        echo $PATH
+        python /llama.cpp/convert_hf_to_gguf.py \          
+           ./models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
+        tree   
 
     # - name: convert-lora-to-gguf
     #   run: |
