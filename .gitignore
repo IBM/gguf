@@ -9,4 +9,5 @@
 # IDEs (e.g., VSCode)
 .vscode/*.log
 
-# Misc
+# built models
+*.gguf
