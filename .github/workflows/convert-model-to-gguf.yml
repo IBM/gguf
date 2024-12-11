@@ -37,7 +37,7 @@ jobs:
         echo "python-version: ${{ matrix.python-version }}"
 
     - name: alias-tree
-      if: matrix.os == 'macos-latest'
+      if: runner.os == 'macOS'
       run: |
         alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
         tree
