@@ -98,9 +98,9 @@ jobs:
         find models -type f -name '*.safetensors'
         ls -al ./llama.cpp/convert*
         python ./llama.cpp/convert_hf_to_gguf.py \          
-           ../../models/ibm-granite/granite-3.0-8b-instruct/ \
-           --outfile test.gguf \
-           --verbose
+            models/ibm-granite/granite-3.0-8b-instruct/ \
+            --outfile test.gguf \
+            --verbose
         find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'
    
 
