@@ -41,8 +41,10 @@ jobs:
     - name: alias-tree
       if: runner.os == 'macOS'
       run: |
-        foo="echo"
-        foo
+        alias foo="echo"
+        foo hello
+        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+        tree 
         exit 1
     
     # - name: apt-get tree
