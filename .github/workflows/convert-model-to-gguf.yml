@@ -90,11 +90,11 @@ jobs:
           gguf-py
           scripts
 
-    # - name: print-llamacpp
-    #   run: |
-    #     echo "PATH: '{{$PATH}}'"
-    #     ls -al llama.cpp
-    #     find llama.cpp ${{FIND_ARGS}}
+    - name: print-llamacpp
+      run: |
+        echo "PATH: '{{$PATH}}'"
+        ls -al llama.cpp
+        find llama.cpp ${{env.FIND_ARGS}}
  
     - name: install-dependencies
       run: |
@@ -109,7 +109,7 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "download_dir='$MODEL_DOWNLOAD_DIR'"        
         python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-8b-instruct
-        find models ${{FIND_ARGS}}
+        find models ${{env.FIND_ARGS}}
 
     - name: convert-hf-to-gguf
       run: |
