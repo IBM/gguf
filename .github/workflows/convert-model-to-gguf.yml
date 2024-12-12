@@ -119,9 +119,9 @@ jobs:
         ls -al models
         python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/ --outfile $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf --verbose
 
-    # - name: quantize-gguf
-    #     run: |
-    #       ./bin/llama-quantize $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf quantized.gguf Q4_K_M
+    - name: quantize-gguf
+      run: |
+        ./bin/llama-quantize $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf quantized.gguf Q4_K_M
 
     # TODO:
     # - name: convert-lora-to-gguf
