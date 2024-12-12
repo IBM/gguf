@@ -61,11 +61,13 @@ jobs:
 
     - name: set-github-env
       id: github_env
-      run: echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
+      run: |
+        echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
 
     - name: verify-github-env
       run: |   
         echo "full_path=${{ steps.github_env.outputs.full_path }}"
+        exit 0
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
