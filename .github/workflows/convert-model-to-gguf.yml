@@ -27,6 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11"]
+        repo_id: ["ibm-granite/granite-3.0-8b-instruct"]
 
     steps:
     - uses: actions/checkout@v4
@@ -36,6 +37,7 @@ jobs:
         echo "Operating System: ${{ runner.os }}"
         echo "Architecture: ${{ runner.arch }}"
         echo "python-version: ${{ matrix.python-version }}"
+        echo "repo_id: ${{ matrix.repo_id }}"        
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -67,7 +69,6 @@ jobs:
     - name: verify-github-env
       run: |   
         echo "full_path=${{ steps.github_env.outputs.full_path }}"
-        exit 0
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
