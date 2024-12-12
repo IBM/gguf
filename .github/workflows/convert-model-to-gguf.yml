@@ -26,8 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11"]
-        repo_id: ["ibm-granite/granite-3.0-8b-instruct"]
+        repo_id: ["ibm-granite/granite-3.0-2b-instruct"]
+        quantization: ["Q4_0","Q4_K_M"]
 
     steps:
     - uses: actions/checkout@v4
@@ -36,8 +36,8 @@ jobs:
         uname -a
         echo "Operating System: ${{ runner.os }}"
         echo "Architecture: ${{ runner.arch }}"
-        echo "python-version: ${{ matrix.python-version }}"
-        echo "repo_id: ${{ matrix.repo_id }}"        
+        echo "repo_id: ${{ matrix.repo_id }}"    
+        echo "quantization: ${{ matrix.quantization }}"              
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -108,24 +108,27 @@ jobs:
       run: |
         pwd
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
+        echo "repo_id: ${{ matrix.repo_id }}"   
+        echo "quantization: ${{ matrix.quantization }}"         
         echo "download_dir='$MODEL_DOWNLOAD_DIR'"        
-        python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-8b-instruct
+        echo "repo_id='$repo_id'"                
+        python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-2b-instruct
         find models ${{env.FIND_ARGS}}
+        exit 0
 
     - name: convert-hf-to-gguf
       run: |
-        echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"      
+        echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"    
+        echo "repo_id: ${{ matrix.repo_id }}"   
+        echo "quantization: ${{ matrix.quantization }}"     
         echo "download_dir='$MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/'"
         ls -al models
-        python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/ --outfile $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf --verbose
+        python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-2b-instruct/ --outfile $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf --verbose
 
     - name: quantize-gguf
       run: |
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"    
         echo "repo_id: ${{ matrix.repo_id }}"   
-        ./bin/llama-quantize $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-8b-instruct/f16.gguf quantized.gguf Q4_K_M
-
-    # TODO:
-    # - name: convert-lora-to-gguf
-    #   run: |
-    #     python ./llamacpp/convert_lora_to_gguf.py ...
+        echo "quantization: ${{ matrix.quantization }}"   
+        ./bin/llama-quantize $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-2b-instruct/ f16.gguf quantized.gguf ${{matrix.quantization}}
+        ls -al *.gguf
