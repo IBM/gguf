@@ -20,7 +20,6 @@ env:
 
 jobs:
   build:
-
     # runs-on: ubuntu-latest
     runs-on: macos-latest
     strategy:
@@ -38,13 +37,12 @@ jobs:
         echo "python-version: ${{ matrix.python-version }}"
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
-    - name: alias-tree
+    - name: create-aliases
       if: runner.os == 'macOS'
       run: |
+        shopt -s expand_aliases
         alias foo="echo"
         foo hello
-        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
-        tree 
         exit 1
     
     # - name: apt-get tree
