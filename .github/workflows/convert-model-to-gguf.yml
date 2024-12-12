@@ -67,7 +67,6 @@ jobs:
       run: echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
 
     - name: verify-github-env
-      needs: set_github_vars
       run: |
         echo $MODEL_DOWNLOAD_DIR     
         echo "full_path=${{ steps.set_github_vars.outputs.full_path }}"
