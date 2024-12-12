@@ -110,7 +110,7 @@ jobs:
 
     - name: quantize-gguf
         run: |
-          python ./bin/llama-quantize test.gguf
+          ./bin/llama-quantize test.gguf
 
     # TODO:
     # - name: convert-lora-to-gguf
