@@ -88,11 +88,11 @@ jobs:
           gguf-py
           scripts
 
-    - name: print-llamacpp
-      run: |
-        echo "PATH: '{{$PATH}}'"
-        ls -al llama.cpp
-        find llama.cpp ${{FIND_ARGS}}
+    # - name: print-llamacpp
+    #   run: |
+    #     echo "PATH: '{{$PATH}}'"
+    #     ls -al llama.cpp
+    #     find llama.cpp ${{FIND_ARGS}}
  
     - name: install-dependencies
       run: |
