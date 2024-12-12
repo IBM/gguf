@@ -16,6 +16,7 @@ on:
 
 env:
   LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
 
 jobs:
   build:
@@ -52,18 +53,25 @@ jobs:
     #   run: |
     #     sudo apt-get update
     #     sudo apt-get install -y tree
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11' 
 
+    # verify/log version
     - name: display-python-version
-      run: python -c "import sys; print(sys.version)"        
+      run: python -c "import sys; print(sys.version)"      
+
+    # for GGUF conversion, we only need a shallow copy (depth=1) and
+    # specify only the scripts and requirements files we need (sparse).
+    # Note: we include LICENSE for future BOM generation
     - name: shallow-clone-llamacpp
       uses: actions/checkout@v4
       with:
-        path: ${{ env.LLAMACPP_DIR }}
-        repository: 'ggerganov/llama.cpp'  # Replace with the desired repository owner and name
-        ref: 'master'  # Specify a branch to checkout
+        path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
+        repository: 'ggerganov/llama.cpp'
+        ref: 'master'  # default to master branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -90,7 +98,7 @@ jobs:
 
     - name: download-model
       run: |
-        python ./scripts/download_model_from_hf.py ibm-granite granite-3.0-8b-instruct
+        python ./scripts/download_model_from_hf.py ${{env.MODEL_DOWNLOAD_DIR}} ibm-granite granite-3.0-8b-instruct
 
     - name: convert-hf-to-gguf
       run: |
@@ -98,20 +106,13 @@ jobs:
         find models -type f -name '*.safetensors'
         ls -al ./llama.cpp/convert*
         python ./llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
-        find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'
-   
+        find models -not -path '*/.*' | sort
+
+    -name: quantize-gguf
+        run: |
+          python ./bin/llama-quantize test.gguf
+
+    # TODO:
     # - name: convert-lora-to-gguf
     #   run: |
     #     python ./llamacpp/convert_lora_to_gguf.py \
-
-    #- name: Lint with flake8
-    #  run: |
-    # python -m pip install --upgrade pip
-    # python -m pip install flake8 pytest
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    #- name: Test with pytest
-    #  run: |
-    #    pytest
