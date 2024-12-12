@@ -96,9 +96,10 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list
 
+    # ${{env.MODEL_DOWNLOAD_DIR}}
     - name: download-model
       run: |
-        python ./scripts/download_model_from_hf.py ${{env.MODEL_DOWNLOAD_DIR}} ibm-granite granite-3.0-8b-instruct
+        python ./scripts/download_model_from_hf.py models ibm-granite granite-3.0-8b-instruct
 
     - name: convert-hf-to-gguf
       run: |
@@ -108,9 +109,9 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
         find models -not -path '*/.*' | sort
 
-    - name: quantize-gguf
-        run: |
-          ./bin/llama-quantize test.gguf
+    # - name: quantize-gguf
+    #     run: |
+    #       ./bin/llama-quantize test.gguf
 
     # TODO:
     # - name: convert-lora-to-gguf
