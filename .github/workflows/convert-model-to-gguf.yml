@@ -63,6 +63,12 @@ jobs:
     - name: display-python-version
       run: python -c "import sys; print(sys.version)"      
 
+    # - name: set-github-env
+    #   run: echo "MODEL_DOWNLOAD_DIR=${{}} >> $GITHUB_ENV
+    - name: verify-github-env
+      run: |
+        echo $MODEL_DOWNLOAD_DIR     
+
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
@@ -99,15 +105,16 @@ jobs:
     # ${{env.MODEL_DOWNLOAD_DIR}}
     - name: download-model
       run: |
-        python ./scripts/download_model_from_hf.py models ibm-granite granite-3.0-8b-instruct
+        echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
+      #python ./scripts/download_model_from_hf.py models ibm-granite granite-3.0-8b-instruct
 
     - name: convert-hf-to-gguf
       run: |
         pwd
-        find models -type f -name '*.safetensors'
-        ls -al ./llama.cpp/convert*
-        python ./llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
+        echo "download_dir='$MODEL_DOWNLOAD_DIR'"
+        ls -al models
         find models -not -path '*/.*' | sort
+        python ./llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
 
     # - name: quantize-gguf
     #     run: |
@@ -116,4 +123,4 @@ jobs:
     # TODO:
     # - name: convert-lora-to-gguf
     #   run: |
-    #     python ./llamacpp/convert_lora_to_gguf.py \
+    #     python ./llamacpp/convert_lora_to_gguf.py ...
