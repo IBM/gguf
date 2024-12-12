@@ -56,20 +56,21 @@ jobs:
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.11' 
+        python-version: '3.11'
 
-    # verify/log version
-    - name: display-python-version
-      run: python -c "import sys; print(sys.version)"      
+    # Uncomment step to verify/capture python version in bash:    
+    # - name: display-python-version
+    #   run: python -c "import sys; print(sys.version)"      
 
     - name: set-github-env
       id: set_github_vars
       run: echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
 
     - name: verify-github-env
+      needs: set_github_vars
       run: |
         echo $MODEL_DOWNLOAD_DIR     
-        echo "var1=${{ steps.set_github_vars.outputs.full_path }}"
+        echo "full_path=${{ steps.set_github_vars.outputs.full_path }}"
         exit 1
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
