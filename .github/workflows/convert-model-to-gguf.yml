@@ -43,10 +43,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         shopt -s expand_aliases
-        echo ${{env.FIND_ARGS}}
-        alias tree="find . ${{env.FIND_ARGS}}"
-        tree     
-        exit 0
+        alias tree="find"
 
     # - name: install-linux-commands
     #   run: |
@@ -63,14 +60,12 @@ jobs:
     #   run: python -c "import sys; print(sys.version)"      
 
     - name: set-github-env
-      id: set_github_vars
+      id: github_env
       run: echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
 
     - name: verify-github-env
-      run: |
-        echo $MODEL_DOWNLOAD_DIR     
-        echo "full_path=${{ steps.set_github_vars.outputs.full_path }}"
-        exit 1
+      run: |   
+        echo "full_path=${{ steps.github_env.outputs.full_path }}"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -97,7 +92,7 @@ jobs:
       run: |
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
-        tree
+        find llama.cpp ${{FIND_ARGS}}
  
     - name: install-dependencies
       run: |
@@ -112,6 +107,7 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "download_dir='$MODEL_DOWNLOAD_DIR'"        
         python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-8b-instruct
+        find models ${{FIND_ARGS}}
 
     - name: convert-hf-to-gguf
       run: |
