@@ -37,11 +37,12 @@ jobs:
         echo "Architecture: ${{ runner.arch }}"
         echo "python-version: ${{ matrix.python-version }}"
 
-    # - name: alias-tree
-    #   if: runner.os == 'macOS'
-    #   run: |
-    #     alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
-    #     tree
+    - name: alias-tree
+      if: runner.os == 'macOS'
+      run: |
+        alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+        tree
+        exit 1
     
     # - name: apt-get tree
     #   if: ${{ contains(runner.os, 'ubuntu') }}      
