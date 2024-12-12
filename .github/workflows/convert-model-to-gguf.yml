@@ -108,7 +108,7 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-3.0-8b-instruct/ --outfile test.gguf --verbose
         find models -not -path '*/.*' | sort
 
-    -name: quantize-gguf
+    - name: quantize-gguf
         run: |
           python ./bin/llama-quantize test.gguf
 
