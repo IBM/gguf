@@ -38,10 +38,12 @@ jobs:
         uname -a
         echo "Operating System: ${{ runner.os }}"
         echo "Architecture: ${{ runner.arch }}"
-        echo "repo_id: ${{ matrix.repo_id }}"    
-        echo "quantization: ${{ matrix.quantization }}"    
-        echo "EXT_GGUF: ${{env.EXT_GGUF}}"
-        echo "EXT_NAME_F16: ${{env.EXT_NAME_F16}}"
+        echo "repo_id: ${{ matrix.repo_id }}"   
+        echo "quantization: ${{ matrix.quantization }}"   
+        echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
+        echo "env.REPO_NAME: ${{ env.REPO_NAME }}" 
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"   
+        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"  
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -114,21 +116,13 @@ jobs:
         python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}
 
-    - name: debug-environment
+    - name: debug-dynamic-environment
       run: |
-        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"  
-        echo "========"                  
-        echo "repo_id: ${{ matrix.repo_id }}"   
-        echo "quantization: ${{ matrix.quantization }}"   
-        echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
-        echo "env.REPO_NAME: ${{ env.REPO_NAME }}" 
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"   
-        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"         
+        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"         
         echo "========"     
-        echo "MODEL_DOWNLOAD_DIR=$MODEL_DOWNLOAD_DIR"
-        echo "REPO_ORG=$REPO_ORG"        
-        echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"   
+        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
+        echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
 
     - name: convert-hf-to-gguf
       run: |
