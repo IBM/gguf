@@ -58,14 +58,14 @@ jobs:
       id: github_env
       run: |
         echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT
-        echo "PWD=$(pwd)" >> $GITHUB_OUTPUT        
+        echo "w_dir=$(pwd)" >> $GITHUB_OUTPUT        
         echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |   
         echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"      
-        echo "PWD=$PWD"
+        echo "w_dir=$w_dir"
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"
 
@@ -114,7 +114,7 @@ jobs:
         echo "quantization: ${{ matrix.quantization }}"                         
         echo "========" 
         echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"      
-        echo "PWD=$PWD"
+        echo "w_dir=$w_dir"
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"        
         exit 0                        
