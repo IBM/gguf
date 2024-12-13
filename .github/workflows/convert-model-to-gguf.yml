@@ -62,7 +62,7 @@ jobs:
     - name: set-github-env
       id: github_env
       run: |
-        echo "WORKING_DIR='$PWD'" >> $GITHUB_OUTPUT
+        echo "WORKING_DIR=$(pwd)" >> $GITHUB_OUTPUT
         echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
 
