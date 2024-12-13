@@ -110,10 +110,11 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "repo_id: ${{ matrix.repo_id }}"   
         echo "quantization: ${{ matrix.quantization }}"      
-        echo "repo_id=${{ matrix.repo_id }}" >> $GITHUB_ENV
+        echo "repo_id=foo" >> $GITHUB_ENV
         echo "repo_id: '$repo_id'"                 
         echo "output_dir='$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}'"    
-        echo $output_dir                              
+        echo $output_dir      
+        exit 0                        
         python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-2b-instruct
         find models ${{env.FIND_ARGS}}
         exit 0
