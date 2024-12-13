@@ -1,3 +1,4 @@
+import os
 import sys
 from huggingface_hub import hf_hub_download, snapshot_download, list_repo_files
 from typing import List
@@ -40,9 +41,12 @@ def download_model_snapshot(models_dir:str="", repo_id:str="") -> str:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python download_model_from_hf.py <models_dir> <repo_org> <repo_name>")
-    else:
+    arg_len = len(sys.argv)
+    if arg_len != 4 or arg_len != 3:   
+        script_name = os.path.basename(__file__)
+        print(f"Usage: python {script_name} <models_dir> <repo_org> <repo_name>")
+    
+    if arg_len == 4:
         fx_name = sys.argv[0]
         models_dir = sys.argv[1]
         repo_org = sys.argv[2]

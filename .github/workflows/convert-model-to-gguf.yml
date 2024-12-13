@@ -53,21 +53,21 @@ jobs:
     #     sudo apt-get install -y tree
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # Uncomment step to verify/capture python version in bash:    
-    # - name: display-python-version
-    #   run: python -c "import sys; print(sys.version)"      
-
+    # Use this step to set values to the github context (shared across jobs/steps)
     - name: set-github-env
       id: github_env
       run: |
         echo "full_path=models/ibm-granite/foo" >> $GITHUB_OUTPUT
+        echo "working_dir='$PWD'" >> $GITHUB_OUTPUT
 
     - name: verify-github-env
       run: |   
+        echo "working_dir=${{ steps.github_env.outputs.working_dir }}"      
         echo "full_path=${{ steps.github_env.outputs.full_path }}"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
@@ -110,7 +110,8 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "repo_id: ${{ matrix.repo_id }}"   
         echo "quantization: ${{ matrix.quantization }}"      
-        echo "repo_id=${{ matrix.repo_id }}"         
+        echo "repo_id=${{ matrix.repo_id }}"   
+        echo $repo_id                
         echo "download_dir='$MODEL_DOWNLOAD_DIR/$repo_id/'"    
         echo $download_dir        
         echo "output_dir='$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}'"    
