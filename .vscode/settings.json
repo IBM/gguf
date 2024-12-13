@@ -14,6 +14,7 @@
         "Ollama",
         "quantizations",
         "qwen",
+        "safetensor",
         "Safetensors",
         "shopt",
         "starcoder"
