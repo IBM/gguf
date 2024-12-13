@@ -54,11 +54,13 @@ jobs:
         python-version: '3.11'
 
     # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
     - name: set-github-env
       id: github_env
       run: |
         echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT
-        echo "w_dir=$(pwd)" >> $GITHUB_OUTPUT        
+        echo "w_dir=$(pwd)" >> $GITHUB_ENV        
         echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
 
