@@ -110,7 +110,7 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "repo_id: ${{ matrix.repo_id }}"   
         echo "quantization: ${{ matrix.quantization }}"      
-        echo "repo_id=${{ matrix.repo_id }}"   
+        "repo_id=${{ matrix.repo_id }}"   
         echo $repo_id                
         echo "download_dir='$MODEL_DOWNLOAD_DIR/$repo_id/'"    
         echo $download_dir        
