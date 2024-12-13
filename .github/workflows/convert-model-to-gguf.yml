@@ -47,11 +47,6 @@ jobs:
         shopt -s expand_aliases
         alias tree="find"
 
-    # - name: install-linux-commands
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install -y tree
-
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
@@ -62,14 +57,15 @@ jobs:
     - name: set-github-env
       id: github_env
       run: |
-        echo "WORKING_DIR=$(pwd)" >> $GITHUB_ENV
+        echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT
+        echo "PWD=$(pwd)" >> $GITHUB_OUTPUT        
         echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |   
-        echo "working_dir=${{ steps.github_env.outputs.working_dir }}"      
-        echo "WORKING_DIR=$WORKING_DIR"
+        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"      
+        echo "PWD=$PWD"
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"
 
@@ -102,30 +98,31 @@ jobs:
  
     - name: install-dependencies
       run: |
+        exit 0
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list      
 
-    # echo "REPO_ID=foo" >> $GITHUB_ENV
+    # echo "output_dir='$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}'"     
+    # echo "repo_id: $REPO_ID"  
+    # echo "output_dir=$output_dir"   
     - name: download-model
       run: |
-        echo "working_dir: '$(pwd)'"  
         echo "MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"
         echo "repo_id: ${{ matrix.repo_id }}"   
-        echo "quantization: ${{ matrix.quantization }}"                     
-        echo "output_dir='$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}'"       
+        echo "quantization: ${{ matrix.quantization }}"                         
+        echo "========" 
+        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"      
+        echo "PWD=$PWD"
+        echo "REPO_ORG=$REPO_ORG"
+        echo "REPO_NAME=$REPO_NAME"        
         exit 0                        
         python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR ibm-granite granite-3.0-2b-instruct
         find models ${{env.FIND_ARGS}}
 
     - name: convert-hf-to-gguf
       run: |
-        echo "repo_id: $REPO_ID"  
-        echo "output_dir=$output_dir"        
-        echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"
-        echo "download_dir='$MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-2b-instruct/'"
         exit 0
         ls -al models
         python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-2b-instruct/ --outfile $MODEL_DOWNLOAD_DIR/ibm-granite/granite-3.0-2b-instruct/f16.gguf --verbose
