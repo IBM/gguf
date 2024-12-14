@@ -11,13 +11,16 @@
 # - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
 # - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
 
-name: Convert and quantize HF models
+name: Build and release GGUF models
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types: [created]
+  workflow_dispatch:
+ 
+permissions:
+ contents: write
+ packages: write
 
 env:
   LLAMACPP_DIR: llama.cpp
@@ -27,8 +30,22 @@ env:
   EXT_NAME_F16: "-f16.gguf"
 
 jobs:
+  release:
+    #needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
   build:
     runs-on: macos-latest
+    needs: release
     strategy:
       fail-fast: false
       matrix:
@@ -48,7 +65,7 @@ jobs:
         echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
         echo "env.REPO_NAME: ${{ env.REPO_NAME }}" 
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"   
-        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"  
+        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"          
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
