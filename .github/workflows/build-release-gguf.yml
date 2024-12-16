@@ -176,10 +176,9 @@ jobs:
     #     ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
 
     - name: in-line verify
-      runs-on: ubuntu-latest
       run: |
         ls -al
-        tree .
+
       # - name: Build
       #   run: echo ${{ github.sha }} > Release.txt
       # - name: Test
