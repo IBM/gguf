@@ -165,9 +165,9 @@ jobs:
         ls -al
 
     - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"            
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"            
 
     - name: Release
       uses: softprops/action-gh-release@v2
