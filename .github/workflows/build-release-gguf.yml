@@ -62,8 +62,8 @@ jobs:
         echo "env.REPO_NAME: ${{ env.REPO_NAME }}" 
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"   
         echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"    
-        echo "USER_ENV=${{ toJson(env) }}"       
-        echo "$USER_ENV"        
+      # echo "USER_ENV=${{ toJson(env) }}"       
+      # echo "$USER_ENV"        
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
