@@ -32,7 +32,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ["ibm-granite/granite-3.0-2b-instruct"]
+        repo_id: ["ibm-granite/granite-3.0-2b-instruct", 
+          "ibm-granite/granite-3.0-8b-instruct", 
+          "ibm-granite/granite-3.0-3b-a800m-instruct"]
         quantization: ["Q4_0","Q4_K_M"]
 
     steps:
