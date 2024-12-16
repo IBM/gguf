@@ -45,7 +45,7 @@ jobs:
 
   build:
     runs-on: macos-latest
-    needs: release
+    #needs: context
     strategy:
       fail-fast: false
       matrix:
@@ -160,6 +160,7 @@ jobs:
     #     ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
 
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Verify files

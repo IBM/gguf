@@ -14,10 +14,11 @@
 name: Convert and quantize HF models
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "foo" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "bar" ]
 
 env:
   LLAMACPP_DIR: llama.cpp
