@@ -50,6 +50,11 @@ jobs:
         RUNNER_CONTEXT: ${{ toJson(runner) }}
       run: echo "$RUNNER_CONTEXT"
 
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"           
+
     - name: confirm-environment
       run: |
         uname -a
@@ -157,21 +162,7 @@ jobs:
         echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
         ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
         echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
-        ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
-
-    # - name: Test
-    #   run: |
-    #     echo "This is a test" > Release.txt
-    #     ls -al Release.txt
-
-    # - name: in-line verify
-    #   run: |
-    #     ls -al
-
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"            
+        ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf       
 
     - name: Release
       uses: softprops/action-gh-release@v2
