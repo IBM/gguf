@@ -30,18 +30,18 @@ env:
   EXT_NAME_F16: "-f16.gguf"
 
 jobs:
-  release:
-    #needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
+  # release:
+  #   #needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Dump runner context
+  #       env:
+  #         RUNNER_CONTEXT: ${{ toJson(runner) }}
+  #       run: echo "$RUNNER_CONTEXT"
+  #     - name: Dump GitHub context
+  #       env:
+  #         GITHUB_CONTEXT: ${{ toJson(github) }}
+  #       run: echo "$GITHUB_CONTEXT"
 
   build:
     runs-on: macos-latest
@@ -50,7 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ["ibm-granite/granite-3.0-2b-instruct"]
-        quantization: ["Q4_0","Q4_K_M"]
+        quantization: ["Q4_0"]
 
     steps:
     - uses: actions/checkout@v4
@@ -152,9 +152,24 @@ jobs:
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
 
-    - name: quantize-gguf
-      run: |   
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
-        echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
-        ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
-        ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
+    # - name: quantize-gguf
+    #   run: |   
+    #     echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
+    #     echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
+    #     ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
+    #     ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify files
+        run: tree .
+      # - name: Build
+      #   run: echo ${{ github.sha }} > Release.txt
+      # - name: Test
+      #   run: cat Release.txt
+      # - name: Release
+      #   uses: softprops/action-gh-release@v2
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   with:
+      #     files: Release.txt
