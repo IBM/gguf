@@ -172,9 +172,10 @@ jobs:
         echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf       
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          ${{env.FNAME_QUANTIZED_GGUF}}      
+    # - name: Release
+    #   uses: softprops/action-gh-release@v2
+    #   if: startsWith(github.ref, 'refs/tags/')
+    #   with:
+    #     files: |
+    #       ${{env.FNAME_QUANTIZED_GGUF}}   
+    #   
