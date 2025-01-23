@@ -7,7 +7,7 @@
 
 # IDEs (e.g., VSCode)
 .vscode/*.log
-.vscode/launch.json
+!.vscode/launch.json
 
 # built models
 *.gguf
