@@ -44,9 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ["ibm-granite/granite-3.0-2b-instruct", "ibm-granite/granite-3.0-8b-instruct" ]
-        quantization: [
-          "FP16"]
+        repo_id: ["ibm-granite/granite-3.0-2b-instruct"]
+        quantization: ["Q4_K_M"]
 
     steps:
     - uses: actions/checkout@v4
