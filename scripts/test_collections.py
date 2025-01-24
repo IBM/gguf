@@ -5,6 +5,7 @@ from typing import List
 import requests
 
 from huggingface_hub import list_collections, create_collection, Collection, CollectionItem
+from huggingface_hub.utils import HfHubHTTPError
 
 # retrieve secrets
 hf_token=os.environ['HF_TOKEN']
@@ -56,14 +57,14 @@ def create_collection_in_namespace(hf_owner:str="", title:str="", description:st
             private=private,
             token=hf_token,
         )
-    # except huggingface_hub.HfHubHTTPError as exc:
-    #     print (f"HTTPError: {exc}")
+    except HfHubHTTPError as exc:
+        print(f"HfHubHTTPError: {exc.server_message}")
     except requests.exceptions.HTTPError as exc:
-        has_attribute = hasattr(exc, "server_message")
-        if has_attribute:
-            print(f"HfHubHTTPError: {exc.server_message}")
-        else:
-            print(f"HTTPError: {exc}")
+        # has_attribute = hasattr(exc, "server_message")
+        #if has_attribute:
+        #     print(f"HfHubHTTPError: {exc.server_message}")
+        # else:
+        print(f"HTTPError: {exc}")
     except requests.exceptions.ConnectionError as exc:
         print(f"ConnectionError: {exc}")
     except requests.exceptions.Timeout as exc:
@@ -83,9 +84,32 @@ if __name__ == "__main__":
     collections = get_collections_in_namespace(hf_owner="ibm-granite", hf_token=hf_token) 
     list_collection_attributes(collections=collections, list_items=True)
    
-    #collection = create_collection_in_namespace(hf_owner="mrutkows", title="Granite 3.2.0", description="IBM Granite 3.2.0", hf_token=hf_token)
-   
+    # Test private repo.   
     existing_collection = get_collection_by_title(hf_owner="mrutkows", title="Granite 3.2.0", hf_token=hf_token)
     if existing_collection is not None:
-        print("Collection already exists!")
         list_collection_items(existing_collection) 
+        
+    # Test ibm-granite 
+    existing_collection = get_collection_by_title(hf_owner="ibm-granite", title="Granite 3.1 Language Models", hf_token=hf_token)
+    if existing_collection is not None:
+        list_collection_items(existing_collection)     
+
+    # Test private repo.         
+    collection = create_collection_in_namespace(hf_owner="mrutkows", title="Granite 3.2.0", description="IBM Granite 3.2.0", hf_token=hf_token)            
+    
+    from huggingface_hub import create_repo
+    try:
+        create_repo("mrutkows/test-q2-k-gguf")
+    except HfHubHTTPError as exc:
+        print(f"HfHubHTTPError: {exc.server_message}")        
+    except Exception as exc:
+        print(f"Exception: {exc}")
+    
+# from huggingface_hub import HfApi
+# api = HfApi()
+# api.upload_file(
+#     path_or_fileobj="/path/to/local/folder/README.md",
+#     path_in_repo="README.md",
+#     repo_id="username/test-dataset",
+#     repo_type="dataset",
+#)
