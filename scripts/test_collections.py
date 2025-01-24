@@ -75,8 +75,6 @@ def create_collection_in_namespace(hf_owner:str="", title:str="", description:st
     return None
 
 if __name__ == "__main__":       
-    collection = create_collection_in_namespace(hf_owner="mrutkows", title="Granite 3.2.0", description="IBM Granite 3.2.0", hf_token=hf_token)
-    
     # Test private repo.
     collections = get_collections_in_namespace(hf_owner="mrutkows", hf_token=hf_token)  
     list_collection_attributes(collections=collections, list_items=True)  
@@ -85,7 +83,9 @@ if __name__ == "__main__":
     collections = get_collections_in_namespace(hf_owner="ibm-granite", hf_token=hf_token) 
     list_collection_attributes(collections=collections, list_items=True)
    
-    # existing_collection = get_collection_by_title(hf_owner="mrutkows", title="Granite 3.2.0", hf_token=hf_token)
-    # if existing_collection is not None:
-    #     print("Collection already exists!")
-    #     list_collection_items(existing_collection) 
+    #collection = create_collection_in_namespace(hf_owner="mrutkows", title="Granite 3.2.0", description="IBM Granite 3.2.0", hf_token=hf_token)
+   
+    existing_collection = get_collection_by_title(hf_owner="mrutkows", title="Granite 3.2.0", hf_token=hf_token)
+    if existing_collection is not None:
+        print("Collection already exists!")
+        list_collection_items(existing_collection) 
