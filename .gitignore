@@ -1,13 +1,13 @@
 # Filesystem
 .DS_Store
 
-# make target file types
-/llama.cpp
-/models
-
 # IDEs (e.g., VSCode)
 .vscode/*.log
 .vscode/launch.json
 
+# repos.
+/llama.cpp
+
 # built models
+/models
 *.gguf

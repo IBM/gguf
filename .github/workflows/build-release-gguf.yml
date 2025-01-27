@@ -33,7 +33,8 @@ env:
 # repo_id: [
 #   "ibm-granite/granite-3.0-2b-instruct", 
 #   "ibm-granite/granite-3.0-8b-instruct",
-#   ""
+#   "ibm-granite/granite-3.0-3b-a800m-instruct",
+#   "ibm-granite/granite-3.0-1b-a400m-instruct",
 # ]
 # quantization: [
 #   "Q2_K", 
@@ -49,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ["ibm-granite/granite-3.0-2b-instruct"]
+        repo_id: ["ibm-granite/granite-3.0-1b-a400m-instruct"]
         quantization: ["Q4_K_M"]
 
     steps:
