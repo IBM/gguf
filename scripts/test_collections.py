@@ -2,7 +2,7 @@ import os
 import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
-from huggingface_hub import list_repo_files
+from huggingface_hub import create_repo, list_repo_files, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
 
 # retrieve secrets
@@ -11,6 +11,35 @@ hf_token=os.environ['HF_TOKEN']
 ###########################################
 # Repos
 ###########################################
+
+def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=hf_token) -> RepoUrl:
+    if repo_name == "":
+        print("Please provide a repo_name")
+        return False
+    if hf_token == "":
+        print("Please provide a token")
+        return False        
+    
+    try:
+        repo_url = create_repo(
+            repo_name, 
+            private=private, 
+            exist_ok=True, 
+            token=hf_token,
+        )
+    except HfHubHTTPError as exc:
+        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_name}'")
+    except requests.exceptions.HTTPError as exc:
+        print(f"HTTPError: {exc}")
+    except requests.exceptions.ConnectionError as exc:
+        print(f"ConnectionError: {exc}")
+    except requests.exceptions.Timeout as exc:
+        print(f"Timeout: {exc}")
+    except requests.exceptions.RequestException as exc:
+        print(f"RequestException: {exc}")
+    else: 
+        return repo_url
+    return None
 
 ###########################################
 # Collections
@@ -156,8 +185,9 @@ if __name__ == "__main__":
     collection_title = "Granite 3.2.0"
     repo_name = "mrutkows/test-q2-k-gguf"    
     repo_owner = "mrutkows" 
-    # c = get_collection_by_title(hf_owner=repo_owner, title=collection_title, hf_token=hf_token)
-    # if c is None:
+    
+    repo_url = safe_create_repo_in_namespace(repo_name=repo_name, hf_token=hf_token)    
+    
     collection = safe_create_collection_in_namespace(hf_owner=repo_owner, title=collection_title, description="IBM Granite 3.2.0", hf_token=hf_token)            
     if collection is not None:
         list_collection_items(collection)  
