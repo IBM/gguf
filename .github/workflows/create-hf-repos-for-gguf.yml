@@ -100,5 +100,5 @@ jobs:
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"    
 
     - name: create-hf-repo
-        run: |
-          python ./scripts/create_repo.py ${{ matrix.repo_id }}${{env.}}
+      run: |
+        python ./scripts/create_repo.py ${{ matrix.repo_id }}${{env.}}
