@@ -1,4 +1,4 @@
-name: Create Huggingface Repos and Collections for GGUF models
+name: Create Huggingface Repos for GGUF
 
 on:
   release:
