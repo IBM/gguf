@@ -101,4 +101,4 @@ jobs:
 
     - name: create-hf-repo
       run: |
-        python ./scripts/create_repo.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}}
+        python ./scripts/create_repo.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} True ${{secrets.HF_TOKEN}}
