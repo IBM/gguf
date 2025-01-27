@@ -7,13 +7,13 @@ from huggingface_hub import create_repo, list_repo_files, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
 
 # retrieve secrets
-hf_token=os.environ['HF_TOKEN']
+# hf_token=os.environ['HF_TOKEN']
 
 ###########################################
 # Repos
 ###########################################
 
-def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=hf_token) -> RepoUrl:
+def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str="") -> RepoUrl:
     if repo_name == "":
         print("Please provide a repo_name")
         return False
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', private='{private} ({type(private)})', hf_token='{hf_token}'")     
     
     # invoke fx
     repo_url = safe_create_repo_in_namespace(repo_name=repo_name, private=private, hf_token=hf_token)    
