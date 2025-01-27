@@ -1,4 +1,4 @@
-name: Create Huggingface Repos for GGUF
+name: create-hf-repos-for-gguf
 
 on:
   release:
@@ -32,6 +32,8 @@ jobs:
         repo_id: [
           "mrutkows/granite-3.0-2b-instruct", 
           "mrutkows/granite-3.0-8b-instruct",
+          "mrutkows/granite-3.0-3b-a800m-instruct",
+          "mrutkows/granite-3.0-1b-a400m-instruct",          
         ]
 
     steps:

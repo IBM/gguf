@@ -16,6 +16,11 @@ name: Build and release GGUF models
 on:
   release:
     types: [created]
+  workflow_run:
+    workflows: ["create-hf-repos-for-gguf"]
+    branches: [main]
+    types: 
+      - completed    
   workflow_dispatch:
  
 permissions:
@@ -50,8 +55,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ["ibm-granite/granite-3.0-1b-a400m-instruct"]
-        quantization: ["Q4_K_M"]
+        repo_id: [
+          "ibm-granite/granite-3.0-1b-a400m-instruct",
+        ]
+        quantization: [
+          "Q4_K_M",
+        ]
 
     steps:
     - uses: actions/checkout@v4
