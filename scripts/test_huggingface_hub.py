@@ -1,8 +1,10 @@
 import os
+import sys
 import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
 from huggingface_hub import create_repo, list_repo_files, RepoUrl
+from huggingface_hub import upload_file, CommitInfo
 from huggingface_hub.utils import HfHubHTTPError
 
 # retrieve secrets
@@ -39,6 +41,46 @@ def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:
         print(f"RequestException: {exc}")
     else: 
         return repo_url
+    return None
+
+###########################################
+# Files
+###########################################
+
+def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str=hf_token) -> CommitInfo:
+    if repo_name == "":
+        print("Please provide a repo_name")
+        return False
+    if model_file == "":
+        print("Please provide a model_file")
+        return False    
+    if hf_token == "":
+        print("Please provide a token")
+        return False        
+    
+    try:
+        commit_info = upload_file(
+            path_or_fileobj=model_file,
+            path_in_repo="test.gguf",
+            repo_id=repo_name,
+            repo_type="model",
+            commit_message="Test upload GGUF file as model",
+            commit_description="Test upload",
+            token=hf_token,
+        )
+    except HfHubHTTPError as exc:
+        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_name}', model_file: '{model_file}'")
+        return False
+    except requests.exceptions.HTTPError as exc:
+        print(f"HTTPError: {exc}")
+    except requests.exceptions.ConnectionError as exc:
+        print(f"ConnectionError: {exc}")
+    except requests.exceptions.Timeout as exc:
+        print(f"Timeout: {exc}")
+    except requests.exceptions.RequestException as exc:
+        print(f"RequestException: {exc}")
+    else: 
+        return commit_info
     return None
 
 ###########################################
@@ -164,9 +206,7 @@ def add_update_collection_model(collection_slug:str="", repo_name:str="", note:s
 if __name__ == "__main__":       
     # Test private repo.
     collections = get_collections_in_namespace(hf_owner="mrutkows", hf_token=hf_token)  
-    list_collection_attributes(collections=collections, list_items=True)  
-   
-    # Test private repo.   
+    list_collection_attributes(collections=collections, list_items=True)    
     existing_collection = get_collection_by_title(hf_owner="mrutkows", title="Granite 3.2.0", hf_token=hf_token)
     if existing_collection is not None:
         list_collection_items(existing_collection) 
@@ -174,35 +214,27 @@ if __name__ == "__main__":
     # Test ibm-granite
     collections = get_collections_in_namespace(hf_owner="ibm-granite", hf_token=hf_token) 
     list_collection_attributes(collections=collections, list_items=True)
-            
-    # Test ibm-granite 
     existing_collection = get_collection_by_title(hf_owner="ibm-granite", title="Granite 3.1 Language Models", hf_token=hf_token)
     if existing_collection is not None:
         list_collection_items(existing_collection)     
 
     # Test private repo.         
-    from huggingface_hub import create_repo
     collection_title = "Granite 3.2.0"
+    collection_note = "Test Granite collection"
     repo_name = "mrutkows/test-q2-k-gguf"    
     repo_owner = "mrutkows" 
+    model_file = "test/repos/repo1/model1/test.gguf.zip"
     
-    repo_url = safe_create_repo_in_namespace(repo_name=repo_name, hf_token=hf_token)    
+    repo_url = safe_create_repo_in_namespace(repo_name=repo_name, hf_token=hf_token)
+    commit_info = safe_upload_file(repo_name, model_file, hf_token=hf_token) 
     
     collection = safe_create_collection_in_namespace(hf_owner=repo_owner, title=collection_title, description="IBM Granite 3.2.0", hf_token=hf_token)            
+    
     if collection is not None:
         list_collection_items(collection)  
         add_update_collection_model(
             collection_slug=collection.slug, 
             repo_name=repo_name, 
-            note="test note",
+            note=collection_note,
             hf_token=hf_token)
         list_collection_items(collection)  
-    
-# from huggingface_hub import HfApi
-# api = HfApi()
-# api.upload_file(
-#     path_or_fileobj="/path/to/local/folder/README.md",
-#     path_in_repo="README.md",
-#     repo_id="username/test-dataset",
-#     repo_type="dataset",
-#)

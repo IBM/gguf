@@ -1,10 +1,11 @@
-# IBM Granite Snack Cookbook requirements
-# See: https://github.com/ibm-granite-community/granite-snack-cookbook/
-
-# recipe: granite-snack-cookbook/recipes/Intrinsics/Granite_RAG_LoRA_HF.ipynb
 huggingface_hub
 langchain_community
 langchain_ollama
+
+# TODO: IBM Granite Snack Cookbook requirements
+# See: https://github.com/ibm-granite-community/granite-snack-cookbook/
+# recipe: granite-snack-cookbook/recipes/Intrinsics/Granite_RAG_LoRA_HF.ipynb
+
 # langchain-milvus
 # docling
 # git+https://github.com/ibm-granite-community/utils.git
