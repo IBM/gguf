@@ -188,7 +188,7 @@ jobs:
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
-        echo "TARGET_REPO_ID=${{TARGET_REPO_ORG}}/${{REPO_NAME}}"
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ORG}}/${{env.REPO_NAME}}"
         echo $TARGET_REPO_ID
         python ./scripts/upload_model.py ${{TARGET_REPO_ID}}${{env.EXT_HF_REPO_NAME}} $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}
 
