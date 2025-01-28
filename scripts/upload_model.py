@@ -65,7 +65,7 @@ if __name__ == "__main__":
     hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}' private='{private} ({type(private)})', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', private='{private}', hf_token='{hf_token}'")     
     
     # invoke fx
     commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, private=private, hf_token=hf_token)    

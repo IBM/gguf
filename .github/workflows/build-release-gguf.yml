@@ -187,7 +187,7 @@ jobs:
     - name: quantize-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
-        python ./scripts/create_repo.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} $FNAME_QUANTIZED_GGUF True ${{secrets.HF_TOKEN}}
+        python ./scripts/upload_model.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} $FNAME_QUANTIZED_GGUF True ${{secrets.HF_TOKEN}}
 
     # - name: Release
     #   uses: softprops/action-gh-release@v2

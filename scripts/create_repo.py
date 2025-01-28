@@ -47,7 +47,7 @@ if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len != 4:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <repo_name:str> <private:bool>, <hf_token:str>")
+        print(f"Usage: python {script_name} <repo_name:str> <private:bool> <hf_token:str>")
         # Exit with an error code
         sys.exit(1)
        
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', private='{private} ({type(private)})', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', private='{private}', hf_token='{hf_token}'")     
     
     # invoke fx
     repo_url = safe_create_repo_in_namespace(repo_name=repo_name, private=private, hf_token=hf_token)    
