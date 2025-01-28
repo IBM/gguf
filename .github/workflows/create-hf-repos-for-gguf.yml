@@ -29,10 +29,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # "mrutkows/granite-3.0-2b-instruct", 
+        # "mrutkows/granite-3.0-8b-instruct",
+        # "mrutkows/granite-3.0-3b-a800m-instruct",        
         repo_id: [
-          "mrutkows/granite-3.0-2b-instruct", 
-          "mrutkows/granite-3.0-8b-instruct",
-          "mrutkows/granite-3.0-3b-a800m-instruct",
           "mrutkows/granite-3.0-1b-a400m-instruct",          
         ]
 
