@@ -12,7 +12,7 @@ from huggingface_hub.utils import HfHubHTTPError
 # Files
 ###########################################
 
-def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str=hf_token) -> CommitInfo:
+def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str="") -> CommitInfo:
     if repo_name == "":
         print("Please provide a repo_name")
         return False
@@ -61,14 +61,13 @@ if __name__ == "__main__":
     fx_name = sys.argv[0]
     repo_name = sys.argv[1]
     model_file = sys.argv[2]   
-    private = bool(sys.argv[3])
-    hf_token = sys.argv[4]
+    hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}'")     
     
     # invoke fx
-    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, private=private, hf_token=hf_token)    
+    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token)    
     
     # Print output variables
     print(f"commit_info: {commit_info}") 
