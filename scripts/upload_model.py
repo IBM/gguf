@@ -51,9 +51,9 @@ def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str="") -> Co
  
 if __name__ == "__main__":
     arg_len = len(sys.argv)
-    if arg_len != 5:   
+    if arg_len != 4:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <repo_name:str> <model_file:str> <private:bool> <hf_token:str>")
+        print(f"Usage: python {script_name} <repo_name:str> <model_file:str> <hf_token:str>")
         # Exit with an error code
         sys.exit(1)
        

@@ -33,7 +33,9 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  TARGET_REPO_ORG: "mrutkows"
+  REPO_OWNER: "mrutkows"
+  EXT_HF_REPO_NAME: -GGUF
+  # EXT_HF_COLLECTION_NAME: "(GGUF)"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -188,14 +190,6 @@ jobs:
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
-        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ORG}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
+        echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
         echo $TARGET_REPO_ID
-        python ./scripts/upload_model.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}
-
-    # - name: Release
-    #   uses: softprops/action-gh-release@v2
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   with:
-    #     files: |
-    #       ${{env.FNAME_QUANTIZED_GGUF}}   
-    #   
+      #python ./scripts/upload_model.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}  
