@@ -192,4 +192,4 @@ jobs:
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
         echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
         echo $TARGET_REPO_ID
-      #python ./scripts/upload_model.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}  
+        python ./scripts/upload_model.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}  
