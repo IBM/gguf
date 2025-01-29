@@ -188,10 +188,10 @@ jobs:
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
         echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"      
 
+    # echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"        
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
-      # echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
         echo $TARGET_REPO_ID
         echo "$TARGET_REPO_ID" 
         echo $TARGET_REPO_ID        
