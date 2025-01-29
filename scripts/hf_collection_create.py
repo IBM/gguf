@@ -170,6 +170,14 @@ if __name__ == "__main__":
     # invoke fx
     collection = safe_create_collection_in_namespace(hf_owner=repo_owner, title=title, description=description, hf_token=hf_token)            
        
+       
+    import json   
+    with open("resources/json/hf_collection_mapping.json", "r") as file:
+        json_data = json.load(file)
+        formatted_json = json.dumps(json_data, indent=4)
+        print(formatted_json)
+
+       
     existing_collection = get_collection_by_title(hf_owner=repo_owner, title=title, hf_token=hf_token)
     if existing_collection is not None:
         list_collection_items(existing_collection) 
