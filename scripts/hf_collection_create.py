@@ -105,13 +105,20 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
     return None
 
 
-def add_update_collection_model(collection_slug:str="", repo_name:str="", note:str="", hf_token:str=hf_token) -> Collection:
+def add_update_collection_model(collection_slug:str="", repo_name:str="", note:str="", hf_token:str="") -> Collection:
     if collection_slug == "":
         print("Please provide a slug (ID) for the collection.")
         return False
     if repo_name == "":
-        print("Please provide a repo_name for the model repo.")
+        print("Please provide a repo_name for the collection.")
         return False   
+    if note == "":
+        print("Please provide a note for the collection.")
+        return False     
+    if hf_token == "":
+        print("Please provide a token")
+        return False      
+    
     # If an item already exists in a collection (same item_id/item_type pair), 
     # an HTTP 409 error will be raised. 
     # You can choose to ignore this error by setting exists_ok=True    
