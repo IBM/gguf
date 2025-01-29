@@ -151,25 +151,21 @@ if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len < 6:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
+        print(f"Usage: python {script_name} <repo_owner:str> <title:str> <description:str> <private:bool> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
        
     # Parse input arguments into named params.   
     fx_name = sys.argv[0]
-    repo_name = sys.argv[1]
+    repo_owner = sys.argv[1]
     title = sys.argv[2]  
     description = sys.argv[3]  
     private = sys.argv[4] 
     hf_token = sys.argv[5]
     
-    # derived vars.
-    repo_owner = os.path.dirname(repo_name)
-    
     # Print input variables being used for this run
-    # TODO: add "private"
-    print(f">> {fx_name}: repo_name='{repo_name}' owner='{repo_owner}', private='{private}', title='{title}', desc='{description}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: owner='{repo_owner}', title='{title}', desc='{description}', private='{private}', hf_token='{hf_token}'")     
     
     # invoke fx
     collection = safe_create_collection_in_namespace(hf_owner=repo_owner, title=title, description=description, hf_token=hf_token)            
