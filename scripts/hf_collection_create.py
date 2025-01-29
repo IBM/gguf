@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # print(f"collections='{collections}' ({type(collection)})")
     for c in collections:
         formatted_c = json.dumps(c, indent=4)
-        print(f"collection='{formatted_c}'")
+        print(f"collection ({type(c)})='{formatted_c}'")
        
     existing_collection = get_collection_by_title(hf_owner=repo_owner, title=title, hf_token=hf_token)
     if existing_collection is not None:
