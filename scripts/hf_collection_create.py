@@ -175,7 +175,18 @@ if __name__ == "__main__":
         list_collection_items(existing_collection) 
     else:
         print(f"Collection '{title}' not found in namespace '{repo_owner}'")
+        
+    add_update_collection_model(
+        collection_slug=collection.slug, 
+        repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
+        note="test note",
+        hf_token=hf_token)
     
+    if existing_collection is not None:
+        list_collection_items(existing_collection) 
+    else:
+        print(f"Collection '{title}' not found in namespace '{repo_owner}'")
+         
     # Print output variables
     print(f"collection: {collection}") 
     
