@@ -24,9 +24,10 @@ def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str="") -> Co
         return False        
     
     try:
+        target_file_name = os.path.basename(model_file)
         commit_info = upload_file(
             path_or_fileobj=model_file,
-            path_in_repo="test.gguf",
+            path_in_repo=target_file_name,
             repo_id=repo_name,
             repo_type="model",
             commit_message="Test upload GGUF file as model",
