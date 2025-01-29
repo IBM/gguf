@@ -177,28 +177,29 @@ if __name__ == "__main__":
         formatted_json = json.dumps(json_data, indent=4)
         print(formatted_json)
 
-    collections = json_data["collections"]
-    # print(f"collections='{collections}' ({type(collection)})")
-    for c in collections:
-        formatted_c = json.dumps(c, indent=4)
-        print(f"collection ({type(c)})='{formatted_c}'")
+    collections_defn = json_data["collections"]
+    for collection_defn in collections_defn:
+        # formatted_defn = json.dumps(collection_defn, indent=4)
+        # print(f"collection ({type(collection_defn)})='{formatted_defn}'")
+        print(f"namespace='{collection.namespace}', title='{collection.title}', description='{collection.description}'")
+        print(f"items='{collection.items}")
        
     existing_collection = get_collection_by_title(hf_owner=repo_owner, title=title, hf_token=hf_token)
     if existing_collection is not None:
-        list_collection_items(existing_collection) 
+        list_collection_attributes(existing_collection,True)
     else:
         print(f"Collection '{title}' not found in namespace '{repo_owner}'")
         
-    add_update_collection_model(
-        collection_slug=collection.slug, 
-        repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
-        note="test note",
-        hf_token=hf_token)
+    # add_update_collection_model(
+    #     collection_slug=collection.slug, 
+    #     repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
+    #     note="test note",
+    #     hf_token=hf_token)
     
-    if existing_collection is not None:
-        list_collection_items(existing_collection) 
-    else:
-        print(f"Collection '{title}' not found in namespace '{repo_owner}'")
+    # if existing_collection is not None:
+    #     list_collection_attributes(existing_collection,True)
+    # else:
+    #     print(f"Collection '{title}' not found in namespace '{repo_owner}'")
          
     # Print output variables
     print(f"collection: {collection}") 
