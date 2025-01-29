@@ -16,8 +16,9 @@ def safe_upload_file(
     repo_name:str="", 
     model_file:str="", 
     hf_token:str="", 
-    commit_msg:str="", 
-    commit_desc:str=""
+    commit_msg:str=None, 
+    commit_desc:str=None,
+    workflow_ref="",
 ) -> CommitInfo:
     if repo_name == "":
         print("Please provide a repo_name")
@@ -31,7 +32,13 @@ def safe_upload_file(
     
     try:
         target_file_name = os.path.basename(model_file)
-        # Note: repo_type is always "model" for now
+        
+        # Note: commit_message MUST NOT be empty or None
+        if commit_msg is None or commit_msg == "":
+            # construct a default message...
+            commit_msg = f"Uploading model: workflow_ref: {workflow_ref}"
+        
+        # Note: repo_type is always "model" for now        
         commit_info = upload_file(
             path_or_fileobj=model_file,
             path_in_repo=target_file_name,
@@ -59,7 +66,7 @@ def safe_upload_file(
  
 if __name__ == "__main__":
     arg_len = len(sys.argv)
-    if arg_len != 4:   
+    if arg_len < 4:   
         script_name = os.path.basename(__file__)
         print(f"Usage: python {script_name} <repo_name:str> <model_file:str> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
@@ -71,12 +78,13 @@ if __name__ == "__main__":
     repo_name = sys.argv[1]
     model_file = sys.argv[2]   
     hf_token = sys.argv[3]
+    workflow_ref = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}' workflow_ref='{workflow_ref}'")     
     
     # invoke fx
-    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token)    
+    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref)    
     
     # Print output variables
     print(f"commit_info: {commit_info}") 
