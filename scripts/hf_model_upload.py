@@ -5,9 +5,6 @@ import requests
 from huggingface_hub import upload_file, CommitInfo
 from huggingface_hub.utils import HfHubHTTPError
 
-# retrieve secrets
-# hf_token=os.environ['HF_TOKEN']
-
 ###########################################
 # Files
 ###########################################
@@ -19,6 +16,7 @@ def safe_upload_file(
     commit_msg:str=None, 
     commit_desc:str=None,
     workflow_ref="",
+    run_id="",    
 ) -> CommitInfo:
     if repo_name == "":
         print("Please provide a repo_name")
@@ -36,7 +34,7 @@ def safe_upload_file(
         # Note: commit_message MUST NOT be empty or None
         if commit_msg is None or commit_msg == "":
             # construct a default message...
-            commit_msg = f"Uploading model: workflow_ref: {workflow_ref}"
+            commit_msg = f"Uploading model: run_id: {run_id}, workflow_ref: {workflow_ref}"
         
         # Note: repo_type is always "model" for now        
         commit_info = upload_file(
@@ -79,12 +77,13 @@ if __name__ == "__main__":
     model_file = sys.argv[2]   
     hf_token = sys.argv[3]
     workflow_ref = sys.argv[4]
+    run_id = sys.argv[5]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}' workflow_ref='{workflow_ref}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}', workflow_ref='{workflow_ref}', run_id='{run_id}'")     
     
     # invoke fx
-    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref)    
+    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref, run_id=run_id)
     
     # Print output variables
     print(f"commit_info: {commit_info}") 
