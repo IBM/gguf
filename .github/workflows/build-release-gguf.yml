@@ -185,12 +185,13 @@ jobs:
         ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
         echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf  
-        echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"          
+        echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
+        echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"      
 
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF" 
-        echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
+      # echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"
         echo $TARGET_REPO_ID
         echo "$TARGET_REPO_ID" 
         echo $TARGET_REPO_ID        
