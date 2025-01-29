@@ -169,6 +169,12 @@ if __name__ == "__main__":
     
     # invoke fx
     collection = safe_create_collection_in_namespace(hf_owner=repo_owner, title=title, description=description, hf_token=hf_token)            
+       
+    existing_collection = get_collection_by_title(hf_owner=repo_owner, title=title, hf_token=hf_token)
+    if existing_collection is not None:
+        list_collection_items(existing_collection) 
+    else:
+        print(f"Collection '{title}' not found in namespace '{repo_owner}'")
     
     # Print output variables
     print(f"collection: {collection}") 
