@@ -2,7 +2,6 @@ import os
 import sys
 import requests
 
-from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
 from huggingface_hub import create_repo, list_repo_files, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
 
@@ -51,7 +50,7 @@ if __name__ == "__main__":
         # Exit with an error code
         sys.exit(1)
        
-    # Test private repo.   
+    # Parse input arguments into named params. 
     fx_name = sys.argv[0]
     repo_name = sys.argv[1]   
     private = bool(sys.argv[2])

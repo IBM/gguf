@@ -11,13 +11,14 @@
 # - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
 # - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
 
-name: Build and release GGUF models
+name: hf-build-release-gguf
 
 on:
   release:
     types: [created]
+  # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_run:
-    workflows: ["create-hf-repos-for-gguf"]
+    workflows: ["hf-create-repos-for-gguf"]
     branches: [main]
     types: 
       - completed    
@@ -161,7 +162,7 @@ jobs:
 
     - name: download-model
       run: |                         
-        python ./scripts/download_model_from_hf.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
+        python ./scripts/hf_model_download.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
@@ -195,4 +196,4 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'"   
         echo "env.TARGET_REPO_ID: ${{env.TARGET_REPO_ID}}"  
         echo $TARGET_REPO_ID      
-        python ./scripts/upload_model.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}          
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}}          

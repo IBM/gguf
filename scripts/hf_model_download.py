@@ -48,7 +48,7 @@ if __name__ == "__main__":
         # Exit with an error code
         sys.exit(1)
     
-    # Map args to variables
+    # Parse input arguments into named params.   
     fx_name = sys.argv[0]
     models_dir = sys.argv[1]
     repo_org = sys.argv[2]

@@ -12,7 +12,13 @@ from huggingface_hub.utils import HfHubHTTPError
 # Files
 ###########################################
 
-def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str="") -> CommitInfo:
+def safe_upload_file(
+    repo_name:str="", 
+    model_file:str="", 
+    hf_token:str="", 
+    commit_msg:str="", 
+    commit_desc:str=""
+) -> CommitInfo:
     if repo_name == "":
         print("Please provide a repo_name")
         return False
@@ -25,13 +31,14 @@ def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str="") -> Co
     
     try:
         target_file_name = os.path.basename(model_file)
+        # Note: repo_type is always "model" for now
         commit_info = upload_file(
             path_or_fileobj=model_file,
             path_in_repo=target_file_name,
             repo_id=repo_name,
             repo_type="model",
-            commit_message="Test upload GGUF file as model",
-            commit_description="Test upload",
+            commit_message=commit_msg,
+            commit_description=commit_desc,
             token=hf_token,
         )
     except HfHubHTTPError as exc:
@@ -59,7 +66,7 @@ if __name__ == "__main__":
         # Exit with an error code
         sys.exit(1)
        
-    # Test private repo.   
+    # Parse input arguments into named params.   
     fx_name = sys.argv[0]
     repo_name = sys.argv[1]
     model_file = sys.argv[2]   
