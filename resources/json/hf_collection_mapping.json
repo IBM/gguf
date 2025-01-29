@@ -1,0 +1,25 @@
+{
+    "collection": {
+        "namespace": "mrutkows",
+        "title": "Granite 3.0 Language Models",
+        "description": "GGUF formatted versions of IBM Granite models published under the ibm-granite org, and licensed under the Apache 2.0 license",
+        "items": [
+            {
+                "type": "model",
+                "repo_name": "ibm-research/granite-3.0-2b-instruct-GGUF"
+            },
+            {
+                "type": "model",
+                "repo_name": "ibm-research/granite-3.0-8b-instruct-GGUF"
+            },
+            {
+                "type": "model",
+                "repo_name": "ibm-research/granite-3.0-1b-a400m-instruct-GGUF"
+            },
+            {
+                "type": "model",
+                "repo_name": "ibm-research/granite-3.0-3b-a800m-instruct-GGUF"
+            }
+        ]
+    }
+}
