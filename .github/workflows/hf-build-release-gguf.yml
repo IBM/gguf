@@ -17,16 +17,12 @@ on:
   release:
     types: [created]
   # Assure repos. have been created before any uploads (by ref. workflow)
+  workflow_dispatch:  
   workflow_run:
-    workflows: ["hf-create-repos-for-gguf"]
+    workflows: [hf-create-repos-for-gguf]
     branches: [main]
     types: 
-      - completed    
-  workflow_dispatch:
-    workflows: ["hf-create-repos-for-gguf"]
-    branches: [main]
-    types: 
-      - completed      
+      - completed       
  
 permissions:
  contents: write
