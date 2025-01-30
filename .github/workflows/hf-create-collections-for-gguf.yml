@@ -10,6 +10,10 @@ on:
     types: 
       - completed      
   workflow_dispatch:
+    workflows: ["hf-build-release-gguf"]
+    branches: [main]
+    types: 
+      - completed     
  
 permissions:
  contents: write

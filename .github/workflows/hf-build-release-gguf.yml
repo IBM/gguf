@@ -23,6 +23,10 @@ on:
     types: 
       - completed    
   workflow_dispatch:
+    workflows: ["hf-create-repos-for-gguf"]
+    branches: [main]
+    types: 
+      - completed      
  
 permissions:
  contents: write
