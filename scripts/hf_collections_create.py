@@ -43,12 +43,12 @@ def list_collection_attributes(collections:Collection=None, list_items:bool=Fals
     if collections is None:
         print("Please provide a valid collections iterator")
         return
-    for collection in collections:
-        print(f"---")
-        print(f"title: `{collection.title}`, private: {collection.private}, description: `{collection.description}`, slug: `{collection.slug}`")
-        print(f"list_items: {list_items} ({type(list_items)})")
-        if list_items is not None:
-            list_collection_items(collection=collection) 
+    # for collection in collections:
+    print(f"---")
+    print(f"title: `{collection.title}`, private: {collection.private}, description: `{collection.description}`, slug: `{collection.slug}`")
+    print(f"list_items: {list_items} ({type(list_items)})")
+    if list_items is not None:
+        list_collection_items(collection=collection) 
 
 
 def list_collection_items(collection:Collection=None) -> None:
