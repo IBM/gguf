@@ -192,20 +192,25 @@ if __name__ == "__main__":
         )
        
         # verify collection has been created
-        print(f"DEBUG........................................................")
-        existing_collection = get_collection_by_title(
-            hf_owner=target_owner, 
-            title=collection_title, 
-            hf_token=hf_token,
-        )
+        # print(f"DEBUG........................................................")
+        # existing_collection = get_collection_by_title(
+        #     hf_owner=target_owner, 
+        #     title=collection_title, 
+        #     hf_token=hf_token,
+        # )
                 
-        # Assure items in collection exist
-        if existing_collection is not None:
-            list_collection_attributes(existing_collection,True)
-        else:
-            print(f"Collection '{collection_title}' not found in namespace '{target_owner}'")
-        print(f"DEBUG........................................................")
+        # # Assure items in collection exist
+        # if existing_collection is not None:
+        #     list_collection_attributes(existing_collection,True)
+        # else:
+        #     print(f"Collection '{collection_title}' not found in namespace '{target_owner}'")
+        # print(f"DEBUG........................................................")
                 
+        if collection is None:
+            # Something went wrong creating
+            print(f"ERROR: Collection '{collection_title}' not created in namespace '{target_owner}'")
+            sys.exit(1)
+            
         # upload all models associated with the collection
         for item_defn in collection_items:
             print(f"item ('{type(item_defn)}')='{item_defn}'")
