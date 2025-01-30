@@ -83,6 +83,7 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         # We want to test if the collection already exists before creating it (and not rely on exceptions)
         collection = get_collection_by_title(hf_owner=hf_owner, title=title, hf_token=hf_token)
         if collection is None:
+            # TODO: set namespace to "hf_owner"
             collection = create_collection(
                 title=title,
                 description=description,
@@ -133,7 +134,7 @@ def add_update_collection_model(collection_slug:str="", repo_name:str="", note:s
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
+        print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{collection_title}'")
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
     except requests.exceptions.ConnectionError as exc:
@@ -146,31 +147,33 @@ def add_update_collection_model(collection_slug:str="", repo_name:str="", note:s
         return collection
     return None
 
+
 if __name__ == "__main__":       
    
    if __name__ == "__main__":
     arg_len = len(sys.argv)
-    if arg_len < 6:   
+    if arg_len < 4:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <repo_owner:str> <title:str> <description:str> <private:bool> <hf_token:str>")
+        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <private:bool> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
        
     # Parse input arguments into named params.   
     fx_name = sys.argv[0]
-    repo_owner = sys.argv[1]
-    title = sys.argv[2]  
-    description = sys.argv[3]  
-    private = sys.argv[4] 
-    hf_token = sys.argv[5]
+    target_owner = sys.argv[1]  
+    # TODO: "private should default to True (confirmed by "pre" tags); 
+    # if workflow was started with a "release" tag, then change to False
+    collection_config = sys.argv[2]
+    private = sys.argv[3] 
+    hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{repo_owner}', title='{title}', desc='{description}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}', hf_token='{hf_token}'")     
     
     # invoke fx
     import json   
-    with open("resources/json/hf_collection_mapping.json", "r") as file:
+    with open(collection_config, "r") as file:
         json_data = json.load(file)
         formatted_json = json.dumps(json_data, indent=4)
         print(formatted_json)
@@ -179,22 +182,22 @@ if __name__ == "__main__":
     for collection_defn in collections_defn:
         # formatted_defn = json.dumps(collection_defn, indent=4)
         # print(f"collection ({type(collection_defn)})='{formatted_defn}'")
-        title = collection_defn["title"]
-        desc = collection_defn["description"]
-        items = collection_defn["items"]
-        print(f"title='{title}', description='{description}'")
-        print(f"items='{items}")
+        collection_title = collection_defn["title"]
+        collection_desc = collection_defn["description"]
+        collection_items = collection_defn["items"]
+        print(f"title='{collection_title}', description='{description}'")
+        print(f"items='{collection_items}")
         collection = safe_create_collection_in_namespace(
-            hf_owner=repo_owner, 
-            title=title, 
-            description=desc, 
+            hf_owner=target_owner, 
+            title=collection_title, 
+            description=collection_desc, 
             hf_token=hf_token,
         )
        
         # verify collection has been created
         existing_collection = get_collection_by_title(
-            hf_owner=repo_owner, 
-            title=title, 
+            hf_owner=target_owner, 
+            title=collection_title, 
             hf_token=hf_token,
         )
         
@@ -202,17 +205,17 @@ if __name__ == "__main__":
         if existing_collection is not None:
             list_collection_attributes(existing_collection,True)
         else:
-            print(f"Collection '{title}' not found in namespace '{repo_owner}'")
+            print(f"Collection '{collection_title}' not found in namespace '{target_owner}'")
         
         # upload all models associated with the collection
-        for item_defn in items:
+        for item_defn in collection_items:
             print(f"item ('{type(item_defn)}')='{item_defn}'")
         
-    # add_update_collection_model(
-    #     collection_slug=collection.slug, 
-    #     repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
-    #     note="test note",
-    #     hf_token=hf_token)
+            # add_update_collection_model(
+            #     collection_slug=collection.slug, 
+            #     repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
+            #     note="test note",
+            #     hf_token=hf_token)
          
     # Print output variables
     print(f"collection: {collection}") 
