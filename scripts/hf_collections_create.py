@@ -107,29 +107,26 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
     return None
 
 
-def add_update_collection_model(collection_slug:str="", repo_name:str="", note:str="", hf_token:str="") -> Collection:
+def add_update_collection_item(collection_slug:str="", repo_name:str="", item_type:str="model", hf_token:str="") -> Collection:
     if collection_slug == "":
         print("Please provide a slug (ID) for the collection.")
         return False
     if repo_name == "":
         print("Please provide a repo_name for the collection.")
-        return False   
-    if note == "":
-        print("Please provide a note for the collection.")
-        return False     
+        return False      
     if hf_token == "":
         print("Please provide a token")
         return False      
     
     # If an item already exists in a collection (same item_id/item_type pair), 
     # an HTTP 409 error will be raised. 
-    # You can choose to ignore this error by setting exists_ok=True    
+    # You can choose to ignore this error by setting exists_ok=True   
+    # TODO: do we need to support "note" arg.? It is Optional; not sure where this appears in HF UI. 
     try:
         collection = add_collection_item(
             collection_slug,
             item_id=repo_name,
-            item_type="model",
-            note=note,
+            item_type=item_type,
             exists_ok=True,
             token=hf_token,
         )
@@ -195,27 +192,31 @@ if __name__ == "__main__":
         )
        
         # verify collection has been created
+        print(f"DEBUG........................................................")
         existing_collection = get_collection_by_title(
             hf_owner=target_owner, 
             title=collection_title, 
             hf_token=hf_token,
         )
-        
+                
         # Assure items in collection exist
         if existing_collection is not None:
             list_collection_attributes(existing_collection,True)
         else:
             print(f"Collection '{collection_title}' not found in namespace '{target_owner}'")
-        
+        print(f"DEBUG........................................................")
+                
         # upload all models associated with the collection
         for item_defn in collection_items:
             print(f"item ('{type(item_defn)}')='{item_defn}'")
-        
-            # add_update_collection_model(
-            #     collection_slug=collection.slug, 
-            #     repo_name="mrutkows/granite-3.0-2b-instruct-GGUF", 
-            #     note="test note",
-            #     hf_token=hf_token)
+            item_type = item_defn["type"]
+            repo_name = item_defn["repo_name"]
+            item_type = item_defn["type"]
+                                
+            add_update_collection_item(
+                collection_slug=collection.slug, 
+                repo_name=repo_name, 
+                hf_token=hf_token)
          
     # Print output variables
     print(f"collection: {collection}") 
