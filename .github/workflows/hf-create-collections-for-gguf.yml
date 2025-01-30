@@ -111,4 +111,4 @@ jobs:
     # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
     - name: create-hf-collections
       run: |
-        python ./scripts/hf_collection_create.py ${{env.REPO_OWNER}} "Granite 3.0 Language Models ${{env.EXT_HF_COLLECTION_NAME}}" "a collection" True ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_collections_create.py ${{env.REPO_OWNER}} "Granite 3.0 Language Models ${{env.EXT_HF_COLLECTION_NAME}}" "a collection" True ${{secrets.HF_TOKEN}}
