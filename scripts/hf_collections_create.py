@@ -185,7 +185,7 @@ if __name__ == "__main__":
         collection_title = collection_defn["title"]
         collection_desc = collection_defn["description"]
         collection_items = collection_defn["items"]
-        print(f"title='{collection_title}', description='{description}'")
+        print(f"title='{collection_title}', description='{collection_desc}'")
         print(f"items='{collection_items}")
         collection = safe_create_collection_in_namespace(
             hf_owner=target_owner, 
