@@ -178,19 +178,19 @@ if __name__ == "__main__":
     for collection_defn in collections_defn:
         # formatted_defn = json.dumps(collection_defn, indent=4)
         # print(f"collection ({type(collection_defn)})='{formatted_defn}'")
-        print(f"title='{collection.title}', description='{collection.description}'")
-        print(f"items='{collection.items}")
+        print(f"title='{collection_defn.title}', description='{collection_defn.description}'")
+        print(f"items='{collection_defn.items}")
         collection = safe_create_collection_in_namespace(
             hf_owner=repo_owner, 
-            title=collection.title, 
-            description=collection.description, 
+            title=collection_defn.title, 
+            description=collection_defn.description, 
             hf_token=hf_token,
         )
        
         # verify collection has been created
         existing_collection = get_collection_by_title(
             hf_owner=repo_owner, 
-            title=collection.title, 
+            title=collection_defn.title, 
             hf_token=hf_token,
         )
         
