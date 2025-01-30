@@ -178,19 +178,22 @@ if __name__ == "__main__":
     for collection_defn in collections_defn:
         # formatted_defn = json.dumps(collection_defn, indent=4)
         # print(f"collection ({type(collection_defn)})='{formatted_defn}'")
-        print(f"title='{collection_defn.title}', description='{collection_defn.description}'")
-        print(f"items='{collection_defn.items}")
+        title = collection_defn["title"]
+        desc = collection_defn["description"]
+        items = collection_defn["items"]
+        print(f"title='{title}', description='{description}'")
+        print(f"items='{items}")
         collection = safe_create_collection_in_namespace(
             hf_owner=repo_owner, 
-            title=collection_defn.title, 
-            description=collection_defn.description, 
+            title=title, 
+            description=desc, 
             hf_token=hf_token,
         )
        
         # verify collection has been created
         existing_collection = get_collection_by_title(
             hf_owner=repo_owner, 
-            title=collection_defn.title, 
+            title=title, 
             hf_token=hf_token,
         )
         
@@ -201,7 +204,7 @@ if __name__ == "__main__":
             print(f"Collection '{title}' not found in namespace '{repo_owner}'")
         
         # upload all models associated with the collection
-        for item_defn in collections_defn.items:
+        for item_defn in items:
             print(f"item ('{type(item_defn)}')='{item_defn}'")
         
     # add_update_collection_model(
