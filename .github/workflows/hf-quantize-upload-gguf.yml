@@ -111,7 +111,7 @@ jobs:
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
-      id: github_env
+      id: set_github_env
       run: |
         echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT      
         echo "working_dir=$(pwd)" >> $GITHUB_ENV        
@@ -120,14 +120,30 @@ jobs:
 
     - name: verify-github-env
       run: |   
-        echo "steps.github_env.outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"      
+        echo "================== GITHUB_OUTPUT =================="
+        echo "steps.github_env.outputs.working_dir=${{ steps.set_github_env.outputs.working_dir }}"  
+        echo "================== GITHUB_ENV ====================="     
         echo "working_dir=$working_dir"
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"    
 
     - name: set-local-env-vars
       run: |
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
+        echo "FNAME_F16_GGUF_BASE"=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV              
+        echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV         
+
+    - name: debug-dynamic-environment
+      run: |
+        echo "================== Dynamic Environment Variables  =================="     
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
+        echo "FNAME_F16_GGUF_BASE='$FNAME_F16_GGUF_BASE' (${{ env.FNAME_F16_GGUF_BASE }})"               
+        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF }})"          
+        echo "FNAME_QUANTIZED_GGUF='$FNAME_QUANTIZED_GGUF' (${{ env.FNAME_QUANTIZED_GGUF }})"   
+
+    - name: abort-early
+        exit 2
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -170,35 +186,19 @@ jobs:
     - name: download-model
       run: |                         
         python ./scripts/hf_model_download.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
-        find models ${{env.FIND_ARGS}}
+        find models ${{env.FIND_ARGS}}       
 
-    - name: debug-dynamic-environment
-      run: |
-        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"         
-        echo "========"     
-        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
-        echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
-
+    #  echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV         
     - name: convert-hf-to-gguf
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }} --outfile $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
-        echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV        
 
     - name: quantize-gguf
-      run: |   
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
-        echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
+      run: |          
         ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf           
-        echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV  
-        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV  
-       
+
     - name: upload-model-gguf
-      run: |  
-        echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"     
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'"   
-        echo "env.TARGET_REPO_ID: ${{env.TARGET_REPO_ID}}"  
-        echo $TARGET_REPO_ID      
+      run: |         
         python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
