@@ -2,7 +2,7 @@ import os
 import sys
 import requests
 
-from types import List
+from typing import List
 from huggingface_hub import list_repo_files
 from huggingface_hub.utils import HfHubHTTPError
 
