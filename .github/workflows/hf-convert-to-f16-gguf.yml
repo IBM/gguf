@@ -34,8 +34,8 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  REPO_OWNER: "mrutkows"
-  EXT_HF_REPO_NAME: -GGUF
+  TARGET_REPO_OWNER: "mrutkows"  # ibm-research
+  TARGET_REPO_NAME_EXT: -GGUF
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -85,9 +85,7 @@ jobs:
         echo "matrix.quantization: ${{ matrix.quantization }}"   
         echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"   
-        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"    
-      # echo "USER_ENV=${{ toJson(env) }}"       
-      # echo "$USER_ENV"        
+        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"           
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -174,23 +172,13 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }} --outfile $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
-
-        echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV 
-
-    # - name: quantize-gguf
-    #   run: |   
-    #     echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
-    #     echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
-    #     ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
-    #     echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
-    #     ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf  
-    #     echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
-    #     echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}" >> $GITHUB_ENV  
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV  
+        echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV    
       
     - name: upload-model-gguf
       run: |  
-        echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"     
+        echo "FNAME_F16_GGUF=$FNAME_F16_GGUF"     
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'"   
         echo "env.TARGET_REPO_ID: ${{env.TARGET_REPO_ID}}"  
         echo $TARGET_REPO_ID      
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_QUANTIZED_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       

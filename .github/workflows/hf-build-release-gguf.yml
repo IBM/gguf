@@ -34,8 +34,8 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  REPO_OWNER: "mrutkows"
-  EXT_HF_REPO_NAME: -GGUF
+  TARGET_REPO_OWNER: "mrutkows"
+  TARGET_REPO_NAME_EXT: -GGUF
   # EXT_HF_COLLECTION_NAME: "(GGUF)"
 
 # Full matrix (Ollama):
@@ -196,9 +196,9 @@ jobs:
         echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
-        echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}" >> $GITHUB_ENV  
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV  
 
-    # echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"        
+    # echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}"        
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"     

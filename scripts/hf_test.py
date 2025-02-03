@@ -47,7 +47,15 @@ def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:
 # Files
 ###########################################
 
-def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str=hf_token) -> CommitInfo:
+def safe_upload_file(
+    repo_name:str="", 
+    model_file:str="", 
+    hf_token:str="", 
+    commit_msg:str=None, 
+    commit_desc:str=None,
+    workflow_ref="",
+    run_id="",    
+) -> CommitInfo:
     if repo_name == "":
         print("Please provide a repo_name")
         return False
@@ -59,13 +67,21 @@ def safe_upload_file(repo_name:str="", model_file:str="", hf_token:str=hf_token)
         return False        
     
     try:
+        target_file_name = os.path.basename(model_file)
+        
+        # Note: commit_message MUST NOT be empty or None
+        if commit_msg is None or commit_msg == "":
+            # construct a default message...
+            commit_msg = f"Uploading model: run_id: {run_id}, workflow_ref: {workflow_ref}"
+        
+        # Note: repo_type is always "model" for now        
         commit_info = upload_file(
             path_or_fileobj=model_file,
-            path_in_repo="test.gguf",
+            path_in_repo=target_file_name,
             repo_id=repo_name,
             repo_type="model",
-            commit_message="Test upload GGUF file as model",
-            commit_description="Test upload",
+            commit_message=commit_msg,
+            commit_description=commit_desc,
             token=hf_token,
         )
     except HfHubHTTPError as exc:
