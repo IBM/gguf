@@ -10,7 +10,7 @@ from huggingface_hub.utils import HfHubHTTPError
 # Files
 ###########################################
 
-def model_file_exists(
+def list_model_files(
     repo_id:str="", 
     test_filename:str="", 
     hf_token:str="",   
@@ -28,8 +28,7 @@ def model_file_exists(
     try:
         file_list:List[str] = list_repo_files(
             repo_id=repo_id,
-            paths=[test_filename],
-            expand=True,
+            repo_type="model",
             token=hf_token,
         )     
         print(f"file_list: {file_list}")
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")     
     
     # invoke fx
-    exists = model_file_exists(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
+    exists = list_model_files(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
     
     # Print output variables
     print(f"exists: {exists}") 
