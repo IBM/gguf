@@ -15,10 +15,6 @@ name: test-convert-and-quantize-to-gguf
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "foo" ]
-  pull_request:
-    branches: [ "bar" ]
 
 env:
   LLAMACPP_DIR: llama.cpp
