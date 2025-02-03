@@ -3,14 +3,14 @@ import sys
 import requests
 
 from typing import List
-from huggingface_hub import list_repo_files
+from huggingface_hub import file_exists
 from huggingface_hub.utils import HfHubHTTPError
 
 ###########################################
 # Files
 ###########################################
 
-def list_model_files(
+def model_file_exists(
     repo_id:str="", 
     test_filename:str="", 
     hf_token:str="",   
@@ -19,26 +19,28 @@ def list_model_files(
         print("Please provide a repo_id")
         return False
     if test_filename == "":
-        print("Please provide a model_file_name")
+        print("Please provide a test_filename")
         return False    
     if hf_token == "":
         print("Please provide a token")
         return False        
     
     try:
-        file_list:List[str] = list_repo_files(
+    # def file_exists(
+    #     self,
+    #     repo_id: str,
+    #     filename: str,
+    #     *,
+    #     repo_type: Optional[str] = None,
+    #     revision: Optional[str] = None,
+    #     token: Union[str, bool, None] = None,
+    # ) -> bool:
+        return file_exists(
             repo_id=repo_id,
+            filename=test_filename,
             repo_type="model",
             token=hf_token,
-        )     
-        print(f"file_list: {file_list}")
-        for filename in file_list:
-            if filename==test_filename:
-                print("File exists")
-                return True
-        else:
-            print("File does not exist")
-            return False
+        )
         
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', test_file_name: '{test_filename}'")
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")     
     
     # invoke fx
-    exists = list_model_files(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
+    exists = model_file_exists(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
     
     # Print output variables
     print(f"exists: {exists}") 

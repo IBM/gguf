@@ -91,4 +91,4 @@ jobs:
 
     - name: list-model-repo-files
       run: |
-        python ./scripts/hf_repo_list_files.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} "foo" ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_repo_list_files.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} ${{secrets.HF_TOKEN}}
