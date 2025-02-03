@@ -143,6 +143,7 @@ jobs:
         echo "FNAME_QUANTIZED_GGUF='$FNAME_QUANTIZED_GGUF' (${{ env.FNAME_QUANTIZED_GGUF }})"   
 
     - name: abort-early
+      run: |    
         exit 2
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
