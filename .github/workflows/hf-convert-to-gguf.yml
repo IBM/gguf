@@ -11,7 +11,7 @@
 # - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
 # - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
 
-name: hf-build-release-gguf
+name: hf-convert-to-gguf
 
 on:
   release:
@@ -36,7 +36,6 @@ env:
   EXT_NAME_F16: "-f16.gguf"
   REPO_OWNER: "mrutkows"
   EXT_HF_REPO_NAME: -GGUF
-  # EXT_HF_COLLECTION_NAME: "(GGUF)"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -47,15 +46,8 @@ env:
 #   "ibm-granite/granite-guardian-3.0-2b",
 #   "ibm-granite/granite-guardian-3.0-8b", 
 # ]
-# quantization: [
-#   "Q2_K", 
-#   "Q3_K_L", "Q3_K_M", "Q3_K_S", 
-#   "Q4_0", "Q4_1", "Q4_K_M", "Q4_K_S", 
-#   "Q5_0", "Q5_1", "Q5_K_M", "Q5_K_S", 
-#   "Q6_K", 
-#   "Q8_0",
-#]
 jobs:
+  
   build:
     runs-on: macos-latest
     strategy:
@@ -68,11 +60,6 @@ jobs:
           "ibm-granite/granite-3.0-3b-a800m-instruct", 
           "ibm-granite/granite-guardian-3.0-2b",
           "ibm-granite/granite-guardian-3.0-8b",                   
-        ]
-        quantization: [
-          "Q4_K_M", "Q4_K_S", 
-          "Q5_K_M", "Q5_K_S", 
-          "Q8_0",
         ]
 
     steps:
@@ -188,17 +175,18 @@ jobs:
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf
 
-    - name: quantize-gguf
-      run: |   
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
-        echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
-        ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
-        echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
-        ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf  
-        echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
-        echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}" >> $GITHUB_ENV  
+        echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV 
 
-    # echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}"        
+    # - name: quantize-gguf
+    #   run: |   
+    #     echo "FNAME_F16_GGUF='$FNAME_F16_GGUF'"
+    #     echo "env.FNAME_F16_GGUF: ${{ env.FNAME_F16_GGUF }}"         
+    #     ./bin/llama-quantize $FNAME_F16_GGUF $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}} ${{matrix.quantization}}
+    #     echo "FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV 
+    #     ls -al $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/*.gguf  
+    #     echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"    
+    #     echo "TARGET_REPO_ID=${{env.REPO_OWNER}}/${{env.REPO_NAME}}${{env.EXT_HF_REPO_NAME}}" >> $GITHUB_ENV  
+      
     - name: upload-model-gguf
       run: |  
         echo "FNAME_QUANTIZED_GGUF=$FNAME_QUANTIZED_GGUF"     
