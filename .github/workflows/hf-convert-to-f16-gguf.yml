@@ -19,7 +19,7 @@ on:
   # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_dispatch:  
   workflow_run:
-    workflows: [hf-create-repos-for-gguf]
+    workflows: [hf-model-create-repos-for-gguf]
     branches: [main]
     types: 
       - completed       
