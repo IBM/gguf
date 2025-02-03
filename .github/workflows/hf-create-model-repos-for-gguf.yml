@@ -28,14 +28,17 @@ jobs:
       #   "ibm-granite/granite-guardian-3.0-2b",
       #   "ibm-granite/granite-guardian-3.0-8b",       
       # ]       
+      # repo_id: [
+      #   "mrutkows/granite-3.0-2b-instruct", 
+      #   "mrutkows/granite-3.0-8b-instruct",          
+      #   "mrutkows/granite-3.0-1b-a400m-instruct",          
+      #   "mrutkows/granite-3.0-3b-a800m-instruct",  
+      #   "mrutkows/granite-guardian-3.0-2b",
+      #   "mrutkows/granite-guardian-3.0-8b",                     
+      # ] 
       matrix:      
-        repo_id: [
-          "mrutkows/granite-3.0-2b-instruct", 
-          "mrutkows/granite-3.0-8b-instruct",          
-          "mrutkows/granite-3.0-1b-a400m-instruct",          
-          "mrutkows/granite-3.0-3b-a800m-instruct",  
-          "mrutkows/granite-guardian-3.0-2b",
-          "mrutkows/granite-guardian-3.0-8b",                     
+        repo_id: [         
+          "mrutkows/granite-3.0-1b-a400m-instruct",                              
         ]
 
     steps:
