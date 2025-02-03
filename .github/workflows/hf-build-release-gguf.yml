@@ -14,8 +14,6 @@
 name: hf-build-release-gguf
 
 on:
-  release:
-    types: [created]
   # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_dispatch:  
   workflow_run:

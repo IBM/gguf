@@ -1,8 +1,6 @@
 name: hf-create-collections-for-gguf
 
 on:
-  release:
-    types: [created]
   # Assure model quantizations have been built & uploaded before creating collections (by ref. workflow)
   workflow_dispatch:    
   workflow_run:

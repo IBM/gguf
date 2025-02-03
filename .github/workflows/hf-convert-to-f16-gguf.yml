@@ -14,12 +14,10 @@
 name: hf-convert-to-f16-gguf
 
 on:
-  release:
-    types: [created]
   # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_dispatch:  
   workflow_run:
-    workflows: [hf-model-create-repos-for-gguf]
+    workflows: [hf-create-model-repos-for-gguf]
     branches: [main]
     types: 
       - completed       
