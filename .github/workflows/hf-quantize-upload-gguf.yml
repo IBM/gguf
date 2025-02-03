@@ -121,33 +121,34 @@ jobs:
         echo "working_dir=$(pwd)" >> $GITHUB_ENV        
         echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
+    
+    - name: set-derivative-env-vars-1
+      run: |    
         echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ matrix.repo_id }}" >> $GITHUB_ENV         
 
-    - name: verify-github-env
-      run: |   
-        echo "================== GITHUB_OUTPUT =================="
-        echo "steps.github_env.outputs.working_dir=${{ steps.set_github_env.outputs.working_dir }}"  
-        echo "================== GITHUB_ENV ====================="     
-        echo "working_dir=$working_dir"
-        echo "REPO_ORG=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME=$REPO_NAME (${{ env.REPO_NAME }})"  
-        echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"                      
-        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
-        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
-
     # echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV              
     # echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV                 
-    - name: set-derivative-env-vars
+    - name: set-derivative-env-vars-2
       run: |       
         echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
         echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
 
-    - name: verify-derivative-env-vars
-      run: |
-        echo "================== Derivative Environment Variables  =================="              
+    - name: verify-github-env
+      run: |   
+        echo "================== GITHUB_OUTPUT ======================================="
+        echo "steps.github_env.outputs.working_dir=${{ steps.set_github_env.outputs.working_dir }}"  
+        echo "================== GITHUB_ENV =========================================="     
+        echo "working_dir=$working_dir"
+        echo "REPO_ORG=$REPO_ORG (${{ env.REPO_ORG }})"
+        echo "REPO_NAME=$REPO_NAME (${{ env.REPO_NAME }})"  
+        echo "================== Derivative Environment Variables 1 =================="           
+        echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"                      
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
+        echo "================== Derivative Environment Variables 2 =================="              
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"          
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"   
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
