@@ -131,12 +131,14 @@ jobs:
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"    
 
+    # echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV              
+    # echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV                 
     - name: set-local-env-vars
       run: |
         echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
-        echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV         
+        echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
 
     - name: debug-dynamic-environment
