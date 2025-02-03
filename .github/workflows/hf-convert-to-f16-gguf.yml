@@ -167,7 +167,7 @@ jobs:
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
 
-    - name: convert-hf-to-gguf
+    - name: download-safetensors-convert-to-f16-gguf
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }} --outfile $MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
@@ -175,10 +175,10 @@ jobs:
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV  
         echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV    
       
-    - name: upload-model-gguf
+    - name: upload-f16-gguf-to-target-repo 
       run: |  
-        echo "FNAME_F16_GGUF=$FNAME_F16_GGUF"     
+        echo "FNAME_F16_GGUF=$FNAME_F16_GGUF"  
+        echo "env.FNAME_F16_GGUF: ${{env.FNAME_F16_GGUF}}"                
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'"   
-        echo "env.TARGET_REPO_ID: ${{env.TARGET_REPO_ID}}"  
-        echo $TARGET_REPO_ID      
+        echo "env.TARGET_REPO_ID: ${{env.TARGET_REPO_ID}}"       
         python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
