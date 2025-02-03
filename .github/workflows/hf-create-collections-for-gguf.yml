@@ -4,7 +4,7 @@ on:
   # Assure model quantizations have been built & uploaded before creating collections (by ref. workflow)
   workflow_dispatch:    
   workflow_run:
-    workflows: [hf-build-release-gguf]
+    workflows: [hf-quantize-upload-gguf]
     branches: [main]
     types: 
       - completed      
