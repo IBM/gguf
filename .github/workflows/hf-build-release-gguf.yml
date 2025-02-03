@@ -36,7 +36,6 @@ env:
   EXT_NAME_F16: "-f16.gguf"
   TARGET_REPO_OWNER: "mrutkows"
   TARGET_REPO_NAME_EXT: -GGUF
-  # EXT_HF_COLLECTION_NAME: "(GGUF)"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -71,8 +70,6 @@ jobs:
         ]
         quantization: [
           "Q4_K_M", "Q4_K_S", 
-          "Q5_K_M", "Q5_K_S", 
-          "Q8_0",
         ]
 
     steps:
