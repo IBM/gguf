@@ -171,7 +171,7 @@ jobs:
         fi
 
     - name: file-exists-true
-      if: env.FILE_EXISTS != '1'
+      if: env.FILE_EXISTS == '1'
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ matrix.repo_id }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
@@ -179,7 +179,7 @@ jobs:
         exit 0  
     
     - name: file-exists-false
-      if: env.FILE_EXISTS != '0'
+      if: env.FILE_EXISTS == '0'
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"       
         exit 0         
