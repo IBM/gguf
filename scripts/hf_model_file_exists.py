@@ -74,13 +74,17 @@ if __name__ == "__main__":
     hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")     
+    # print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")     
     
     # invoke fx
     exists = model_file_exists(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
     
     # Print output variables
-    print(f"exists: {exists}") 
+    # print(f"{fx_name}: returns: {exists}") 
+    if exists:
+        print("True")
+    else:
+        print("False")
     
     # Exit successfully
     sys.exit(0)      
