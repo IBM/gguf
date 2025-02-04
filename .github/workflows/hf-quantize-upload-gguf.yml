@@ -174,7 +174,7 @@ jobs:
       if: env.FILE_EXISTS == '1'
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ matrix.repo_id }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf          
         exit 0  
     
