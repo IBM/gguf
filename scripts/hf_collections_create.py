@@ -85,6 +85,7 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         if collection is None:
             # TODO: set namespace to "hf_owner"
             collection = create_collection(
+                namespace=hf_owner,
                 title=title,
                 description=description,
                 private=private,
