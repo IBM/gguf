@@ -51,6 +51,7 @@ def safe_download_file(
             repo_id=repo_id,
             filename=file_name,
             local_dir=local_dir,
+            token=hf_token,   
         )  
 
     except HfHubHTTPError as exc:
