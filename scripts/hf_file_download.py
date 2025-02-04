@@ -47,6 +47,10 @@ def safe_download_file(
         
         local_dir = models_dir + "/" + repo_id
    
+        import datetime
+
+        now = datetime.datetime.now()
+        print(now.strftime("%Y-%m-%d %H:%M:%S"))
         download_dir = hf_hub_download(
             repo_id=repo_id,
             filename=file_name,
@@ -54,6 +58,9 @@ def safe_download_file(
             token=hf_token,   
         )  
 
+        now = datetime.datetime.now()
+        print(now.strftime("%Y-%m-%d %H:%M:%S"))
+        
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', file_name: '{file_name}'")
         return None
