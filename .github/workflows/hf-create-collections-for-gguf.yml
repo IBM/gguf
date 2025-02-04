@@ -14,7 +14,7 @@ permissions:
  packages: write
 
 env:
-  TARGET_REPO_OWNER: mrutkows  
+  TARGET_REPO_OWNER: ibm-research  
   COLLECTION_CONFIG: "resources/json/hf_collection_mapping.json"
 
 jobs:
