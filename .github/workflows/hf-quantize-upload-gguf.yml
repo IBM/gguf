@@ -88,12 +88,14 @@ jobs:
         echo "matrix.repo_id: ${{ matrix.repo_id }}"   
         echo "matrix.quantization: ${{ matrix.quantization }}"  
         echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"    
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"                            
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"    
+        echo "env.FIND_ARGS: ${{env.FIND_ARGS}}"                           
         echo "env.LLAMACPP_DIR: ${{env.LLAMACPP_DIR}}"           
         echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
         echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"   
         echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"    
-        echo "${{ toJson(env) }}"          
+      # echo "USER_ENV=${{ toJson(env) }}"       
+      # echo "$USER_ENV"           
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
