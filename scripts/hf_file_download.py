@@ -48,7 +48,6 @@ def safe_download_file(
         local_dir = models_dir + "/" + repo_id
    
         import datetime
-
         now = datetime.datetime.now()
         print(now.strftime("BEFORE: %Y-%m-%d %H:%M:%S"))
         download_dir = hf_hub_download(

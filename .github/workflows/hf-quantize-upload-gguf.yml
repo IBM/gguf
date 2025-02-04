@@ -34,6 +34,8 @@ env:
   MODEL_DOWNLOAD_DIR: models
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: "mrutkows"
+  F16_OPT_ENABLED: false
+  FILE_EXISTS: "0"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -158,6 +160,7 @@ jobs:
         pip list   
 
     - name: test-f16-exists
+      if ${{env.F16_OPT_ENABLED == 'true'}}
       run: |
         output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})   
         echo "output: '$output'"
@@ -184,10 +187,10 @@ jobs:
         sleep 600   
         df
 
-    # - name: file-exists-false
-    #   if: env.FILE_EXISTS == '0'
-    #   run: |    
-    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"            
+    - name: file-exists-false
+      if: env.FILE_EXISTS == '0'
+      run: |    
+        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"            
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).

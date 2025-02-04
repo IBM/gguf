@@ -2,7 +2,7 @@ import os
 import sys
 from huggingface_hub import snapshot_download
     
-def download_model_snapshot(models_dir:str="", repo_id:str="") -> str:
+def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:str="*") -> str:
     print(f">>> models_dir='{models_dir}', repo_id='{repo_id}'")
     if models_dir == "":
         print("models_dir is empty")
@@ -12,10 +12,16 @@ def download_model_snapshot(models_dir:str="", repo_id:str="") -> str:
         return
     local_dir = models_dir + "/" + repo_id
     print(f"local_dir: {local_dir}")
+    
+    import datetime
+    now = datetime.datetime.now()
+    print(now.strftime("BEFORE: %Y-%m-%d %H:%M:%S"))
     download_dir = snapshot_download(
             repo_id=repo_id, 
             local_dir=local_dir,
         )  
+    now = datetime.datetime.now()
+    print(now.strftime("AFTER: %Y-%m-%d %H:%M:%S"))    
     return download_dir 
 
 
