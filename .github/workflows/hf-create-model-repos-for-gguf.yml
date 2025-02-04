@@ -10,7 +10,6 @@ permissions:
  packages: write
 
 env:
-  MODEL_DOWNLOAD_DIR: models
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows
 
@@ -28,17 +27,9 @@ jobs:
       #   "ibm-granite/granite-guardian-3.0-2b",
       #   "ibm-granite/granite-guardian-3.0-8b",       
       # ]       
-      # repo_id: [
-      #   "mrutkows/granite-3.0-2b-instruct", 
-      #   "mrutkows/granite-3.0-8b-instruct",          
-      #   "mrutkows/granite-3.0-1b-a400m-instruct",          
-      #   "mrutkows/granite-3.0-3b-a800m-instruct",  
-      #   "mrutkows/granite-guardian-3.0-2b",
-      #   "mrutkows/granite-guardian-3.0-8b",                     
-      # ] 
       matrix:      
         repo_id: [         
-          "mrutkows/granite-3.0-1b-a400m-instruct",                              
+          "ibm-granite/granite-3.0-1b-a400m-instruct",                              
         ]
 
     steps:
@@ -60,10 +51,9 @@ jobs:
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace}}"
-        echo "matrix.repo_id: ${{ matrix.repo_id }}"   
-        echo "matrix.quantization: ${{ matrix.quantization }}"              
-        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"     
-        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_NAME_EXT}}"             
+        echo "matrix.repo_id: ${{ matrix.repo_id }}"                    
+        echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"             
+        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"         
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -100,4 +90,4 @@ jobs:
 
     - name: create-hf-repo
       run: |
-        python ./scripts/hf_repo_create.py ${{ matrix.repo_id }}${{env.TARGET_REPO_NAME_EXT}} True ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_repo_create.py ${{ env.TARGET_REPO_OWNER }}/${{ env.REPO_NAME }}${{env.TARGET_REPO_NAME_EXT}} True ${{secrets.HF_TOKEN}}
