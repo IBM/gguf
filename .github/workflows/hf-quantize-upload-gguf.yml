@@ -160,7 +160,7 @@ jobs:
         pip list   
 
     - name: test-f16-exists
-      if ${{env.F16_OPT_ENABLED == 'true'}}
+      if: env.F16_OPT_ENABLED == 'true'
       run: |
         output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})   
         echo "output: '$output'"
