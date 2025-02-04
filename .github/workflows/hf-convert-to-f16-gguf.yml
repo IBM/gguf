@@ -148,9 +148,9 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list      
 
-    - name: download-model
+    - name: download-model-snapshot
       run: |                         
-        python ./scripts/hf_model_download.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
+        python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
