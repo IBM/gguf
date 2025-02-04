@@ -161,8 +161,17 @@ jobs:
 
     - name: test-f16-exists
       run: |
-        echo "exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})" >> $GITHUB_ENV   
-  
+        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})   
+        echo "output '$output'"
+        # if [[ "$output" == "True" ]]; then
+        #   exists=true
+        # elif [[ "$output" == "False" ]]; then
+        #   exists=false
+        # else
+        #   echo "Unexpected output from Python script: $output"
+        #   exit 1
+        # fi
+
     - name: abort-early
       run: |    
         echo "exists='$exists' (${{ env.exists }})"       
