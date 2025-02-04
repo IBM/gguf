@@ -86,7 +86,7 @@ if __name__ == "__main__":
     hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', model_file='{model_file}', hf_token='{hf_token}', workflow_ref='{workflow_ref}', run_id='{run_id}'")     
+    print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', model_file='{model_file}', hf_token='{hf_token}'")     
     
     # invoke fx
     download_dir = safe_download_file(models_dir=models_dir, repo_id=repo_id, model_file=model_file, hf_token=hf_token)
