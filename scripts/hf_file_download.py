@@ -82,14 +82,14 @@ if __name__ == "__main__":
     fx_name = sys.argv[0]
     models_dir = sys.argv[1]    
     repo_id = sys.argv[2]
-    model_file = sys.argv[3]   
+    file_name = sys.argv[3]   
     hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', model_file='{model_file}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', file_name='{file_name}', hf_token='{hf_token}'")     
     
     # invoke fx
-    download_dir = safe_download_file(models_dir=models_dir, repo_id=repo_id, model_file=model_file, hf_token=hf_token)
+    download_dir = safe_download_file(models_dir=models_dir, repo_id=repo_id, file_name=file_name, hf_token=hf_token)
     
     # Print output variables
     print(f"download_dir: {download_dir}") 
