@@ -154,6 +154,15 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"   
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
 
+    - name: test-f16-exists
+      run: |
+        echo "exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})" >> $GITHUB_ENV   
+  
+    - name: abort-early
+      run: |    
+        echo "exists='$exists' (${{ env.exists }})"       
+        exit 2   
+
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
@@ -186,25 +195,17 @@ jobs:
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-        pip list    
-
-    - name: test-f16-exists
-      run: |
-        python ./scripts/hf_model_file_exists.py $TARGET_REPO_ID $LOCAL_FNAME_F16_GGUF ${{secrets.HF_TOKEN}}  
+        pip list     
 
     - name: download-model
       run: |                         
         python ./scripts/hf_model_download.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
-        find models ${{env.FIND_ARGS}}       
+        find models ${{env.FIND_ARGS}}          
 
     - name: convert-hf-to-gguf
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
-
-    # - name: abort-early
-    #   run: |    
-    #     exit 2
 
     - name: quantize-gguf
       run: |          
