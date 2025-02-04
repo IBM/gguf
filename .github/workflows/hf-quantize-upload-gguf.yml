@@ -175,14 +175,13 @@ jobs:
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf          
-        exit 0  
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ matrix.repo_id }}/*.gguf    
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
     
     - name: file-exists-false
       if: env.FILE_EXISTS == '0'
       run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"       
-        exit 0         
+        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"            
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -219,17 +218,21 @@ jobs:
         pip list     
 
     - name: download-model-snapshot
+      if: env.FILE_EXISTS == '0'
       run: |                         
         python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}          
 
     - name: convert-hf-to-gguf
+      if: env.FILE_EXISTS == '0'
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     - name: quantize-gguf
       run: |          
+        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
 
