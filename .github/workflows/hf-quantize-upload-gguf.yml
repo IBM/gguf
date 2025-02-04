@@ -154,6 +154,11 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"   
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
 
+    - name: install-hf-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list   
+
     - name: test-f16-exists
       run: |
         echo "exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})" >> $GITHUB_ENV   
@@ -190,9 +195,9 @@ jobs:
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
  
+    # python -m pip install -r ./requirements.txt        
     - name: install-dependencies
       run: |
-        python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list     
