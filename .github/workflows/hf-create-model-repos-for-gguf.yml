@@ -11,7 +11,7 @@ permissions:
 
 env:
   TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: ibm-research
+  TARGET_REPO_OWNER: mrutkows # ibm-research
 
 jobs:
   build:

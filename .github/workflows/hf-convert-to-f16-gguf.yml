@@ -31,7 +31,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  TARGET_REPO_OWNER: "ibm-research"  # ibm-research
+  TARGET_REPO_OWNER: mrutkows  # ibm-research
   TARGET_REPO_NAME_EXT: -GGUF
 
 # Full matrix (Ollama):

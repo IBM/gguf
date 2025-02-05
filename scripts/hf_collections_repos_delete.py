@@ -150,9 +150,9 @@ if __name__ == "__main__":
     
         # upload all models associated with the collection
         for item_defn in collection_items:
-            print(f"item_defn ('{type(item_defn)}')='{item_defn}'")
+            print(f"item_defn: '{item_defn}'")
             item_type = item_defn["type"]
-            repo_id = item_defn["repo_id"]
+            repo_id = item_defn["repo_id"]             
                                 
             safe_delete_repo( 
                 repo_id=repo_id, 

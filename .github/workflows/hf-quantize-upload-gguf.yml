@@ -33,7 +33,7 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: "ibm-research"
+  TARGET_REPO_OWNER: mrutkows # ibm-research
   F16_OPT_ENABLED: false
   FILE_EXISTS: "0"
 
