@@ -1,0 +1,14 @@
+{
+    "collections": [
+        {
+            "title": "Test GGUF",
+            "description": "Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",
+                    "repo_id": "ibm-research/granite-3.0-1b-a400m-instruct-GGUF"
+                }
+            ]
+        }
+    ]
+}

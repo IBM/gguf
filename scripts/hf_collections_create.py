@@ -83,7 +83,7 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         # We want to test if the collection already exists before creating it (and not rely on exceptions)
         collection = get_collection_by_title(hf_owner=hf_owner, title=title, hf_token=hf_token)
         if collection is None:
-            # TODO: set namespace to "hf_owner"
+            print(f"[INFO] Creating collection '{title}' ({'private' if private else 'public'}) in namespace '{hf_owner}'...")            
             collection = create_collection(
                 namespace=hf_owner,
                 title=title,
@@ -92,7 +92,7 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
                 token=hf_token,
         )
         else:
-            print(f"Collection '{title}' already exists in namespace '{hf_owner}'")
+            print(f"[WARNING] Collection '{title}' already exists in namespace '{hf_owner}'")
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
     except requests.exceptions.HTTPError as exc:
@@ -108,12 +108,12 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
     return None
 
 
-def add_update_collection_item(collection_slug:str="", repo_name:str="", item_type:str="model", hf_token:str="") -> Collection:
+def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type:str="model", hf_token:str="") -> Collection:
     if collection_slug == "":
-        print("Please provide a slug (ID) for the collection.")
+        print("Please provide a slug (ID) for the collection item.")
         return False
-    if repo_name == "":
-        print("Please provide a repo_name for the collection.")
+    if repo_id == "":
+        print("Please provide a repo_id for the collection item.")
         return False      
     if hf_token == "":
         print("Please provide a token")
@@ -126,13 +126,13 @@ def add_update_collection_item(collection_slug:str="", repo_name:str="", item_ty
     try:
         collection = add_collection_item(
             collection_slug,
-            item_id=repo_name,
+            item_id=repo_id,
             item_type=item_type,
             exists_ok=True,
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{collection_title}'")
+        print(f"HfHubHTTPError: {exc.server_message}, item_id: '{repo_id}'")
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
     except requests.exceptions.ConnectionError as exc:
@@ -214,14 +214,13 @@ if __name__ == "__main__":
             
         # upload all models associated with the collection
         for item_defn in collection_items:
-            print(f"item ('{type(item_defn)}')='{item_defn}'")
+            print(f"item_defn ('{type(item_defn)}')='{item_defn}'")
             item_type = item_defn["type"]
-            repo_name = item_defn["repo_name"]
-            item_type = item_defn["type"]
+            repo_id = item_defn["repo_id"]
                                 
             add_update_collection_item(
                 collection_slug=collection.slug, 
-                repo_name=repo_name, 
+                repo_id=repo_id, 
                 hf_token=hf_token)
          
     # Print output variables

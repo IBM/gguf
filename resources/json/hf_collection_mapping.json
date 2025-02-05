@@ -6,19 +6,19 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-3.0-2b-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.0-2b-instruct-GGUF"
                 },
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-3.0-8b-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.0-8b-instruct-GGUF"
                 },
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-3.0-1b-a400m-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.0-1b-a400m-instruct-GGUF"
                 },
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-3.0-3b-a800m-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.0-3b-a800m-instruct-GGUF"
                 }
             ]
         },
@@ -28,11 +28,11 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-guardian-3.0-2b-GGUF"
+                    "repo_id": "ibm-research/granite-guardian-3.0-2b-GGUF"
                 },
                 {
                     "type": "model",
-                    "repo_name": "ibm-research/granite-guardian-3.0-8b-GGUF"
+                    "repo_id": "ibm-research/granite-guardian-3.0-8b-GGUF"
                 }
             ]
         }
