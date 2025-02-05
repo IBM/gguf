@@ -10,16 +10,16 @@ from huggingface_hub.utils import HfHubHTTPError
 # Collections
 ###########################################
 
-def safe_delete_repo(repo_id:str="", repo_type:str="model", hf_token:str="") -> RepoUrl:
+def safe_delete_repo(repo_id:str="", repo_type:str="model", hf_token:str="") -> None:
     if repo_id == "":
         print("Please provide a repo_id")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False        
+        return None        
     
     try:
-        repo_url = delete_repo(
+        delete_repo(
             repo_id, 
             repo_type=repo_type, 
             token=hf_token,
@@ -35,8 +35,6 @@ def safe_delete_repo(repo_id:str="", repo_type:str="model", hf_token:str="") -> 
         print(f"Timeout: {exc}")
     except requests.exceptions.RequestException as exc:
         print(f"RequestException: {exc}")
-    else: 
-        return repo_url
     return None
 
 

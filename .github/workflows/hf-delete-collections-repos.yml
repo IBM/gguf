@@ -51,6 +51,6 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
-    - name: create-hf-collections
+    - name: delete-hf-collections-repos
       run: |
         python ./scripts/hf_collections_repos_delete.py ${{env.TARGET_REPO_OWNER}} ${{env.COLLECTION_CONFIG}} ${{secrets.HF_TOKEN}}

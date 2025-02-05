@@ -15,10 +15,10 @@ from huggingface_hub.utils import HfHubHTTPError
 def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str="") -> RepoUrl:
     if repo_name == "":
         print("Please provide a repo_name")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False        
+        return None        
     
     try:
         repo_url = create_repo(
