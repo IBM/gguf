@@ -112,7 +112,7 @@ if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len < 4:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <private:bool> <hf_token:str>")
+        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
@@ -123,11 +123,10 @@ if __name__ == "__main__":
     # TODO: "private should default to True (confirmed by "pre" tags); 
     # if workflow was started with a "release" tag, then change to False
     collection_config = sys.argv[2]
-    private = sys.argv[3] 
-    hf_token = sys.argv[4]
+    hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', hf_token='{hf_token}'")     
     
     # invoke fx
     import json   

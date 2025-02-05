@@ -151,7 +151,7 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
 
 if __name__ == "__main__":       
     arg_len = len(sys.argv)
-    if arg_len < 4:   
+    if arg_len < 5:   
         script_name = os.path.basename(__file__)
         print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <private:bool> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
