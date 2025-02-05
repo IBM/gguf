@@ -150,8 +150,6 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
 
 
 if __name__ == "__main__":       
-   
-   if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len < 4:   
         script_name = os.path.basename(__file__)

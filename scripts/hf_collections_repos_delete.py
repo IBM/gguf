@@ -109,8 +109,6 @@ def safe_delete_collection_in_namespace(hf_owner:str="", title:str="", hf_token:
 
 
 if __name__ == "__main__":       
-   
-   if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len < 4:   
         script_name = os.path.basename(__file__)
