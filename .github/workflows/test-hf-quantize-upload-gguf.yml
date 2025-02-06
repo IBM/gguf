@@ -237,8 +237,10 @@ jobs:
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         df
         echo "--------------------"
+        mkdir ${{env.MODEL_DOWNLOAD_DIR}}
         ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        echo verifying...
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
         echo "--------------------"     
         df          
