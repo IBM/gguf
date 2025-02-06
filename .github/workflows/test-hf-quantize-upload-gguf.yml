@@ -237,7 +237,7 @@ jobs:
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         df
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
         echo "--------------------"     
