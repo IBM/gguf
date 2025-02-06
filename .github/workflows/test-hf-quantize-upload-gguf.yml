@@ -236,6 +236,8 @@ jobs:
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         df
+        echo "--------------------"        
+        clang --version
         echo "--------------------"
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
@@ -260,9 +262,12 @@ jobs:
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     - name: quantize-gguf
-      run: |          
+      run: |     
+        top -l 1 | grep -E "^CPU|^Phys"  
+        echo "--------------------"             
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
+        echo "--------------------"          
         ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
 
