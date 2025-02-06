@@ -168,34 +168,27 @@ jobs:
           exit 2
         fi
 
+    - name: file-exists-test
+      run: |    
+        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"  
+
     - name: download-f16-gguf-hf-hub-download
-      if: false
+      if: env.FILE_EXISTS == '1' && false
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        df
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
-        echo "--------------------"     
-        df
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
 
     - name: download-f16-gguf-hf-snapshot-download
-      if: false
+      if: env.FILE_EXISTS == '1' && false
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        df
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
-        echo "--------------------"     
-        df              
-
-    - name: file-exists-false
-      if: env.FILE_EXISTS == '0'
-      run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"            
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -223,19 +216,17 @@ jobs:
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
- 
-    # python -m pip install -r ./requirements.txt        
+     
     - name: install-dependencies
       run: |
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-        pip list 
+        pip list        
         
-    - name: download-f16-gguf-curl-wget
-      if: env.FILE_EXISTS == '1'
+    - name: download-f16-gguf-curl
+      if: env.FILE_EXISTS == '1' && false
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        df
         echo "--------------------"        
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
@@ -243,9 +234,7 @@ jobs:
         echo verifying...
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
-        echo "--------------------"   
-        df          
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     - name: download-model-snapshot
       if: env.FILE_EXISTS == '0'
@@ -259,13 +248,17 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
-    - name: quantize-gguf
-      run: |     
+    - name: print-storage-memory-info
+      run: |
+        df
         echo "--------------------"         
         xcodebuild -version        
         clang --version
         echo "--------------------"      
-        top -l 1 | grep -E "^CPU|^Phys"  
+        top -l 1 | grep -E "^CPU|^Phys"           
+
+    - name: quantize-gguf
+      run: |      
         echo "--------------------"             
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
