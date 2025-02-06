@@ -2,7 +2,7 @@ import os
 import sys
 from huggingface_hub import snapshot_download
     
-def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:str="*", hf_token:str=None) -> str:
+def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:str=None, hf_token:str=None) -> str:
     print(f">>> models_dir='{models_dir}', repo_id='{repo_id}'")
     if models_dir == "":
         print("models_dir is empty")
@@ -40,8 +40,14 @@ if __name__ == "__main__":
     models_dir = sys.argv[1]
     repo_org = sys.argv[2]
     repo_name = sys.argv[3]
-    hf_token = sys.argv[4]    
-    allow_patterns = sys.argv[5]
+    if arg_len >= 5:
+        hf_token = sys.argv[4]    
+    else:
+        hf_token = None
+    if arg_len == 6:        
+        allow_patterns = sys.argv[5]
+    else:
+        allow_patterns = None
     repo_id = repo_org + "/" + repo_name
     
     # Print input variables being used for this run
