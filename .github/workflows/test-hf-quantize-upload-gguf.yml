@@ -11,7 +11,7 @@
 # - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
 # - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
 
-name: hf-quantize-upload-gguf
+name: test-hf-quantize-upload-gguf
 
 on:
   # Assure repos. have been created before any uploads (by ref. workflow)
