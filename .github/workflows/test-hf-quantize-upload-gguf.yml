@@ -238,6 +238,7 @@ jobs:
         df
         echo "--------------------"
         mkdir ${{env.MODEL_DOWNLOAD_DIR}}
+        mkdir ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         echo verifying...
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
