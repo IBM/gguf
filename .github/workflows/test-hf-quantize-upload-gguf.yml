@@ -238,11 +238,11 @@ jobs:
         df
         echo "--------------------"
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-        find llama.cpp ${{env.MODEL_DOWNLOAD_DIR}}           
+        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
         ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         echo verifying...
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-        find llama.cpp ${{env.MODEL_DOWNLOAD_DIR}}           
+        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
         echo "--------------------"   
         df          
