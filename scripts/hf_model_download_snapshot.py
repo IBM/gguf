@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print(f">> {fx_name}: models_dir='{models_dir}', repo_org='{repo_org}', repo_name='{repo_name}', hf_token='{hf_token}', allow_patterns='{allow_patterns}'")
     
     # Note: this downloads everything... TODO: download only the necessary files.
-    download_dir = download_model_snapshot(models_dir=models_dir, repo_id=repo_id, allow_patterns=allow_patterns, hf_token=hf_token)
+    download_dir = download_model_snapshot(models_dir=models_dir, repo_id=repo_id, hf_token=hf_token, allow_patterns=allow_patterns)
     
     # Print output variables for this run
     print(f"download_dir: {download_dir}") 
