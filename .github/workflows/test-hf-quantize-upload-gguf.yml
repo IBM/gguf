@@ -29,7 +29,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows # ibm-research
-  F16_OPT_ENABLED: true
+  F16_OPT_ENABLED: false
   FILE_EXISTS: "0"
 
 # Full matrix (Ollama):
@@ -237,14 +237,12 @@ jobs:
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         df
         echo "--------------------"        
-        clang --version
-        echo "--------------------"
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
         ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         echo verifying...
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV       
         echo "--------------------"   
         df          
@@ -263,6 +261,10 @@ jobs:
 
     - name: quantize-gguf
       run: |     
+        echo "--------------------"         
+        xcodebuild -version        
+        clang --version
+        echo "--------------------"      
         top -l 1 | grep -E "^CPU|^Phys"  
         echo "--------------------"             
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
