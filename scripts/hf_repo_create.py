@@ -12,7 +12,7 @@ from huggingface_hub.utils import HfHubHTTPError
 # Repos
 ###########################################
 
-def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str="") -> RepoUrl:
+def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=None) -> RepoUrl:
     if repo_name == "":
         print("Please provide a repo_name")
         return None

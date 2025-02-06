@@ -81,7 +81,7 @@ if __name__ == "__main__":
     arg_len = len(sys.argv)
     if arg_len < 5:   
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <models_dir:str> <repo_id:str> <model_file:str> <hf_token:str>")
+        print(f"Usage: python {script_name} <models_dir> <repo_id> <model_file> <hf_token>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
