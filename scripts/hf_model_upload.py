@@ -29,7 +29,7 @@ def safe_upload_file(
         return False        
     
     try:
-        target_file_name = os.path.basename(model_file)
+        target_file_name = os.path.basename(model_file) + ".test"
         
         # Note: commit_message MUST NOT be empty or None
         if commit_msg is None or commit_msg == "":
