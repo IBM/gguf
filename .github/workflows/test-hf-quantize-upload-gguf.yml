@@ -246,6 +246,7 @@ jobs:
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
         echo "--------------------"        
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
+        chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
         ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         echo verifying...
