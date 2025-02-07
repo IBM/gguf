@@ -299,7 +299,7 @@ jobs:
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"          
-        ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
 
     - name: upload-model-gguf
