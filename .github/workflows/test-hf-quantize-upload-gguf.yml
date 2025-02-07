@@ -190,6 +190,21 @@ jobs:
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
 
+    # curl -C - -f --output-dir . -o test-curl.gguf -L https://huggingface.co/mrutkows/granite-3.0-1b-a400m-instruct-GGUF/resolve/main/granite-3.0-1b-a400m-instruct-f16.gguf
+    # --create-dirs
+    - name: download-f16-curl
+      if: env.FILE_EXISTS == '1' && true
+      run: |    
+        echo "Downloading using curl..."     
+        echo "--------------------"        
+        curl -C - -f --create-dirs --output-dir -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        echo "--------------------"        
+        echo verifying...
+        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+    
+
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
