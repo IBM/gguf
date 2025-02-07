@@ -175,32 +175,33 @@ jobs:
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"  
 
-    - name: download-f16-gguf-hf-hub-download
-      if: env.FILE_EXISTS == '1' && false
-      run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+    # - name: download-f16-gguf-hf-hub-download
+    #   if: env.FILE_EXISTS == '1'
+    #   run: |    
+    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
+    #     echo "--------------------"
+    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
 
-    - name: download-f16-gguf-hf-snapshot-download
-      if: env.FILE_EXISTS == '1' && false
-      run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-        echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
+    # - name: download-f16-gguf-hf-snapshot-download
+    #   if: env.FILE_EXISTS == '1'
+    #   run: |    
+    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
+    #     echo "--------------------"
+    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
 
+    # curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
     - name: download-f16-curl
-      if: env.FILE_EXISTS == '1' && true
+      if: env.FILE_EXISTS == '1'
       run: |    
         echo "Downloading using curl..."     
         echo "--------------------"        
-        curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        curl -C - -f --create-dirs -o ${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
         echo "--------------------"               
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -260,11 +261,6 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
-    # - name: delete-llama-cpp
-    #   if: env.FILE_EXISTS == '1'
-    #   run: |        
-    #     rm -R llama.cpp
-
     - name: print-storage-memory-info
       run: |
         df
@@ -304,7 +300,7 @@ jobs:
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
 
     - name: upload-model-gguf
