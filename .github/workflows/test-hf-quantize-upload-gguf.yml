@@ -255,7 +255,9 @@ jobs:
         xcodebuild -version        
         clang --version
         echo "--------------------"      
-        top -l 1 | grep -E "^CPU|^Phys"           
+        top -l 1 | grep -E "^CPU|^PhysMem"  
+        echo "--------------------"    
+        find . ${{env.FIND_ARGS}}        
 
     - name: quantize-gguf
       run: |      
