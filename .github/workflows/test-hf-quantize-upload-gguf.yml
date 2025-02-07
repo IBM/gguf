@@ -277,10 +277,12 @@ jobs:
         echo "--------------------"    
         ls -alS -d */       
         ls -alS ${{env.MODEL_DOWNLOAD_DIR}}   
+        echo "--------------------"           
         ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
+        echo "--------------------"           
         ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
         echo "--------------------"                    
-        find . ${{env.FIND_ARGS}}        
+        find . -name \*.gguf -type f     
 
     - name: quantize-gguf
       run: |      
