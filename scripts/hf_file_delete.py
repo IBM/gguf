@@ -28,11 +28,10 @@ def safe_delete_file(
         import datetime
         now = datetime.datetime.now()
         print(now.strftime("BEFORE: %Y-%m-%d %H:%M:%S"))
-        download_dir = delete_file(
+        delete_file(
             repo_id=repo_id,
             path_in_repo=file_name,
             repo_type="model",
-            filename=file_name,
             token=hf_token,   
         )  
         now = datetime.datetime.now()
