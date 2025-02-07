@@ -291,7 +291,9 @@ jobs:
         echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
         echo "--------------------"                    
-        find . -name \*.gguf -type f         
+        find . -name \*.gguf -type f    
+        echo "--------------------"         
+        find llama.cpp ${{env.FIND_ARGS}}     
 
     - name: quantize-gguf
       run: |      
