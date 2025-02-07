@@ -298,6 +298,11 @@ jobs:
         echo "--------------------"         
         find . ${{env.FIND_ARGS}}     
 
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "16.0"        
+
     - name: quantize-gguf
       run: |      
         echo "--------------------"             
