@@ -175,23 +175,23 @@ jobs:
       run: |    
         echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"  
 
-    # - name: download-f16-gguf-hf-hub-download
-    #   if: env.FILE_EXISTS == '1' && false
-    #   run: |    
-    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-    #     echo "--------------------"
-    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+    - name: download-f16-gguf-hf-hub-download
+      if: env.FILE_EXISTS == '1' && false
+      run: |    
+        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
 
-    # - name: download-f16-gguf-hf-snapshot-download
-    #   if: env.FILE_EXISTS == '1' && false
-    #   run: |    
-    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-    #     echo "--------------------"
-    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
+    - name: download-f16-gguf-hf-snapshot-download
+      if: env.FILE_EXISTS == '1' && false
+      run: |    
+        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
 
     - name: download-f16-curl
       if: env.FILE_EXISTS == '1' && true
@@ -205,35 +205,35 @@ jobs:
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
-    # - name: shallow-clone-llamacpp
-    #   uses: actions/checkout@v4
-    #   with:
-    #     path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
-    #     repository: 'ggerganov/llama.cpp'
-    #     ref: 'master'  # default to master branch
-    #     fetch-depth: 1
-    #     sparse-checkout-cone-mode: false
-    #     sparse-checkout: |
-    #       LICENSE
-    #       convert_hf_to_gguf.py
-    #       convert_lora_to_gguf.py
-    #       requirements/requirements-convert_legacy_llama.txt
-    #       requirements/requirements-convert_hf_to_gguf.txt
-    #       requirements/requirements-convert_lora_to_gguf.txt
-    #       gguf-py
-    #       scripts
+    - name: shallow-clone-llamacpp
+      uses: actions/checkout@v4
+      with:
+        path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
+        repository: 'ggerganov/llama.cpp'
+        ref: 'master'  # default to master branch
+        fetch-depth: 1
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          LICENSE
+          convert_hf_to_gguf.py
+          convert_lora_to_gguf.py
+          requirements/requirements-convert_legacy_llama.txt
+          requirements/requirements-convert_hf_to_gguf.txt
+          requirements/requirements-convert_lora_to_gguf.txt
+          gguf-py
+          scripts
 
-    # - name: print-llamacpp
-    #   run: |
-    #     echo "PATH: '{{$PATH}}'"
-    #     ls -al llama.cpp
-    #     find llama.cpp ${{env.FIND_ARGS}}
+    - name: print-llamacpp
+      run: |
+        echo "PATH: '{{$PATH}}'"
+        ls -al llama.cpp
+        find llama.cpp ${{env.FIND_ARGS}}
      
-    # - name: install-dependencies
-    #   run: |
-    #     python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
-    #     python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-    #     pip list        
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+        python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+        pip list        
         
     - name: download-f16-gguf-curl
       if: env.FILE_EXISTS == '1' && false
@@ -248,17 +248,17 @@ jobs:
         echo "--------------------"         
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
 
-    # - name: download-model-snapshot
-    #   if: env.FILE_EXISTS == '0'
-    #   run: |                         
-    #     python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
-    #     find models ${{env.FIND_ARGS}}          
+    - name: download-model-snapshot
+      if: env.FILE_EXISTS == '0'
+      run: |                         
+        python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
+        find models ${{env.FIND_ARGS}}          
 
-    # - name: convert-hf-to-gguf
-    #   if: env.FILE_EXISTS == '0'
-    #   run: |
-    #     python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
-    #     ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
+    - name: convert-hf-to-gguf
+      if: env.FILE_EXISTS == '0'
+      run: |
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
+        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     # - name: delete-llama-cpp
     #   if: env.FILE_EXISTS == '1'
@@ -296,12 +296,7 @@ jobs:
         echo "--------------------"                    
         find . -name \*.gguf -type f    
         echo "--------------------"         
-        find . ${{env.FIND_ARGS}}     
-
-    - name: Install LLVM and Clang
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "16.0"        
+        find . ${{env.FIND_ARGS}}            
 
     - name: quantize-gguf
       run: |      
@@ -309,7 +304,7 @@ jobs:
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
 
     - name: upload-model-gguf
