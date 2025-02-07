@@ -201,10 +201,7 @@ jobs:
         echo "Downloading using curl..."     
         echo "--------------------"        
         curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
-        echo "--------------------"        
-        echo verifying...
-        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
+        echo "--------------------"               
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
@@ -248,11 +245,10 @@ jobs:
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
-        ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-        echo verifying...
-        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+        echo "--------------------"         
+        ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
+        echo "--------------------"         
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
 
     - name: download-model-snapshot
       if: env.FILE_EXISTS == '0'
@@ -274,15 +270,20 @@ jobs:
         clang --version
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
+        echo "--------------------"        
+
+    - name: verify-download-folders-files
+      run: |
+        echo verifying download...    
         echo "--------------------"    
-        ls -alS -d */       
-        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}   
+        ls -al -d */       
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
         echo "--------------------"           
-        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
-        echo "--------------------"           
-        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
+        echo "--------------------"                   
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
         echo "--------------------"                    
-        find . -name \*.gguf -type f     
+        find . -name \*.gguf -type f         
 
     - name: quantize-gguf
       run: |      
