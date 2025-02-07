@@ -285,7 +285,8 @@ jobs:
       run: |
         echo finding *.gguf files...    
         echo "--------------------"                       
-        find . -name \*.gguf -type f    
+        find . -name \*.gguf -type f   
+        ls -al . 
         echo "--------------------"   
         
     - name: delete-previous-upload
