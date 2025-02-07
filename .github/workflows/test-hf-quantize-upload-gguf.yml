@@ -293,7 +293,7 @@ jobs:
         echo "--------------------"                    
         find . -name \*.gguf -type f    
         echo "--------------------"         
-        find llama.cpp ${{env.FIND_ARGS}}     
+        find . ${{env.FIND_ARGS}}     
 
     - name: quantize-gguf
       run: |      
