@@ -51,6 +51,8 @@ env:
 #]
 jobs:
   build:
+    permissions:
+      contents: write
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -272,6 +274,11 @@ jobs:
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
         echo "--------------------"    
+        ls -alS -d */       
+        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}   
+        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
+        ls -alS ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
+        echo "--------------------"                    
         find . ${{env.FIND_ARGS}}        
 
     - name: quantize-gguf
