@@ -271,24 +271,23 @@ jobs:
         top -l 1 | grep -E "^CPU|^PhysMem"  
         echo "--------------------"        
 
+    # echo "${{env.MODEL_DOWNLOAD_DIR}}:"   
+    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
+    # echo "--------------------"          
+    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }}:"               
+    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }} 
+    # echo "--------------------"     
+    # echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
+    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}:"               
+    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
+    # echo "--------------------"                   
+    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
+    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf          
     - name: verify-download-folders-files
       run: |
         echo verifying download...    
         echo "--------------------"    
-        ls -al -d */       
-        echo "--------------------"       
-        echo "${{env.MODEL_DOWNLOAD_DIR}}:"   
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
-        echo "--------------------"          
-        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }}:"               
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }} 
-        echo "--------------------"     
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
-        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}:"               
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
-        echo "--------------------"                   
-        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf      
+        ls -al -d */                 
         echo "--------------------"                    
         find . -name \*.gguf -type f    
         echo "--------------------"         
