@@ -296,9 +296,6 @@ jobs:
         echo "exists: '$exists'"
         if [[ "$exists" == "True" ]]; then
           python ./scripts/hf_file_delete.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}                
-        else
-          echo "Unexpected output from Python script: $output"
-          exit 2
         fi        
 
     - name: upload-model-gguf
