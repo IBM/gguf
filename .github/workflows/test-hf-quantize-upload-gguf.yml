@@ -289,16 +289,15 @@ jobs:
         echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf  
         
-    - name: verify-download-folders-files
+    - name: verify-downloaded-files
       if: true    
       run: |
-        echo verifying download...    
+        echo downloaded files...    
         echo "--------------------"    
         ls -al -d */                 
         echo "--------------------"                    
         find . -name \*.gguf -type f    
-        echo "--------------------"         
-        find . ${{env.FIND_ARGS}}            
+        echo "--------------------"                   
 
     - name: quantize-gguf
       run: |      
@@ -306,8 +305,15 @@ jobs:
         echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}}
-        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf         
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}} 
+        
+    - name: find-gguf-files
+      if: true    
+      run: |
+        echo finding *.gguf files...    
+        echo "--------------------"                       
+        find . -name \*.gguf -type f    
+        echo "--------------------"                 
 
     - name: upload-model-gguf
       run: |         
