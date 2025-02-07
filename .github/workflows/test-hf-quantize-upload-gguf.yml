@@ -30,7 +30,7 @@ env:
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows # ibm-research
   F16_OPT_ENABLED: true
-  FILE_EXISTS: "0"
+  F16_FILE_EXISTS: "0"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -97,14 +97,6 @@ jobs:
       # echo "USER_ENV=${{ toJson(env) }}"       
       # echo "$USER_ENV"           
 
-    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
-    # To allow `alias` in the default, non-interactive shell override using `shopt`.
-    - name: create-aliases
-      if: runner.os == 'macOS'
-      run: |
-        shopt -s expand_aliases
-        alias tree="find"
-
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
@@ -164,9 +156,9 @@ jobs:
         output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})   
         echo "output: '$output'"
         if [[ "$output" == "True" ]]; then
-          echo "FILE_EXISTS=1" >> $GITHUB_ENV
+          echo "F16_FILE_EXISTS=1" >> $GITHUB_ENV
         elif [[ "$output" == "False" ]]; then
-          echo "FILE_EXISTS=0" >> $GITHUB_ENV
+          echo "F16_FILE_EXISTS=0" >> $GITHUB_ENV
         else
           echo "Unexpected output from Python script: $output"
           exit 2
@@ -174,29 +166,10 @@ jobs:
 
     - name: file-exists-test
       run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"  
+        echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"  
 
-    # - name: download-f16-gguf-hf-hub-download
-    #   if: env.FILE_EXISTS == '1'
-    #   run: |    
-    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-    #     echo "--------------------"
-    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
-
-    # - name: download-f16-gguf-hf-snapshot-download
-    #   if: env.FILE_EXISTS == '1'
-    #   run: |    
-    #     echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
-    #     echo "--------------------"
-    #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV                     
-
-    # curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
     - name: download-f16-curl
-      if: env.FILE_EXISTS == '1'
+      if: env.F16_FILE_EXISTS == '1'
       run: |    
         echo "Downloading using curl..."     
         echo "--------------------"        
@@ -239,9 +212,9 @@ jobs:
         pip list        
         
     - name: download-f16-gguf-curl
-      if: env.FILE_EXISTS == '1' && false
+      if: env.F16_FILE_EXISTS == '1' && false
       run: |    
-        echo "FILE_EXISTS='$FILE_EXISTS' (${{ env.FILE_EXISTS }})"     
+        echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
         echo "--------------------"        
         mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
         chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
@@ -252,13 +225,13 @@ jobs:
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
 
     - name: download-model-snapshot
-      if: env.FILE_EXISTS == '0'
+      if: env.F16_FILE_EXISTS == '0'
       run: |                         
         python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}          
 
     - name: convert-hf-to-gguf
-      if: env.FILE_EXISTS == '0'
+      if: env.F16_FILE_EXISTS == '0'
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
@@ -313,7 +286,19 @@ jobs:
         echo finding *.gguf files...    
         echo "--------------------"                       
         find . -name \*.gguf -type f    
-        echo "--------------------"                 
+        echo "--------------------"   
+        
+    - name: delete-previous-upload
+      if: env.F16_OPT_ENABLED == 'true'
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
+        echo "exists: '$exists'"
+        if [[ "$exists" == "True" ]]; then
+          python ./scripts/hf_file_delete.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}                
+        else
+          echo "Unexpected output from Python script: $output"
+          exit 2
+        fi        
 
     - name: upload-model-gguf
       run: |         

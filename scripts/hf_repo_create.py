@@ -2,7 +2,7 @@ import os
 import sys
 import requests
 
-from huggingface_hub import create_repo, list_repo_files, RepoUrl
+from huggingface_hub import create_repo, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
 
 # retrieve secrets
