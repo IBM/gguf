@@ -10,7 +10,7 @@ from huggingface_hub.utils import HfHubHTTPError
 ###########################################
 
 def safe_upload_file(
-    repo_name:str="", 
+    repo_id:str="", 
     model_file:str="", 
     hf_token:str="", 
     commit_msg:str=None, 
@@ -18,8 +18,8 @@ def safe_upload_file(
     workflow_ref="",
     run_id="",    
 ) -> CommitInfo:
-    if repo_name == "":
-        print("Please provide a repo_name")
+    if repo_id == "":
+        print("Please provide a repo_id")
         return False
     if model_file == "":
         print("Please provide a model_file")
@@ -29,7 +29,7 @@ def safe_upload_file(
         return False        
     
     try:
-        target_file_name = os.path.basename(model_file) + ".test"
+        target_file_name = os.path.basename(model_file)
         
         # Note: commit_message MUST NOT be empty or None
         if commit_msg is None or commit_msg == "":
@@ -40,14 +40,14 @@ def safe_upload_file(
         commit_info = upload_file(
             path_or_fileobj=model_file,
             path_in_repo=target_file_name,
-            repo_id=repo_name,
+            repo_id=repo_id,
             repo_type="model",
             commit_message=commit_msg,
             commit_description=commit_desc,
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_name}', model_file: '{model_file}'")
+        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_id}', model_file: '{model_file}'")
         return False
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', hf_token='{hf_token}', workflow_ref='{workflow_ref}', run_id='{run_id}'")     
     
     # invoke fx
-    commit_info = safe_upload_file(repo_name=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref, run_id=run_id)
+    commit_info = safe_upload_file(repo_id=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref, run_id=run_id)
     
     # Print output variables
     print(f"commit_info: {commit_info}") 
