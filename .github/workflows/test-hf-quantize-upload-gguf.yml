@@ -262,8 +262,8 @@ jobs:
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
-    - name: convert-hf-to-gguf
-      if: env.FILE_EXISTS == '0'
+    - name: delete-llama-cpp
+      if: env.FILE_EXISTS == '1'
       run: |        
         rm -R llama.cpp
 
