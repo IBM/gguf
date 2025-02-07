@@ -198,13 +198,12 @@ jobs:
       run: |    
         echo "Downloading using curl..."     
         echo "--------------------"        
-        curl -C - -f --create-dirs --output-dir -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        curl -C - -f --create-dirs --output-dir -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
         echo "--------------------"        
         echo verifying...
         find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}  
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}        
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
-    
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
