@@ -29,7 +29,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows # ibm-research
-  F16_OPT_ENABLED: false
+  F16_OPT_ENABLED: true
   FILE_EXISTS: "0"
 
 # Full matrix (Ollama):
@@ -91,6 +91,7 @@ jobs:
         echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
         echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"   
         echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"    
+        echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"   
       # echo "USER_ENV=${{ toJson(env) }}"       
       # echo "$USER_ENV"           
 
