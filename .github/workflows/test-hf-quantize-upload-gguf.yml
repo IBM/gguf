@@ -129,10 +129,11 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ matrix.repo_id }}" >> $GITHUB_ENV         
 
+    # echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV 
     - name: set-derivative-env-vars-2
       run: |       
         echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=$MODEL_DOWNLOAD_DIR/${{ matrix.repo_id }}/$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
@@ -199,9 +200,10 @@ jobs:
       run: |    
         echo "Downloading using curl..."     
         echo "--------------------"        
-        curl -C - -f --create-dirs -o ${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
         echo "--------------------"               
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -271,19 +273,24 @@ jobs:
         top -l 1 | grep -E "^CPU|^PhysMem"  
         echo "--------------------"        
 
-    # echo "${{env.MODEL_DOWNLOAD_DIR}}:"   
-    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
-    # echo "--------------------"          
-    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }}:"               
-    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }} 
-    # echo "--------------------"     
-    # echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
-    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}:"               
-    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
-    # echo "--------------------"                   
-    # echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
-    # ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf          
+    - name: verify-file-permissions
+      if: true
+      run: |
+        echo "${{env.MODEL_DOWNLOAD_DIR}}:"   
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
+        echo "--------------------"          
+        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }}:"               
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }} 
+        echo "--------------------"     
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
+        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}:"               
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
+        echo "--------------------"                   
+        echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf  
+        
     - name: verify-download-folders-files
+      if: true    
       run: |
         echo verifying download...    
         echo "--------------------"    
