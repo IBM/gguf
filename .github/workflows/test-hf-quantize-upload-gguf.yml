@@ -168,7 +168,7 @@ jobs:
     #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"  
 
     - name: download-f16-gguf-hf-hub-download
-      if: env.FILE_EXISTS == '1' && false
+      if: env.F16_FILE_EXISTS == '1'
       run: |    
         echo "Downloading using hf_file_download..."      
         echo "--------------------"
