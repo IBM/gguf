@@ -51,8 +51,8 @@ env:
 #]
 jobs:
   build:
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
     runs-on: macos-latest
     strategy:
       fail-fast: false
