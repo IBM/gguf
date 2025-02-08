@@ -163,19 +163,28 @@ jobs:
           exit 2
         fi
 
-    - name: file-exists-test
-      run: |    
-        echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"  
+    # - name: file-exists-test
+    #   run: |    
+    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"  
 
-    - name: download-f16-curl
-      if: env.F16_FILE_EXISTS == '1'
+    - name: download-f16-gguf-hf-hub-download
+      if: env.FILE_EXISTS == '1' && false
       run: |    
-        echo "Downloading using curl..."     
-        echo "--------------------"        
-        curl -C - -f --create-dirs -H "Authorization: ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
-        chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
-        echo "--------------------"               
-        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+        echo "Downloading using hf_file_download..."      
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+
+    # - name: download-f16-curl
+    #   if: env.F16_FILE_EXISTS == '1'
+    #   run: |    
+    #     echo "Downloading using curl..."     
+    #     echo "--------------------"        
+    #     curl -C - -f --create-dirs -H "Authorization: ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+    #     chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
+    #     echo "--------------------"               
+    #     echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
