@@ -175,7 +175,7 @@ jobs:
       run: |    
         echo "Downloading using curl..."     
         echo "--------------------"        
-        curl -C - -f --create-dirs -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+        curl -C - -f --create-dirs -H "Authorization: ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
         chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
         echo "--------------------"               
         echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
