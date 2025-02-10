@@ -190,10 +190,16 @@ jobs:
         echo "--------------------"             
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"    
-        echo "Staring llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-        ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}}     
+        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
+        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}}     
+        echo waiting for llama-server to start...        
 
     - name: test-inference-against-llama-server
       run: |
+        while ! nc -z localhost 8080; do
+          echo "sleeping 1 second..."
+          sleep 1
+        done     
+        echo "invoking llama-cli to test inference against llama-server..."
         llama-cli -s ${{env.LLAMA_SERVER_LOCALHOST}}:${{env.LLAMA_SERVER_PORT}} -i "What color is the sky?" -o response.txt
         cat response.txt
