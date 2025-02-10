@@ -144,7 +144,7 @@ jobs:
           exit 2
         else 
           echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
-          echo "QUANTIZED_MODEL_EXISTS='true'" >> $GITHUB_ENV
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
         fi
 
     - name: verify-file-to-download
@@ -152,6 +152,7 @@ jobs:
         echo "--------------------"   
         find . -name \*.gguf -type f    
         echo "--------------------" 
+        echo "QUANTIZED_MODEL_EXISTS: '${{env.QUANTIZED_MODEL_EXISTS}}''..."         
         echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..." 
          
     - name: download-quantized-gguf-hf-hub-download
