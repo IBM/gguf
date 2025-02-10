@@ -66,17 +66,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
+    # - name: Dump runner context
+    #   env:
+    #     RUNNER_CONTEXT: ${{ toJson(runner) }}
+    #   if: env.DEBUG == 'true'          
+    #   run: echo "$RUNNER_CONTEXT"
 
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"           
+    # - name: Dump GitHub context
+    #   env:
+    #     GITHUB_CONTEXT: ${{ toJson(github) }}
+    #   if: env.DEBUG == 'true'          
+    #   run: echo "$GITHUB_CONTEXT"           
     
-    # echo "$USER_ENV"  
     - name: confirm-environment
       run: |
         uname -a
@@ -199,7 +200,7 @@ jobs:
       run: |
         nc -v -z localhost 8080
         echo $? 
-        while ! [nc -v -z localhost 8080]; do
+        while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}}; do
           echo $?
           echo "sleeping 1 second..."  && sleep 1
         done     
