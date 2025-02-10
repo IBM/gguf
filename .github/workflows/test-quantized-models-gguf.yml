@@ -197,9 +197,11 @@ jobs:
 
     - name: test-inference-against-llama-server
       run: |
-        while ! [nc -z localhost 8080]; do
-          echo "sleeping 1 second..."
-          sleep 1
+        nc -v -z localhost 8080
+        echo $? 
+        while ! [nc -v -z localhost 8080]; do
+          echo $?
+          echo "sleeping 1 second..."  && sleep 1
         done     
         echo "invoking llama-cli to test inference against llama-server..."
         llama-cli -s ${{env.LLAMA_SERVER_LOCALHOST}}:${{env.LLAMA_SERVER_PORT}} -i "What color is the sky?" -o response.txt 
