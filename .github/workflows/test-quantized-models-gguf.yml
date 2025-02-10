@@ -115,7 +115,7 @@ jobs:
 
     - name: set-derivative-env-vars-2
       run: |       
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
@@ -143,9 +143,18 @@ jobs:
           echo "ERROR: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
         else 
+          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
           echo "QUANTIZED_MODEL_EXISTS='true'" >> $GITHUB_ENV
         fi
 
+    - name: verify-file-to-download
+      run: |       
+        echo "--------------------"   
+        find . -name \*.gguf -type f    
+        echo "--------------------" 
+        echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        "   
+         
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |    
@@ -153,7 +162,6 @@ jobs:
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     - name: print-storage-memory-info
       if: env.DEBUG == 'true'    
