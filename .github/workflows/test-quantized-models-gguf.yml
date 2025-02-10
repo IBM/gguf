@@ -31,6 +31,7 @@ env:
   DEBUG: true
   LLAMA_SERVER_PORT: 8080
   LLAMA_SERVER_LOCALHOST: "http://127.0.0.1"
+  QUANTIZED_MODEL_EXISTS: false
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -141,10 +142,12 @@ jobs:
         if [[ "$exists" == "False" ]]; then
           echo "ERROR: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
+        else 
+          echo "QUANTIZED_MODEL_EXISTS='true'" >> $GITHUB_ENV
         fi
 
     - name: download-quantized-gguf-hf-hub-download
-      if: env.F16_FILE_EXISTS == '1'
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |    
         echo "Downloading using hf_file_download..."      
         echo "--------------------"
@@ -152,40 +155,6 @@ jobs:
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
-    # for GGUF conversion, we only need a shallow copy (depth=1) and
-    # specify only the scripts and requirements files we need (sparse).
-    # Note: we include LICENSE for future BOM generation
-    # - name: shallow-clone-llamacpp
-    #   uses: actions/checkout@v4
-    #   with:
-    #     path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
-    #     repository: 'ggerganov/llama.cpp'
-    #     ref: 'master'  # default to master branch
-    #     fetch-depth: 1
-    #     sparse-checkout-cone-mode: false
-    #     sparse-checkout: |
-    #       ./LICENSE
-    #       convert_hf_to_gguf.py
-    #       convert_lora_to_gguf.py
-    #       requirements/requirements-convert_legacy_llama.txt
-    #       requirements/requirements-convert_hf_to_gguf.txt
-    #       requirements/requirements-convert_lora_to_gguf.txt
-    #       gguf-py
-    #       scripts
-  
-    # - name: print-llamacpp
-    #   if: env.DEBUG == 'true'
-    #   run: |
-    #     echo "PATH: '{{$PATH}}'"
-    #     ls -al llama.cpp
-    #     find llama.cpp ${{env.FIND_ARGS}}
-       
-    # - name: install-dependencies
-    #   run: |
-    #     python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
-    #     python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-    #     pip list        
-        
     - name: print-storage-memory-info
       if: env.DEBUG == 'true'    
       run: |
