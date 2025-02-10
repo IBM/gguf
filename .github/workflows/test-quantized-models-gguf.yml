@@ -197,7 +197,7 @@ jobs:
 
     - name: test-inference-against-llama-server
       run: |
-        while ![nc -z localhost 8080]; do
+        while ! [nc -z localhost 8080]; do
           echo "sleeping 1 second..."
           sleep 1
         done     
