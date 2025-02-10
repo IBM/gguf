@@ -126,12 +126,13 @@ jobs:
         echo "================== GITHUB_ENV =========================================="     
         echo "REPO_ORG=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME=$REPO_NAME (${{ env.REPO_NAME }})"  
-        echo "================== Derivative Environment Variables 1 =================="           
+        echo "================== Derivative Environment Variables 1 =================="    
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"                 
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
+        echo "================== Derivative Environment Variables 2 ==================" 
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
-        echo "================== Derivative Environment Variables 2 =================="              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"   
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
+        echo "================== Derivative Environment Variables 3 =================="              
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"    
 
     - name: install-hf-dependencies
       run: |
@@ -196,7 +197,7 @@ jobs:
 
     - name: test-inference-against-llama-server
       run: |
-        while [! nc -z localhost 8080]; do
+        while ![nc -z localhost 8080]; do
           echo "sleeping 1 second..."
           sleep 1
         done     
