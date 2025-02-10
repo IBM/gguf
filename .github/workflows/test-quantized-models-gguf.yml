@@ -152,8 +152,7 @@ jobs:
         echo "--------------------"   
         find . -name \*.gguf -type f    
         echo "--------------------" 
-        echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
-        "   
+        echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..." 
          
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
