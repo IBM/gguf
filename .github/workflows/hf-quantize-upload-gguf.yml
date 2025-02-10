@@ -36,6 +36,7 @@ env:
   TARGET_REPO_OWNER: mrutkows # ibm-research
   F16_OPT_ENABLED: true
   F16_FILE_EXISTS: "0"
+  DEBUG: false
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -165,10 +166,6 @@ jobs:
           echo "Unexpected output from Python script: $output"
           exit 2
         fi
-  
-    # - name: file-exists-test
-    #   run: |    
-    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"  
 
     - name: download-f16-gguf-hf-hub-download
       if: env.F16_FILE_EXISTS == '1'
@@ -184,7 +181,7 @@ jobs:
     #   run: |    
     #     echo "Downloading using curl..."     
     #     echo "--------------------"        
-    #     curl -C - -f --create-dirs -H "Authorization: ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+    #     curl -C - -f --create-dirs -H "Authorization: Bearer ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
     #     chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
     #     echo "--------------------"               
     #     echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
@@ -211,6 +208,7 @@ jobs:
           scripts
   
     - name: print-llamacpp
+      if: env.DEBUG == 'true'
       run: |
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
@@ -222,18 +220,18 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list        
         
-    - name: download-f16-gguf-curl
-      if: env.F16_FILE_EXISTS == '1' && false
-      run: |    
-        echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
-        echo "--------------------"        
-        mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-        chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
-        find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
-        echo "--------------------"         
-        ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
-        echo "--------------------"         
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
+    # - name: download-f16-gguf-curl
+    #   if: env.F16_FILE_EXISTS == '1'
+    #   run: |    
+    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
+    #     echo "--------------------"        
+    #     mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
+    #     chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
+    #     find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
+    #     echo "--------------------"         
+    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
+    #     echo "--------------------"         
+    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
 
     - name: download-model-snapshot
       if: env.F16_FILE_EXISTS == '0'
@@ -248,6 +246,7 @@ jobs:
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     - name: print-storage-memory-info
+      if: env.DEBUG == 'true'    
       run: |
         df
         echo "--------------------"         
@@ -256,25 +255,9 @@ jobs:
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
         echo "--------------------"        
-
-    # - name: verify-file-permissions
-    #   if: true
-    #   run: |
-    #     echo "${{env.MODEL_DOWNLOAD_DIR}}:"   
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}   
-    #     echo "--------------------"          
-    #     echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }}:"               
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_OWNER }} 
-    #     echo "--------------------"     
-    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"   
-    #     echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}:"               
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }} 
-    #     echo "--------------------"                   
-    #     echo "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf:"
-    #     ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf  
         
     - name: verify-downloaded-files
-      if: true    
+      if: env.DEBUG == 'true' 
       run: |
         echo downloaded files...    
         echo "--------------------"    
@@ -292,7 +275,7 @@ jobs:
         sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{matrix.quantization}} 
         
     - name: find-gguf-files
-      if: true    
+      if: env.DEBUG == 'true'
       run: |
         echo finding *.gguf files...    
         echo "--------------------"                       
