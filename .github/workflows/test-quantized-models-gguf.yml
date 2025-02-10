@@ -109,14 +109,14 @@ jobs:
         echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
     
     - name: set-derivative-env-vars-1
-      run: |    
+      run: |   
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV         
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV         
 
     - name: set-derivative-env-vars-2
-      run: |       
+      run: | 
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV         
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
-        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
       run: |   
