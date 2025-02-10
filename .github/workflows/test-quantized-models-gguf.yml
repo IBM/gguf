@@ -111,7 +111,7 @@ jobs:
     - name: set-derivative-env-vars-1
       run: |    
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ matrix.repo_id }}" >> $GITHUB_ENV         
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV         
 
     - name: set-derivative-env-vars-2
       run: |       
@@ -152,7 +152,7 @@ jobs:
         echo "--------------------"   
         find . -name \*.gguf -type f    
         echo "--------------------" 
-        echo "QUANTIZED_MODEL_EXISTS: '${{env.QUANTIZED_MODEL_EXISTS}}''..."         
+        echo "QUANTIZED_MODEL_EXISTS: '${{env.QUANTIZED_MODEL_EXISTS}}'..."         
         echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..." 
          
     - name: download-quantized-gguf-hf-hub-download
@@ -178,9 +178,7 @@ jobs:
       if: env.DEBUG == 'true' 
       run: |
         echo downloaded files...    
-        echo "--------------------"    
-        ls -al -d */                 
-        echo "--------------------"                    
+        echo "--------------------"                       
         find . -name \*.gguf -type f    
         echo "--------------------"                   
 
@@ -190,7 +188,7 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"    
         echo "Staring llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-        ./bin/llama-server -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}}     
+        ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}}     
 
     - name: test-inference-against-llama-server
       run: |
