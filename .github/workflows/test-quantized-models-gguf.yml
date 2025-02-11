@@ -22,18 +22,21 @@ permissions:
   packages: write
 
 env:
+  DEBUG: true
   EXT_GGUF: .gguf
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
-  LLAMACPP_DIR: llama.cpp
-  MODEL_DOWNLOAD_DIR: models
-  TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: mrutkows # ibm-research
-  DEBUG: true
-  LLAMA_SERVER_PORT: 8080
-  LLAMA_SERVER_LOCALHOST: "http://127.0.0.1"
-  QUANTIZED_MODEL_EXISTS: false
   LLAMA_CLI_OUTPUT_FILE: response.txt
   LLAMA_CLI_SEED: 647063347
+  LLAMA_SERVER_LOCALHOST: "http://127.0.0.1"
+  LLAMA_SERVER_PORT: 8080
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+  QUANTIZED_MODEL_EXISTS: false
+  TARGET_REPO_NAME_EXT: -GGUF
+  TARGET_REPO_OWNER: mrutkows # ibm-research
+  TEST_LLAMA_SERVER: false
+  TEST_LLAMA_CLI: true
+  TEST_LLAMA_RUN: true
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -170,6 +173,14 @@ jobs:
         echo "--------------------"                       
         find . -name \*.gguf -type f    
         echo "--------------------" 
+    
+    - name: validate-sha256
+     if: env.DEBUG == 'true' 
+      run: |
+        echo "validating sha256..."    
+        echo "--------------------" 
+        echo "TODO"
+        # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
     - name: print-storage-memory-info
       if: env.DEBUG == 'true'    
@@ -180,50 +191,85 @@ jobs:
         clang --version
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
-        echo "--------------------"                          
+        echo "--------------------"        
+        
+    - name: test-llama-server-with-quantized-gguf
+      if: env.TEST_LLAMA_SERVER == 'true'     
+      timeout-minutes: 5   
+      run: |      
+        echo "--------------------"             
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
+        echo "--------------------"    
+        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
+        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &         
 
-    - name: test-server-already-started
+    # echo waiting for llama-server to start...  
+    # retry_count=0
+    # max_retries=10
+    # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
+    #   echo "retry_count: $retry_count"
+    #   if [ $? -eq 0 ]; then
+    #     echo "Connection successful!"
+    #     break
+    #   else
+    #     echo "Connection failed, retrying..."
+    #     echo "sleeping 1 second..." && sleep 1
+    #     retry_count=$((retry_count + 1)) 
+    #   fi          
+    # done          
+    - name: test-llama-server-connection
+      if: env.TEST_LLAMA_SERVER == 'true'     
       run: |
-        echo "is server started on port ${{env.LLAMA_SERVER_PORT}}?..."
+        echo "testing llama-server connection on port ${{env.LLAMA_SERVER_PORT}}..."
         echo "netstat:\n$(netstat -an -p tcp | grep ".8080")"
+
         if nc -v -z localhost ${{env.LLAMA_SERVER_PORT}}; then
           echo "Connected on port ${{env.LLAMA_SERVER_PORT}}"
-          ps aux
         else
           echo "No connection on port ${{env.LLAMA_SERVER_PORT}}"
-          ps aux
+          # ps aux
+          exit 1
         fi           
 
-    - name: test-inference-against-llama-server
+    - name: test-llama-server-with-curl
       timeout-minutes: 5
+      if: env.TEST_LLAMA_SERVER == 'true'  
+      run: | 
+        curl --request GET --url http://localhost:8080/health      
+        echo "TODO: Test for {"status":"ok"} from GET /health"
+        curl --request POST \
+          --url ttp://localhost:8080/completion \
+          --header "Content-Type: application/json" \
+          --data '{"prompt": "The sky is blue because:","n_predict": 128, "seed": 14}'
+        echo "TODO: Test for JSON response from POST /completion endpoint using jq"          
+    
+    - name: kill-llama-server
+      if: env.TEST_LLAMA_SERVER == 'true'  
       run: |
-        echo waiting for llama-server to start...  
-        retry_count=0
-        max_retries=10
-        while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
-          echo "retry_count: $retry_count"
-          if [ $? -eq 0 ]; then
-            echo "Connection successful!"
-            break
-          else
-            echo "Connection failed, retrying..."
-            echo "sleeping 1 second..." && sleep 1
-            retry_count=$((retry_count + 1)) 
-          fi          
-        done    
-        if [ $? -eq 0 ]; then
-          echo "invoking llama-cli to test inference against llama-server..."
-          ./bin/llama-cli -s ${{env.LLAMA_CLI_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?" -no-cnv -n 128 --log-file generated-log.txt 2>/dev/null 1>response.txt
-        else
-          echo "Connection failed"
+        echo "TODO: is netstat and ps commands to get PID and kill..." 
+
+    - name: test-llama-cli
+      timeout-minutes: 5
+      if: env.TEST_LLAMA_CLI == 'true'  
+      run: |  
+        echo "invoking llama-cli to test inference against llama-server..."
+        ./bin/llama-cli -s ${{env.LLAMA_CLI_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?" -no-cnv -n 128 --log-file generated-log.txt 2>/dev/null 1>response.txt  
+
+        if [ $? -eq 1 ]; then
           exit 1
         fi  
 
-    - name: print-response-with-metrics
+    - name: test-llama-cli-response-with-metrics
+      if: env.TEST_LLAMA_CLI == 'true'      
       run: |
         echo "llama-cli: response.txt ($(wc -w response.txt) words):\n'$(cat response.txt)'"
 
-    - name: print-generated-log
-      if: env.DEBUG == 'true'      
+    - name: test-llama-cli-generated-log
+      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
       run: |
         echo "llama-cli: generated-log.txt: '$(cat generated-log.txt)'"     
+
+    - name: test-llama-run
+      if: env.TEST_LLAMA_RUN == 'true'
+      run: |
+        

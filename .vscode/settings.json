@@ -12,6 +12,7 @@
         "huggingface",
         "Langchain",
         "llamacpp",
+        "nohup",
         "Ollama",
         "quantizations",
         "qwen",
