@@ -188,16 +188,27 @@ jobs:
         find . -name \*.gguf -type f    
         echo "--------------------"                   
 
-    # nohup ./bin/xxllama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
+    - name: test-server-already-started
+      run: |
+        echo "is server running? Can we connect?..."
+        if nc -v -z localhost; then
+          echo "Connected on port ${{env.LLAMA_SERVER_PORT}}"
+          ps aux
+        else
+          echo "No connection on port ${{env.LLAMA_SERVER_PORT}}"
+        fi           
 
     - name: start-llama-server-with-quantized-gguf
+      timeout-minutes: 5   
       run: |      
         echo "--------------------"             
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"    
         echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
+       # nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
 
     - name: test-inference-against-llama-server
+      timeout-minutes: 5
       run: |
         echo waiting for llama-server to start...  
         retry_count=0
