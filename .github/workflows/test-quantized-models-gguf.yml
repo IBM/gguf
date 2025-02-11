@@ -27,7 +27,7 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMA_CLI_OUTPUT_FILE: response.txt
   LLAMA_CLI_SEED: 647063347
-  LLAMA_SERVER_LOCALHOST: "http://127.0.0.1"
+  LLAMA_SERVER_LOCALHOST: localhost
   LLAMA_SERVER_PORT: 8080
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -36,7 +36,7 @@ env:
   TARGET_REPO_OWNER: mrutkows # ibm-research
   TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
-  TEST_LLAMA_RUN: true
+  TEST_LLAMA_RUN: false
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -220,13 +220,13 @@ jobs:
     - name: test-llama-server-connection
       if: env.TEST_LLAMA_SERVER == 'true'     
       run: |
-        echo "testing llama-server connection on port ${{env.LLAMA_SERVER_PORT}}..."
+        echo "testing llama-server connection: ${{env.LLAMA_SERVER_LOCALHOST}}:${{env.LLAMA_SERVER_PORT}}..."
         echo "netstat:\n$(netstat -an -p tcp | grep ".8080")"
 
-        if nc -v -z localhost ${{env.LLAMA_SERVER_PORT}}; then
-          echo "Connected on port ${{env.LLAMA_SERVER_PORT}}"
+        if nc -v -z ${{env.LLAMA_SERVER_LOCALHOST}} ${{env.LLAMA_SERVER_PORT}}; then
+          echo "SUCCESS: Connection to llama-server successful."
         else
-          echo "No connection on port ${{env.LLAMA_SERVER_PORT}}"
+          echo "Failure: Connection to llama-server failed."
           # ps aux
           exit 1
         fi           
@@ -252,9 +252,8 @@ jobs:
       timeout-minutes: 5
       if: env.TEST_LLAMA_CLI == 'true'  
       run: |  
-        echo "invoking llama-cli to test inference against llama-server..."
+        echo "invoking llama-cli to test inference (generation)..."
         ./bin/llama-cli -s ${{env.LLAMA_CLI_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?" -no-cnv -n 128 --log-file generated-log.txt 2>/dev/null 1>response.txt  
-
         if [ $? -eq 1 ]; then
           exit 1
         fi  
@@ -262,7 +261,7 @@ jobs:
     - name: test-llama-cli-response-with-metrics
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
-        echo "llama-cli: response.txt ($(wc -w response.txt) words):\n'$(cat response.txt)'"
+        echo "llama-cli: response.txt ($(wc -w response.txt | awk '{print $1}') words):\n'$(cat response.txt)'"
 
     - name: test-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
@@ -272,4 +271,5 @@ jobs:
     - name: test-llama-run
       if: env.TEST_LLAMA_RUN == 'true'
       run: |
-        
+        echo "invoking llama-run to test inference..."      
+        # ./bin/llama-run ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
