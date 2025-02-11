@@ -146,28 +146,29 @@ jobs:
         exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
-          echo "ERROR: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
         else 
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
           echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
-        fi
-
-    - name: verify-file-to-download
-      run: |       
-        echo "--------------------"   
-        find . -name \*.gguf -type f    
-        echo "--------------------" 
-        echo "QUANTIZED_MODEL_EXISTS: '${{env.QUANTIZED_MODEL_EXISTS}}'..."         
-        echo "Downloading to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..." 
+        fi        
          
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |    
-        echo "Downloading using hf_file_download..."      
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+
+    - name: verify-downloaded-files
+      if: env.DEBUG == 'true' 
+      run: |
+        echo downloaded files...    
+        echo "--------------------"                       
+        find . -name \*.gguf -type f    
+        echo "--------------------" 
 
     - name: print-storage-memory-info
       if: env.DEBUG == 'true'    
@@ -178,20 +179,12 @@ jobs:
         clang --version
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
-        echo "--------------------"        
-        
-    - name: verify-downloaded-files
-      if: env.DEBUG == 'true' 
-      run: |
-        echo downloaded files...    
-        echo "--------------------"                       
-        find . -name \*.gguf -type f    
-        echo "--------------------"                   
+        echo "--------------------"                          
 
     - name: test-server-already-started
       run: |
         echo "is server running? Can we connect?..."
-        if nc -v -z localhost; then
+        if nc -v -z localhost ${{env.LLAMA_SERVER_PORT}}; then
           echo "Connected on port ${{env.LLAMA_SERVER_PORT}}"
           ps aux
         else
