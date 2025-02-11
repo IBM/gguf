@@ -33,6 +33,7 @@ env:
   LLAMA_SERVER_LOCALHOST: "http://127.0.0.1"
   QUANTIZED_MODEL_EXISTS: false
   LLAMA_CLI_OUTPUT_FILE: response.txt
+  LLAMA_CLI_SEED: 647063347
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -183,7 +184,8 @@ jobs:
 
     - name: test-server-already-started
       run: |
-        echo "is server running? Can we connect?..."
+        echo "is server started on port ${{env.LLAMA_SERVER_PORT}}?..."
+        echo "netstat:\n$(netstat -an -p tcp | grep ".8080")"
         if nc -v -z localhost ${{env.LLAMA_SERVER_PORT}}; then
           echo "Connected on port ${{env.LLAMA_SERVER_PORT}}"
           ps aux
@@ -191,15 +193,6 @@ jobs:
           echo "No connection on port ${{env.LLAMA_SERVER_PORT}}"
           ps aux
         fi           
-
-    - name: start-llama-server-with-quantized-gguf
-      timeout-minutes: 5   
-      run: |      
-        echo "--------------------"             
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-        echo "--------------------"    
-        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-       # nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
 
     - name: test-inference-against-llama-server
       timeout-minutes: 5
@@ -219,9 +212,8 @@ jobs:
           fi          
         done    
         if [ $? -eq 0 ]; then
-          echo "Connection successful!"
           echo "invoking llama-cli to test inference against llama-server..."
-          ./bin/llama-cli --log-disable -s 647063347 -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?" -no-cnv -n 128 --log-file generated-log.txt 2>/dev/null 1>response.txt
+          ./bin/llama-cli -s ${{env.LLAMA_CLI_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?" -no-cnv -n 128 --log-file generated-log.txt 2>/dev/null 1>response.txt
         else
           echo "Connection failed"
           exit 1
@@ -229,7 +221,9 @@ jobs:
 
     - name: print-response-with-metrics
       run: |
-        echo "llama-cli: generated-log.txt: '$(cat generated-log.txt)'"
-        echo "-------------------------------------------"
-        echo "llama-cli: response.txt: '$(cat response.txt)'"
-        echo "word count: $(wc -w response.txt)"
+        echo "llama-cli: response.txt ($(wc -w response.txt) words):\n'$(cat response.txt)'"
+
+    - name: print-generated-log
+      if: env.DEBUG == 'true'      
+      run: |
+        echo "llama-cli: generated-log.txt: '$(cat generated-log.txt)'"     
