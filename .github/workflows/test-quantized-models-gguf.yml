@@ -175,7 +175,7 @@ jobs:
         echo "--------------------" 
     
     - name: validate-sha256
-     if: env.DEBUG == 'true' 
+      if: env.DEBUG == 'true' 
       run: |
         echo "validating sha256..."    
         echo "--------------------" 
