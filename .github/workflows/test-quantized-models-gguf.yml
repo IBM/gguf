@@ -189,6 +189,7 @@ jobs:
           ps aux
         else
           echo "No connection on port ${{env.LLAMA_SERVER_PORT}}"
+          ps aux
         fi           
 
     - name: start-llama-server-with-quantized-gguf
@@ -226,7 +227,9 @@ jobs:
           exit 1
         fi  
 
-    - name: print-response-metrics
+    - name: print-response-with-metrics
       run: |
+        echo "llama-cli: generated-log.txt: '$(cat generated-log.txt)'"
+        echo "-------------------------------------------"
         echo "llama-cli: response.txt: '$(cat response.txt)'"
         echo "word count: $(wc -w response.txt)"
