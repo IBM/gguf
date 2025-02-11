@@ -188,7 +188,7 @@ jobs:
         find . -name \*.gguf -type f    
         echo "--------------------"                   
 
-    # nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
+    # nohup ./bin/xxllama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
 
     - name: start-llama-server-with-quantized-gguf
       run: |      
