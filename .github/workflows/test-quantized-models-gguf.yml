@@ -188,13 +188,14 @@ jobs:
         find . -name \*.gguf -type f    
         echo "--------------------"                   
 
+    # nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
+
     - name: start-llama-server-with-quantized-gguf
       run: |      
         echo "--------------------"             
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"    
         echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-        # nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &      
 
     - name: test-inference-against-llama-server
       run: |
@@ -202,8 +203,7 @@ jobs:
         retry_count=0
         max_retries=10
         while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
-          echo $retry_count
-          echo "sleeping 1 second..." && sleep 1
+          echo "retry_count: $retry_count"
           if [ $? -eq 0 ]; then
             echo "Connection successful!"
             break
