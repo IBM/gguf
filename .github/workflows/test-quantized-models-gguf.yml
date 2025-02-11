@@ -36,7 +36,7 @@ env:
   TARGET_REPO_OWNER: mrutkows # ibm-research
   TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
-  TEST_LLAMA_RUN: false
+  TEST_LLAMA_RUN: true
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -272,4 +272,7 @@ jobs:
       if: env.TEST_LLAMA_RUN == 'true'
       run: |
         echo "invoking llama-run to test inference..."      
-        # ./bin/llama-run ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+        ./bin/llama-run ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?"
+        if [ $? -eq 1 ]; then
+          exit 1
+        fi  
