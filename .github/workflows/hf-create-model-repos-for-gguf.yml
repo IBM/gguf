@@ -37,11 +37,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: |
-      if [ "${{ github.ref_name }}" == 'main' ]; then
-        echo "Running on main branch"
-      else
-        echo "Running on branch '${{ github.ref_name }}'"
-      fi
+        if [ "${{ github.ref_name }}" == 'main' ]; then
+          echo "Running on main branch"
+        else
+          echo "Running on branch '${{ github.ref_name }}'"
+        fi
 
     - name: Dump runner context
       env:
