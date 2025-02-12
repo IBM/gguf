@@ -279,7 +279,7 @@ jobs:
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
-        python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_LOG_FILE}})"
+        python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})"
 
     - name: test-print-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
