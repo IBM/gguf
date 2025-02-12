@@ -2,7 +2,7 @@ import os
 import sys
 import re
 
-def test_regex_match(pattern, text):
+def test_regex_match(regex_pattern, test_string):
     """
     Tests if a regex pattern matches a given text.
 
@@ -13,7 +13,7 @@ def test_regex_match(pattern, text):
     Returns:
         bool: True if the pattern is found in the text, False otherwise.
     """
-    match = re.search(pattern, text)
+    match = re.search(regex_pattern, test_string)
     return bool(match)
 
 if __name__ == "__main__":   
