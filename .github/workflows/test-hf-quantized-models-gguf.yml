@@ -246,7 +246,7 @@ jobs:
           --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
           --header "Content-Type: application/json" \
           --data '{ \
-            "prompt": ${{env.LLAMA_REQUEST_PROMPT}}, \
+            "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
             "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
             "seed": ${{env.LLAMA_REQUEST_SEED}} \
           }'
@@ -262,7 +262,7 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true'  
       run: |  
         echo "invoking llama-cli to test inference (generation)..."
-        ./bin/llama-cli -s ${{env.LLAMA_REQUEST_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} -no-cnv -n 128 --log-file ${{env.LLAMA_CLI_LOG_FILE}} 2>/dev/null 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
+        ./bin/llama-cli -s ${{env.LLAMA_REQUEST_SEED}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "${{env.LLAMA_REQUEST_PROMPT}}" -no-cnv -n 128 --log-file ${{env.LLAMA_CLI_LOG_FILE}} 2>/dev/null 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
           exit 1
         fi  
@@ -281,7 +281,7 @@ jobs:
       if: env.TEST_LLAMA_RUN == 'true'
       run: |
         echo "invoking llama-run to test inference..."      
-        ./bin/llama-run ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "What color is the sky?"
+        ./bin/llama-run ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p "${{env.LLAMA_REQUEST_PROMPT}}"
         if [ $? -eq 1 ]; then
           exit 1
         fi  
