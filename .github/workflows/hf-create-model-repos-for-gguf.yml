@@ -1,5 +1,5 @@
 name: hf-create-model-repos-for-gguf
-run-name: create repos for GGUF
+#run-name: create repos for GGUF
 
 on:
   release:
