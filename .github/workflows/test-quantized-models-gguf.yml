@@ -260,19 +260,19 @@ jobs:
           -p "What color is the sky?" \
           -no-cnv \
           -n 128 \
-          --log-file generated-log.txt \
+          --log-file ${{env.LLAMA_CLI_LOG_FILE}} \
           2>/dev/null \
           1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
           exit 1
         fi  
 
-    - name: test-llama-cli-response-with-metrics
+    - name: test-print-llama-cli-response-with-metrics
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
-        echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat response.txt)'"
+        echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
-    - name: test-llama-cli-generated-log
+    - name: test-print-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
       run: |
         echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     
