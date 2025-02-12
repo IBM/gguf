@@ -18,9 +18,7 @@ on:
   workflow_dispatch:  
   workflow_run:
     workflows: 
-      - hf-create-model-repos-for-gguf
-      - create repos for GGUF
-      - foo* 
+      - hf-create-repos-for-gguf
       - r3.0*
     types: 
       - completed      

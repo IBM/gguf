@@ -1,0 +1,40 @@
+{
+    "collections": [
+        {
+            "title": "Granite 3.0 Language Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite models published under the 'ibm-granite' org. in Hugging Face and licensed under the Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",
+                    "repo_id": "ibm-research/granite-3.0-2b-instruct-GGUF"
+                },
+                {
+                    "type": "model",                
+                    "repo_id": "ibm-research/granite-3.0-8b-instruct-GGUF"
+                },
+                {
+                    "type": "model",               
+                    "repo_id": "ibm-research/granite-3.0-1b-a400m-instruct-GGUF"
+                },
+                {
+                    "type": "model",                 
+                    "repo_id": "ibm-research/granite-3.0-3b-a800m-instruct-GGUF"
+                }
+            ]
+        },
+        {
+            "title": "Granite Guardian Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite models published under the 'ibm-granite' org. in Hugging Face and licensed under the Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",                  
+                    "repo_id": "ibm-research/granite-guardian-3.0-2b-GGUF"
+                },
+                {
+                    "type": "model",                   
+                    "repo_id": "ibm-research/granite-guardian-3.0-8b-GGUF"
+                }
+            ]
+        }
+    ]
+}

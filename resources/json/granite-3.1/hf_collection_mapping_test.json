@@ -1,0 +1,14 @@
+{
+    "collections": [
+        {
+            "title": "Test (GGUF)",
+            "description": "Test GGUF Collection",
+            "items": [
+                {
+                    "type": "model",                  
+                    "repo_id": "mrutkows/granite-3.0-1b-a400m-instruct-GGUF"
+                }
+            ]
+        }
+    ]
+}
