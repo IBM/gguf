@@ -31,7 +31,7 @@ env:
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT: "Why is the sky blue?"
   LLAMA_REQUEST_N_PREDICT: 128
-  LLAMA_RESPONSE_REGEX: ""
+  LLAMA_RESPONSE_REGEX: "(sky|scatter)+"
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
   LLAMACPP_DIR: llama.cpp
@@ -275,6 +275,11 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
         echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+
+    - name: test-llama-cli-response-with-regex
+      if: env.TEST_LLAMA_CLI == 'true'      
+      run: |
+        python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_LOG_FILE}})"
 
     - name: test-print-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
