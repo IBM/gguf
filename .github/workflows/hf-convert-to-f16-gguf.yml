@@ -21,6 +21,7 @@ on:
       - hf-create-model-repos-for-gguf
       - create repos for GGUF
       - foo* 
+      - r3.0*
     types: 
       - completed      
  
