@@ -262,7 +262,7 @@ jobs:
           -n 128 \
           --log-file generated-log.txt \
           2>/dev/null \
-          1>${{LLAMA_CLI_RESPONSE_FILE}}  
+          1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
           exit 1
         fi  
@@ -270,12 +270,12 @@ jobs:
     - name: test-llama-cli-response-with-metrics
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
-        echo "llama-cli: ${{LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat response.txt)'"
+        echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat response.txt)'"
 
     - name: test-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
       run: |
-        echo "llama-cli: ${{LLAMA_CLI_LOG_FILE}}: '$(cat ${{LLAMA_CLI_LOG_FILE}})'"     
+        echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     
 
     - name: test-llama-run
       if: env.TEST_LLAMA_RUN == 'true'
