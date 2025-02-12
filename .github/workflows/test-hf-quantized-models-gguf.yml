@@ -30,7 +30,7 @@ env:
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT: "Why is the sky blue?"
-  LLAMA_REQUEST_N_PREDICT: 128 
+  LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RESPONSE_REGEX: ""
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
@@ -266,7 +266,7 @@ jobs:
           -s ${{env.LLAMA_REQUEST_SEED}} \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
-          -n "${{env.LLAMA_REQUEST_N_PREDICT}}" \
+          -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --log-file ${{env.LLAMA_CLI_LOG_FILE}} \       
           2>/dev/null 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
