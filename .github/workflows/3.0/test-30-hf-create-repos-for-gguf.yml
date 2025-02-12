@@ -1,0 +1,102 @@
+name: test-30-hf-create-repos-for-gguf
+
+on:
+  workflow_dispatch:
+ 
+permissions:
+ contents: write
+ packages: write
+
+env:
+  TARGET_REPO_NAME_EXT: -GGUF
+  TARGET_REPO_OWNER: "mrutkows"  
+
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      # Full prod. matrix:
+      # repo_id: [
+      #   "ibm-granite/granite-3.0-2b-instruct", 
+      #   "ibm-granite/granite-3.0-8b-instruct",
+      #   "ibm-granite/granite-3.0-3b-a800m-instruct",
+      #   "ibm-granite/granite-3.0-1b-a400m-instruct",
+      #   "ibm-granite/granite-guardian-3.0-2b",
+      #   "ibm-granite/granite-guardian-3.0-8b",       
+      # ]       
+      matrix:      
+        repo_id: [
+          "ibm-granite/granite-3.0-2b-instruct", 
+          "ibm-granite/granite-3.0-8b-instruct",          
+          "ibm-granite/granite-3.0-1b-a400m-instruct",          
+          "ibm-granite/granite-3.0-3b-a800m-instruct",  
+          "ibm-granite/granite-guardian-3.0-2b",
+          "ibm-granite/granite-guardian-3.0-8b",                     
+        ]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Dump runner context
+      env:
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: echo "$RUNNER_CONTEXT"
+
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"           
+
+    - name: confirm-environment
+      run: |
+        uname -a
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace}}"
+        echo "matrix.repo_id: ${{ matrix.repo_id }}"    
+        echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"               
+        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"        
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: github_env
+      run: |
+        echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT        
+        echo "working_dir=$(pwd)" >> $GITHUB_ENV        
+        echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
+
+    - name: verify-github-env
+      run: |   
+        echo "steps.github_env.outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"     
+        echo "working_dir=$working_dir"
+        echo "REPO_ORG=$REPO_ORG"
+        echo "REPO_NAME=$REPO_NAME"
+ 
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list      
+
+    - name: debug-dynamic-environment
+      run: |
+        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"         
+        echo "========"       
+        echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"    
+
+    # python ./scripts/hf_repo_create.py ${{ matrix.repo_id }}${{env.EXT_HF_REPO_NAME}} True ${{secrets.HF_TOKEN}}
+    - name: create-hf-repo
+      run: |
+        python ./scripts/hf_repo_create.py ${{ env.TARGET_REPO_OWNER }}/${{ env.REPO_NAME }}${{env.TARGET_REPO_NAME_EXT}} True ${{secrets.HF_TOKEN}}
