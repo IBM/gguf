@@ -5,47 +5,62 @@ import requests
 from huggingface_hub import delete_file
 from huggingface_hub.utils import HfHubHTTPError
 
-###########################################
-# Files
-###########################################
+
 
 def safe_delete_file(
     repo_id:str="", 
     file_name:str="", 
     hf_token:str="",    
 ) -> None:   
+    """
+    Uses the Hugging Face Hub's `delete_file` function to delete a file from a HF repository.
+
+    Args:
+        repo_id (str): HF Hub repo. ID (i.e., `repo_namespace/repo_name`).
+        file_name (str): The file name to delete.
+        hf_token (str): Hugging Face Hub API access token.
+
+    Returns:
+        None
+    Exit codes:
+        0: success
+        >0: failure
+    """
     if repo_id == "":
         print("Please provide a repo_id")
-        return False
+        sys.exit(1)  
     if file_name == "":
         print("Please provide a file_name")
-        return False    
+        sys.exit(1)     
     if hf_token == "":
         print("Please provide a token")
-        return False        
+        sys.exit(1)        
     
     try:
-        import datetime
-        now = datetime.datetime.now()
-        print(now.strftime("BEFORE: %Y-%m-%d %H:%M:%S"))
         delete_file(
             repo_id=repo_id,
             path_in_repo=file_name,
             repo_type="model",
             token=hf_token,   
         )  
-        now = datetime.datetime.now()
-        print(now.strftime("AFTER: %Y-%m-%d %H:%M:%S"))
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', file_name: '{file_name}'")
+        sys.exit(2)
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
+        sys.exit(2)        
     except requests.exceptions.ConnectionError as exc:
         print(f"ConnectionError: {exc}")
+        sys.exit(2)   
     except requests.exceptions.Timeout as exc:
         print(f"Timeout: {exc}")
+        sys.exit(2)           
     except requests.exceptions.RequestException as exc:
         print(f"RequestException: {exc}")
+        sys.exit(2)           
+    except Exception as exc:
+        print(f"Other Exception: {exc}")
+        sys.exit(2)           
     return None
  
  
@@ -55,7 +70,6 @@ if __name__ == "__main__":
         script_name = os.path.basename(__file__)
         print(f"Usage: python {script_name} <repo_id> <model_file> <hf_token>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
-        # Exit with an error code
         sys.exit(1)
        
     # Parse input arguments into named params.   
@@ -69,6 +83,6 @@ if __name__ == "__main__":
     
     # invoke fx
     safe_delete_file(repo_id=repo_id, file_name=file_name, hf_token=hf_token)
-    
+
     # Exit successfully
     sys.exit(0)      
