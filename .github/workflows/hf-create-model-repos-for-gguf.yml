@@ -1,4 +1,5 @@
 name: hf-create-model-repos-for-gguf
+run-name: hf-create-model-repos-for-gguf
 
 on:
   release:
