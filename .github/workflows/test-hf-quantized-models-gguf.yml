@@ -270,6 +270,7 @@ jobs:
           --log-file ${{env.LLAMA_CLI_LOG_FILE}} \       
           2>/dev/null 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
+          cat ${{env.LLAMA_CLI_LOG_FILE}}
           exit 1
         fi  
 
