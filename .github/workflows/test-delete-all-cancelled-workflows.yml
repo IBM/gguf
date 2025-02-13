@@ -28,13 +28,14 @@ jobs:
           jq '.workflow_runs[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
           cat cancelled_runs.json
 
-      # - name: Delete cancelled runs
-      #   id: delete_cancelled_runs
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}        
-      #   run: |
-      #     cat cancelled_runs.json | jq -r '.[] | .id' as $run_id
-      #     for run in $run_id; do
-      #       gh api -X DELETE -H "Accept: application/vnd.github.v3+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-      #         "repos/{{ github.repository }}/actions/runs/$run_id"
-      #     done
+      - name: Delete cancelled runs
+        id: delete_cancelled_runs
+        env:
+          GH_TOKEN: ${{ github.token }}        
+        run: |
+          cat cancelled_runs.json | jq -r '.[] | .id' as $run_id
+          echo "run_id: $run_id"
+          for run in $run_id; do
+            curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/runs/$run_id"
+          done
