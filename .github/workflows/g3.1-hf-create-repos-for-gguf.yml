@@ -7,8 +7,8 @@ on:
     branches:
       - 'main'  
   workflow_dispatch:
-    branches:
-      - 'main' 
+    # branches:
+    #   - 'main' 
  
 permissions:
  contents: write
@@ -40,11 +40,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: |
-        if [ "${{ github.ref_name }}" == 'main' ]; then
-          echo "Running on main branch"
-        else
-          echo "Running on branch '${{ github.ref_name }}'"
-        fi
+        echo "[INFO] github.ref_name:'${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] github.event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'
+        echo "[INFO] github.event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'
+      # if [ "${{ github.ref_name }}" == 'main' ]; then
+      #   echo "Running on main branch"
+      # else
+      #   echo "Running on branch '${{ github.ref_name }}'"
+      # fi
 
     - name: Dump runner context
       env:
