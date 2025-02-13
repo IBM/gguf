@@ -9,7 +9,6 @@ on:
   workflow_run:
     workflows: 
       - g3.0-hf-create-repos-for-gguf
-      - foo
     types: 
       - completed      
  
