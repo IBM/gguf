@@ -1,11 +1,14 @@
 name: g3.1-hf-create-repos-for-gguf
 #run-name: Create repos for GGUF
 
+# types: [created]
 on:
   release:
-    # types: [created]
-    branches: [main]   
+    branches:
+      - 'main'  
   workflow_dispatch:
+    branches:
+      - 'main' 
  
 permissions:
  contents: write
