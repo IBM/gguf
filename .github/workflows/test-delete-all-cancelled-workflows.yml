@@ -30,11 +30,14 @@ jobs:
           cat cancelled_runs.json
           echo "=== END: cancelled_runs.json ========"
 
-      # - name: Delete cancelled runs
-      #   id: delete_cancelled_runs
+      - name: Delete cancelled runs
+        id: delete_cancelled_runs
       #   env:
       #     GH_TOKEN: ${{ github.token }}        
-      #   run: |
+        run: |
+          for line in $(cat "cancelled_runs.json"); do
+            echo "$line"
+          done          
         # export RUN_IDS=$(cat cancelled_runs.json | jq -r '.[] | .id')
         # echo "RUN_IDS: '$RUN_IDS'"
         # for run in $run_id; do
