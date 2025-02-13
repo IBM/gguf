@@ -36,13 +36,13 @@ env:
 jobs:
   convert-f16:
     runs-on: macos-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} 
     strategy:
       fail-fast: false
       matrix:
         repo_id: [
           "ibm-granite/granite-3.1-1b-a400m-instruct",                 
         ]
-
     steps:
     - uses: actions/checkout@v4
 
