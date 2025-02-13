@@ -10,20 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # https://api.github.com/repos/IBM/gguf/actions/runs
       - name: List workflow runs
         id: list_runs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "github.repository: '${{ github.repository }}'"
           curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "Accept: application/vnd.github.v3+json" \
-            "repos/{{ github.repository }}/actions/runs" > workflow_runs.json
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs" > workflow_runs.json
           cat workflow_runs.json
 
-      # - name: Filter cancelled runs
-      #   id: filter_cancelled_runs
-      #   run: |
-      #     jq '.[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
+      - name: Filter cancelled runs
+        id: filter_cancelled_runs
+        run: |
+          jq '.[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
+          cat cancelled_runs.json
 
       # - name: Delete cancelled runs
       #   id: delete_cancelled_runs
