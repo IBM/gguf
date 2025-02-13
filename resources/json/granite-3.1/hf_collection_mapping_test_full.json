@@ -35,6 +35,16 @@
                     "repo_id": "mrutkows/granite-guardian-3.1-8b-GGUF"
                 }
             ]
-        }
+        },
+        {
+            "title": "Granite Experiments (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite models published under the 'ibm-granite' org. in Hugging Face and licensed under the Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",                   
+                    "repo_id": "mrutkows/granite-vision-3.1-2b-preview-GGUF"
+                }
+            ]
+        }        
     ]
 }
