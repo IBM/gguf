@@ -8,8 +8,8 @@ on:
   workflow_dispatch:  
   workflow_run:
     workflows: 
-      - hf-create-repos-for-gguf
       - r3.0*
+      - foo
     types: 
       - completed      
  
