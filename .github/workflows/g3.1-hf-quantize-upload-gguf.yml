@@ -53,6 +53,7 @@ env:
 jobs:
   quantize:
     runs-on: macos-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}   
     strategy:
       fail-fast: false
       matrix:
