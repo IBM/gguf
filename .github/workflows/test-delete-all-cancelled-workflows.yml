@@ -25,7 +25,7 @@ jobs:
       - name: Filter cancelled runs
         id: filter_cancelled_runs
         run: |
-          jq '.[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
+          jq '.workflow_runs[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
           cat cancelled_runs.json
 
       # - name: Delete cancelled runs
