@@ -22,7 +22,7 @@ jobs:
   create-repos:
     runs-on: macos-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       # Full prod. matrix:
       # repo_id: [
       #   "ibm-granite/granite-3.0-2b-instruct", 
