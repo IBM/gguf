@@ -1,15 +1,5 @@
-# This workflow generates quantized GGUF models from the original model (safetensors) from HF.
-# For a given instance (i.e., HF model id (repo) and quantization):
-# - Checks out (clones) the current source code repository
-# - Sets environment variables used in the workflow
-# - Sets up a Python 3.11 environment
-# - Shallow clones the llama.cpp project (master branch)
-# - Installs llama.cpp python conversion script dependencies 
-# - downloads the designated model from (public) HF; primarily this are the *.safetensor files
-# - Conversion (normalization): converts HF model (safetensors) to GGUF format (normalized to f16)
-# - Quantization: converts the f16 GGUF to the designated quantization (e.g., Q4_0, Q4_K_M, etc.)
-# - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
-# - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
+# This workflow converts an original model from HF (in safetensors format) to an f16 GGUF format model.
+# it then uploads the f16 model to Hugging Face Hub for the 'repo_id' (from the build matrix).
 
 name: g3.0-hf-convert-to-f16-gguf
 
@@ -18,7 +8,7 @@ on:
   workflow_dispatch:  
   workflow_run:
     workflows: 
-      - hf-create-repos-for-gguf
+      - g3.0-hf-create-repos-for-gguf
       - r3.0*
     types: 
       - completed      
@@ -35,7 +25,7 @@ env:
   TARGET_REPO_OWNER: mrutkows  # ibm-research
   TARGET_REPO_NAME_EXT: -GGUF
 
-# Full matrix (Ollama):
+# Full matrix:
 # repo_id: [
 #   "ibm-granite/granite-3.0-2b-instruct", 
 #   "ibm-granite/granite-3.0-8b-instruct",

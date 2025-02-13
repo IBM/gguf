@@ -1,25 +1,17 @@
-# This workflow generates quantized GGUF models from the original model (safetensors) from HF.
-# For a given instance (i.e., HF model id (repo) and quantization):
-# - Checks out (clones) the current source code repository
-# - Sets environment variables used in the workflow
-# - Sets up a Python 3.11 environment
-# - Shallow clones the llama.cpp project (master branch)
-# - Installs llama.cpp python conversion script dependencies 
-# - downloads the designated model from (public) HF; primarily this are the *.safetensor files
-# - Conversion (normalization): converts HF model (safetensors) to GGUF format (normalized to f16)
-# - Quantization: converts the f16 GGUF to the designated quantization (e.g., Q4_0, Q4_K_M, etc.)
-# - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
-# - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
+# This workflow:
+# - Downloads the f16 (quantized) GGUF model from the target (model) 'repo_id' defined in the build matrix.
+#   - Note: The f16 model was generated and uploaded by the `XX-hf-convert-to-f16-gguf` workflow 
+#     whose completion triggers this workflow.
+# - Quantizes the f16 GGUF to the designated 'quantization' (e.g., Q4_0, Q4_K_M, etc.) defined in the build matrix.
+# - Uploads the quantized GGUF to target 'repo_id'.
 
-name: hf-quantize-upload-gguf
+name: g3.1-hf-quantize-upload-gguf
 
 on:
   # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_dispatch:  
   workflow_run:
     workflows: 
-      - hf-convert-to-f16-gguf
-      - g3.0-hf-convert-to-f16-gguf
       - g3.1-hf-convert-to-f16-gguf      
     branches: [main]
     types: 
@@ -43,12 +35,12 @@ env:
 
 # Full matrix (Ollama):
 # repo_id: [
-#   "ibm-granite/granite-3.0-2b-instruct", 
-#   "ibm-granite/granite-3.0-8b-instruct",
-#   "ibm-granite/granite-3.0-3b-a800m-instruct",
-#   "ibm-granite/granite-3.0-1b-a400m-instruct",
-#   "ibm-granite/granite-guardian-3.0-2b",
-#   "ibm-granite/granite-guardian-3.0-8b", 
+#   "ibm-granite/granite-3.1-2b-instruct", 
+#   "ibm-granite/granite-3.1-8b-instruct",
+#   "ibm-granite/granite-3.1-3b-a800m-instruct",
+#   "ibm-granite/granite-3.1-1b-a400m-instruct",
+#   "ibm-granite/granite-guardian-3.1-2b",
+#   "ibm-granite/granite-guardian-3.1-8b", 
 # ]
 # quantization: [
 #   "Q2_K", 
@@ -65,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: [
-          "ibm-granite/granite-3.0-1b-a400m-instruct",                  
+          "ibm-granite/granite-3.1-1b-a400m-instruct",                  
         ]
         quantization: [
           "Q4_K_M", 
@@ -113,7 +105,7 @@ jobs:
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.
-    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.1-2b-instruct
     - name: set-github-env
       id: set_github_env
       run: |

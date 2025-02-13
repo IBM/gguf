@@ -1,0 +1,69 @@
+# This workflow:
+# - Loads the collection->repo_id mapping from the specified JSON config file.
+# - Using the JSON collection mapping dict. to:
+#   - Creates the defined HF collections in the target org. (i.e., 'repo_owner' or namespace) in HF Hub.
+#   - Adds the defined model repos. (i.e., 'repo_id's ) to their corresponding HF collections.
+
+name: g3.0-hf-create-collections-for-gguf
+
+on:
+  workflow_dispatch:    
+  workflow_run:
+    workflows: 
+      - g3.0-hf-quantize-upload-gguf
+    branches: [main]
+    types: 
+      - completed      
+ 
+permissions:
+ contents: write
+ packages: write
+
+env:
+  TARGET_REPO_OWNER: mrutkows # ibm-research  
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Dump runner context
+      env:
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: echo "$RUNNER_CONTEXT"
+
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"           
+
+    - name: confirm-environment
+      run: |
+        uname -a
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace}}"        
+        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"        
+        echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"                 
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+ 
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
+    # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
+    - name: create-hf-collections
+      run: |
+        python ./scripts/hf_collections_create.py ${{env.TARGET_REPO_OWNER}} ${{env.COLLECTION_CONFIG}} True ${{secrets.HF_TOKEN}}

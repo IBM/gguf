@@ -1,13 +1,7 @@
-name: hf-create-collections-for-gguf
+name: hf-delete-collections-repos
 
-# Assure model quantizations have been built & uploaded before creating collections (by ref. workflow)
 on:
-  workflow_dispatch:    
-  workflow_run:
-    workflows: [hf-quantize-upload-gguf]
-    branches: [main]
-    types: 
-      - completed      
+  workflow_dispatch:      
  
 permissions:
  contents: write
@@ -15,7 +9,7 @@ permissions:
 
 env:
   TARGET_REPO_OWNER: mrutkows # ibm-research  
-  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+  COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test.json" # "resources/json/granite-3.1/hf_collection_mapping.json"
 
 jobs:
   build:
@@ -57,7 +51,6 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
-    # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
-    - name: create-hf-collections
+    - name: delete-hf-collections-repos
       run: |
-        python ./scripts/hf_collections_create.py ${{env.TARGET_REPO_OWNER}} ${{env.COLLECTION_CONFIG}} True ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_collections_repos_delete.py ${{env.TARGET_REPO_OWNER}} ${{env.COLLECTION_CONFIG}} ${{secrets.HF_TOKEN}}
