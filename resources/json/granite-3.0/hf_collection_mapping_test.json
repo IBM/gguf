@@ -1,8 +1,8 @@
 {
     "collections": [
         {
-            "title": "Test (GGUF)",
-            "description": "Test GGUF Collection",
+            "title": "Granite 3.0 Language Models (GGUF) - TEST",
+            "description": "GGUF-formatted versions of IBM Granite models published under the 'ibm-granite' org. in Hugging Face and licensed under the Apache 2.0 license",
             "items": [
                 {
                     "type": "model",                  

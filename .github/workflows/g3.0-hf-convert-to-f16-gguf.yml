@@ -34,9 +34,8 @@ env:
 #   "ibm-granite/granite-guardian-3.0-2b",
 #   "ibm-granite/granite-guardian-3.0-8b", 
 # ]
-jobs:
-  
-  build:
+jobs:  
+  convert-f16:
     runs-on: macos-latest
     strategy:
       fail-fast: false

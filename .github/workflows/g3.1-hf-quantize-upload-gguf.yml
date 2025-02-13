@@ -51,7 +51,7 @@ env:
 #   "Q8_0",
 #]
 jobs:
-  build:
+  quantize:
     runs-on: macos-latest
     strategy:
       fail-fast: false

@@ -1,5 +1,5 @@
 name: g3.1-hf-create-repos-for-gguf
-#run-name: create repos for GGUF
+#run-name: Create repos for GGUF
 
 on:
   release:
@@ -16,7 +16,7 @@ env:
   TARGET_REPO_OWNER: mrutkows # ibm-research
 
 jobs:
-  build:
+  create-repos:
     runs-on: macos-latest
     strategy:
       fail-fast: false
