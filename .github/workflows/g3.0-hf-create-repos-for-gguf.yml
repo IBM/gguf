@@ -43,11 +43,9 @@ jobs:
         echo "[INFO] github.:'${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'    
         echo "[INFO] github.event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'
         echo "[INFO] github.event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'
-      # if [ "${{ github.ref_name }}" == 'main' ]; then
-      #   echo "Running on main branch"
-      # else
-      #   echo "Running on branch '${{ github.ref_name }}'"
-      # fi
+        if [ "${{ github.ref_type }}" == 'tag' ]; then
+          echo "github.ref_type: 'tag'"
+        fi
 
     - name: Dump runner context
       env:
