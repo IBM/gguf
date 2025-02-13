@@ -6,7 +6,7 @@
             "items": [
                 {
                     "type": "model",                  
-                    "repo_id": "mrutkows/granite-3.0-1b-a400m-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.1-1b-a400m-instruct-GGUF"
                 }
             ]
         }

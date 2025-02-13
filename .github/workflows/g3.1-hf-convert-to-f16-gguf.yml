@@ -11,7 +11,7 @@
 # - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
 # - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
 
-name: hf-convert-to-f16-gguf
+name: g3.1-hf-convert-to-f16-gguf
 
 on:
   # Assure repos. have been created before any uploads (by ref. workflow)
@@ -19,7 +19,7 @@ on:
   workflow_run:
     workflows: 
       - hf-create-repos-for-gguf
-      - r3.0*
+      - r3.1*
     types: 
       - completed      
  
