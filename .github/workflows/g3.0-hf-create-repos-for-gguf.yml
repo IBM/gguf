@@ -1,12 +1,15 @@
 name: g3.0-hf-create-repos-for-gguf
 #run-name: Create repos for GGUF
 
+# types: [created]
 on:
   release:
-    types: [created]
-    branches: [main]   
+    branches: 
+      - 'release/granite-3.0'
   workflow_dispatch:
- 
+    #  branches: 
+    #   - 'granite-3.0'
+
 permissions:
  contents: write
  packages: write
@@ -19,7 +22,7 @@ jobs:
   create-repos:
     runs-on: macos-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       # Full prod. matrix:
       # repo_id: [
       #   "ibm-granite/granite-3.0-2b-instruct", 
@@ -37,10 +40,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: |
-        if [ "${{ github.ref_name }}" == 'main' ]; then
-          echo "Running on main branch"
-        else
-          echo "Running on branch '${{ github.ref_name }}'"
+        echo "[INFO] github.:'${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'    
+        echo "[INFO] github.event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'
+        echo "[INFO] github.event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'
+        if [ "${{ github.ref_type }}" == 'tag' ]; then
+          echo "github.ref_type: 'tag'"
         fi
 
     - name: Dump runner context
