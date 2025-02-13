@@ -1,0 +1,31 @@
+name: Delete cancelled Workflows
+
+on:
+  workflow_dispatch:
+#   schedule:
+#     - cron: '0 1 * * *' # every day at 01:00 UTC
+
+jobs:
+  delete_cancelled_runs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List workflow runs
+        id: list_runs
+        run: |
+          gh api -H "Accept: application/vnd.github.v3+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"  \
+            "repos/{{ github.repository }}/actions/runs" > workflow_runs.json
+
+      - name: Filter cancelled runs
+        id: filter_cancelled_runs
+        run: |
+          jq '.[] | select(.conclusion == "cancelled")' workflow_runs.json > cancelled_runs.json
+
+      - name: Delete cancelled runs
+        id: delete_cancelled_runs
+        run: |
+          cat cancelled_runs.json | jq -r '.[] | .id' as $run_id
+          for run in $run_id; do
+            gh api -X DELETE -H "Accept: application/vnd.github.v4+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "repos/{{ github.repository }}/actions/runs/$run_id"
+          done
