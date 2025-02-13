@@ -1,9 +1,9 @@
 name: g3.0-hf-create-repos-for-gguf
 #run-name: Create repos for GGUF
 
-# types: [created]
 on:
   release:
+    types: [created]    
     branches: 
       - 'release/granite-3.0'
   workflow_dispatch:
@@ -43,9 +43,6 @@ jobs:
         echo "[INFO] github.:'${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] github.event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] github.event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-        if [ "${{ github.ref_type }}" == 'tag' ]; then
-          echo "github.ref_type: 'tag'"
-        fi
 
     - name: Dump runner context
       env:

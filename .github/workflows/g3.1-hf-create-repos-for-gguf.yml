@@ -1,9 +1,9 @@
 name: g3.1-hf-create-repos-for-gguf
 #run-name: Create repos for GGUF
 
-# types: [created]
 on:
   release:
+    types: [created]
     branches:
       - 'main'  
   workflow_dispatch:
@@ -40,12 +40,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: |
-        echo "[INFO] github.:'${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] github.: ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] github.event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] github.event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-        if [ "${{ github.ref_type }}" == 'tag' ]; then
-          echo "github.ref_type: 'tag'"
-        fi
+        exit(0)
 
     - name: Dump runner context
       env:
