@@ -1,4 +1,4 @@
-name: hf-delete-collections-repos
+name: g3.1-hf-delete-collections-repos
 
 on:
   workflow_dispatch:      
