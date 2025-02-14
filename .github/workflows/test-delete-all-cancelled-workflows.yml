@@ -6,7 +6,7 @@ on:
 #     - cron: '0 1 * * *' # every day at 01:00 UTC
 
 jobs:
-  delete_cancelled_runs:
+  delete_runs_to_delete:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,37 +14,36 @@ jobs:
       # https://api.github.com/repos/IBM/gguf/actions/runs
       - name: List workflow runs
         id: list_runs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # env:
+        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "github.repository: '${{ github.repository }}'"
           curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs" > workflow_runs.json
           cat workflow_runs.json
 
-      - name: Filter cancelled runs
-        id: filter_cancelled_runs
+      - name: Extract cancelled run IDs
+        id: parse_cancelled_run_ids
         run: |
-          jq '.workflow_runs[] | select(.conclusion == "cancelled") | .id' workflow_runs.json > cancelled_runs.json
-          echo "=== BEGIN: cancelled_runs.json ======="
-          cat cancelled_runs.json
-          echo "=== END: cancelled_runs.json ========"
+          jq '.workflow_runs[] | select(.conclusion == "cancelled") | .id' workflow_runs.json > runs_to_delete.json
+          echo "=== BEGIN: runs_to_delete.json ======="
+          cat runs_to_delete.json
+          echo "=== END: runs_to_delete.json ========"
 
-      - name: Delete cancelled runs
-        id: delete_cancelled_runs
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}        
+      - name: Extract skipped run IDs
+        id: parse_cancelled_run_ids
         run: |
-          for line in $(cat "cancelled_runs.json"); do
+          jq '.workflow_runs[] | select(.conclusion == "skipped") | .id' workflow_runs.json >> runs_to_delete.json
+          echo "=== BEGIN: runs_to_delete.json ======="
+          cat runs_to_delete.json
+          echo "=== END: runs_to_delete.json ========"
+
+      - name: Delete cancelled and skipped workflows runs
+        id: delete_runs_to_delete      
+        run: |
+          for line in $(cat "runs_to_delete.json"); do
             echo "'$line'"
             run_id=$(echo "$line" | sed 's/[[:cntrl:]]//g') 
             curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/runs/$run_id"
           done          
-        # export RUN_IDS=$(cat cancelled_runs.json | jq -r '.[] | .id')
-        # echo "RUN_IDS: '$RUN_IDS'"
-        # for run in $run_id; do
-        #   curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-        #     "https://api.github.com/repos/${{ github.repository }}/actions/runs/$run_id"
-        # done
-        # run_id=${"$line"//[[:cntrl:]]}
