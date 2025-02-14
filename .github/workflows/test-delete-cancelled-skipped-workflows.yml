@@ -1,4 +1,4 @@
-name: delete-cancelled-workflows
+name: delete-cancelled-skipped-workflows
 
 on:
   workflow_dispatch:
