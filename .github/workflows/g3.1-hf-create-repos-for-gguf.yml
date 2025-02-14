@@ -47,8 +47,7 @@ jobs:
         echo "[INFO] >> event_type: '${{ github.event_type }}'" 
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"     
-        exit 0
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     - name: Dump runner context
       env:
@@ -58,8 +57,7 @@ jobs:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: |
-        echo "$GITHUB_CONTEXT"           
+      run: echo "$GITHUB_CONTEXT"           
 
     - name: confirm-environment
       run: |
