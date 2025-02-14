@@ -21,6 +21,7 @@ env:
 jobs:
   create-repos:
     runs-on: macos-latest
+    if: ${{ contains(github.event.release.name, 'r3.1') }}
     strategy:
       fail-fast: true
       # Full prod. matrix:
