@@ -10,12 +10,12 @@ name: g3.1-hf-quantize-upload-gguf
 on:
   # Assure repos. have been created before any uploads (by ref. workflow)
   workflow_dispatch:  
-  # workflow_run:
-  #   workflows: 
-  #     - g3.1-hf-convert-to-f16-gguf      
-  #   branches: [main]
-  #   types: 
-  #     - completed       
+  workflow_run:
+    workflows: 
+      - g3.1-hf-convert-to-f16-gguf      
+    branches: [main]
+    types: 
+      - completed       
  
 permissions:
   contents: write
