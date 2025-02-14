@@ -22,7 +22,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/runs" > workflow_runs.json
           cat workflow_runs.json
 
-      - name: Extract cancelled run IDs
+      - name: Parse cancelled run IDs
         id: parse_cancelled_run_ids
         run: |
           jq '.workflow_runs[] | select(.conclusion == "cancelled") | .id' workflow_runs.json > runs_to_delete.json
@@ -30,8 +30,8 @@ jobs:
           cat runs_to_delete.json
           echo "=== END: runs_to_delete.json ========"
 
-      - name: Extract skipped run IDs
-        id: parse_cancelled_run_ids
+      - name: Parse skipped run IDs
+        id: parse_skipped_run_ids
         run: |
           jq '.workflow_runs[] | select(.conclusion == "skipped") | .id' workflow_runs.json >> runs_to_delete.json
           echo "=== BEGIN: runs_to_delete.json ======="
