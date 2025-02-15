@@ -1,4 +1,4 @@
-# gguf (release/granite-3.0)
+# gguf (release/granite-3.0) with PR
 
 This repository contains the canonical information to use when converting IBM AI models to the GGUF format. It includes conversion scripts and testing requirements.  Aspirationally, this repo. wil include and automated CI/CD process to convert, test and deploy models to the official IBM GGUF collection in Hugging Face.
 
