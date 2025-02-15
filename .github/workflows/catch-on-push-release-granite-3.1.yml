@@ -4,9 +4,7 @@ name: catch-on-push
 on:
   push:   
     branches: 
-      - 'release/granite-3.0'
-      - 'release/**'
-      - 'granite-3.0'
+      - 'release/granite-3.1'
 
 permissions:
  contents: read
@@ -16,7 +14,7 @@ env:
   DEBUG: true
 
 jobs:
-  create-repos:
+  on-push-release-granite:
     runs-on: macos-latest
     strategy:
       fail-fast: true      

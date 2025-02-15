@@ -1,0 +1,51 @@
+name: catch-on-push
+#run-name: Create repos for GGUF
+
+on:
+  push:   
+    branches: 
+      - 'release/**'
+
+permissions:
+ contents: read
+ packages: read
+
+env:
+  DEBUG: true
+
+jobs:
+  on-push-release-granite:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true      
+
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        echo "[INFO] github.env:"   
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+
+    - name: Dump runner context
+      env:
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: echo "$RUNNER_CONTEXT"
+
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"  
+
+    - name: confirm-environment
+      run: |
+        uname -a
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace}}"
+        echo "matrix.repo_id: ${{ matrix.repo_id }}"                    
+        echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"             
+        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"         
