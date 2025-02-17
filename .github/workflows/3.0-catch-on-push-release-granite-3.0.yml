@@ -22,10 +22,10 @@ jobs:
   call-workflow-passing-data:  
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
-      hf_collection_config: ${{env.COLLECTION_CONFIG}}
-      target_repo_owner: ${{env.TARGET_REPO_OWNER }}
-      other_config: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
-      other_target: ibm-granite
+      # hf_collection_config: ${{env.COLLECTION_CONFIG}}
+      # target_repo_owner: ${{env.TARGET_REPO_OWNER }}
+      hf_collection_config: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+      target_repo_owner: ibm-granite
     secrets: inherit
 
 
