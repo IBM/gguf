@@ -18,7 +18,7 @@ env:
   target_foo: bar-3.0
 
 jobs:
-  on-push-release-granite:
+  on-push-release-granite-3.0:
     runs-on: macos-latest     
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
@@ -30,6 +30,7 @@ jobs:
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
         echo "[INFO] >> event_type: '${{ github.event_type }}'" 
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
