@@ -5,7 +5,7 @@ on:
     branches: 
       - 'release/granite-3.1'
     tags:
-      - "v3.0*"      
+      - "v3.1*"      
 
 permissions:
  contents: read
