@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   workflow_run:    
     workflows: 
-      - granite-3.0-release-tag
+      - g3.0-release-tag
     types: 
       - completed        
 
