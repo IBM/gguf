@@ -11,9 +11,6 @@ jobs:
   reusable_workflow_job:
     runs-on: macos-latest
     steps:
-      with:
-        hf_token: ${{ secrets.HF_TOKEN }}
-        configuration-path: ${{ inputs.config-file }}
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
@@ -23,5 +20,5 @@ jobs:
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-
+        echo "[INFO] > inputs: '${{inputs}}'"
   
