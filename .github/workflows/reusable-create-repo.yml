@@ -1,11 +1,11 @@
 name: create-repo-reusable
 
 on:
-    workflow_call:
-      inputs:
-        config-file:
-          required: true
-          type: string
+  workflow_call:
+    inputs:
+      config-file:
+        required: true
+        type: string
 
 jobs:
   reusable_workflow_job:
