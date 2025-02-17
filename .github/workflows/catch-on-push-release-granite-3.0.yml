@@ -1,13 +1,11 @@
-name: catch-on-push-3.1
-#run-name: Create repos for GGUF
-#       - "v[0-9]+.[0-9]+.[0-9]+"
+name: granite-3.0-release-tag
 
 on:
   push:   
     branches: 
       - 'release/granite-3.0'
     tags:
-      - "v3.0*"
+      - "v3.1*"
 
 permissions:
  contents: read
@@ -15,12 +13,17 @@ permissions:
 
 env:
   DEBUG: true
+  TARGET_REPO_OWNER: mrutkows # ibm-research  
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
 
 jobs:
   on-push-release-granite:
     runs-on: macos-latest
-    strategy:
-      fail-fast: true      
+    # strategy:
+    #   fail-fast: true      
+    outputs:
+      target_owner: ${{ env.TARGET_REPO_OWNER }}
+      target_collection_config: "${{ env.COLLECTION_CONFIG }}"
 
     steps:
     - uses: actions/checkout@v4

@@ -7,8 +7,10 @@ on:
     branches:
       - 'main'  
   workflow_dispatch:
-    # branches:
-    #   - 'main' 
+    workflows: 
+      - granite-3.1-release-tag
+    types: 
+      - completed    
  
 permissions:
  contents: write
@@ -21,7 +23,6 @@ env:
 jobs:
   create-repos:
     runs-on: macos-latest
-    if: ${{ contains(github.event.release.name, 'r3.1') }}
     strategy:
       fail-fast: true
       # Full prod. matrix:

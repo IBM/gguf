@@ -7,8 +7,10 @@ on:
     branches: 
       - 'release/granite-3.0'
   workflow_dispatch:
-    #  branches: 
-    #   - 'granite-3.0'
+    workflows: 
+      - granite-3.0-release-tag
+    types: 
+      - completed        
 
 permissions:
  contents: write
