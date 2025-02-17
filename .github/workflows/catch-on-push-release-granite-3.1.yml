@@ -24,6 +24,7 @@ jobs:
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
       target_collection_config: "${{ env.COLLECTION_CONFIG }}"
+      target_foo: bar-3.1
 
     steps:
     - uses: actions/checkout@v4

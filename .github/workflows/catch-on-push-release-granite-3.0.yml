@@ -15,6 +15,7 @@ env:
   DEBUG: true
   TARGET_REPO_OWNER: mrutkows # ibm-research  
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+  target_foo: bar-3.0
 
 jobs:
   on-push-release-granite:
