@@ -11,6 +11,8 @@ jobs:
   reusable_workflow_job:
     runs-on: macos-latest
     steps:
+    - uses: actions/checkout@v4      
+      
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
