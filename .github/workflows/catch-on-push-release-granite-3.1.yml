@@ -1,4 +1,4 @@
-name: granite-3.1-release-tag
+name: 3.1-granite-3.1-release-tag
 
 on:
   push:   
@@ -15,6 +15,7 @@ env:
   DEBUG: true
   TARGET_REPO_OWNER: mrutkows # ibm-research  
   COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test.json" # "resources/json/granite-3.1/hf_collection_mapping.json"
+  target_foo: bar-3.1
 
 jobs:
   on-push-release-granite:
