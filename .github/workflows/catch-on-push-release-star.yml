@@ -1,10 +1,12 @@
-name: catch-on-push-star
+name: catch-on-push-star-foo
 #run-name: Create repos for GGUF
 
 on:
   push:   
     branches: 
       - 'release/**'
+    tags:
+      - 'foo*'
 
 permissions:
  contents: read
