@@ -50,7 +50,8 @@ jobs:
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-
+        echo "[INFO] >> github.event.workflow_run.outputs: '${{ github.event.workflow_run.outputs }}'"
+  
     - name: Dump runner context
       env:
         RUNNER_CONTEXT: ${{ toJson(runner) }}
