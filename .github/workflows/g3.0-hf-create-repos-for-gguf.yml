@@ -50,8 +50,7 @@ jobs:
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
         echo "[INFO] >> github.event.workflow_run: '${{ github.event.workflow_run }}'"
-        echo "[INFO] >> github.event.workflow_run.jobs.outputs: ${{github.event.workflow_run.jobs.on-push-release-tag.outputs }}'"
-    runs-on: ubuntu-latest        
+        echo "[INFO] >> github.event.workflow_run: outputs: ${{ github.event.workflow_run.jobs.on-push-release-tag.outputs }}'"       
         
     - name: Dump runner context
       env:
