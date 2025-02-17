@@ -32,3 +32,11 @@ jobs:
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: echo "$GITHUB_INPUTS"   
+
+    - name: Set branch name for tag
+      run: |
+        echo "REPO_BRANCH=$(git branch -r --contains ${{ github.ref }})" >> $GITHUB_ENV
+
+    - name: Set branch name for tag
+      run: |        
+        echo "[INFO] REPO_BRANCH: '${{ env.REPO_BRANCH }}'"
