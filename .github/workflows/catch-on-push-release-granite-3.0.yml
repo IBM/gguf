@@ -1,4 +1,4 @@
-name: 3.0-granite-3.0-release-tag
+name: granite-3.0-release-tag
 
 on:
   push:   
