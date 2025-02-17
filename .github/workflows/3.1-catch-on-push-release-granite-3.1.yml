@@ -18,7 +18,7 @@ env:
   target_foo: bar-3.1
 
 jobs:
-  on-push-release-granite:
+  on-push-release-tag-v3.1:
     runs-on: macos-latest     
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
