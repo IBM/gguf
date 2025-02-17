@@ -22,7 +22,7 @@ env:
 jobs:
   call-workflow-passing-data:
     runs-on: macos-latest     
-    uses: IBM/gguf/.github/workflows/reusable-create-repo.yml
+    uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
       config-file: foo.json
     secrets: inherit
