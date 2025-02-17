@@ -3,16 +3,17 @@ name: create-repo-reusable
 on:
   workflow_call:
     inputs:
-      config-file:
+      hf_collection_config:
+        required: true
+        type: string
+      target_repo_owner:
         required: true
         type: string
 
 jobs:
   reusable_workflow_job:
     runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4      
-      
+    steps: 
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
