@@ -1,10 +1,6 @@
 name: g3.0-hf-create-repos-for-gguf
 
 on:
-  # release:
-  #   types: [created]    
-  #   branches: 
-  #     - 'release/granite-3.0'
   workflow_dispatch:
   workflow_run:    
     workflows: 
@@ -47,6 +43,7 @@ jobs:
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> event_type: '${{ github.event_type }}'" 
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
         echo "[INFO] >> github.event.workflow_run: '${{ github.event.workflow_run }}'"
