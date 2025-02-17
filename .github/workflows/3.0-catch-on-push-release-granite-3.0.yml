@@ -17,13 +17,15 @@ env:
   DEBUG: true
   TARGET_REPO_OWNER: mrutkows # ibm-research  
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
-  target_foo: bar-3.0
 
 jobs:
   call-workflow-passing-data:  
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
-      config-file: foo.json
+      hf_collection_config: ${{env.COLLECTION_CONFIG}}
+      target_repo_owner: ${{env.TARGET_REPO_OWNER }}
+      other_config: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+      other_target: ibm-granite
     secrets: inherit
 
 
