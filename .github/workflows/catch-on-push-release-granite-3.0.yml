@@ -1,10 +1,13 @@
 name: catch-on-push-3.1
 #run-name: Create repos for GGUF
+#       - "v[0-9]+.[0-9]+.[0-9]+"
 
 on:
   push:   
     branches: 
       - 'release/granite-3.0'
+    tags:
+      - "v3.0*"
 
 permissions:
  contents: read
