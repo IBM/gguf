@@ -1,4 +1,4 @@
-name: granite-3.0-release-tag
+name: g3.0-release-tag
 
 on:
   push:   
@@ -19,9 +19,7 @@ env:
 
 jobs:
   on-push-release-granite:
-    runs-on: macos-latest
-    # strategy:
-    #   fail-fast: true      
+    runs-on: macos-latest     
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
       target_collection_config: "${{ env.COLLECTION_CONFIG }}"
