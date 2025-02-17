@@ -22,12 +22,10 @@ env:
 jobs:
   call-workflow-passing-data:  
     runs-on: ubuntu-latest
-    steps:
-    - name: test-callable
-      uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
-      with:
-        config-file: foo.json
-      secrets: inherit
+    uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
+    with:
+      config-file: foo.json
+    secrets: inherit
 
 
   on-push-release-tag:
