@@ -20,6 +20,14 @@ env:
   target_foo: bar-3.0
 
 jobs:
+  call-workflow-passing-data:
+    runs-on: macos-latest     
+    uses: IBM/gguf/.github/workflows/reusable-create-repos.yml@main
+    with:
+      config-file: foo.json
+    secrets: inherit
+
+
   on-push-release-tag:
     runs-on: macos-latest     
     outputs:
