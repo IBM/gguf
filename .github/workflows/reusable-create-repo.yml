@@ -1,4 +1,4 @@
-name: create-repo-reusable
+name: create-hf-repos-reusable
 
 on:
   workflow_call:
@@ -12,10 +12,6 @@ on:
       target_repo_name_ext:
         required: true
         type: string        
-      var1:
-        type: string   
-        required: true        
-        default: "default-value"
       debug:
         type: boolean
         required: true        

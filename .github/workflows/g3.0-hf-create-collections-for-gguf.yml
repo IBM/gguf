@@ -39,8 +39,8 @@ jobs:
 
     - name: Dump GitHub context
       env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"           
+        GH_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GH_CONTEXT"         
 
     - name: confirm-environment
       run: |
