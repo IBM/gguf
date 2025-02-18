@@ -16,8 +16,6 @@ permissions:
 env:
   DEBUG: true
   TARGET_REPO_NAME_EXT: -GGUF
-  # TARGET_REPO_OWNER: # ibm-research
-  # COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping.json"
   TARGET_REPO_OWNER: mrutkows  
   COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test.json"
 
@@ -27,7 +25,6 @@ jobs:
     outputs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
-      debug: ${{env.DEBUG}}
     steps:
       - name: Print inputs passed to the reusable workflow
         id: set-vars
@@ -38,7 +35,7 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"          
-      # - name: Print output values
+      # - name: Print step output values
       #   run: |       
       #       echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
       #       echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
