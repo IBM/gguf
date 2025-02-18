@@ -50,15 +50,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
-
     - name: Dump GitHub context
       env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"           
+        GH_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GH_CONTEXT"   
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"          
 
     - name: confirm-environment
       run: |
@@ -99,8 +99,6 @@ jobs:
 
     - name: verify-github-env
       run: |     
-        echo "================== GITHUB_OUTPUT =================="
-        echo "steps.github_env.outputs.working_dir=${{ steps.set_github_env.outputs.working_dir }}"  
         echo "================== GITHUB_ENV ====================="           
         echo "working_dir=$working_dir"
         echo "REPO_ORG=$REPO_ORG"
@@ -146,9 +144,7 @@ jobs:
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
-      run: |
-        echo "outputs.working_dir=${{ steps.github_env.outputs.working_dir }}"         
-        echo "========"     
+      run: |    
         echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
