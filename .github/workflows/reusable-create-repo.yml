@@ -58,4 +58,8 @@ jobs:
       run: |
         python -m pip install -r ./requirements.txt
         pip list    
-        
+
+    - name: create-hf-repos
+      run: |
+        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{inputs.hf_collection_config}} True ${{secrets.HF_TOKEN}}
+  
