@@ -32,11 +32,11 @@ jobs:
       - name: Print inputs passed to the reusable workflow
         id: set-vars
         run: |
-            echo "hf_collection_config: $TARGET_REPO_OWNER"
-            echo "target_repo_owner: $COLLECTION_CONFIG"
+            echo "hf_collection_config: $COLLECTION_CONFIG"
+            echo "target_repo_owner: $TARGET_REPO_OWNER"
             echo "target_repo_name_ext: $TARGET_REPO_NAME_EXT"                        
-            echo "hf_collection_config=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
-            echo "target_repo_owner=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"   
+            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"          
       # - name: Print output values
       #   run: |       

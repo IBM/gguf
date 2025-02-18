@@ -187,6 +187,7 @@ if __name__ == "__main__":
         print(f"title='{collection_title}', description='{collection_desc}'")
         print(f"items='{collection_items}")
         # Test for known HF field constraints
+        # TODO: lint for this length early in CI (or even in PR workflow)
         if len(collection_desc) > HF_COLLECTION_DESC_MAX_LEN:
             print(f"ERROR: title='{collection_desc}' exceeds {HF_COLLECTION_DESC_MAX_LEN} character limit.")
             sys.exit(2)
@@ -214,7 +215,7 @@ if __name__ == "__main__":
                 hf_token=hf_token)
          
     # Print output variables
-    print(f"collection: {collection}") 
+    # print(f"collection: {collection}") 
     
     # Exit successfully
     sys.exit(0) 
