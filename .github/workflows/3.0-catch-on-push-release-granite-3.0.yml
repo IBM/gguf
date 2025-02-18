@@ -29,10 +29,15 @@ jobs:
         id: set-vars
         run: |
             echo "some_var: $TARGET_REPO_OWNER"
-            echo "some_var=$TARGET_REPO_OWNER" >> $GITHUB_OUTPUT
+            echo "some_var=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "another_var: $COLLECTION_CONFIG"
-            echo "another_var=$COLLECTION_CONFIG" >> $GITHUB_OUTPUT   
+            echo "another_var=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"   
+      - name: Print output values
+        run: |
+            echo "some_var: '${{ steps.set-vars.outputs.some_var }}'"    
+            echo "another_var: '${{ steps.set-vars.outputs.another_var }}'"                       
   call-workflow-passing-data:  
+    needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
       # hf_collection_config: ${{env.COLLECTION_CONFIG}}
