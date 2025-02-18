@@ -2,7 +2,7 @@ import os
 import sys
 import requests
 
-from huggingface_hub import create_repo, list_collections, create_collection, add_collection_item, Collection, CollectionItem
+from huggingface_hub import create_repo
 from huggingface_hub.utils import HfHubHTTPError
 
 # Constants
@@ -220,13 +220,13 @@ if __name__ == "__main__":
             repo_id = item_defn["repo_id"]    
             repo_org, repo_name = os.path.split(repo_id)
                                 
-            print(f"repo_org: '{repo_org}', repo_name: '{repo_name}'")                    
+            print(f">> repo_org: '{repo_org}', repo_name: '{repo_name}'")                    
 
-            # safe_create_repo_in_namespace(
-            #     repo_name=repo_name, 
-            #     private=True, 
-            #     hf_token=hf_token,
-            # )
+            safe_create_repo_in_namespace(
+                repo_name=repo_name, 
+                private=True, 
+                hf_token=hf_token,
+            )
     
     # Exit successfully
     sys.exit(0) 
