@@ -6,8 +6,8 @@ on:
     branches: 
       - 'release/granite-3.1'
     tags:
-      - "v3.1*"      
-  workflow_dispatch:      
+      - "v3.1*"
+  workflow_dispatch:
 
 permissions:
  contents: read
@@ -15,17 +15,51 @@ permissions:
 
 env:
   DEBUG: true
-  TARGET_REPO_OWNER: mrutkows # ibm-research  
-  COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test.json" # "resources/json/granite-3.1/hf_collection_mapping.json"
-  target_foo: bar-3.1
+  TARGET_REPO_NAME_EXT: -GGUF
+  # TARGET_REPO_OWNER: # ibm-research
+  # COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping.json"
+  TARGET_REPO_OWNER: mrutkows  
+  COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test.json"
 
 jobs:
+  environment-setup:
+    runs-on: ubuntu-latest
+    outputs:
+      hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
+      target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
+      debug: ${{env.DEBUG}}
+    steps:
+      - name: Print inputs passed to the reusable workflow
+        id: set-vars
+        run: |
+            echo "hf_collection_config: $COLLECTION_CONFIG"
+            echo "target_repo_owner: $TARGET_REPO_OWNER"
+            echo "target_repo_name_ext: $TARGET_REPO_NAME_EXT"                        
+            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
+            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"          
+      # - name: Print output values
+      #   run: |       
+      #       echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
+      #       echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
+      #       echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                            
+  call-create-repos:  
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
+    with:
+      var1: "resources/json/granite-3.0/hf_collection_mapping_test.json"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+    secrets: inherit
+
   on-push-release-tag:
-    runs-on: macos-latest     
+    needs: [ call-create-repos ]    
+    runs-on: ubuntu-latest # macos-latest     
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
       target_collection_config: "${{ env.COLLECTION_CONFIG }}"
-      target_foo: bar-3.1
 
     steps:
     - uses: actions/checkout@v4
@@ -36,6 +70,7 @@ jobs:
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
         echo "[INFO] >> event_type: '${{ github.event_type }}'" 
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"        
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
@@ -46,8 +81,8 @@ jobs:
 
     - name: Dump GitHub context
       env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"  
+        GH_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GH_CONTEXT"  
 
     - name: confirm-environment
       run: |
