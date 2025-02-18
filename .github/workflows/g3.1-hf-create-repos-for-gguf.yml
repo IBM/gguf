@@ -7,11 +7,11 @@ on:
   #   branches:
   #     - 'main'  
   workflow_dispatch:
-  workflow_run:    
-    workflows: 
-      - g3.1-release-tag
-    types: 
-      - completed    
+  # workflow_run:    
+  #   workflows: 
+  #     - g3.1-release-tag
+  #   types: 
+  #     - completed    
  
 permissions:
  contents: write

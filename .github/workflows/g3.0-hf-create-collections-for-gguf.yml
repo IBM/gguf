@@ -11,7 +11,6 @@ on:
   workflow_run:
     workflows: 
       - g3.0-hf-quantize-upload-gguf
-    branches: [main]
     types: 
       - completed      
  

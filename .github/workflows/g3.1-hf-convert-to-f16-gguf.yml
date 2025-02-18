@@ -8,7 +8,8 @@ on:
   workflow_dispatch:  
   workflow_run:
     workflows: 
-      - g3.1-hf-create-repos-for-gguf
+      # - g3.1-hf-create-repos-for-gguf
+      - g3.1-release-tag      
     types: 
       - completed      
  
