@@ -44,12 +44,21 @@ jobs:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
-      var1: "resources/json/granite-3.0/hf_collection_mapping_test.json"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
     secrets: inherit
+
+  # call-convert-hf-to-f16-gguf:  
+  #   needs: [ call-create-repos ]
+  #   uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+  #   with:
+  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+  #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+  #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+  #   secrets: inherit
 
   on-push-release-tag:
     needs: [ call-create-repos ]    
