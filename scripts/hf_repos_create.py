@@ -9,7 +9,7 @@ from huggingface_hub.utils import HfHubHTTPError
 HF_COLLECTION_DESC_MAX_LEN = 150
 
 
-def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=None) -> RepoUrl:
+def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=None) -> None:
     if repo_name == "":
         print("Please provide a repo_name")
         return None
