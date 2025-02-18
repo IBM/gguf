@@ -35,11 +35,7 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"          
-      # - name: Print step output values
-      #   run: |       
-      #       echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
-      #       echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
-      #       echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                            
+                           
   call-create-repos:  
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
@@ -50,8 +46,9 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
     secrets: inherit
 
+  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
-    needs: [ call-create-repos ]
+    needs: [ call-create-repos, environment-setup ]
     permissions:
       contents: write
       packages: write
