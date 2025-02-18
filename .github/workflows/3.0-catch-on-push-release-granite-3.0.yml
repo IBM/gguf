@@ -28,10 +28,10 @@ jobs:
       - name: Print inputs passed to the reusable workflow
       id: set-vars
       run: |
-          echo "some var: $SOME_VAR"
-          echo "some_var=$SOME_VAR" >> $GITHUB_OUTPUT
-          echo "another var: $ANOTHER_VAR"
-          echo "another_var=$ANOTHER_VAR" >> $GITHUB_OUTPUT   
+          echo "some var: $TARGET_REPO_OWNER"
+          echo "some_var=$TARGET_REPO_OWNER" >> $GITHUB_OUTPUT
+          echo "another var: $COLLECTION_CONFIG"
+          echo "another_var=$COLLECTION_CONFIG" >> $GITHUB_OUTPUT   
   call-workflow-passing-data:  
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
@@ -42,7 +42,6 @@ jobs:
       some_var: ${{ needs.environment-setup.outputs.some_var }}
       another_var: ${{ needs.environment-setup.outputs.anther_var }}      
     secrets: inherit
-
 
   on-push-release-tag:
     runs-on: macos-latest     
