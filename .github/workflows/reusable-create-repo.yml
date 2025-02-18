@@ -9,11 +9,13 @@ on:
       target_repo_owner:
         required: true
         type: string
-      some_var:
+      var1:
         type: string   
+        required: true        
         default: "default-value"
-      another_var:
+      var2:
         type: string
+        required: true        
         default: "default-value"
 
 jobs:   
@@ -45,6 +47,6 @@ jobs:
       run: |
         echo "REPO_BRANCH=$(git branch -r --contains ${{ github.ref }})" >> $GITHUB_ENV
 
-    - name: Set branch name for tag
+    - name: Echo branch name for tag
       run: |        
         echo "[INFO] REPO_BRANCH: '${{ env.REPO_BRANCH }}'"
