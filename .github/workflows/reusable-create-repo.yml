@@ -10,9 +10,9 @@ on:
         required: true
         type: string
       var1:
-        type: string   
+        type: boolean   
         required: true        
-        default: "default-value"
+        default: false
       var2:
         type: string
         required: true        

@@ -15,8 +15,10 @@ permissions:
 
 env:
   DEBUG: true
-  TARGET_REPO_OWNER: mrutkows # ibm-research  
-  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+  # TARGET_REPO_OWNER: # ibm-research
+  # COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping.json"
+  TARGET_REPO_OWNER: mrutkows  
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json"
 
 jobs:
   environment-setup:
@@ -24,32 +26,32 @@ jobs:
     outputs:
       some_var: ${{ steps.set-vars.outputs.some_var }}
       another_var: ${{ steps.set-vars.outputs.another_var }}   
+      debug: ${{env.DEBUG}}
     steps:
       - name: Print inputs passed to the reusable workflow
         id: set-vars
         run: |
-            echo "some_var: $TARGET_REPO_OWNER"
-            echo "some_var=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
-            echo "another_var: $COLLECTION_CONFIG"
-            echo "another_var=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"   
+            echo "hf_collection_config: $TARGET_REPO_OWNER"
+            echo "hf_collection_config=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner: $COLLECTION_CONFIG"
+            echo "target_repo_owner=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"   
       - name: Print output values
         run: |
-            echo "some_var: '${{ steps.set-vars.outputs.some_var }}'"    
-            echo "another_var: '${{ steps.set-vars.outputs.another_var }}'"                       
-  call-workflow-passing-data:  
+            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
+            echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"                       
+  call-create-repos:  
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
-      # hf_collection_config: ${{env.COLLECTION_CONFIG}}
-      # target_repo_owner: ${{env.TARGET_REPO_OWNER }}
-      hf_collection_config: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
-      target_repo_owner: ibm-granite
-      var1: ${{ needs.environment-setup.outputs.some_var }}
-      var2: ${{ needs.environment-setup.outputs.another_var }}      
+      var1: "resources/json/granite-3.0/hf_collection_mapping_test.json"
+      var2: ${{ needs.environment-setup.outputs.debug }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}      
     secrets: inherit
 
   on-push-release-tag:
-    runs-on: macos-latest     
+    needs: [ call-create-repos ]    
+    runs-on: ubuntu-latest # macos-latest     
     outputs:
       target_owner: ${{ env.TARGET_REPO_OWNER }}
       target_collection_config: "${{ env.COLLECTION_CONFIG }}"
