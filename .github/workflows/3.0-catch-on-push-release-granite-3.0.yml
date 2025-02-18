@@ -37,6 +37,7 @@ jobs:
             echo "target_repo_owner=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"   
       - name: Print output values
         run: |
+            echo "debug: '${{ steps.set-vars.outputs.debug }}'"         
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"                       
   call-create-repos:  
@@ -44,7 +45,7 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
       var1: "resources/json/granite-3.0/hf_collection_mapping_test.json"
-      var2: ${{ needs.environment-setup.outputs.debug }}
+      debug: ${{ needs.environment-setup.outputs.debug }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}      
     secrets: inherit

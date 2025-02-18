@@ -10,13 +10,13 @@ on:
         required: true
         type: string
       var1:
-        type: boolean   
-        required: true        
-        default: false
-      var2:
-        type: string
+        type: string   
         required: true        
         default: "default-value"
+      debug:
+        type: boolean
+        required: true        
+        default: false
 
 jobs:   
   reusable_workflow_job:
