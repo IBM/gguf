@@ -19,6 +19,19 @@ env:
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
 
 jobs:
+  environment-setup:
+    runs-on: ubuntu-latest
+    outputs:
+      some_var: ${{ steps.set-vars.outputs.some_var }}
+      another_var: ${{ steps.set-vars.outputs.another_var }}   
+    steps:
+      - name: Print inputs passed to the reusable workflow
+      id: set-vars
+      run: |
+          echo "some var: $SOME_VAR"
+          echo "some_var=$SOME_VAR" >> $GITHUB_OUTPUT
+          echo "another var: $ANOTHER_VAR"
+          echo "another_var=$ANOTHER_VAR" >> $GITHUB_OUTPUT   
   call-workflow-passing-data:  
     uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
     with:
@@ -26,6 +39,8 @@ jobs:
       # target_repo_owner: ${{env.TARGET_REPO_OWNER }}
       hf_collection_config: "resources/json/granite-3.0/hf_collection_mapping_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
       target_repo_owner: ibm-granite
+      some_var: ${{ needs.environment-setup.outputs.some_var }}
+      another_var: ${{ needs.environment-setup.outputs.anther_var }}      
     secrets: inherit
 
 

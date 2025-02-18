@@ -9,8 +9,14 @@ on:
       target_repo_owner:
         required: true
         type: string
+      some_var:
+        type: string   
+        default: "default-value"
+      another_var:
+        type: string
+        default: "default-value"
 
-jobs:
+jobs:   
   reusable_workflow_job:
     runs-on: macos-latest
     steps: 
@@ -24,7 +30,6 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-        echo "[INFO] > inputs: '${{inputs}}'"
 
     - name: Dump GitHub context
       env:
