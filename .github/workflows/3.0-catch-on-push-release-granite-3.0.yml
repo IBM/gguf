@@ -26,6 +26,7 @@ jobs:
     outputs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
+      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}  
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
