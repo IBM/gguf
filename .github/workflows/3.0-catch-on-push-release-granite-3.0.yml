@@ -22,11 +22,12 @@ env:
 jobs:
   environment-setup:
     runs-on: ubuntu-latest
+    # TODO: see if outputs are needed (or even valid)
     outputs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
     steps:
-      - name: Print inputs passed to the reusable workflow
+      - name: Set environment variables in GitHub output
         id: set-vars
         run: |
             echo "hf_collection_config: $COLLECTION_CONFIG"
@@ -34,7 +35,13 @@ jobs:
             echo "target_repo_name_ext: $TARGET_REPO_NAME_EXT"                        
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
-            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"     
+            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
+      - name: Confirm GitHub output values were set
+        run: |       
+            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
+            echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
+            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"  
+            echo "debug: '${{ steps.set-vars.outputs.debug }}'"                          
 
       # - name: Dump runner context
       #   env:
@@ -55,9 +62,9 @@ jobs:
           echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"                         
           echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
                            
-  call-create-repos:  
+  call-create-hf-repos:  
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-repo.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
@@ -67,7 +74,7 @@ jobs:
 
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
-    needs: [ call-create-repos, environment-setup ]
+    needs: [ call-create-hf-repos, environment-setup ]
     permissions:
       contents: write
       packages: write
@@ -85,7 +92,7 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit    
 
-  call-quantize-model-gguf:  
+  call-quantize-upload-gguf:  
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
     permissions:
       contents: write
@@ -109,22 +116,13 @@ jobs:
       quantization: "${{ matrix.quantization }}"      
     secrets: inherit
 
-  # on-push-release-tag:
-  #   needs: [ call-quantize-model-gguf ]    
-  #   runs-on: ubuntu-latest # macos-latest     
-  #   outputs:
-  #     target_owner: ${{ env.TARGET_REPO_OWNER }}
-  #     target_collection_config: "${{ env.COLLECTION_CONFIG }}"
-
-  #   steps:
-  #   - run: |
-  #       echo "[INFO] github.env:"   
-  #       echo "[INFO] >> run_id: '${{ github.run_id }}'"       
-  #       echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-  #       echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
-  #       echo "[INFO] >> event_type: '${{ github.event_type }}'" 
-  #       echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-  #       echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"        
-  #       echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-  #       echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"        
-        
+  call-create-hf-collections:  
+    needs: [ call-quantize-upload-gguf, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+    secrets: inherit    
+  

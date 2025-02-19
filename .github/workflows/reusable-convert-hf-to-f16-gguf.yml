@@ -104,8 +104,7 @@ jobs:
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
 
     - name: verify-github-env
-      run: |     
-        echo "================== GITHUB_ENV ====================="           
+      run: |               
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"    
 
