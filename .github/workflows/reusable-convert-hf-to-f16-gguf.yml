@@ -22,28 +22,13 @@ on:
       repo_id:
         type: string
         required: true                
- 
-# permissions:
-#  contents: write
-#  packages: write
 
 env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  # TARGET_REPO_OWNER: mrutkows  # ibm-research
-  # TARGET_REPO_NAME_EXT: -GGUF
 
-# Full matrix:
-# repo_id: [
-#   "ibm-granite/granite-3.0-2b-instruct", 
-#   "ibm-granite/granite-3.0-8b-instruct",
-#   "ibm-granite/granite-3.0-3b-a800m-instruct",
-#   "ibm-granite/granite-3.0-1b-a400m-instruct",
-#   "ibm-granite/granite-guardian-3.0-2b",
-#   "ibm-granite/granite-guardian-3.0-8b", 
-# ]
 jobs:  
   convert-f16:
     runs-on: macos-latest    
@@ -58,7 +43,12 @@ jobs:
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"          
+      run: echo "$GITHUB_INPUTS"   
+      
+    - name: Dump GitHub quiet
+      env:
+        GH_QUIET: ${{ toJson(secrets) }}
+      run: echo "$GH_QUIET"       
 
     - name: confirm-environment
       run: |
@@ -140,7 +130,7 @@ jobs:
 
     - name: download-model-snapshot
       run: |                         
-        python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
+        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN}}
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
