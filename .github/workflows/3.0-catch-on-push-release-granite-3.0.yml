@@ -55,7 +55,7 @@ jobs:
     strategy:
       matrix:
         repo_id: [
-          "mrutkows/granite-3.0-1b-a400m-instruct",
+          "ibm-granite/granite-3.0-1b-a400m-instruct",
         ]    
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     with:
