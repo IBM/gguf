@@ -58,7 +58,7 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT" 
-            echo "source_repos=$SOURCE_REPOSE" >> "$GITHUB_OUTPUT" 
+            echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT" 
       - name: Confirm GitHub output values were set
         run: |       
             echo "debug: '${{ steps.set-vars.outputs.debug }}'"         
