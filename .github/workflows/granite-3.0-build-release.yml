@@ -1,4 +1,4 @@
-name: granite-3.0-tagged-release
+name: granite-3.0-on-push-tagged-release
 run-name: Granite 3.0 - build/release quantized GGUF models
 
 # Full matrix (Ollama):

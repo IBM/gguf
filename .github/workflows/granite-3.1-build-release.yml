@@ -1,4 +1,4 @@
-name: granite-3.1-tagger-release
+name: granite-3.1-on-push-tagged-release
 run-name: Granite 3.1 - build/release quantized GGUF models
 
 # Full prod. matrix:
