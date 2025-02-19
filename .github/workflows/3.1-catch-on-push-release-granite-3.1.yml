@@ -22,10 +22,11 @@ env:
 jobs:
   environment-setup:
     runs-on: ubuntu-latest
-    # TODO: see if outputs are needed (or even valid)
+    # Note: declaration of these outputs is essential to pass to the next job
     outputs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
+      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}        
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
