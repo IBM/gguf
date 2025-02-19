@@ -103,7 +103,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        repo_id: fromJson(${{ needs.environment-setup.outputs.source_repos }})
+        repo_id: ${{ fromJSON(needs.environment-setup.outputs.source_repos) }}
         # repo_id: [
         #   "ibm-granite/granite-3.0-1b-a400m-instruct",
         # ]    
