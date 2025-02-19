@@ -1,5 +1,5 @@
 name: granite-3.0-on-push-tagged-release
-run-name: "Granite 3.0 - CI/CD quantized GGUF models"
+run-name: "Granite 3.0 - CI/CD quantized GGUF models [${{github.ref_name}}]"
 
 # Full matrix (Ollama):
 # repo_id: [
