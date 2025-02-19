@@ -103,10 +103,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}
-        # repo_id: [
-        #   "ibm-granite/granite-3.1-1b-a400m-instruct",
-        # ]    
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -124,9 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: [
-          "ibm-granite/granite-3.1-1b-a400m-instruct",                  
-        ]
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}          
         quantization: [
           "Q4_K_M", 
         ]  

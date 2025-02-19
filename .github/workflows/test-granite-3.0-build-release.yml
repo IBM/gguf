@@ -21,6 +21,8 @@ permissions:
 
 env:
   DEBUG: true
+  SOURCE_REPOS: "[ 'ibm-granite/granite-3.0-1b-a400m-instruct', 
+    'ibm-granite/granite-3.0-3b-a800m-instruct']"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json"
@@ -33,6 +35,7 @@ jobs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}  
+      source_repos: "${{ steps.set-vars.outputs.source_repos }}"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -45,12 +48,14 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
+            echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT" 
       - name: Confirm GitHub output values were set
         run: |       
-            echo "debug: '${{ steps.set-vars.outputs.debug }}'"         
+            echo "debug: ${{ steps.set-vars.outputs.debug }}"         
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
+            echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"  
 
       # - name: Dump runner context
       #   env:
@@ -88,10 +93,8 @@ jobs:
       contents: write
       packages: write
     strategy:
-      matrix:
-        repo_id: [
-          "ibm-granite/granite-3.0-1b-a400m-instruct",
-        ]    
+      matrix:  
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}        
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -109,9 +112,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: [
-          "ibm-granite/granite-3.0-1b-a400m-instruct",                  
-        ]
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
         quantization: [
           "Q4_K_M", 
         ]  
