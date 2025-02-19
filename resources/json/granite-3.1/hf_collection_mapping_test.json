@@ -7,6 +7,10 @@
                 {
                     "type": "model",                  
                     "repo_id": "mrutkows/granite-3.1-1b-a400m-instruct-GGUF"
+                },
+                {
+                    "type": "model",                    
+                    "repo_id": "mrutkows/granite-3.1-3b-a800m-instruct-GGUF"
                 }
             ]
         }
