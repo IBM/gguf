@@ -1,7 +1,7 @@
 # This workflow converts an original model from HF (in safetensors format) to an f16 GGUF format model.
 # it then uploads the f16 model to Hugging Face Hub for the 'repo_id' (from the build matrix).
 
-name: convert-hf-safetensors-to-f16-gguf
+name: convert-hf-safetensors-to-f16-gguf-reusable
 
 on:
   workflow_call:

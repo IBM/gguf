@@ -1,10 +1,10 @@
 name: g3.0-release-tag
-#run-name: Create repos for GGUF
+#run-name: Release quantized GGUF models for Granite 3.0
 
 on:
   push:   
-    branches: 
-      - 'release/granite-3.0'
+    # branches: 
+    #   - 'release/granite-3.0'
     tags:
       - "v3.0*"
   workflow_dispatch:
@@ -30,18 +30,20 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
-            echo "hf_collection_config: $COLLECTION_CONFIG"
-            echo "target_repo_owner: $TARGET_REPO_OWNER"
-            echo "target_repo_name_ext: $TARGET_REPO_NAME_EXT"                        
+            echo "DEBUG: $DEBUG"        
+            echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
+            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
+            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"     
+            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"                    
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
       - name: Confirm GitHub output values were set
         run: |       
+            echo "debug: '${{ steps.set-vars.outputs.debug }}'"         
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
-            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"  
-            echo "debug: '${{ steps.set-vars.outputs.debug }}'"                          
+            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
 
       # - name: Dump runner context
       #   env:
