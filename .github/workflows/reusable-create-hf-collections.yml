@@ -1,3 +1,9 @@
+# This workflow:
+# - Loads the collection->repo_id mapping from the specified JSON config file.
+# - Using the JSON collection mapping dict. to:
+#   - Creates the defined HF collections in the target org. (i.e., 'repo_owner' or namespace) in HF Hub.
+#   - Adds the defined model repos. (i.e., 'repo_id's ) to their corresponding HF collections.
+
 name: create-hf-collections-reusable
 
 on:

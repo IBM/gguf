@@ -1,6 +1,12 @@
 name: test-granite-3.0-build-release
-#run-name: [TEST] Release quantized GGUF models for Granite 3.0
+run-name: \[TEST\] Granite 3.0 - build/release quantized GGUF models
 
+# repo_id: [
+#   "ibm-granite/granite-3.0-1b-a400m-instruct",                  
+# ]
+# quantization: [
+#   "Q4_K_M", 
+# ]  
 on:
   push:   
     # branches: 
