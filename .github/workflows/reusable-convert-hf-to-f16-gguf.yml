@@ -81,16 +81,13 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |
-        echo "working_dir=$(pwd)" >> $GITHUB_OUTPUT      
-        echo "working_dir=$(pwd)" >> $GITHUB_ENV        
+      run: |       
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |     
         echo "================== GITHUB_ENV ====================="           
-        echo "working_dir=$working_dir"
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"    
 
