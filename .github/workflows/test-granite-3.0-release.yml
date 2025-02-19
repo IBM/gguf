@@ -1,5 +1,5 @@
-name: g3.0-release-tag
-#run-name: Release quantized GGUF models for Granite 3.0
+name: test-granite-3.0-build-release
+#run-name: [TEST] Release quantized GGUF models for Granite 3.0
 
 on:
   push:   
