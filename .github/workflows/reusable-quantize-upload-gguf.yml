@@ -10,34 +10,34 @@ name: quantize-upload-gguf-reusable
 on:
   workflow_call:
     inputs:
-      hf_collection_config:
-        required: true
-        type: string
-      target_repo_owner:
-        required: true
-        type: string
-      target_repo_name_ext:
-        required: true
-        type: string        
-      debug:
-        type: boolean
-        required: true        
-        default: false
       repo_id:
         type: string
         required: true   
       quantization:
         type: string
-        required: true               
+        required: true       
+      hf_collection_config:
+        type: string        
+        required: true
+      target_repo_owner:
+        type: string 
+        required: true
+      target_repo_name_ext:
+        type: string         
+        required: true       
+      debug:
+        type: boolean
+        required: true        
+        default: false              
 
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  F16_FILE_EXISTS: "0"
+  F16_OPT_ENABLED: true
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
-  F16_OPT_ENABLED: true
-  F16_FILE_EXISTS: "0"
 
 jobs:
   quantize:
@@ -45,6 +45,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
@@ -57,28 +58,38 @@ jobs:
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
-
-    - name: Dump GitHub context
-      env:
-        GH_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GH_CONTEXT"           
-     
     - name: confirm-environment
       run: |
         uname -a
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
-        echo "github.workspace: ${{ github.workspace}}"  
-        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"    
+        echo "github.workspace: ${{ github.workspace }}"  
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"    
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"    
-        echo "env.FIND_ARGS: ${{env.FIND_ARGS}}"                           
-        echo "env.LLAMACPP_DIR: ${{env.LLAMACPP_DIR}}"           
-        echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"            
-        echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"         
+        echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"    
+        echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"                           
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"           
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"            
+
+    # - name: Dump runner context
+    #   env:
+    #     RUNNER_CONTEXT: ${{ toJson(runner) }}
+    #   run: echo "$RUNNER_CONTEXT"
+
+    # - name: Dump GitHub context
+    #   env:
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT"    
+
+    # - name: Dump GitHub quiet
+    #   env:
+    #     GH_QUIET: ${{ toJson(secrets) }}
+    #   run: echo "$GH_QUIET"       
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"      
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -111,7 +122,7 @@ jobs:
       run: |       
         echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
         echo "LOCAL_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
-        echo "TARGET_REPO_ID=${{inputs.target_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
       run: |   

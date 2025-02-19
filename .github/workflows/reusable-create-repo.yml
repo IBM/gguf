@@ -4,14 +4,14 @@ on:
   workflow_call:
     inputs:
       hf_collection_config:
+        type: string 
         required: true
-        type: string
       target_repo_owner:
-        required: true
-        type: string
-      target_repo_name_ext:
-        required: true
         type: string        
+        required: true
+      target_repo_name_ext:
+        type: string          
+        required: true      
       debug:
         type: boolean
         required: true        
