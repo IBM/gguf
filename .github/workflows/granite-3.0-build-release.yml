@@ -32,7 +32,7 @@ permissions:
 
 env:
   DEBUG: true
-  SOURCE_REPOS: '["ibm-granite/granite-3.0-1b-a400m-instruct", "ibm-granite/granite-3.0-3b-a800m-instruct"]'
+  SOURCE_REPOS: "['ibm-granite/granite-3.0-1b-a400m-instruct', 'ibm-granite/granite-3.0-3b-a800m-instruct']"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json"
@@ -103,7 +103,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        repo_id: ${{ fromJson(env.SOURCE_REPOS) }}
+        repo_id: fromJson(${{ env.SOURCE_REPOS}})
         # repo_id: [
         #   "ibm-granite/granite-3.0-1b-a400m-instruct",
         # ]    
