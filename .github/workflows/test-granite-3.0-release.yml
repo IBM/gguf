@@ -1,5 +1,5 @@
 name: test-granite-3.0-build-release
-run-name: \[TEST\] Granite 3.0 - build/release quantized GGUF models
+run-name: "[TEST] Granite 3.0 - release quantized GGUF models"
 
 # repo_id: [
 #   "ibm-granite/granite-3.0-1b-a400m-instruct",                  

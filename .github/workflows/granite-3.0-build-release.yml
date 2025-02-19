@@ -1,5 +1,5 @@
 name: granite-3.0-on-push-tagged-release
-run-name: Granite 3.0 - build/release quantized GGUF models
+run-name: "Granite 3.0 - Ci/CD quantized GGUF models ${{github.ref_name}}"
 
 # Full matrix (Ollama):
 # repo_id: [
@@ -68,10 +68,10 @@ jobs:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
       #   run: echo "$RUNNER_CONTEXT"
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GH_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GH_CONTEXT"  
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"  
 
       - name: confirm-environment
         run: |
@@ -124,6 +124,7 @@ jobs:
           "ibm-granite/granite-3.0-1b-a400m-instruct",                  
         ]
         quantization: [
+          "Q4_0",
           "Q4_K_M", 
         ]  
     uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
