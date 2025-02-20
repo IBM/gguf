@@ -22,6 +22,10 @@ on:
         type: boolean
         required: true        
         default: false
+      target_collection_private:
+        type: boolean
+        required: false        
+        default: true
 
 jobs:   
   reusable_workflow_job:
@@ -64,4 +68,4 @@ jobs:
     # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
     - name: create-hf-collections
       run: |
-        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} True ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} ${{ inputs.target_collection_private }} ${{secrets.HF_TOKEN}}

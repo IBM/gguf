@@ -168,7 +168,13 @@ if __name__ == "__main__":
     hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}' ({type(private)}), hf_token='{hf_token}'")     
+    
+    # private needs to be a boolean
+    if type(private) is str:
+        print(f"[WARNING] private='{private}' is a string. Converting to boolean...")         
+        if private.lower() == "true":
+            private = True
     
     # invoke fx
     import json   
@@ -189,7 +195,7 @@ if __name__ == "__main__":
         # Test for known HF field constraints
         # TODO: lint for this length early in CI (or even in PR workflow)
         if len(collection_desc) > HF_COLLECTION_DESC_MAX_LEN:
-            print(f"ERROR: title='{collection_desc}' exceeds {HF_COLLECTION_DESC_MAX_LEN} character limit.")
+            print(f"[ERROR] title='{collection_desc}' exceeds {HF_COLLECTION_DESC_MAX_LEN} character limit.")
             sys.exit(2)
         collection = safe_create_collection_in_namespace(
             hf_owner=target_owner, 
@@ -200,7 +206,7 @@ if __name__ == "__main__":
                 
         if collection is None:
             # Something went wrong creating
-            print(f"ERROR: Collection '{collection_title}' not created in namespace '{target_owner}'")
+            print(f"[ERROR] Collection '{collection_title}' not created in namespace '{target_owner}'")
             sys.exit(1)
             
         # upload all models associated with the collection

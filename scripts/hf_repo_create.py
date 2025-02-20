@@ -57,13 +57,19 @@ if __name__ == "__main__":
     hf_token = sys.argv[3]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: repo_name='{repo_name}', private='{private}' ({type(private)}), hf_token='{hf_token}'")     
+    
+    # private needs to be a boolean
+    if type(private) is str:
+        print(f"[WARNING] private='{private}' is a string. Converting to boolean...") 
+        if private.lower() == "true":
+            private = True
     
     # invoke fx
     repo_url = safe_create_repo_in_namespace(repo_name=repo_name, private=private, hf_token=hf_token)    
     
     # Print output variables for this run
-    print(f"repo_url: {repo_url}") 
+    print(f"[INFO] Created repository. repo_url: {repo_url}") 
     
     # Exit successfully
     sys.exit(0)      

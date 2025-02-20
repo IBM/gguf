@@ -1,6 +1,6 @@
 huggingface_hub
-langchain_community
-langchain_ollama
+# langchain_community
+# langchain_ollama
 
 # TODO: IBM Granite Snack Cookbook requirements
 # See: https://github.com/ibm-granite-community/granite-snack-cookbook/

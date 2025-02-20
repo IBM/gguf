@@ -16,6 +16,10 @@ on:
         type: boolean
         required: true        
         default: false
+      target_repo_private:
+        type: boolean
+        required: false        
+        default: true        
 
 jobs:   
   reusable_workflow_job:
@@ -57,5 +61,5 @@ jobs:
 
     - name: create-hf-repos
       run: |
-        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{inputs.hf_collection_config}} True ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.target_repo_private }} ${{ secrets.HF_TOKEN }}
   
