@@ -144,7 +144,7 @@ jobs:
 
     - name: download-model-snapshot
       run: |                         
-        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
