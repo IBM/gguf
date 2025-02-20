@@ -1,5 +1,5 @@
-name: granite-3.1-on-push-tagged-preview-release
-run-name: "[PREVIEW] Granite 3.1 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+name: granite-3.2-on-push-tagged-preview-release
+run-name: "[PREVIEW] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 # Full matrix:
 # repo_id: "[ 
