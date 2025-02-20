@@ -1,7 +1,7 @@
 name: granite-3.1-on-push-tagged-release
 run-name: "Granite 3.1 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
-# Full matrix (Ollama):
+# Full matrix:
 # repo_id: "[ 
 #   'ibm-granite/granite-3.1-2b-instruct', 
 #   'ibm-granite/granite-3.1-8b-instruct',
@@ -117,6 +117,7 @@ jobs:
       contents: write
       packages: write
     strategy:
+      fail-fast: false      
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
