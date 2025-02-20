@@ -175,6 +175,8 @@ if __name__ == "__main__":
         print(f"[WARNING] private='{private}' is a string. Converting to boolean...")         
         if private.lower() == "true":
             private = True
+        else:
+            private = False            
     
     # invoke fx
     import json   

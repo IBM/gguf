@@ -194,8 +194,16 @@ if __name__ == "__main__":
     hf_token = sys.argv[4]
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}', hf_token='{hf_token}'")     
+    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}' ({type(private)}), hf_token='{hf_token}'")     
     
+    # private needs to be a boolean
+    if type(private) is str:
+        print(f"[WARNING] private='{private}' is a string. Converting to boolean...") 
+        if private.lower() == "true":
+            private = True
+        else:
+            private = False
+                
     # invoke fx
     import json   
     with open(collection_config, "r") as file:
@@ -220,11 +228,11 @@ if __name__ == "__main__":
             repo_id = item_defn["repo_id"]    
             repo_org, repo_name = os.path.split(repo_id)
                                 
-            print(f">> repo_org: '{repo_org}', repo_name: '{repo_name}'")                    
+            print(f"[INFO] Creating repo: repo_org: '{repo_org}', repo_name: '{repo_name}'...")                    
 
             safe_create_repo_in_namespace(
                 repo_name=repo_name, 
-                private=True, 
+                private=private, 
                 hf_token=hf_token,
             )
     
