@@ -162,6 +162,6 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private }}      
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit    
   
