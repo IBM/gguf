@@ -96,9 +96,9 @@ jobs:
                            
   call-create-hf-repos:  
     needs: [ environment-setup ]
-    permissions:
-      # contents: read
-      # packages: read    
+    # permissions:
+    #   contents: read
+    #   packages: read    
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
