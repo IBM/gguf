@@ -23,7 +23,7 @@ on:
     # branches: 
     #   - 'release/granite-3.0'
     tags:
-      - "v3.0*"
+      - "test-v3.0*"
   workflow_dispatch:
 
 permissions:
