@@ -1,0 +1,18 @@
+{
+    "collections": [
+        {
+            "title": "Granite 3.2 Model Preview (GGUF)",
+            "description": "GGUF-formatted, preview versions of IBM Granite models published in the 'ibm-granite' org. in Hugging Face. Licensed under the Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",
+                    "repo_id": "mrutkows/granite-3.2-2b-instruct-GGUF"
+                },
+                {
+                    "type": "model",                
+                    "repo_id": "mrutkows/granite-3.2-8b-instruct-GGUF"
+                }
+            ]
+        }
+    ]
+}
