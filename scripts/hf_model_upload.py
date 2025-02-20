@@ -47,8 +47,7 @@ def safe_upload_file(
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_id}', model_file: '{model_file}'")
-        return False
+        print(f"[ERROR] HfHubHTTPError: {exc.server_message}, repo_name: '{repo_id}', model_file: '{model_file}'")
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
     except requests.exceptions.ConnectionError as exc:
@@ -86,7 +85,9 @@ if __name__ == "__main__":
     commit_info = safe_upload_file(repo_id=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref, run_id=run_id)
     
     # Print output variables
-    print(f"commit_info: {commit_info}") 
+    if commit_info is None:
+        sys.exit(1)
     
     # Exit successfully
+    print(f"commit_info: {commit_info}")  
     sys.exit(0)      
