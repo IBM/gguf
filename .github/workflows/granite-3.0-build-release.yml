@@ -40,6 +40,7 @@ env:
     ]"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
+  TARGET_REPO_PRIVATE: true   
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json"
 
 jobs:
@@ -52,6 +53,7 @@ jobs:
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}  
       source_repos: "${{ steps.set-vars.outputs.source_repos }}"
       target_quantizations: "${{ steps.set-vars.outputs.target_quantizations }}"
+      target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}      
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -65,7 +67,8 @@ jobs:
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT" 
             echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT" 
-            echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"             
+            echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"  
+            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"                            
       - name: Confirm GitHub output values were set
         run: |       
             echo "debug: ${{ steps.set-vars.outputs.debug }}"         
@@ -74,6 +77,7 @@ jobs:
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
             echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"  
             echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'" 
+            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"    
 
       # - name: Dump runner context
       #   env:
@@ -105,6 +109,7 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private }}
     secrets: inherit
 
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
@@ -157,5 +162,6 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private }}      
     secrets: inherit    
   
