@@ -50,7 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: [
-          "ibm-granite/granite-3.2-1b-a400m-instruct",                  
+          "ibm-granite/granite-3.2-2b-instruct",                  
         ]
         quantization: [
           "Q4_K_M", 
