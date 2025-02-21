@@ -199,31 +199,30 @@ if __name__ == "__main__":
         if len(collection_desc) > HF_COLLECTION_DESC_MAX_LEN:
             print(f"[ERROR] title='{collection_desc}' exceeds {HF_COLLECTION_DESC_MAX_LEN} character limit.")
             sys.exit(2)
+        # Create the actual collection
         collection = safe_create_collection_in_namespace(
             hf_owner=target_owner, 
             title=collection_title, 
             description=collection_desc, 
             hf_token=hf_token,
         )
-                
+        # Fail fast if the collection was not created
         if collection is None:
             # Something went wrong creating
             print(f"[ERROR] Collection '{collection_title}' not created in namespace '{target_owner}'")
             sys.exit(1)
+        
+        print(f"[INFO] Collection: '{collection}' created in namespace '{target_owner}'")
             
         # upload all models associated with the collection
         for item_defn in collection_items:
-            print(f"item_defn: '{item_defn}'")
             item_type = item_defn["type"]
             repo_id = item_defn["repo_id"]           
-                                
+            print(f"[INFO] >> Adding item: '{item_defn}'")                                
             add_update_collection_item(
                 collection_slug=collection.slug, 
                 repo_id=repo_id, 
                 hf_token=hf_token)
-         
-    # Print output variables
-    # print(f"collection: {collection}") 
     
     # Exit successfully
     sys.exit(0) 
