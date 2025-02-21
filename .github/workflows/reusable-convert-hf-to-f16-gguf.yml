@@ -142,6 +142,7 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list      
 
+    # TODO: need a "source" and "target" HF_TOKEN    
     - name: download-model-snapshot
       run: |                         
         python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
