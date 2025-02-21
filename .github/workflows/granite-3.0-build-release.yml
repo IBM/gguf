@@ -33,12 +33,8 @@ permissions:
 env:
   DEBUG: true
   SOURCE_REPOS: "[ 
-    'ibm-granite/granite-3.0-2b-instruct', 
-    'ibm-granite/granite-3.0-8b-instruct',
     'ibm-granite/granite-3.0-3b-a800m-instruct',
     'ibm-granite/granite-3.0-1b-a400m-instruct',
-    'ibm-granite/granite-guardian-3.0-2b',
-    'ibm-granite/granite-guardian-3.0-8b'
     ]"
   TARGET_QUANTIZATIONS: "[ 
       'Q4_0', 'Q4_K_M', 
@@ -46,7 +42,7 @@ env:
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
   TARGET_REPO_PRIVATE: true   
-  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_preview_test.json"
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test.json"
 
 jobs:
   environment-setup:
