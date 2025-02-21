@@ -14,18 +14,30 @@
 name: bvt-hf-quantized-models-gguf
 
 on:
-  # Assure repos. have been created before any uploads (by ref. workflow)
-  workflow_dispatch:       
- 
-permissions:
-  contents: write
-  packages: write
+  workflow_dispatch:   
+  workflow_call:
+    inputs:
+      repo_id:
+        type: string
+        required: true   
+      quantization:
+        type: string
+        required: true       
+      target_repo_owner:
+        type: string        
+        required: true
+      target_repo_name_ext:
+        type: string          
+        required: true      
+      debug:
+        type: boolean
+        required: true        
+        default: false    
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
-  DEBUG: true
+  DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
-  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_SEED: 647063347
@@ -39,8 +51,8 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
-  TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: ibm-granite # ibm-research
+  # TARGET_REPO_NAME_EXT: -GGUF
+  # TARGET_REPO_OWNER: ibm-granite # ibm-research
   TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
   TEST_LLAMA_RUN: false
@@ -48,51 +60,51 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: [
-          "ibm-granite/granite-3.2-2b-instruct",                  
-        ]
-        quantization: [
-          "Q4_K_M", 
-        ]
+    # strategy:
+      # fail-fast: false
+      # matrix:
+      #   repo_id: [
+      #     "ibm-granite/granite-3.2-2b-instruct",                  
+      #   ]
+      #   quantization: [
+      #     "Q4_K_M", 
+      #   ]
 
     steps:
     - uses: actions/checkout@v4
-
-    # - name: Dump runner context
-    #   env:
-    #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-    #   if: env.DEBUG == 'true'          
-    #   run: echo "$RUNNER_CONTEXT"
+    - name: confirm-environment
+      run: |
+        echo "[INFO] github.env:"   
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
+        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     # - name: Dump GitHub context
     #   env:
-    #     GITHUB_CONTEXT: ${{ toJson(github) }}
-    #   if: env.DEBUG == 'true'          
-    #   run: echo "$GITHUB_CONTEXT"           
-    
-    - name: confirm-environment
-      run: |
-        uname -a
-        echo "runner.os: ${{ runner.os }}"
-        echo "runner.arch: ${{ runner.arch }}"
-        echo "github.workspace: ${{ github.workspace}}"
-        echo "matrix.repo_id: ${{ matrix.repo_id }}"   
-        echo "matrix.quantization: ${{ matrix.quantization }}"  
-        echo "env.EXT_GGUF: ${{env.EXT_GGUF}}"      
-        echo "env.FIND_ARGS: ${{env.FIND_ARGS}}"                           
-        echo "env.LLAMACPP_DIR: ${{env.LLAMACPP_DIR}}"           
-        echo "env.MODEL_DOWNLOAD_DIR: ${{env.MODEL_DOWNLOAD_DIR}}"        
-        echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"   
-        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"          
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT"   
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"                              
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list  
 
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
@@ -101,13 +113,13 @@ jobs:
     - name: set-github-env
       id: set_github_env
       run: |       
-        echo "REPO_ORG=$(dirname '${{ matrix.repo_id }}')" >> $GITHUB_ENV
-        echo "REPO_NAME=$(basename '${{ matrix.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
     
     - name: set-derivative-env-vars-1
       run: |   
-        echo "TARGET_REPO_ID=${{env.TARGET_REPO_OWNER}}/${{env.REPO_NAME}}${{env.TARGET_REPO_NAME_EXT}}" >> $GITHUB_ENV         
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{matrix.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
 
     - name: set-derivative-env-vars-2
       run: | 
@@ -119,21 +131,13 @@ jobs:
 
     - name: verify-github-env
       run: |   
-        echo "================== GITHUB_ENV =========================================="     
-        echo "REPO_ORG=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME=$REPO_NAME (${{ env.REPO_NAME }})"  
         echo "================== Derivative Environment Variables 1 =================="    
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"                 
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
         echo "================== Derivative Environment Variables 2 ==================" 
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
         echo "================== Derivative Environment Variables 3 =================="              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"    
-
-    - name: install-hf-dependencies
-      run: |
-        python -m pip install -r ./requirements.txt
-        pip list   
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"      
   
     - name: test-quantized-model-exists
       run: |
@@ -157,20 +161,12 @@ jobs:
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
 
     - name: verify-downloaded-files
-      if: env.DEBUG == 'true' 
+      if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |
         echo downloaded files...    
         echo "--------------------"                       
         find . -name \*.gguf -type f    
         echo "--------------------" 
-    
-    - name: validate-sha256
-      if: env.DEBUG == 'true' 
-      run: |
-        echo "validating sha256..."    
-        echo "--------------------" 
-        echo "TODO"
-        # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
     - name: print-storage-memory-info
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
@@ -181,7 +177,15 @@ jobs:
         clang --version
         echo "--------------------"      
         top -l 1 | grep -E "^CPU|^PhysMem"  
-        echo "--------------------"        
+        echo "--------------------"          
+    
+    # TODO:
+    # - name: validate-sha256
+    #   if: env.DEBUG == 'true' 
+    #   run: |
+    #     echo "validating sha256..."    
+    #     echo "--------------------" 
+    #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt      
         
     - name: test-llama-server-with-quantized-gguf
       if: env.TEST_LLAMA_SERVER == 'true'     
@@ -237,10 +241,11 @@ jobs:
           }'
         echo "TODO: Test for JSON response from POST /completion endpoint using jq"          
     
-    - name: kill-llama-server
-      if: env.TEST_LLAMA_SERVER == 'true'  
-      run: |
-        echo "TODO: is netstat and ps commands to get PID and kill..." 
+    # TODO:    
+    # - name: kill-llama-server
+    #   if: env.TEST_LLAMA_SERVER == 'true'  
+    #   run: |
+    #     echo "TODO: is netstat and ps commands to get PID and kill..." 
 
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'  
@@ -269,7 +274,6 @@ jobs:
 
     - name: test-print-llama-cli-generated-log
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'   
-      timeout-minutes: 10
       continue-on-error: true   
       run: |
         echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     

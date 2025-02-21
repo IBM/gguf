@@ -22,7 +22,7 @@ on:
         default: true        
 
 jobs:   
-  reusable_workflow_job:
+  reusable_create_hf_repos:
     runs-on: macos-latest
     steps: 
     - uses: actions/checkout@v4      
