@@ -2,15 +2,15 @@ import os
 import sys
 import requests
 
-from huggingface_hub import create_repo
+from huggingface_hub import create_repo, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
 
 # Constants
 HF_COLLECTION_DESC_MAX_LEN = 150
 
-def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:str=None) -> None:
-    if repo_name == "":
-        print("Please provide a repo_name")
+def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:str=None) -> RepoUrl:
+    if repo_id == "":
+        print("Please provide a repo_id")
         return None
     if hf_token == "":
         print("Please provide a token")
@@ -19,7 +19,7 @@ def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:
     try:
         print(f"[DEBUG] repo_name='{repo_name}")
         repo_url = create_repo(
-            repo_name=repo_name, 
+            repo_id,                        
             private=private, 
             exist_ok=True, 
             token=hf_token,
@@ -45,7 +45,6 @@ def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:
 #     if hf_token == "":
 #         print("Please provide a token")
 #         return False  
-    
 #     collections = list_collections(owner=hf_owner, token=hf_token)
 #     return collections
 
@@ -60,7 +59,6 @@ def safe_create_repo_in_namespace(repo_name:str="", private:bool=True, hf_token:
 #     if hf_token == "":
 #         print("Please provide a token")
 #         return False          
-    
 #     collections = get_collections_in_namespace(hf_owner=hf_owner, hf_token=hf_token)
 #     for c in collections:
 #         if c.title == title:
@@ -227,14 +225,21 @@ if __name__ == "__main__":
             item_type = item_defn["type"]
             repo_id = item_defn["repo_id"]    
             repo_org, repo_name = os.path.split(repo_id)
-                                
+            print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")                     
             print(f"[INFO] Creating repo: repo_org: '{repo_org}', repo_name: '{repo_name}'...")                    
 
-            safe_create_repo_in_namespace(
-                repo_name=repo_name, 
+            repoUrl = safe_create_repo_in_namespace(
+                repo_id=repo_id, 
                 private=private, 
                 hf_token=hf_token,
             )
+            
+            if repoUrl is None:
+              # Something went wrong creating
+              print(f"[ERROR] Repo: repo_id: '{repo_id}' not created.")
+              sys.exit(1)
+              
+            print(f"repoUrl: '{repoUrl}')")
     
     # Exit successfully
     sys.exit(0) 
