@@ -243,7 +243,6 @@ jobs:
         echo "TODO: is netstat and ps commands to get PID and kill..." 
 
     - name: test-llama-cli
-      timeout-minutes: 5
       if: env.TEST_LLAMA_CLI == 'true'  
       timeout-minutes: 10
       continue-on-error: true
