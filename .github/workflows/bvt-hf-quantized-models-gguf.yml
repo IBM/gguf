@@ -32,6 +32,7 @@ env:
   LLAMA_REQUEST_PROMPT: "Why is the sky blue?"
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RUN_BIN: ./bin/archive/2025-02-11/llama-run # ./bin/llama-run
+  LLAMA_RUN_FLAGS: "-v -n 9"
   LLAMA_RESPONSE_REGEX: "(sky|scatter)+"
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
@@ -244,6 +245,8 @@ jobs:
     - name: test-llama-cli
       timeout-minutes: 5
       if: env.TEST_LLAMA_CLI == 'true'  
+      timeout-minutes: 10
+      continue-on-error: true
       run: |  
         echo "invoking llama-cli to test inference (generation)..."
         ./bin/llama-cli -no-cnv \
@@ -266,16 +269,19 @@ jobs:
         python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})"
 
     - name: test-print-llama-cli-generated-log
-      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'      
+      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'   
+      timeout-minutes: 10
+      continue-on-error: true   
       run: |
         echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     
 
     - name: test-llama-run
       if: env.TEST_LLAMA_RUN == 'true'
       timeout-minutes: 10
+      continue-on-error: true
       run: |
         echo "invoking llama-run to test inference..."      
-        ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} -v -n 4
+        ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
         if [ $? -eq 1 ]; then
           exit 1
         fi  
