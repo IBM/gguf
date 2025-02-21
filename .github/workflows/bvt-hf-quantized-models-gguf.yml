@@ -275,7 +275,7 @@ jobs:
       timeout-minutes: 10
       run: |
         echo "invoking llama-run to test inference..."      
-        ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} -v
+        ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} -v -n 0
         if [ $? -eq 1 ]; then
           exit 1
         fi  
