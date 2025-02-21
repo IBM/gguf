@@ -173,7 +173,7 @@ jobs:
         # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
     - name: print-storage-memory-info
-      if: env.DEBUG == 'true'    
+      if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |
         df
         echo "--------------------"         

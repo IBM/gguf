@@ -17,7 +17,7 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
         return None        
     
     try:
-        print(f"[DEBUG] repo_name='{repo_name}")
+        #print(f"[DEBUG] repo_id='{repo_id}")
         repo_url = create_repo(
             repo_id,                        
             private=private, 
@@ -25,7 +25,7 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_name: '{repo_name}'")
+        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
     except requests.exceptions.HTTPError as exc:
         print(f"HTTPError: {exc}")
     except requests.exceptions.ConnectionError as exc:
@@ -37,140 +37,6 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
     else: 
         return repo_url
     return None
-
-# def get_collections_in_namespace(hf_owner:str="", hf_token:str="") -> None:
-#     if hf_owner == "":
-#         print("Please provide an owner (username or organization) for the collection")
-#         return False    
-#     if hf_token == "":
-#         print("Please provide a token")
-#         return False  
-#     collections = list_collections(owner=hf_owner, token=hf_token)
-#     return collections
-
-
-# def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> Collection:
-#     if hf_owner == "":
-#         print("Please provide an owner (username or organization) for the collection")
-#         return False
-#     if title == "":
-#         print("Please provide a title for the new collection")
-#         return False      
-#     if hf_token == "":
-#         print("Please provide a token")
-#         return False          
-#     collections = get_collections_in_namespace(hf_owner=hf_owner, hf_token=hf_token)
-#     for c in collections:
-#         if c.title == title:
-#             return c
-#     return None
-
-
-# def list_collection_attributes(collections:Collection=None, list_items:bool=False) -> None:
-#     if collections is None:
-#         print("Please provide a valid collections iterator")
-#         return
-#     # for collection in collections:
-#     print(f"---")
-#     print(f"title: `{collection.title}`, private: {collection.private}, description: `{collection.description}`, slug: `{collection.slug}`")
-#     print(f"list_items: {list_items} ({type(list_items)})")
-#     if list_items is not None:
-#         list_collection_items(collection=collection) 
-
-
-# def list_collection_items(collection:Collection=None) -> None:
-#     if collection is None:
-#         print("Please provide a valid collection")
-#         return
-#     num_items = len(collection.items)
-#     if num_items > 0:
-#         for item in collection.items:
-#             print(f"item_id: '{item.item_id}' ({item.item_type}), position: '{item.position}', item_object_id: '{item.item_object_id}'")        
-#             if item.note is not None:
-#                 print(f"\t| {item.note}")
-#     else:
-#         print(f"(no items)")
-
-
-# def safe_create_collection_in_namespace(hf_owner:str="", title:str="", description:str="", private:bool=True, hf_token:str="") -> Collection:
-#     if hf_owner == "":
-#         print("Please provide an owner (username or organization) for the collection")
-#         return False
-#     if title == "":
-#         print("Please provide a title for the collection")
-#         return False
-#     if description == "":
-#         print("Please provide a description for the collection")
-#         return False   
-#     if hf_token == "":
-#         print("Please provide a token")
-#         return False           
-    
-#     try:
-#         # We want to test if the collection already exists before creating it (and not rely on exceptions)
-#         collection = get_collection_by_title(hf_owner=hf_owner, title=title, hf_token=hf_token)
-#         if collection is None:
-#             print(f"[INFO] Creating collection '{title}' ({'private' if private else 'public'}) in namespace '{hf_owner}'...")            
-#             collection = create_collection(
-#                 namespace=hf_owner,
-#                 title=title,
-#                 description=description,
-#                 private=private,
-#                 token=hf_token,
-#         )
-#         else:
-#             print(f"[WARNING] Collection '{title}' already exists in namespace '{hf_owner}'")
-#     except HfHubHTTPError as exc:
-#         print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
-#     except requests.exceptions.HTTPError as exc:
-#         print(f"HTTPError: {exc}")
-#     except requests.exceptions.ConnectionError as exc:
-#         print(f"ConnectionError: {exc}")
-#     except requests.exceptions.Timeout as exc:
-#         print(f"Timeout: {exc}")
-#     except requests.exceptions.RequestException as exc:
-#         print(f"RequestException: {exc}")
-#     else: 
-#         return collection
-#     return None
-
-
-# def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type:str="model", hf_token:str="") -> Collection:
-#     if collection_slug == "":
-#         print("Please provide a slug (ID) for the collection item.")
-#         return False
-#     if repo_id == "":
-#         print("Please provide a repo_id for the collection item.")
-#         return False      
-#     if hf_token == "":
-#         print("Please provide a token")
-#         return False      
-    
-#     # If an item already exists in a collection (same item_id/item_type pair), 
-#     # an HTTP 409 error will be raised. 
-#     # You can choose to ignore this error by setting exists_ok=True   
-#     # TODO: do we need to support "note" arg.? It is Optional; not sure where this appears in HF UI. 
-#     try:
-#         collection = add_collection_item(
-#             collection_slug,
-#             item_id=repo_id,
-#             item_type=item_type,
-#             exists_ok=True,
-#             token=hf_token,
-#         )
-#     except HfHubHTTPError as exc:
-#         print(f"HfHubHTTPError: {exc.server_message}, item_id: '{repo_id}'")
-#     except requests.exceptions.HTTPError as exc:
-#         print(f"HTTPError: {exc}")
-#     except requests.exceptions.ConnectionError as exc:
-#         print(f"ConnectionError: {exc}")
-#     except requests.exceptions.Timeout as exc:
-#         print(f"Timeout: {exc}")
-#     except requests.exceptions.RequestException as exc:
-#         print(f"RequestException: {exc}")
-#     else: 
-#         return collection
-#     return None
 
 
 if __name__ == "__main__":       
