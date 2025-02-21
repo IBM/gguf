@@ -2,7 +2,7 @@
     "collections": [
         {
             "title": "Granite 3.2 Partner Models (GGUF)",
-            "description": "GGUF-formatted, preview versions of IBM Granite 3.2 models. Licensed under the Apache 2.0 license",
+            "description": "GGUF-formatted, preview versions of IBM Granite 3.2 models published for IBM Partners. Licensed under the Apache 2.0 license",
             "items": [
                 {
                     "type": "model",
