@@ -1,16 +1,5 @@
-# This workflow generates quantized GGUF models from the original model (safetensors) from HF.
-# For a given instance (i.e., HF model id (repo) and quantization):
-# - Checks out (clones) the current source code repository
-# - Sets environment variables used in the workflow
-# - Sets up a Python 3.11 environment
-# - Shallow clones the llama.cpp project (master branch)
-# - Installs llama.cpp python conversion script dependencies 
-# - downloads the designated model from (public) HF; primarily this are the *.safetensor files
-# - Conversion (normalization): converts HF model (safetensors) to GGUF format (normalized to f16)
-# - Quantization: converts the f16 GGUF to the designated quantization (e.g., Q4_0, Q4_K_M, etc.)
-# - IN-PROGRESS: publish the result to a release (TODO, support private repo. and secret token)
-# - TODO: push to an IBM HF repo. (collection) specifically for GGUF formatted Granite models
-
+# This workflow runs Build Verification Tests (BVT) on the quantized models 
+# using llama.cpp utilities. 
 name: bvt-hf-quantized-models-gguf
 
 on:
