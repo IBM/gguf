@@ -82,6 +82,9 @@ jobs:
   call-create-hf-repos:  
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    permissions:
+      contents: read
+      packages: read 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
@@ -138,3 +141,21 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
     secrets: inherit    
   
+  call-bvt-quantized-gguf-models:  
+    needs: [ call-quantize-upload-gguf, environment-setup ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
+    uses: IBM/gguf/.github/workflows/bvt-hf-quantized-models-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"      
+    secrets: inherit
