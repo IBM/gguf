@@ -9,7 +9,7 @@ permissions:
 
 env:
   TARGET_REPO_OWNER: mrutkows # ibm-research  
-  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_preview_test.json" # "resources/json/granite-3.0/hf_collection_mapping.json"
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test_ibm_research.json" # "resources/json/granite-3.0/hf_collection_mapping_ibm_research.json"
 
 jobs:
   delete-collections:

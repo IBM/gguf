@@ -1,32 +1,36 @@
 {
     "collections": [
         {
-            "title": "Granite 3.0 Model Preview (GGUF)",
+            "title": "Granite 3.1 Partner Models (GGUF)",
             "description": "GGUF-formatted, preview versions of IBM Granite models published in the 'ibm-granite' org. in Hugging Face. Licensed under the Apache 2.0 license",
             "items": [
                 {
                     "type": "model",
-                    "repo_id": "mrutkows/granite-3.0-2b-instruct-GGUF"
+                    "repo_id": "ibm-granite/granite-3.1-2b-instruct-GGUF"
                 },
                 {
                     "type": "model",                
-                    "repo_id": "mrutkows/granite-3.0-8b-instruct-GGUF"
+                    "repo_id": "ibm-granite/granite-3.1-8b-instruct-GGUF"
                 },
                 {
                     "type": "model",               
-                    "repo_id": "mrutkows/granite-3.0-1b-a400m-instruct-GGUF"
+                    "repo_id": "ibm-granite/granite-3.1-1b-a400m-instruct-GGUF"
                 },
                 {
                     "type": "model",                 
-                    "repo_id": "mrutkows/granite-3.0-3b-a800m-instruct-GGUF"
+                    "repo_id": "ibm-granite/granite-3.1-3b-a800m-instruct-GGUF"
                 },
                 {
                     "type": "model",                  
-                    "repo_id": "mrutkows/granite-guardian-3.0-2b-GGUF"
+                    "repo_id": "ibm-granite/granite-guardian-3.1-2b-GGUF"
                 },
                 {
                     "type": "model",                   
-                    "repo_id": "mrutkows/granite-guardian-3.0-8b-GGUF"
+                    "repo_id": "ibm-granite/granite-guardian-3.1-8b-GGUF"
+                },
+                {
+                    "type": "model",                   
+                    "repo_id": "ibm-granite/granite-vision-3.1-2b-preview-GGUF"
                 }
             ]
         }

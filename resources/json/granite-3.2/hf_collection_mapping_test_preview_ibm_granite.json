@@ -1,7 +1,7 @@
 {
     "collections": [
         {
-            "title": "Granite 3.2 Model Preview (GGUF)",
+            "title": "[TEST] Granite 3.2 Partner Models (GGUF)",
             "description": "GGUF-formatted, preview versions of IBM Granite models published in the 'ibm-granite' org. in Hugging Face. Licensed under the Apache 2.0 license",
             "items": [
                 {

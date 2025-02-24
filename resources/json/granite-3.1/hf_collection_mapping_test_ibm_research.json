@@ -1,16 +1,16 @@
 {
     "collections": [
         {
-            "title": "Granite 3.0 Language Models (GGUF) - TEST",
+            "title": "[TEST] Granite 3.1 Language Models (GGUF)",
             "description": "GGUF-formatted versions of IBM Granite models published under the 'ibm-granite' org. in Hugging Face and licensed under the Apache 2.0 license",
             "items": [
                 {
                     "type": "model",                  
-                    "repo_id": "mrutkows/granite-3.0-1b-a400m-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.1-1b-a400m-instruct-GGUF"
                 },
                 {
                     "type": "model",                    
-                    "repo_id": "mrutkows/granite-3.0-3b-a800m-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.1-3b-a800m-instruct-GGUF"
                 }
             ]
         }

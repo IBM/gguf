@@ -1,29 +1,12 @@
-name: granite-3.1-on-push-tagged-release
-run-name: "Granite 3.1 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+name: test-granite-3.0-on-push-tagged-release
+run-name: "[Test] Granite 3.0 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
-# Full matrix:
-# repo_id: "[ 
-#   'ibm-granite/granite-3.1-2b-instruct', 
-#   'ibm-granite/granite-3.1-8b-instruct',
-#   'ibm-granite/granite-3.1-3b-a800m-instruct',
-#   'ibm-granite/granite-3.1-1b-a400m-instruct',
-#   'ibm-granite/granite-guardian-3.1-2b',
-#   'ibm-granite/granite-guardian-3.1-8b'
-# ]"
-# quantization: "[ 
-#   'Q2_K', 
-#   'Q3_K_L', 'Q3_K_M', 'Q3_K_S', 
-#   'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S', 
-#   'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S', 
-#   'Q6_K', 
-#   'Q8_0'
-# ]"
 on:
   push:   
     # branches: 
-    #   - 'release/granite-3.1'
+    #   - 'release/granite-3.0'
     tags:
-      - "v3.1*"
+      - "test-v3.0*"
   workflow_dispatch:
 
 permissions:
@@ -32,21 +15,17 @@ permissions:
 
 env:
   DEBUG: true
-  SOURCE_REPOS: "[
-      'ibm-granite/granite-3.1-2b-instruct', 
-      'ibm-granite/granite-3.1-8b-instruct', 
-      'ibm-granite/granite-3.1-1b-a400m-instruct', 
-      'ibm-granite/granite-3.1-3b-a800m-instruct',
-      'ibm-granite/granite-guardian-3.1-2b',
-      'ibm-granite/granite-guardian-3.1-8b'      
+  SOURCE_REPOS: "[ 
+      'ibm-granite/granite-3.0-1b-a400m-instruct',
+      'ibm-granite/granite-3.0-3b-a800m-instruct'      
     ]"
   TARGET_QUANTIZATIONS: "[ 
       'Q4_0', 'Q4_K_M'
-    ]"  
+    ]"
   TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: mrutkows  
-  TARGET_REPO_PRIVATE: true   
-  COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_preview_test.json"
+  TARGET_REPO_OWNER: mrutkows 
+  TARGET_REPO_PRIVATE: true 
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_test_ibm_research.json"
 
 jobs:
   environment-setup:
@@ -55,10 +34,9 @@ jobs:
     outputs:
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
-      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }} 
+      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}  
       source_repos: "${{ steps.set-vars.outputs.source_repos }}"
-      target_quantizations: "${{ steps.set-vars.outputs.target_quantizations }}"     
-      target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
+      target_quantizations: "${{ steps.set-vars.outputs.target_quantizations }}"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -70,10 +48,9 @@ jobs:
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"                    
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
-            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
+            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT" 
             echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT" 
-            echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"                
+            echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"             
       - name: Confirm GitHub output values were set
         run: |       
             echo "debug: ${{ steps.set-vars.outputs.debug }}"         
@@ -82,39 +59,34 @@ jobs:
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
             echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"  
             echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'" 
-            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"             
 
-      # - name: Dump runner context
-      #   env:
-      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-      #   run: echo "$RUNNER_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: echo "$RUNNER_CONTEXT"
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GH_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GH_CONTEXT"  
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"  
 
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "runner.os: ${{ runner.os }}"
-      #     echo "runner.arch: ${{ runner.arch }}"                   
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"           
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"                         
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
-                            
+      - name: confirm-environment
+        run: |
+          uname -a
+          echo "runner.os: ${{ runner.os }}"
+          echo "runner.arch: ${{ runner.arch }}"                   
+          echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"           
+          echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"                         
+          echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
+                           
   call-create-hf-repos:  
     needs: [ environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit
 
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
@@ -126,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false      
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}   
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -144,8 +116,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}          
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}  
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
     uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -158,15 +130,11 @@ jobs:
 
   call-create-hf-collections:  
     needs: [ call-quantize-upload-gguf, environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit    
   
