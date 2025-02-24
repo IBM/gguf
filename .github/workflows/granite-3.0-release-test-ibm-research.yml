@@ -82,9 +82,6 @@ jobs:
   call-create-hf-repos:  
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
-    permissions:
-      contents: read
-      packages: read 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
@@ -134,9 +131,6 @@ jobs:
   call-create-hf-collections:  
     needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
-    permissions:
-      contents: read
-      packages: read 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
