@@ -19,7 +19,7 @@ on:
     # branches: 
     #   - 'release/granite-3.2'
     tags:
-      - "preview-v3.2*"
+      - "test-v3.2*"
   workflow_dispatch:
 
 permissions:
