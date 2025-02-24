@@ -95,6 +95,7 @@ jobs:
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main    
     permissions:
       contents: write
       packages: write
@@ -102,7 +103,6 @@ jobs:
       fail-fast: false      
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}   
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
@@ -113,6 +113,7 @@ jobs:
 
   call-quantize-upload-gguf:  
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main    
     permissions:
       contents: write
       packages: write
@@ -121,7 +122,6 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
@@ -134,6 +134,9 @@ jobs:
   call-create-hf-collections:  
     needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    permissions:
+      contents: read
+      packages: read 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
@@ -143,6 +146,7 @@ jobs:
   
   call-bvt-quantized-gguf-models:  
     needs: [ call-quantize-upload-gguf, environment-setup ]
+    uses: IBM/gguf/.github/workflows/bvt-hf-quantized-models-gguf.yml@main    
     permissions:
       contents: write
       packages: write
@@ -151,7 +155,6 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
-    uses: IBM/gguf/.github/workflows/bvt-hf-quantized-models-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
