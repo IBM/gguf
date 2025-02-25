@@ -151,12 +151,13 @@ jobs:
     - name: separate-clip-and-projector-tensors
       run: | 
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}
-        ls ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava 
+        ls ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava
 
+    # cat projector_keys.txt        
     - name: validate-clip-and-projector-tensors
       run: |
         python ./scripts/torch_llava_validate_tensors.py ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector
-        cat projector_keys.txt
+
     # - name: download-safetensors-convert-to-f16-gguf
     #   run: |
     #     python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }} --outfile $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
