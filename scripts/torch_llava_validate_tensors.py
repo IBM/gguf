@@ -19,8 +19,8 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> Non
     print("projector keys: type: \n", type(keys_projector))
     
     import json
-    with open("projector_keys.txt", "w") as file:
-        json.dumps(keys_projector,file,sort_keys=True, indent=2)
+    with open("projector_keys.txt", "w") as projector_file:
+        json.dump(keys_projector, projector_file, sort_keys=True, indent=2)
     
 if __name__ == "__main__":   
     arg_len = len(sys.argv)
