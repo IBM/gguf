@@ -39,7 +39,7 @@ env:
     'ibm-granite/granite-vision-3.1-2b-preview'
   ]"
   TARGET_LLAVA_QUANTIZATIONS: "[  
-    'Q4_0', 
+    'Q4_0'
   ]"   
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
