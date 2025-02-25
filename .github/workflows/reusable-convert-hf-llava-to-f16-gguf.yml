@@ -153,7 +153,7 @@ jobs:
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}
         ls ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava 
 
-    -name: validate-clip-and-projector-tensors
+    - name: validate-clip-and-projector-tensors
       run: |
         python ./scripts/torch_llava_validate_tensors.py ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector
         cat projector_keys.txt
