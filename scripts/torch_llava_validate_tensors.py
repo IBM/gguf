@@ -20,7 +20,8 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> Non
     
     import json
     with open("projector_keys.txt", "w") as projector_file:
-        json.dump(keys_projector, projector_file, sort_keys=True, indent=2)
+      for key in keys_projector:
+        projector_file.write(str(key) + "\n")
     
 if __name__ == "__main__":   
     arg_len = len(sys.argv)
