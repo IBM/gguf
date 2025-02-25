@@ -118,6 +118,7 @@ jobs:
 
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
+    if: false
     needs: [ call-create-hf-repos, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main    
     if: ${{ needs.environment-setup.outputs.source_repos != '' }}    
