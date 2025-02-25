@@ -28,8 +28,8 @@ permissions:
 
 env:
   DEBUG: true
-  SOURCE_REPOS: "[]"
-  TARGET_QUANTIZATIONS: "[]"  
+  SOURCE_REPOS: ""
+  TARGET_QUANTIZATIONS: ""  
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-granite  
   TARGET_REPO_PRIVATE: true   
@@ -91,10 +91,7 @@ jobs:
       #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
                             
   call-create-hf-repos:  
-    needs: [ environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ environment-setup ]   
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -106,6 +103,7 @@ jobs:
 
   # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
+    if: ${{ !empty(needs.environment-setup.outputs.source_repos) }}
     needs: [ call-create-hf-repos, environment-setup ]
     permissions:
       contents: write
@@ -144,10 +142,7 @@ jobs:
     secrets: inherit
 
   call-create-hf-collections:  
-    needs: [ call-quantize-upload-gguf, environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ call-quantize-upload-gguf, environment-setup ]   
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
