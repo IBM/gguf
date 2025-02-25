@@ -165,7 +165,7 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit    
   
-    call-convert-hf-llava-to-f16-gguf:  
+  call-convert-hf-llava-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main      
     permissions:
