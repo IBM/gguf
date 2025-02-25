@@ -28,10 +28,21 @@ permissions:
 
 env:
   DEBUG: true
-  SOURCE_REPOS: ""
-  TARGET_QUANTIZATIONS: ""  
+  SOURCE_REPOS: "[ 
+    'ibm-granite/granite-3.2-2b-instruct', 
+    'ibm-granite/granite-3.2-8b-instruct',
+  ]"
+  TARGET_QUANTIZATIONS: "[  
+    'Q4_K_M', 
+  ]"  
+  SOURCE_LLAVA_REPOS: "[ 
+    'ibm-granite/granite-vision-3.1-2b-preview'
+  ]"
+  TARGET_LLAVA_QUANTIZATIONS: "[  
+    'Q4_0', 
+  ]"   
   TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: ibm-granite  
+  TARGET_REPO_OWNER: mrutkows  
   TARGET_REPO_PRIVATE: true   
   COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_test_private.json"
 
@@ -60,7 +71,9 @@ jobs:
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
             echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT" 
             echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"                
+            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"   
+            echo "source_llava_repos=$SOURCE_LLAVA_REPOS" >> "$GITHUB_OUTPUT"  
+            echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"                        
       - name: Confirm GitHub output values were set
         run: |       
             echo "debug: ${{ steps.set-vars.outputs.debug }}"         
@@ -152,3 +165,20 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit    
   
+    call-convert-hf-llava-to-f16-gguf:  
+    needs: [ call-create-hf-repos, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main      
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false      
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }}  
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets: inherit  
