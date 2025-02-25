@@ -120,7 +120,6 @@ jobs:
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
-          LICENSE
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
           requirements/requirements-convert_legacy_llama.txt
