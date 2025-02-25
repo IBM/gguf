@@ -28,6 +28,7 @@ env:
   EXT_NAME_F16: "-f16.gguf"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
+  VISION_CONFIG: resources/json/granite-3.2/vision_config.json
 
 jobs:  
   convert-f16:

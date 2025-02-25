@@ -17,9 +17,10 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> Non
     keys_projector = projector_tensors.keys()
     print("encoder keys: \n", encoder_tensors.keys())
     print("projector keys: \n", keys_projector)
-
+    
+    import json
     with open("projector_keys.txt", "w") as file:
-        file.write(keys_projector)
+        json.dumps(keys_projector,file,sort_keys=True, indent=2)
     
 if __name__ == "__main__":   
     arg_len = len(sys.argv)
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     file_llava_projector = sys.argv[2]   
     
     # Print input variables being used for this run
-    print(f">> {fx_name}: llava_clip'{file_llava_clip}', file_llava_projector='{file_llava_projector}'")     
+    print(f">> {fx_name}: file_llava_clip='{file_llava_clip}' file_llava_projector='{file_llava_projector}'")     
     
     # invoke fx
     validate_llava_tensors(file_llava_clip=file_llava_clip, file_llava_projector=file_llava_projector)  
