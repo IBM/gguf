@@ -92,11 +92,13 @@ jobs:
       run: |       
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "SOURCE_MODEL_DOWNLOAD_DIR=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |               
         echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"    
+        echo "REPO_NAME=$REPO_NAME"  
+        echo "SOURCE_MODEL_DOWNLOAD_DIR"  
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -139,10 +141,16 @@ jobs:
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
+      if: inputs.debug == true
       run: |    
         echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"  
+    
+    - name: separate-llm-and-projector  
+      run: | 
+        python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}
+        ls ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava
 
     # - name: download-safetensors-convert-to-f16-gguf
     #   run: |
