@@ -120,8 +120,7 @@ jobs:
   call-convert-hf-to-f16-gguf:  
     if: false
     needs: [ call-create-hf-repos, environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main    
-    if: ${{ needs.environment-setup.outputs.source_repos != '' }}    
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main       
     permissions:
       contents: write
       packages: write
