@@ -16,7 +16,7 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> Non
 
     keys_projector = projector_tensors.keys()
     print("encoder keys: \n", encoder_tensors.keys())
-    print("projector keys: \n", keys_projector)
+    print("projector keys: \n", keys_projector.keys())
     
     import json
     with open("projector_keys.txt", "w") as file:
