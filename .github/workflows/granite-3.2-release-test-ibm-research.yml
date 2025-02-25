@@ -57,6 +57,8 @@ jobs:
       source_repos: "${{ steps.set-vars.outputs.source_repos }}"
       target_quantizations: "${{ steps.set-vars.outputs.target_quantizations }}"     
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
+      source_llava_repos: "${{ steps.set-vars.outputs.source_llava_repos }}"  
+      target_llava_quantizations: "${{ steps.set-vars.outputs.target_llava_quantizations }}"            
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
