@@ -6,15 +6,15 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_id": "ibm-granite/granite-3.2-2b-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.2-2b-instruct-GGUF"
                 },
                 {
                     "type": "model",                
-                    "repo_id": "ibm-granite/granite-3.2-8b-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.2-8b-instruct-GGUF"
                 },           
                 {
                     "type": "model",                
-                    "repo_id": "ibm-granite/granite-vision-3.1-2b-preview-GGUF"
+                    "repo_id": "mrutkows/granite-vision-3.1-2b-preview-GGUF"
                 }  
             ]
         }
