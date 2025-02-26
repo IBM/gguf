@@ -87,7 +87,6 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
     secrets: inherit
 
-  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main    
