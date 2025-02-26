@@ -278,5 +278,7 @@ jobs:
         fi        
 
     - name: upload-model-gguf
-      run: |         
+      run: |     
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"           
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       

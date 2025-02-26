@@ -33,7 +33,6 @@ on:
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   F16_FILE_EXISTS: "0"
   F16_OPT_ENABLED: true
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
@@ -70,22 +69,7 @@ jobs:
         echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"    
         echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"                           
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"           
-        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"            
-
-    # - name: Dump runner context
-    #   env:
-    #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-    #   run: echo "$RUNNER_CONTEXT"
-
-    # - name: Dump GitHub context
-    #   env:
-    #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"    
-
-    # - name: Dump GitHub quiet
-    #   env:
-    #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"       
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"                  
 
     - name: Dump GitHub inputs
       env:
@@ -112,21 +96,19 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV              
     
     - name: set-derivative-env-vars-1
       run: |    
         echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
 
     # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
-    # or streaming will cause a SIGSEV error    
+    # or streaming will cause a SIGSEV error          
     - name: set-derivative-env-vars-2
       run: |       
-        echo "LOCAL_FNAME_LLM_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{env.BASE_FNAME_F16_GGUF}}" >> $GITHUB_ENV                    
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{$env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
@@ -135,18 +117,18 @@ jobs:
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"  
         echo "================== Derivative Environment Variables 1 =================="           
-        echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"                      
+        echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"                      
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
         echo "================== Derivative Environment Variables 2 =================="              
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF='$LOCAL_FNAME_MMPROJ_F16_GGUF' (${{ env.LOCAL_FNAME_MMPROJ_F16_GGUF }})"          
+        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"          
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"   
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"    
   
     - name: test-f16-exists
-      if: env.F16_OPT_ENABLED == 'true'
+      # if: env.F16_OPT_ENABLED == 'true'
       run: |
-        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.HF_TOKEN}})   
+        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}})   
         echo "output: '$output'"
         if [[ "$output" == "True" ]]; then
           echo "F16_FILE_EXISTS=1" >> $GITHUB_ENV
@@ -158,13 +140,13 @@ jobs:
         fi
 
     - name: download-f16-gguf-hf-hub-download
-      if: env.F16_FILE_EXISTS == '1'
+      # if: env.F16_FILE_EXISTS == '1'
       run: |    
         echo "Downloading f16 GGUF using hf_file_download..."      
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF }}" >> $GITHUB_ENV        
+        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -198,19 +180,7 @@ jobs:
       run: |
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-        pip list        
-
-    - name: download-model-snapshot
-      if: env.F16_FILE_EXISTS == '0'
-      run: |                         
-        python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
-        find models ${{env.FIND_ARGS}}          
-
-    - name: convert-hf-to-gguf
-      if: env.F16_FILE_EXISTS == '0'
-      run: |
-        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_MMPROJ_F16_GGUF }} --verbose
-        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf     
+        pip list      
         
     - name: verify-downloaded-files
       if: inputs.debug == true 
@@ -220,26 +190,25 @@ jobs:
         ls -al -d */                 
         echo "--------------------"                    
         find . -name \*.gguf -type f    
-        echo "--------------------"                     
+        echo "--------------------"                   
 
-    - name: quantize-llm-to-gguf
+    - name: quantize-gguf
       run: |      
         echo "--------------------"             
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF='$LOCAL_FNAME_MMPROJ_F16_GGUF' (${{ env.LOCAL_FNAME_MMPROJ_F16_GGUF }})"  
+        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
         echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_MMPROJ_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
-    
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
+        
     - name: find-gguf-files
       if: inputs.debug == true 
-      run: |
-        echo finding *.gguf files...    
-        echo "--------------------"                       
+      run: |                      
         find . -name \*.gguf -type f   
         ls -al . 
-        echo "--------------------"     
+        echo "--------------------"        
 
-    - name: upload-quantized-llm-gguf-to-target-repo
-      run: | 
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
+    - name: upload-quantized-gguf-model
+      run: |         
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"        
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       

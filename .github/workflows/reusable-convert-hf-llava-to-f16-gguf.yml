@@ -1,6 +1,11 @@
-# This workflow separates the "vision" portion of a llava (granite vision) model from HF 
-# (in safetensors format) and then converts it to an f16 GGUF format vision encoder model.
-# it then uploads the f16 model to Hugging Face Hub for the 'repo_id' (from the build matrix).
+# This workflow 
+# - Downloads the source HF (safetensors) llava model from the Hugging Face hub.
+# - Separates the "vision" portion of a llava (granite vision) model from HF (in safetensors format) 
+# - Converts the vision (projector) model to an f16 GGUF format vision encoder model.
+# - Uploads the f16 vision encoder model to Hugging Face Hub for the 'repo_id' (from the build matrix).
+# - Uses HF Transformers to save just the LLM portion of the llava model to an f16 GGUF
+# - Convert the LLM model to an f16 GGUF
+# - Uploads the f16 GGUF to target 'repo_id'.
 
 name: convert-hf-llava-to-f16-gguf-reusable
 
