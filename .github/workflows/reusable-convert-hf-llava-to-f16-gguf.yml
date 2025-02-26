@@ -95,12 +95,12 @@ jobs:
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
+        echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV        
 
     - name: set-derivative-env-vars-1
       run: |    
-        echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV
-        echo "LOCAL_VISUAL_GGUF_F16=$ENCODER_PATH/mmproj-model-f16.gguf" >> $GITHUB_ENV
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
+        echo "LOCAL_VISUAL_GGUF_F16=${{env.ENCODER_PATH}}/mmproj-model-f16.gguf" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |               
@@ -160,7 +160,7 @@ jobs:
     
     - name: separate-clip-and-projector-tensors
       run: | 
-        echo "llava_surgery_v2.py: -m ${{ env.LOCAL_MODEL_PATH }}"
+        echo "Separating CLIP and projector tensors... (llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }})"
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
         ls -al ${{ env.LOCAL_MODEL_PATH }} 
       
