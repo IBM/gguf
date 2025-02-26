@@ -15,9 +15,11 @@ def save_llm_from_llava(source_repo:str, target_repo:str):
     # If you are running with an older version, set `ignore_mismatched_sizes=True`
     # as shown below; it won't be loaded correctly, but the LLM part of the model that
     # we are exporting will be loaded correctly.
+    print(f"Loading model (AutoModelForImageTextToText) from: {source_repo}...")
     model = transformers.AutoModelForImageTextToText.from_pretrained(source_repo, ignore_mismatched_sizes=True)
-
+    print(f"Saving pre-trained tokenizer to: {target_repo}...")
     tokenizer.save_pretrained(target_repo)
+    print(f"Saving pre-trained mode to: {target_repo}...")    
     model.language_model.save_pretrained(target_repo)
 
 if __name__ == "__main__":   
