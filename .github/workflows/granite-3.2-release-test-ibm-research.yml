@@ -177,7 +177,7 @@ jobs:
     strategy:
       fail-fast: false      
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }}  
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }} 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}

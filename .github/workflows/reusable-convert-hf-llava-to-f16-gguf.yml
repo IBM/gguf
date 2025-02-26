@@ -194,13 +194,13 @@ jobs:
         echo "Done!"
         ls -al ${{ env.ENCODER_PATH }}  
 
-    - name: quantize-gguf
-      run: |      
-        echo "--------------------"             
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-        echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
+    # - name: quantize-llm-to-gguf
+    #   run: |      
+    #     echo "--------------------"             
+    #     echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
+    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
+    #     echo "--------------------"          
+    #     sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
         
     - name: find-gguf-files
       if: inputs.debug == true 
@@ -213,10 +213,12 @@ jobs:
 
     - name: upload-mmproj-f16-gguf-to-target-repo 
       run: |                 
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
-        # python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
+        echo "F16 source file=${{env.ENCODER_PATH}}${{env.VISUAL_GGUF_F16}}"
+        # python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.ENCODER_PATH}}${{env.VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
 
-    - name: upload-quantized-llm-gguf-to-target-repo
-      run: | 
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"               
-        # python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+    # - name: upload-quantized-llm-gguf-to-target-repo
+    #   run: | 
+    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
+    #     echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF}})"               
+    #     #python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
