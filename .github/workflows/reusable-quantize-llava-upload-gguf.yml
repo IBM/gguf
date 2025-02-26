@@ -158,21 +158,11 @@ jobs:
     - name: download-f16-gguf-hf-hub-download
       if: env.F16_FILE_EXISTS == '1'
       run: |    
-        echo "Downloading using hf_file_download..."      
+        echo "Downloading f16 GGUF using hf_file_download..."      
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
-
-    # - name: download-f16-curl
-    #   if: env.F16_FILE_EXISTS == '1'
-    #   run: |    
-    #     echo "Downloading using curl..."     
-    #     echo "--------------------"        
-    #     curl -C - -f --create-dirs -H "Authorization: Bearer ${{secrets.HF_TOKEN}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
-    #     chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
-    #     echo "--------------------"               
-    #     echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -207,19 +197,6 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list        
-        
-    # - name: download-f16-gguf-curl
-    #   if: env.F16_FILE_EXISTS == '1'
-    #   run: |    
-    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
-    #     echo "--------------------"        
-    #     mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-    #     chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
-    #     find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
-    #     echo "--------------------"         
-    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
-    #     echo "--------------------"         
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
 
     - name: download-model-snapshot
       if: env.F16_FILE_EXISTS == '0'
@@ -231,18 +208,7 @@ jobs:
       if: env.F16_FILE_EXISTS == '0'
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
-        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
-
-    - name: print-storage-memory-info
-      if: inputs.debug == true 
-      run: |
-        df
-        echo "--------------------"         
-        xcodebuild -version        
-        clang --version
-        echo "--------------------"      
-        top -l 1 | grep -E "^CPU|^PhysMem"  
-        echo "--------------------"        
+        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf     
         
     - name: verify-downloaded-files
       if: inputs.debug == true 
@@ -254,13 +220,13 @@ jobs:
         find . -name \*.gguf -type f    
         echo "--------------------"                     
 
-    # - name: quantize-llm-to-gguf
-    #   run: |      
-    #     echo "--------------------"             
-    #     echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
-    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-    #     echo "--------------------"          
-    #     sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
+    - name: quantize-llm-to-gguf
+      run: |      
+        echo "--------------------"             
+        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
+        echo "--------------------"          
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
     
     - name: find-gguf-files
       if: inputs.debug == true 
@@ -271,7 +237,7 @@ jobs:
         ls -al . 
         echo "--------------------"     
 
-    # - name: upload-quantized-llm-gguf-to-target-repo
-    #   run: | 
-    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
-    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+    - name: upload-quantized-llm-gguf-to-target-repo
+      run: | 
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
