@@ -193,9 +193,7 @@ jobs:
     
     - name: find-gguf-files-1
       if: inputs.debug == true 
-      run: |
-        echo finding *.gguf files...    
-        echo "--------------------"                       
+      run: |                      
         find . -name \*.gguf -type f   
         echo "--------------------"           
 
@@ -226,9 +224,7 @@ jobs:
         
     - name: find-gguf-files-2
       if: inputs.debug == true 
-      run: |
-        echo finding *.gguf files...    
-        echo "--------------------"                       
+      run: |                     
         find . -name \*.gguf -type f   
         echo "--------------------"          
         
