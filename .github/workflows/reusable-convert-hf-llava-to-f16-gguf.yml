@@ -1,4 +1,5 @@
-# This workflow converts an original model from HF (in safetensors format) to an f16 GGUF format model.
+# This workflow separates the "vision" portion of a llava (granite vision) model from HF 
+# (in safetensors format) and then converts it to an f16 GGUF format vision encoder model.
 # it then uploads the f16 model to Hugging Face Hub for the 'repo_id' (from the build matrix).
 
 name: convert-hf-llava-to-f16-gguf-reusable
@@ -189,15 +190,7 @@ jobs:
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.ENCODER_PATH }}
         echo "Done!"
         ls -al ${{ env.ENCODER_PATH }}  
-
-    # - name: quantize-llm-to-gguf
-    #   run: |      
-    #     echo "--------------------"             
-    #     echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
-    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-    #     echo "--------------------"          
-    #     sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
-        
+    
     - name: find-gguf-files
       if: inputs.debug == true 
       run: |
@@ -212,8 +205,3 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
         echo "LOCAL_VISUAL_GGUF_F16=${{env.LOCAL_VISUAL_GGUF_F16}}"
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
-
-    # - name: upload-quantized-llm-gguf-to-target-repo
-    #   run: | 
-    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
-    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       

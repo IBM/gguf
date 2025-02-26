@@ -5,7 +5,7 @@
 # - Quantizes the f16 GGUF to the designated 'quantization' (e.g., Q4_0, Q4_K_M, etc.) defined in the build matrix.
 # - Uploads the quantized GGUF to target 'repo_id'.
 
-name: quantize-llava-upload-gguf-reusable
+name: quantize-llava-llm-upload-gguf-reusable
 
 on:
   workflow_call:
@@ -33,6 +33,7 @@ on:
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   F16_FILE_EXISTS: "0"
   F16_OPT_ENABLED: true
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
@@ -111,17 +112,19 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV              
     
     - name: set-derivative-env-vars-1
       run: |    
-        echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
 
+    # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
+    # or streaming will cause a SIGSEV error    
     - name: set-derivative-env-vars-2
       run: |       
-        echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{env.BASE_FNAME_F16_GGUF}}" >> $GITHUB_ENV              
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{$env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
@@ -249,16 +252,16 @@ jobs:
         ls -al -d */                 
         echo "--------------------"                    
         find . -name \*.gguf -type f    
-        echo "--------------------"                   
+        echo "--------------------"                     
 
-    - name: quantize-gguf
-      run: |      
-        echo "--------------------"             
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-        echo "--------------------"          
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
-        
+    # - name: quantize-llm-to-gguf
+    #   run: |      
+    #     echo "--------------------"             
+    #     echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"  
+    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
+    #     echo "--------------------"          
+    #     sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}} 
+    
     - name: find-gguf-files
       if: inputs.debug == true 
       run: |
@@ -266,17 +269,9 @@ jobs:
         echo "--------------------"                       
         find . -name \*.gguf -type f   
         ls -al . 
-        echo "--------------------"   
-        
-    - name: delete-previous-upload
-      if: env.F16_OPT_ENABLED == 'true'
-      run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
-        echo "exists: '$exists'"
-        if [[ "$exists" == "True" ]]; then
-          python ./scripts/hf_file_delete.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}                
-        fi        
+        echo "--------------------"     
 
-    - name: upload-model-gguf
-      run: |         
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+    # - name: upload-quantized-llm-gguf-to-target-repo
+    #   run: | 
+    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
+    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       

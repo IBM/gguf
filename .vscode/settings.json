@@ -13,6 +13,7 @@
         "Langchain",
         "llamacpp",
         "LLAVA",
+        "mmproj",
         "nohup",
         "Ollama",
         "quantizations",

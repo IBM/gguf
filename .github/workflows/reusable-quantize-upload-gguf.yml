@@ -118,10 +118,12 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
 
+    # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
+    # or streaming will cause a SIGSEV error          
     - name: set-derivative-env-vars-2
       run: |       
-        echo "LOCAL_FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV              
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
