@@ -94,13 +94,23 @@ jobs:
       run: |       
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "SOURCE_MODEL_DOWNLOAD_DIR=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
+
+    - name: set-derivative-env-vars-1
+      run: |    
+        echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV
+        echo "VISUAL_GGUF_F16=$ENCODER_PATH/mmproj-model-f16.gguf" >> $GITHUB_ENV
+        echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV        
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
       run: |               
         echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"  
-        echo "SOURCE_MODEL_DOWNLOAD_DIR"  
+        echo "REPO_NAME=$REPO_NAME" 
+        echo "LOCAL_MODEL_PATH=$LOCAL_MODEL_PATH"
+        echo "ENCODER_PATH=$ENCODER_PATH"
+        echo "VISUAL_GGUF_F16=$VISUAL_GGUF_F16"
+        echo "BASE_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -151,28 +161,34 @@ jobs:
     
     - name: separate-clip-and-projector-tensors
       run: | 
-        python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}
-        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} 
-        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava
+        python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
+        ls -al ${{ env.LOCAL_MODEL_PATH }} 
+        ls -al ${{ env.LOCAL_MODEL_PATH }} | grep -i llava
 
     # cat projector_keys.txt        
     - name: validate-clip-and-projector-tensors
       run: |
-        python ./scripts/torch_llava_validate_tensors.py ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
+        python ./scripts/torch_llava_validate_tensors.py ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
         cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
 
     - name: convert-image-encoder-to-gguf
       run: |
-        cp ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/pytorch_model.bin
-        cp ./resources/json/granite-3.2/vision_config.json ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/config.json
+        cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector      
+        cp ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.ENCODER_PATH }}/pytorch_model.bin
+        cp ./resources/json/granite-3.2/vision_config.json ${{ env.ENCODER_PATH }}/config.json
         python ./llama.cpp/examples/llava/convert_image_encoder_to_gguf.py \
-          -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} \
-          --llava-projector ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector \
-          --output-dir ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} \
+          -m ${{ env.ENCODER_PATH }} \
+          --llava-projector ${{ env.ENCODER_PATH }}/llava.projector \
+          --output-dir ${{ env.ENCODER_PATH }} \
           --clip-model-is-vision \
           --clip-model-is-siglip \
           --image-mean 0.5 0.5 0.5 --image-std 0.5 0.5 0.5
-        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} 
+        ls -al ${{ env.ENCODER_PATH }} 
+
+    - name: separate-llm-from-vision-model
+      run: |
+        python ./scripts/torch_llava_save_llm.py
+        ls -al ${{ env.ENCODER_PATH }}       
 
     # - name: download-safetensors-convert-to-f16-gguf
     #   run: |
