@@ -1,5 +1,5 @@
 name: granite-3.0-on-push-tagged-release
-run-name: "Granite 3.0 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+run-name: "[RELEASE] Granite 3.0 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 # Full matrix:
 # repo_id: "[ 
@@ -50,7 +50,7 @@ env:
     ]"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-research  
-  TARGET_REPO_PRIVATE: true   
+  TARGET_REPO_PRIVATE: false   
   COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_ibm_research.json"
 
 jobs:
