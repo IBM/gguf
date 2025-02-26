@@ -201,13 +201,7 @@ jobs:
       run: |                 
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
         echo "LOCAL_VISUAL_GGUF_F16=${{env.LOCAL_VISUAL_GGUF_F16}}"
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
-
-    # - name: download-model-snapshot
-    #   if: env.F16_FILE_EXISTS == '0'
-    #   run: |                         
-    #     python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
-    #     find models ${{env.FIND_ARGS}}          
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}         
 
     - name: separate-llm-from-vision-model
       run: |
