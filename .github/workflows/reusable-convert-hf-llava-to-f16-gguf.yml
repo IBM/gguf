@@ -102,6 +102,7 @@ jobs:
         echo "VISUAL_GGUF_F16=$ENCODER_PATH/mmproj-model-f16.gguf" >> $GITHUB_ENV
         echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV        
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
       run: |               
@@ -111,6 +112,7 @@ jobs:
         echo "ENCODER_PATH=$ENCODER_PATH"
         echo "VISUAL_GGUF_F16=$VISUAL_GGUF_F16"
         echo "BASE_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF"
+        echo "TARGET_REPO_ID=$TARGET_REPO_ID"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -188,10 +190,10 @@ jobs:
 
     - name: separate-llm-from-vision-model
       run: |
-        python ./scripts/torch_llava_save_llm.py
-        ls -al ${{ env.ENCODER_PATH }}       
+        python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.ENCODER_PATH }}
+        ls -al ${{ env.ENCODER_PATH }}  
 
-    # - name: download-safetensors-convert-to-f16-gguf
+    # - name: convert-llm-safetensors-to-f16-gguf
     #   run: |
     #     python ./llama.cpp/convert_hf_to_gguf.py $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }} --outfile $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
     #     ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf        
@@ -203,3 +205,7 @@ jobs:
     #     echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"                
     #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
     #     python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+
+    # - name: upload-model-gguf
+    #   run: |         
+    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
