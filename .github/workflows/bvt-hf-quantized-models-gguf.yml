@@ -240,13 +240,15 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true'  
       timeout-minutes: 10
       continue-on-error: true
+      # 2>/dev/null 
       run: |  
         echo "invoking llama-cli to test inference (generation)..."
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-cli -no-cnv \
           -s ${{env.LLAMA_REQUEST_SEED}} \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
-          -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 2>/dev/null 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
+          -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
         if [ $? -eq 1 ]; then
           exit 1
         fi  
