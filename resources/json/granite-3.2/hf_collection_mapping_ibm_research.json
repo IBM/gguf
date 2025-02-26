@@ -6,11 +6,11 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_id": "ibm-granite/granite-3.2-2b-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.2-2b-instruct-GGUF"
                 },
                 {
                     "type": "model",                
-                    "repo_id": "ibm-granite/granite-3.2-8b-instruct-GGUF"
+                    "repo_id": "ibm-research/granite-3.2-8b-instruct-GGUF"
                 }
             ]
         }
