@@ -222,12 +222,12 @@ jobs:
       run: |
         echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"  
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"    
-        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LLM_EXPORT_PATH }}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
+        python ./llama.cpp/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LLM_EXPORT_PATH }} --verbose
         ls -al ${{ env.LLM_EXPORT_PATH }}     
         
-    - name: upload-llm-f16-gguf-to-target-repo 
-      run: |                 
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
-        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}" 
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LLM_EXPORT_PATH}}//${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+    # - name: upload-llm-f16-gguf-to-target-repo 
+    #   run: |                 
+    #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
+    #     echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}" 
+    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LLM_EXPORT_PATH}}//${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
         
