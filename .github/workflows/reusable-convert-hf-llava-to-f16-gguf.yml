@@ -29,6 +29,7 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   VISION_CONFIG: resources/json/granite-3.2/vision_config.json
+  LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
 
 jobs:  
   convert-f16:
@@ -151,12 +152,26 @@ jobs:
     - name: separate-clip-and-projector-tensors
       run: | 
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}
-        ls ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava
+        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} 
+        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} | grep -i llava
 
     # cat projector_keys.txt        
     - name: validate-clip-and-projector-tensors
       run: |
-        python ./scripts/torch_llava_validate_tensors.py ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector
+        python ./scripts/torch_llava_validate_tensors.py ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
+        cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
+
+    - name: convert-image-encoder-to-gguf
+      run: |
+        cp ./resources/json/granite-3.2/
+        python convert_image_encoder_to_gguf.py \
+          -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} \
+          --llava-projector ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector \
+          --output-dir ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} \
+          --clip-model-is-vision \
+          --clip-model-is-siglip \
+          --image-mean 0.5 0.5 0.5 --image-std 0.5 0.5 0.5
+        ls -al ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} 
 
     # - name: download-safetensors-convert-to-f16-gguf
     #   run: |

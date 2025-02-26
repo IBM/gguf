@@ -2,7 +2,7 @@ import os
 import sys
 import torch
 
-def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> None:
+def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str, projector_keys_file:str="projector_keys.txt") -> None:
     if not file_llava_clip:
         raise ValueError(f"invalid: file_llava_clip: {file_llava_clip}")
     if not file_llava_projector:
@@ -16,7 +16,7 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str) -> Non
 
     keys_projector = projector_tensors.keys()
     print("encoder keys: \n", encoder_tensors.keys())
-    print("projector keys: type: \n", type(keys_projector))
+    print("projector keys: type: ", type(keys_projector))
     
     import json
     with open("projector_keys.txt", "w") as projector_file:
@@ -36,9 +36,12 @@ if __name__ == "__main__":
     file_llava_clip = sys.argv[1]
     file_llava_projector = sys.argv[2]   
     
+    if arg_len == 4:
+        key_file = sys.argv[3]
+    
     # Print input variables being used for this run
     print(f">> {fx_name}: file_llava_clip='{file_llava_clip}' file_llava_projector='{file_llava_projector}'")     
     
     # invoke fx
-    validate_llava_tensors(file_llava_clip=file_llava_clip, file_llava_projector=file_llava_projector)  
+    validate_llava_tensors(file_llava_clip=file_llava_clip, file_llava_projector=file_llava_projector, projector_keys_file=key_file)  
     
