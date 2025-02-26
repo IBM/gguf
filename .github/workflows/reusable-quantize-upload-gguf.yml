@@ -263,9 +263,7 @@ jobs:
         
     - name: find-gguf-files
       if: inputs.debug == true 
-      run: |
-        echo finding *.gguf files...    
-        echo "--------------------"                       
+      run: |                      
         find . -name \*.gguf -type f   
         ls -al . 
         echo "--------------------"   
