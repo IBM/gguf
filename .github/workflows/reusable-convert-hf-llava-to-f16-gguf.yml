@@ -99,9 +99,7 @@ jobs:
     - name: set-derivative-env-vars-1
       run: |    
         echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV
-        echo "VISUAL_GGUF_F16=$ENCODER_PATH/mmproj-model-f16.gguf" >> $GITHUB_ENV
-        echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV        
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+        echo "LOCAL_VISUAL_GGUF_F16=$ENCODER_PATH/mmproj-model-f16.gguf" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV        
 
     - name: verify-github-env
@@ -110,8 +108,7 @@ jobs:
         echo "REPO_NAME=$REPO_NAME" 
         echo "LOCAL_MODEL_PATH=$LOCAL_MODEL_PATH"
         echo "ENCODER_PATH=$ENCODER_PATH"
-        echo "VISUAL_GGUF_F16=$VISUAL_GGUF_F16"
-        echo "BASE_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF"
+        echo "LOCAL_VISUAL_GGUF_F16=$LOCAL_VISUAL_GGUF_F16"
         echo "TARGET_REPO_ID=$TARGET_REPO_ID"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
@@ -163,11 +160,10 @@ jobs:
     
     - name: separate-clip-and-projector-tensors
       run: | 
+        echo "llava_surgery_v2.py: -m ${{ env.LOCAL_MODEL_PATH }}"
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
         ls -al ${{ env.LOCAL_MODEL_PATH }} 
-        ls -al ${{ env.LOCAL_MODEL_PATH }} | grep -i llava
-
-    # cat projector_keys.txt        
+      
     - name: validate-clip-and-projector-tensors
       run: |
         python ./scripts/torch_llava_validate_tensors.py ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
@@ -214,11 +210,10 @@ jobs:
     - name: upload-mmproj-f16-gguf-to-target-repo 
       run: |                 
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
-        echo "F16 source file=${{env.ENCODER_PATH}}${{env.VISUAL_GGUF_F16}}"
-        # python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.ENCODER_PATH}}${{env.VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+        echo "LOCAL_VISUAL_GGUF_F16=${{env.LOCAL_VISUAL_GGUF_F16}}"
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
 
     # - name: upload-quantized-llm-gguf-to-target-repo
     #   run: | 
     #     echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
-    #     echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF}})"               
-    #     #python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+    #     python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
