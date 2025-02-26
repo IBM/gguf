@@ -1,7 +1,7 @@
 # This workflow:
-# - Downloads the f16 (quantized) GGUF model from the target (model) 'repo_id' defined in the build matrix.
-#   - Note: The f16 model was generated and uploaded by the `XX-hf-convert-to-f16-gguf` workflow 
-#     whose completion triggers this workflow.
+# - Downloads the source HF (safetensors) llava model from the Hugging Face hub.
+# - Uses HF Transformers to save just the LLM portion of the llava model
+# - Convert the LLM model to f16 GGUF
 # - Quantizes the f16 GGUF to the designated 'quantization' (e.g., Q4_0, Q4_K_M, etc.) defined in the build matrix.
 # - Uploads the quantized GGUF to target 'repo_id'.
 
