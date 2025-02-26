@@ -101,10 +101,7 @@ jobs:
       #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
                             
   call-create-hf-repos:  
-    needs: [ environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ environment-setup ]   
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -154,10 +151,7 @@ jobs:
     secrets: inherit
 
   call-create-hf-collections:  
-    needs: [ call-quantize-upload-gguf, environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ call-quantize-upload-gguf, environment-setup ]  
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
