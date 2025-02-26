@@ -15,13 +15,13 @@ def validate_llava_tensors(file_llava_clip:str, file_llava_projector:str, projec
     assert len(projector_tensors) > 0
 
     keys_projector = projector_tensors.keys()
-    print("encoder keys: \n", encoder_tensors.keys())
+    print("encoder keys: len: \n", len(encoder_tensors.keys()))
     print("projector keys: type: ", type(keys_projector))
     
     import json
     with open("projector_keys.txt", "w") as projector_file:
       for key in keys_projector:
-        projector_file.write(str(key) + "\n")
+        projector_file.write(">> " + str(key) + "\n")
     
 if __name__ == "__main__":   
     arg_len = len(sys.argv)

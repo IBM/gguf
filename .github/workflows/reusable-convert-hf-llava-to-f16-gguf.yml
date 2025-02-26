@@ -163,7 +163,8 @@ jobs:
 
     - name: convert-image-encoder-to-gguf
       run: |
-        cp ./resources/json/granite-3.2/
+        cp ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.clip ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/pytorch_model.bin
+        cp ./resources/json/granite-3.2/vision_config.json ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/config.json
         python convert_image_encoder_to_gguf.py \
           -m ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }} \
           --llava-projector ${{ env.SOURCE_MODEL_DOWNLOAD_DIR }}/llava.projector \
