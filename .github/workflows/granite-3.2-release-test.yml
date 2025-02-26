@@ -26,9 +26,9 @@ permissions:
 
 env:
   DEBUG: true
+  #'ibm-granite/granite-3.2-8b-instruct',  
   SOURCE_REPOS: "[ 
     'ibm-granite/granite-3.2-2b-instruct', 
-    'ibm-granite/granite-3.2-8b-instruct',
   ]"
   TARGET_QUANTIZATIONS: "[  
     'Q4_K_M', 
@@ -213,8 +213,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }}      
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_llava_quantizations) }}              
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
@@ -222,4 +222,4 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"      
-    secrets: inherit 
+    secrets: inherit
