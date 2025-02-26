@@ -1,4 +1,4 @@
-name: granite-3.2-on-push-tagged-preview-release
+name: granite-3.2-tagged-release
 run-name: "[RELEASE] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 # Full matrix:
@@ -17,7 +17,7 @@ run-name: "[RELEASE] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_ty
 on:
   push:   
     # branches: 
-    #   - 'release/granite-3.2'
+    #   - 'release/granite-3.2'  
     tags:
       - "v3.2*"
   workflow_dispatch:
@@ -43,7 +43,7 @@ env:
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-research   
   TARGET_REPO_PRIVATE: false   
-  COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_ibm_research.json"
+  COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json"
 
 jobs:
   environment-setup:
@@ -111,7 +111,6 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit
 
-  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
     permissions:

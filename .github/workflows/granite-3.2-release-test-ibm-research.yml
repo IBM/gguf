@@ -1,4 +1,4 @@
-name: granite-3.2-release-test
+name: granite-3.2-tagged-test-release
 run-name: "[TEST] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 # Full matrix:
@@ -16,8 +16,6 @@ run-name: "[TEST] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}
 # ]"
 on:
   push:   
-    # branches: 
-    #   - 'release/granite-3.2'
     tags:
       - "test-v3.2*"
   workflow_dispatch:
@@ -117,7 +115,6 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit
 
-  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
     if: false
     needs: [ call-create-hf-repos, environment-setup ]

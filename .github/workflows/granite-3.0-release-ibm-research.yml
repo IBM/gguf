@@ -1,4 +1,4 @@
-name: granite-3.0-on-push-tagged-release
+name: granite-3.0-tagged-release
 run-name: "[RELEASE] Granite 3.0 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 # Full matrix:
@@ -51,7 +51,7 @@ env:
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-research  
   TARGET_REPO_PRIVATE: false   
-  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_ibm_research.json"
+  COLLECTION_CONFIG: "resources/json/granite-3.0/hf_collection_mapping_release_ibm_research.json"
 
 jobs:
   environment-setup:
@@ -109,10 +109,7 @@ jobs:
       #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"           
                            
   call-create-hf-repos:  
-    needs: [ environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ environment-setup ]  
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -122,7 +119,6 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
-  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#defining-access-for-the-github_token-scopes-1
   call-convert-hf-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
     permissions:
@@ -162,10 +158,7 @@ jobs:
     secrets: inherit
 
   call-create-hf-collections:  
-    needs: [ call-quantize-upload-gguf, environment-setup ]
-    # permissions:
-    #   contents: read
-    #   packages: read    
+    needs: [ call-quantize-upload-gguf, environment-setup ]   
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
