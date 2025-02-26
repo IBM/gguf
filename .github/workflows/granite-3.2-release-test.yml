@@ -204,7 +204,7 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit  
 
-  call-llm-convert-quantize-and-upload-gguf:  
+  call-quantize-vision-llm-and-upload-gguf:  
     needs: [ call-convert-hf-llava-to-f16-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main    
     permissions:
