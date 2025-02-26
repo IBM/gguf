@@ -222,8 +222,14 @@ jobs:
       run: |
         echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"  
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"    
-        python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LLM_EXPORT_PATH }} --verbose
-        ls -al ${{ env.LLM_EXPORT_PATH }}     
+        python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
+        ls -al ${{ env.LLM_EXPORT_PATH }}   
+        
+    - name: convert-llm-to-gguf-f16
+      run: |  
+        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"    
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LLM_EXPORT_PATH }} --outfile ${{ env.BASE_FNAME_F16_GGUF }} --verbose
+        ls -al *.gguf         
         
     # - name: upload-llm-f16-gguf-to-target-repo 
     #   run: |                 

@@ -223,7 +223,7 @@ jobs:
     - name: download-model-snapshot
       if: env.F16_FILE_EXISTS == '0'
       run: |                         
-        python ./scripts/hf_model_download_snapshot.py $MODEL_DOWNLOAD_DIR $REPO_ORG $REPO_NAME
+        python ./scripts/hf_model_download_snapshot.py ${{env.MODEL_DOWNLOAD_DIR}} $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}          
 
     - name: convert-hf-to-gguf
