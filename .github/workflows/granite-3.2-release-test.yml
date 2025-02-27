@@ -32,6 +32,8 @@ env:
   ]"
   TARGET_QUANTIZATIONS: "[  
     'Q4_K_M', 
+    'Q5_K_M', 
+    'Q8_0',   
   ]"  
   # granite-vision-3.1-2b-preview
   SOURCE_LLAVA_REPOS: "[ 
@@ -42,7 +44,7 @@ env:
   ]"   
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
-  TARGET_REPO_PRIVATE: true   
+  TARGET_REPO_PRIVATE: false   
   COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_test_private.json"
 
 jobs:
@@ -116,62 +118,62 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
     secrets: inherit
 
-  # call-convert-hf-to-f16-gguf:  
-  #   needs: [ call-create-hf-repos, environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main       
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false      
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
-  #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-  #     repo_id: ${{ matrix.repo_id }}
-  #   secrets: inherit    
+  call-convert-hf-to-f16-gguf:  
+    needs: [ call-create-hf-repos, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main       
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false      
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets: inherit    
 
-  # call-quantize-upload-gguf:  
-  #   needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}          
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}  
-  #   uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
-  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
-  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-  #     repo_id: "${{ matrix.repo_id }}"
-  #     quantization: "${{ matrix.quantization }}"      
-  #   secrets: inherit
+  call-quantize-upload-gguf:  
+    needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}          
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}  
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"      
+    secrets: inherit
 
-  # call-bvt-quantized-gguf-models:  
-  #   needs: [ call-quantize-upload-gguf, environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main    
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
-  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-  #     repo_id: "${{ matrix.repo_id }}"
-  #     quantization: "${{ matrix.quantization }}"      
-  #   secrets: inherit    
+  call-bvt-quantized-gguf-models:  
+    needs: [ call-quantize-upload-gguf, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main    
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}      
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"      
+    secrets: inherit    
 
   # TODO: change collection from private to public (on success)    
   call-create-hf-collections:  
