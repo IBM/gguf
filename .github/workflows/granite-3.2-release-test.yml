@@ -26,21 +26,25 @@ permissions:
 
 env:
   DEBUG: true
-  #'ibm-granite/granite-3.2-8b-instruct',  
   SOURCE_REPOS: "[ 
     'ibm-granite/granite-3.2-2b-instruct', 
+    'ibm-granite/granite-3.2-8b-instruct'
   ]"
   TARGET_QUANTIZATIONS: "[  
-    'Q4_K_M', 
-    'Q5_K_M', 
-    'Q8_0',   
+    'Q2_K', 
+    'Q3_K_L', 'Q3_K_M', 'Q3_K_S', 
+    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S', 
+    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S', 
+    'Q6_K', 
+    'Q8_0' 
   ]"  
-  # granite-vision-3.1-2b-preview
   SOURCE_LLAVA_REPOS: "[ 
     'ibm-granite/granite-vision-3.2-2b'
   ]"
   TARGET_LLAVA_QUANTIZATIONS: "[  
-    'Q4_0'
+    'Q4_K_M', 
+    'Q5_K_M', 
+    'Q8_0',   
   ]"   
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows  
