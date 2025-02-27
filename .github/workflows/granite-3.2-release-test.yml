@@ -219,12 +219,15 @@ jobs:
 
   # TODO: change collection from private to public (on success)    
   call-create-hf-collections:  
-    # needs: [ call-bvt-quantized-gguf-models, environment-setup ]  
+    # needs: [ 
+    #   environment-setup,      
+    #   call-bvt-quantized-gguf-models, 
+    #   call-quantize-vision-llm-and-upload-gguf, 
+    # ]  
     needs: [ 
-        environment-setup,      
-        call-bvt-quantized-gguf-models, 
-        call-quantize-vision-llm-and-upload-gguf, 
-      ] 
+      environment-setup,      
+      call-quantize-vision-llm-and-upload-gguf, 
+    ] 
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
