@@ -177,20 +177,7 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"      
-    secrets: inherit    
-
-  # TODO: change collection from private to public (on success)    
-  call-create-hf-collections:  
-    # needs: [ call-bvt-quantized-gguf-models, environment-setup ]  
-    needs: [ call-quantize-vision-llm-and-upload-gguf, environment-setup ] 
-    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
-    with:
-      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
-    secrets: inherit    
+    secrets: inherit      
   
   call-convert-hf-llava-to-f16-gguf:  
     needs: [ call-create-hf-repos, environment-setup ]
@@ -229,3 +216,20 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"      
     secrets: inherit
+
+  # TODO: change collection from private to public (on success)    
+  call-create-hf-collections:  
+    # needs: [ call-bvt-quantized-gguf-models, environment-setup ]  
+    needs: [ 
+        environment-setup,      
+        call-bvt-quantized-gguf-models, 
+        call-quantize-vision-llm-and-upload-gguf, 
+      ] 
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
+    secrets: inherit      
