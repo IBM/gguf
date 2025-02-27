@@ -156,7 +156,7 @@ jobs:
 
   # call-bvt-quantized-gguf-models:  
   #   needs: [ call-quantize-upload-gguf, environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/bvt-hf-quantized-models-gguf.yml@main    
+  #   uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main    
   #   permissions:
   #     contents: write
   #     packages: write
