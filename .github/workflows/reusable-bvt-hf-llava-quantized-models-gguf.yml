@@ -1,6 +1,6 @@
 # This workflow runs Build Verification Tests (BVT) on the quantized models 
 # using llama.cpp utilities. 
-name: bvt-hf-quantized-models-gguf
+name: bvt-hf-llava-quantized-models-gguf
 
 on:
   workflow_dispatch:   
@@ -29,20 +29,16 @@ env:
   EXT_GGUF: .gguf
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
+  LLAMA_CLI_TEST_IMAGE: ./test/images/cherry_blossom.jpg
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT: "Why is the sky blue?"
   LLAMA_REQUEST_N_PREDICT: 128
-  LLAMA_RUN_BIN: ./bin/archive/2025-02-11/llama-run # ./bin/llama-run
-  LLAMA_RUN_FLAGS: "-v -n 9"
-  LLAMA_RESPONSE_REGEX: "(sky|scatter)+"
-  LLAMA_SERVER_HOST: localhost
-  LLAMA_SERVER_PORT: 8080
+  LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
-  TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
-  TEST_LLAMA_RUN: false
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model   
 
 jobs:
   build:
@@ -101,7 +97,7 @@ jobs:
 
     - name: set-derivative-env-vars-2
       run: | 
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV         
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV         
     
     - name: set-derivative-env-vars-3
       run: |         
@@ -128,143 +124,52 @@ jobs:
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
           echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
-        fi        
+        fi                
          
-    - name: download-quantized-gguf-hf-hub-download
+    - name: download-quantized-llm-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |    
-        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
-        echo "--------------------"
+        echo "Downloading model: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf   
+        
+    - name: download-mmproj-gguf-hf-hub-download
+      run: |    
+        echo "Downloading model: ${{env.F16_MMPROJ_MODEL_BASE_FILENAME}}..."      
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }} ${{secrets.HF_TOKEN}}
+        echo "VISUAL_GGUF_PATH=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}" >> $GITHUB_ENV
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf          
 
     - name: verify-downloaded-files
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
-      run: |
-        echo downloaded files...    
-        echo "--------------------"                       
-        find . -name \*.gguf -type f    
-        echo "--------------------" 
-
-    # - name: print-storage-memory-info
-    #   if: env.DEBUG == 'true' && runner.os == 'macOS'  
-    #   run: |
-    #     df
-    #     echo "--------------------"         
-    #     xcodebuild -version        
-    #     clang --version
-    #     echo "--------------------"      
-    #     top -l 1 | grep -E "^CPU|^PhysMem"  
-    #     echo "--------------------"          
+      run: |                    
+        find . -name \*.gguf -type f            
     
-    # TODO:
-    # - name: validate-sha256
-    #   if: env.DEBUG == 'true' 
-    #   run: |
-    #     echo "validating sha256..."    
-    #     echo "--------------------" 
-    #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt      
-        
-    - name: test-llama-server-with-quantized-gguf
-      if: env.TEST_LLAMA_SERVER == 'true'     
-      timeout-minutes: 5   
-      run: |      
-        echo "--------------------"             
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-        echo "--------------------"    
-        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &         
-
-    # echo waiting for llama-server to start...  
-    # retry_count=0
-    # max_retries=10
-    # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
-    #   echo "retry_count: $retry_count"
-    #   if [ $? -eq 0 ]; then
-    #     echo "Connection successful!"
-    #     break
-    #   else
-    #     echo "Connection failed, retrying..."
-    #     echo "sleeping 1 second..." && sleep 1
-    #     retry_count=$((retry_count + 1)) 
-    #   fi          
-    # done          
-    - name: test-llama-server-connection
-      if: env.TEST_LLAMA_SERVER == 'true'     
-      run: |
-        echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
-        echo "netstat:\n$(netstat -an -p tcp | grep ".${{env.LLAMA_SERVER_HOST}}")"
-
-        if nc -v -z ${{env.LLAMA_SERVER_HOST}} ${{env.LLAMA_SERVER_PORT}}; then
-          echo "SUCCESS: Connection to llama-server successful."
-        else
-          echo "Failure: Connection to llama-server failed."
-          # ps aux
-          exit 1
-        fi           
-
-    - name: test-llama-server-with-curl
-      timeout-minutes: 5
-      if: env.TEST_LLAMA_SERVER == 'true'  
-      run: | 
-        curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health      
-        echo "TODO: Test for {"status":"ok"} from GET /health"
-        curl --request POST \
-          --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
-          --header "Content-Type: application/json" \
-          --data '{ \
-            "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
-            "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
-            "seed": ${{env.LLAMA_REQUEST_SEED}} \
-          }'
-        echo "TODO: Test for JSON response from POST /completion endpoint using jq"          
-    
-    # TODO:    
-    # - name: kill-llama-server
-    #   if: env.TEST_LLAMA_SERVER == 'true'  
-    #   run: |
-    #     echo "TODO: is netstat and ps commands to get PID and kill..." 
-
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'  
       timeout-minutes: 10
       continue-on-error: true
       # 2>/dev/null 
+      # 1>${{env.LLAMA_CLI_RESPONSE_FILE}}
       run: |  
-        echo "invoking llama-cli to test inference (generation)..."
+        echo "invoking llama-llava-cli to test inference..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli -no-cnv \
-          -s ${{env.LLAMA_REQUEST_SEED}} \
-          -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-          -p "${{env.LLAMA_REQUEST_PROMPT}}" \
-          -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
+        ./build/bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+            --mmproj ${{env.VISUAL_GGUF_PATH}} \
+            --image ${{env.LLAMA_CLI_TEST_IMAGE}} \
+            -c 16384 \
+            -p "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n<|user|>\n\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n" \
+            --temp 0
         if [ $? -eq 1 ]; then
           exit 1
         fi  
 
-    - name: test-print-llama-cli-response-with-metrics
-      if: env.TEST_LLAMA_CLI == 'true'      
-      run: |
-        echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+    # - name: test-print-llama-cli-response-with-metrics
+    #   if: env.TEST_LLAMA_CLI == 'true'      
+    #   run: |
+    #     echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
-    - name: test-llama-cli-response-with-regex
-      if: env.TEST_LLAMA_CLI == 'true'      
-      run: |
-        python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})"
-
-    - name: test-print-llama-cli-generated-log
-      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'   
-      continue-on-error: true   
-      run: |
-        echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     
-
-    - name: test-llama-run
-      if: env.TEST_LLAMA_RUN == 'true'
-      timeout-minutes: 10
-      continue-on-error: true
-      run: |
-        echo "invoking llama-run to test inference..."      
-        ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
-        if [ $? -eq 1 ]; then
-          exit 1
-        fi  
+    # - name: test-llama-cli-response-with-regex
+    #   if: env.TEST_LLAMA_CLI == 'true'      
+    #   run: |
+    #     python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})"
