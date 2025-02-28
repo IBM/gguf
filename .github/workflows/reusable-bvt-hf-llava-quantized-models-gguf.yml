@@ -162,7 +162,7 @@ jobs:
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p ${{env.LLAMA_REQUEST_PROMPT_USER}} \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
-            2> ${{LLAMA_CLI_STDERR_FILE}} | tee ${{LLAMA_CLI_STDOUT_FILE}}
+            2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
           cat error.log
           exit 1
