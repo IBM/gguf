@@ -52,13 +52,18 @@ jobs:
     runs-on: macos-latest    
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"    
 
     - name: is-enable_llm_jobs
       if: inputs.enable_llm_jobs == 'false'
       run: |
         echo "inputs.enable_llm_jobs == 'false'. Exiting..."
         exit 0
-        
+
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
@@ -96,12 +101,7 @@ jobs:
     # - name: Dump GitHub quiet
     #   env:
     #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"       
-
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"                 
+    #   run: echo "$GH_QUIET"                    
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
