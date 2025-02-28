@@ -34,7 +34,7 @@ env:
   LLAMA_REQUEST_TEMP: 0  
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
-  # LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
+  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
   LLAMA_REQUEST_PROMPT_USER: "<|user|>\n<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
@@ -150,7 +150,8 @@ jobs:
       run: |                    
         find . -name \*.gguf -type f            
     
-    # TODO: support redirect stderr/stdout      
+    # TODO: support redirect stderr/stdout    
+    # 2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}  
     - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
@@ -158,18 +159,34 @@ jobs:
         echo "invoking llama-llava-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"        
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" 
-        ./bin/llama-llava-cli \
-            -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        ./bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-            --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}
-          if [ $? -eq 1 ]; then
-            cat ${{env.LLAMA_CLI_STDERR_FILE}}
-            exit 1
-          fi
-          cat ${{env.LLAMA_CLI_STDOUT_FILE}}
+            --temp ${{env.LLAMA_REQUEST_TEMP}}
+
+    - name: test-llama-llava-cli-2
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |  
+        echo "invoking llama-llava-cli to test inference..."
+        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"        
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" 
+        ./bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            --image ./test/images/cherry_blossom.jpg \
+            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+            -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+            --temp ${{env.LLAMA_REQUEST_TEMP}}            
+
+    # if [ $? -eq 1 ]; then
+    #   echo "failure"
+    #   cat ${{env.LLAMA_CLI_STDERR_FILE}}
+    #   exit 1
+    # fi
+    # echo "success"
+    # cat ${{env.LLAMA_CLI_STDOUT_FILE}}
 
     # - name: test-print-llama-cli-response-with-metrics
     #   if: env.TEST_LLAMA_CLI == 'true'      
