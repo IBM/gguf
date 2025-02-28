@@ -36,9 +36,9 @@ jobs:
     steps:
     - name: create-aliases
     if: inputs.enable_llm_jobs == 'false'
-    run: |
-      echo "inputs.enable_llm_jobs == 'false'. Exiting..."
-      exit 0
+    - run: |
+        echo "inputs.enable_llm_jobs == 'false'. Exiting..."
+        exit 0
     
   convert-f16:
     runs-on: macos-latest    
