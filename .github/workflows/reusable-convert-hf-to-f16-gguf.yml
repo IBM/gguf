@@ -58,13 +58,16 @@ jobs:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: |
         echo "$GITHUB_INPUTS"  
-        printenv | sort   
+        echo "==============="
+        printenv | sort
+        echo "==============="   
+        echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
 
     - name: is-enable_llm_jobs
       # if: inputs.enable_llm_jobs == 'false'
       run: |
         echo "enable_llm_jobs: '$enable_llm_jobs'"
-        if [[ $enable_llm_jobs == false ]]; then
+        if [[ "$enable_llm_jobs" == 'false' ]]; then
           echo "enable_llm_jobs == 'false'. Exiting..."
           exit 0
         fi
