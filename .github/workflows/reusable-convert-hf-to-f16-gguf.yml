@@ -63,13 +63,11 @@ jobs:
     - name: is-enable_llm_jobs
       # if: inputs.enable_llm_jobs == 'false'
       run: |
-        echo "exists: '$exists'"
-        if [[ "$exists" == "False" ]]; then
-          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
-          exit 2
-        else 
-        echo "inputs.enable_llm_jobs == 'false'. Exiting..."
-        exit 0
+        echo "enable_llm_jobs: '$enable_llm_jobs'"
+        if [[ $enable_llm_jobs == false ]]; then
+          echo "enable_llm_jobs == 'false'. Exiting..."
+          exit 0
+        fi
 
     - run: |
         echo "[INFO] github.env:"   
