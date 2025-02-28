@@ -86,7 +86,7 @@ jobs:
 
     - name: confirm-environment
       run: |
-        echo "[INFO] >> run_id: '${{ env.enable_llm_jobs }}'"  
+        echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"  
 
     #     uname -a          
     #     echo "runner.os: ${{ runner.os }}"
