@@ -35,7 +35,7 @@ env:
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
   LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
-  LLAMA_REQUEST_PROMPT_USER: "<|user|>\n<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
+  LLAMA_REQUEST_PROMPT_USER: "<|user|>\n\\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -148,7 +148,8 @@ jobs:
     - name: verify-downloaded-files
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |                    
-        find . -name \*.gguf -type f            
+        find . -name \*.gguf -type f    
+        find . -name \*.jpg -type f                   
     
     # TODO: support redirect stderr/stdout    
     # 2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}  
