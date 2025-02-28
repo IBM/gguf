@@ -39,20 +39,26 @@ env:
 
 jobs:  
 
-  short-circuit:
-    runs-on: macos-latest   
-    steps:
-    - name: create-aliases
-      if: inputs.enable_llm_jobs == 'false'
-      run: |
-        echo "inputs.enable_llm_jobs == 'false'. Exiting..."
-        exit 0
+  # short-circuit:
+  #   runs-on: macos-latest   
+  #   steps:
+  #   - name: is-enable_llm_jobs
+  #     if: inputs.enable_llm_jobs == 'false'
+  #     run: |
+  #       echo "inputs.enable_llm_jobs == 'false'. Exiting..."
+  #       exit 0
     
   convert-f16:
     runs-on: macos-latest    
     steps:
     - uses: actions/checkout@v4
 
+    - name: is-enable_llm_jobs
+      if: inputs.enable_llm_jobs == 'false'
+      run: |
+        echo "inputs.enable_llm_jobs == 'false'. Exiting..."
+        exit 0
+        
     - run: |
         echo "[INFO] github.env:"   
         echo "[INFO] >> run_id: '${{ github.run_id }}'"       
