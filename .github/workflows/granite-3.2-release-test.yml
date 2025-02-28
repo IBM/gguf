@@ -149,7 +149,7 @@ jobs:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true'  }}      
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}      
       enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true'  }}        
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    

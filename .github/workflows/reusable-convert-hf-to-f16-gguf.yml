@@ -21,7 +21,15 @@ on:
       debug:
         type: boolean
         required: true        
-        default: false               
+        default: false    
+      trace:
+        type: boolean
+        required: true        
+        default: false 
+      enable_llm_jobs:
+        type: boolean
+        required: true        
+        default: false                             
 
 env:
   EXT_GGUF: .gguf
