@@ -138,7 +138,6 @@ jobs:
     secrets: inherit
 
   call-convert-hf-to-f16-gguf:  
-    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }} 
     needs: [ call-create-hf-repos, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main       
     permissions:
@@ -150,14 +149,15 @@ jobs:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true'  }}      
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true'  }}        
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit    
 
-  call-quantize-upload-gguf:  
-    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }}   
+  call-quantize-upload-gguf:   
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
     permissions:
       contents: write
@@ -177,8 +177,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"      
     secrets: inherit
 
-  call-bvt-quantized-gguf-models:  
-    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }}    
+  call-bvt-quantized-gguf-models:    
     needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main    
     permissions:

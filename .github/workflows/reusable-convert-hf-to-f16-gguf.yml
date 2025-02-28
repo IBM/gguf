@@ -30,6 +30,16 @@ env:
   MODEL_DOWNLOAD_DIR: models
 
 jobs:  
+
+  short-circuit:
+    runs-on: macos-latest   
+    steps:
+    - name: create-aliases
+    if: inputs.enable_llm_jobs == 'false'
+    run: |
+      echo "inputs.enable_llm_jobs == 'false'. Exiting..."
+      exit 0
+    
   convert-f16:
     runs-on: macos-latest    
     steps:
