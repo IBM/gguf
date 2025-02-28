@@ -28,11 +28,11 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   LLAMA_CLI_RESPONSE_FILE: response.txt
-  LLAMA_CLI_LOG_FILE: cli-log.txt
-  LLAMA_CLI_TEST_IMAGE: ./test/images/cherry_blossom.jpg
-  LLAMA_REQUEST_SEED: 647063347
-  LLAMA_REQUEST_PROMPT: "Why is the sky blue?"
-  LLAMA_REQUEST_N_PREDICT: 128
+  # LLAMA_CLI_LOG_FILE: cli-log.txt
+  LLAMA_REQUEST_TEMP: 0  
+  LLAMA_REQUEST_CONTEXT_SIZE: 16384
+  LLAMA_REQUEST_TEST_IMAGE: ./test/images/cherry_blossom.jpg
+  LLAMA_REQUEST_PROMPT: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n<|user|>\n\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -145,21 +145,22 @@ jobs:
       run: |                    
         find . -name \*.gguf -type f            
     
-    - name: test-llama-cli
-      if: env.TEST_LLAMA_CLI == 'true'  
+    # TODO: support redirect stderr/stdout
+    # 2>/dev/null 
+    # 1>${{env.LLAMA_CLI_RESPONSE_FILE}}        
+    - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
-      # 2>/dev/null 
-      # 1>${{env.LLAMA_CLI_RESPONSE_FILE}}
       run: |  
         echo "invoking llama-llava-cli to test inference..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./build/bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        ./build/bin/llama-llava-cli \
+            -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.VISUAL_GGUF_PATH}} \
-            --image ${{env.LLAMA_CLI_TEST_IMAGE}} \
-            -c 16384 \
-            -p "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n<|user|>\n\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n" \
-            --temp 0
+            --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
+            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+            -p ${{env.LLAMA_REQUEST_PROMPT}} \
+            --temp ${{env.LLAMA_REQUEST_TEMP}} 
         if [ $? -eq 1 ]; then
           exit 1
         fi  
