@@ -33,7 +33,7 @@ env:
   LLAMA_REQUEST_TEMP: 0  
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "./test/images/cherry_blossom.jpg"
-  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
+  # LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
   LLAMA_REQUEST_PROMPT_USER: "<|user|>\n<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
@@ -124,7 +124,7 @@ jobs:
           exit 2
         else 
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
-          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
         fi                
          
@@ -148,6 +148,7 @@ jobs:
         find . -name \*.gguf -type f            
     
     # TODO: support redirect stderr/stdout      
+    # TODO: env.LLAMA_REQUEST_PROMPT_SYSTEM
     - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
@@ -159,15 +160,13 @@ jobs:
             --mmproj ${{env.VISUAL_GGUF_PATH}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
-            -p ${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}} \
+            -p ${{env.LLAMA_REQUEST_PROMPT_USER}} \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
             2> ${{LLAMA_CLI_STDERR_FILE}} | tee ${{LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
           cat error.log
           exit 1
         fi
-        echo "----------------"
-        ls .
         echo "----------------"
         cat ${{LLAMA_CLI_STDOUT_FILE}}
 
