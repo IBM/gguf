@@ -147,9 +147,7 @@ jobs:
       run: |                    
         find . -name \*.gguf -type f            
     
-    # TODO: support redirect stderr/stdout
-    # 2>/dev/null 
-    # 1>${{env.LLAMA_CLI_RESPONSE_FILE}}        
+    # TODO: support redirect stderr/stdout      
     - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
