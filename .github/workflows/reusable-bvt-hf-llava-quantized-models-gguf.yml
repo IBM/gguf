@@ -31,7 +31,7 @@ env:
   # LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_TEMP: 0  
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
-  LLAMA_REQUEST_TEST_IMAGE: ./test/images/cherry_blossom.jpg
+  LLAMA_REQUEST_TEST_IMAGE: "./test/images/cherry_blossom.jpg"
   LLAMA_REQUEST_PROMPT: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n<|user|>\n\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMACPP_DIR: llama.cpp
