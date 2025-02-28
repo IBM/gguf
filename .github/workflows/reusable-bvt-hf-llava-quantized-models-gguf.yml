@@ -27,6 +27,7 @@ on:
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
+  EXT_NAME_F16: "-f16.gguf"  
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_STDOUT_FILE: output.txt  
   LLAMA_CLI_STDERR_FILE: error.txt
@@ -105,6 +106,7 @@ jobs:
     - name: set-derivative-env-vars-3
       run: |         
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
+        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV                     
 
     - name: verify-github-env
       run: |   
@@ -141,7 +143,6 @@ jobs:
       run: |    
         echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."      
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.HF_TOKEN}}
-        echo "VISUAL_GGUF_PATH=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF }}" >> $GITHUB_ENV
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf          
 
     - name: verify-downloaded-files
@@ -150,19 +151,19 @@ jobs:
         find . -name \*.gguf -type f            
     
     # TODO: support redirect stderr/stdout      
-    # TODO: env.LLAMA_REQUEST_PROMPT_SYSTEM
     - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
       run: |  
         echo "invoking llama-llava-cli to test inference..."
-        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"        
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" 
         ./build/bin/llama-llava-cli \
             -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-            --mmproj ${{env.VISUAL_GGUF_PATH}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
-            -p ${{env.LLAMA_REQUEST_PROMPT_USER}} \
+            -p ${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}} \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
             2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
