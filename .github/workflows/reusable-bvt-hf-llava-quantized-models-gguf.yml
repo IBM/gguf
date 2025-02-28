@@ -28,7 +28,8 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   LLAMA_CLI_RESPONSE_FILE: response.txt
-  # LLAMA_CLI_LOG_FILE: cli-log.txt
+  LLAMA_CLI_STDOUT_FILE: output.txt  
+  LLAMA_CLI_STDERR_FILE: error.txt
   LLAMA_REQUEST_TEMP: 0  
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "./test/images/cherry_blossom.jpg"
@@ -161,10 +162,16 @@ jobs:
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p ${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}} \
-            --temp ${{env.LLAMA_REQUEST_TEMP}} 
+            --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            2> ${{LLAMA_CLI_STDERR_FILE}} | tee ${{LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
+          cat error.log
           exit 1
-        fi  
+        fi
+        echo "----------------"
+        ls .
+        echo "----------------"
+        cat ${{LLAMA_CLI_STDOUT_FILE}}
 
     # - name: test-print-llama-cli-response-with-metrics
     #   if: env.TEST_LLAMA_CLI == 'true'      
