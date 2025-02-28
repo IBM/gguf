@@ -69,7 +69,7 @@ jobs:
         echo "enable_llm_jobs: '$enable_llm_jobs'"
         if [[ "$enable_llm_jobs" == 'false' ]]; then
           echo "enable_llm_jobs == 'false'. Exiting..."
-          exit 0
+          exit 1
         fi
 
     - run: |
@@ -83,18 +83,21 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> run_id: '${{ env.enable_llm_jobs }}'"            
 
     - name: confirm-environment
       run: |
-        uname -a
-        echo "runner.os: ${{ runner.os }}"
-        echo "runner.arch: ${{ runner.arch }}"
-        echo "github.workspace: ${{ github.workspace }}"
-        echo "inputs.repo_id: ${{ inputs.repo_id }}"    
-        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
-        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
-        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"        
+        echo "[INFO] >> run_id: '${{ env.enable_llm_jobs }}'"  
+        
+    #     uname -a          
+    #     echo "runner.os: ${{ runner.os }}"
+    #     echo "runner.arch: ${{ runner.arch }}"
+    #     echo "github.workspace: ${{ github.workspace }}"
+    #     echo "inputs.repo_id: ${{ inputs.repo_id }}"    
+    #     echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
+    #     echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
+    #     echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
+    #     echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"        
 
     # - name: Dump runner context
     #   env:
