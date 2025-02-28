@@ -27,6 +27,8 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
+  ENABLE_LLM_JOBS: false  
+  ENABLE_VISION_JOBS: true   
   SOURCE_REPOS: "[ 
     'ibm-granite/granite-3.2-2b-instruct', 
     'ibm-granite/granite-3.2-8b-instruct'
@@ -51,7 +53,6 @@ env:
   TARGET_REPO_OWNER: mrutkows  
   TARGET_REPO_PRIVATE: false   
   COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_test_private.json"
-  ENABLE_LLM_JOBS: false
 
 jobs:
   environment-setup:
@@ -59,6 +60,9 @@ jobs:
     # Note: declaration of these outputs is essential to pass to the next job
     outputs:
       debug: ${{ steps.set-vars.outputs.debug }}
+      trace: ${{ steps.set-vars.outputs.trace }} 
+      enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}  
+      enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}           
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }} 
@@ -72,10 +76,14 @@ jobs:
         id: set-vars
         run: |
             echo "DEBUG: $DEBUG"        
+            echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
             echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"     
-            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"                    
+            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"   
+            echo "trace=$TRACE" >> "$GITHUB_OUTPUT"                                
+            echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"                            
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
@@ -87,12 +95,17 @@ jobs:
       - name: Confirm GitHub output values were set
         run: |       
             echo "debug: ${{ steps.set-vars.outputs.debug }}"         
+            echo "trace: ${{ steps.set-vars.outputs.trace }}"             
+            echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"              
+            echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"                
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
+            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"             
             echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"  
             echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'" 
-            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"             
+            echo "source_llava_repos: '${{ steps.set-vars.outputs.source_llava_repos }}'"  
+            echo "target_llava_quantizations: '${{ steps.set-vars.outputs.target_llava_quantizations }}'"             
 
       # - name: Dump runner context
       #   env:
@@ -125,7 +138,7 @@ jobs:
     secrets: inherit
 
   call-convert-hf-to-f16-gguf:  
-    if: ${{ env.ENABLE_LLM_JOBS == true }}  
+    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }} 
     needs: [ call-create-hf-repos, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main       
     permissions:
@@ -144,7 +157,7 @@ jobs:
     secrets: inherit    
 
   call-quantize-upload-gguf:  
-    if: ${{ env.ENABLE_LLM_JOBS == true }}    
+    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }}   
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
     permissions:
       contents: write
@@ -165,7 +178,7 @@ jobs:
     secrets: inherit
 
   call-bvt-quantized-gguf-models:  
-    if: ${{ env.ENABLE_LLM_JOBS == true }}    
+    if: ${{ steps.set-vars.outputs.enable_llm_jobs == true  }}    
     needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main    
     permissions:
