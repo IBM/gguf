@@ -56,8 +56,9 @@ jobs:
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-        printenv | sort
-      run: echo "$GITHUB_INPUTS"    
+      run: |
+        echo "$GITHUB_INPUTS"  
+        printenv | sort   
 
     - name: is-enable_llm_jobs
       # if: inputs.enable_llm_jobs == 'false'
