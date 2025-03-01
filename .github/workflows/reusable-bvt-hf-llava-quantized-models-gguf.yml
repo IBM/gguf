@@ -165,8 +165,15 @@ jobs:
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-            --temp ${{env.LLAMA_REQUEST_TEMP}}
-
+            --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}
+        if [ $? -eq 1 ]; then
+          echo "failure"
+          cat ${{env.LLAMA_CLI_STDERR_FILE}}
+          exit 1
+        fi
+        echo "success"
+        cat ${{env.LLAMA_CLI_STDOUT_FILE}}
+        
     - name: test-llama-llava-cli-2
       timeout-minutes: 10
       continue-on-error: true
@@ -179,15 +186,15 @@ jobs:
             --image ./test/images/cherry_blossom.jpg \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-            --temp ${{env.LLAMA_REQUEST_TEMP}}            
+            --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} | tee ${{env.LLAMA_CLI_STDOUT_FILE}}          
 
-    # if [ $? -eq 1 ]; then
-    #   echo "failure"
-    #   cat ${{env.LLAMA_CLI_STDERR_FILE}}
-    #   exit 1
-    # fi
-    # echo "success"
-    # cat ${{env.LLAMA_CLI_STDOUT_FILE}}
+        if [ $? -eq 1 ]; then
+          echo "failure"
+          cat ${{env.LLAMA_CLI_STDERR_FILE}}
+          exit 1
+        fi
+        echo "success"
+        cat ${{env.LLAMA_CLI_STDOUT_FILE}}
 
     # - name: test-print-llama-cli-response-with-metrics
     #   if: env.TEST_LLAMA_CLI == 'true'      
