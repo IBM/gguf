@@ -49,6 +49,7 @@ env:
 jobs:  
   convert-f16:
     runs-on: macos-latest    
+    if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v4
 
@@ -70,7 +71,7 @@ jobs:
         echo "==============="
         printenv | sort
         echo "==============="   
-        echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+        echo "enable_vision_jobs=${{inputs.enable_vision_jobs}}" >> $GITHUB_ENV
 
     - name: is-enable_vision_jobs
       run: |
