@@ -26,7 +26,7 @@ permissions:
 
 env:
   DEBUG: true
-  TRACE: false
+  TRACE: true
   ENABLE_LLM_JOBS: true
   ENABLE_VISION_JOBS: true
   SOURCE_REPOS: "[
