@@ -28,7 +28,11 @@ on:
       debug:
         type: boolean
         required: true        
-        default: false              
+        default: false  
+      trace:
+        type: boolean
+        required: false        
+        default: false                     
 
 env:
   EXT_GGUF: .gguf

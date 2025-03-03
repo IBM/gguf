@@ -21,7 +21,11 @@ on:
       debug:
         type: boolean
         required: true        
-        default: false    
+        default: false   
+      trace:
+        type: boolean
+        required: false        
+        default: false          
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:

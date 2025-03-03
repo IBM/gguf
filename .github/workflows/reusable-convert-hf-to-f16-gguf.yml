@@ -52,6 +52,16 @@ jobs:
     runs-on: macos-latest    
     steps:
     - uses: actions/checkout@v4
+    
+    # - name: Dump GitHub context
+    #   env:
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT" 
+
+    # - name: Dump GitHub quiet
+    #   env:
+    #     GH_QUIET: ${{ toJson(secrets) }}
+    #   run: echo "$GH_QUIET"      
 
     - name: Dump GitHub inputs
       env:
@@ -86,32 +96,15 @@ jobs:
 
     - name: confirm-environment
       run: |
-        echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"  
-
-    #     uname -a          
-    #     echo "runner.os: ${{ runner.os }}"
-    #     echo "runner.arch: ${{ runner.arch }}"
-    #     echo "github.workspace: ${{ github.workspace }}"
-    #     echo "inputs.repo_id: ${{ inputs.repo_id }}"    
-    #     echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
-    #     echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
-    #     echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
-    #     echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"        
-
-    # - name: Dump runner context
-    #   env:
-    #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-    #   run: echo "$RUNNER_CONTEXT"    
-
-    # - name: Dump GitHub context
-    #   env:
-    #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"   
-
-    # - name: Dump GitHub quiet
-    #   env:
-    #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"                    
+        uname -a          
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace }}"
+        echo "inputs.repo_id: ${{ inputs.repo_id }}"    
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"                            
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.

@@ -27,7 +27,11 @@ on:
       debug:
         type: boolean
         required: true        
-        default: false               
+        default: false   
+      enable_vision_jobs:
+        type: boolean
+        required: true        
+        default: false                       
 
 env:
   EXT_GGUF: .gguf
@@ -43,6 +47,34 @@ jobs:
     runs-on: macos-latest    
     steps:
     - uses: actions/checkout@v4
+
+    # - name: Dump GitHub context
+    #   env:
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT" 
+
+    # - name: Dump GitHub quiet
+    #   env:
+    #     GH_QUIET: ${{ toJson(secrets) }}
+    #   run: echo "$GH_QUIET"      
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: |
+        echo "$GITHUB_INPUTS"  
+        echo "==============="
+        printenv | sort
+        echo "==============="   
+        echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+
+    - name: is-enable_vision_jobs
+      run: |
+        echo "enable_vision_jobs: '$enable_vision_jobs'"
+        if [[ "$enable_vision_jobs" == 'false' ]]; then
+          echo "enable_vision_jobs == 'false'. Exiting..."
+          exit 1
+        fi
 
     - run: |
         echo "[INFO] github.env:"   
@@ -66,17 +98,7 @@ jobs:
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
-        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"   
-
-    # - name: Dump GitHub context
-    #   env:
-    #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"         
-
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"                 
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"                         
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
