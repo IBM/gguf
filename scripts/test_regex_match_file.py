@@ -2,17 +2,27 @@ import os
 import sys
 import re
 
-def test_regex_match(regex_pattern, test_string) -> bool:
+def test_regex_match(regex_pattern:str, test_file:str) -> bool:
     """
     Tests if a regex pattern matches a given text.
 
     Args:
         regex_pattern (str): The regex pattern to search for (Use: r"raw string").
-        test_string (str): The text to search within.
+        test_file (str): The text to search within.
 
     Returns:
         bool: True if the pattern is found in the text, False otherwise.
     """
+    try:
+        with open(test_file, 'r') as file:
+            test_string = file.read()
+    except FileNotFoundError:
+        print(f"Error: File not found at path: {test_file}")
+        return None
+    except Exception as e:
+         print(f"An error occurred: {e}")
+         return None 
+    
     match = re.search(regex_pattern, test_string)
     return bool(match)
 
@@ -27,11 +37,11 @@ if __name__ == "__main__":
     # Parse input arguments into named params.   
     fx_name = sys.argv[0]   
     regex_pattern = sys.argv[1]
-    test_string = sys.argv[2]   
+    test_file = sys.argv[2]   
      
     # invoke fx
-    # NOTE: This script MUST only print True | False to stdout.
-    matched = test_regex_match(regex_pattern=regex_pattern, test_string=test_string)
+    # NOTE: This script MUST only print True | False to stdout.    
+    matched = test_regex_match(regex_pattern=regex_pattern, test_file=test_file)
 
     # Return result
     print(matched)

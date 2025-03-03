@@ -204,8 +204,8 @@ jobs:
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'      
       run: |
-        matched = $(python ./scripts/test_regex_match.py "${{env.LLAMA_RESPONSE_REGEX}}" "$(cat ${{env.LLAMA_CLI_STDOUT_FILE}})")
-        echo "matched: $matched"
+        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_STDOUT_FILE}})
+        echo "matched: '$matched'"
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
           echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response." 
