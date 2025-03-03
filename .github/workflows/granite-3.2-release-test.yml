@@ -159,6 +159,7 @@ jobs:
     secrets: inherit    
 
   call-quantize-upload-gguf:   
+    if: needs.call-convert-hf-to-f16-gguf.result != 'skipped'
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
     permissions:
       contents: write
