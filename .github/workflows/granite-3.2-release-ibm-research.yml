@@ -173,7 +173,8 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}       
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}  
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}      
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
@@ -194,7 +195,8 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}              
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}       
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }} 
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
@@ -233,7 +235,7 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_llava_quantizations) }}              
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}       
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}       
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
@@ -255,7 +257,8 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_llava_quantizations) }}              
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}       
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
@@ -272,6 +275,8 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}      
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }} 
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
