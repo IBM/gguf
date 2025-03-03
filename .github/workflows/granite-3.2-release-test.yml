@@ -159,7 +159,6 @@ jobs:
     secrets: inherit    
 
   call-quantize-upload-gguf:   
-    if: needs.call-convert-hf-to-f16-gguf.result != 'skipped'
     needs: [ call-convert-hf-to-f16-gguf, environment-setup ]
     permissions:
       contents: write
@@ -269,7 +268,7 @@ jobs:
   call-create-hf-collections:  
     needs: [ 
       environment-setup,      
-      # call-bvt-quantized-gguf-models, 
+      call-bvt-quantized-gguf-models, 
       call-bvt-quantized-llm-vision-gguf-models,
     ] 
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main

@@ -215,7 +215,8 @@ jobs:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }} 
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}       
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}    
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
