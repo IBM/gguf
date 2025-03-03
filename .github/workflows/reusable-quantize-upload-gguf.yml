@@ -34,6 +34,7 @@ on:
         required: false        
         default: false                      
 
+# TODO: F16_OPT_ENABLED        
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
@@ -176,6 +177,19 @@ jobs:
     #     chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
     #     echo "--------------------"               
     #     echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV        
+    
+    # - name: download-f16-gguf-curl
+    #   if: env.F16_FILE_EXISTS == '1'
+    #   run: |    
+    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
+    #     echo "--------------------"        
+    #     mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
+    #     chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
+    #     find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
+    #     echo "--------------------"         
+    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
+    #     echo "--------------------"         
+    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -211,19 +225,6 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
         pip list        
         
-    # - name: download-f16-gguf-curl
-    #   if: env.F16_FILE_EXISTS == '1'
-    #   run: |    
-    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"     
-    #     echo "--------------------"        
-    #     mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
-    #     chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}        
-    #     find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
-    #     echo "--------------------"         
-    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}  
-    #     echo "--------------------"         
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV          
-
     - name: download-model-snapshot
       if: env.F16_FILE_EXISTS == '0'
       run: |                         

@@ -34,6 +34,7 @@ on:
         required: false        
         default: false                     
 
+# TODO: F16_OPT_ENABLED        
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
