@@ -12,6 +12,10 @@ name: convert-hf-llava-to-f16-gguf-reusable
 on:
   workflow_call:
     inputs:
+      enable_vision_jobs:
+        type: boolean
+        required: false        
+        default: false       
       repo_id:
         type: string
         required: true         
@@ -28,10 +32,10 @@ on:
         type: boolean
         required: true        
         default: false   
-      enable_vision_jobs:
+      trace:
         type: boolean
         required: true        
-        default: false                       
+        default: false                              
 
 env:
   EXT_GGUF: .gguf

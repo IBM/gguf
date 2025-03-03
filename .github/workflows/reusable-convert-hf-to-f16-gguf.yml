@@ -6,6 +6,10 @@ name: convert-hf-safetensors-to-f16-gguf-reusable
 on:
   workflow_call:
     inputs:
+      enable_llm_jobs:
+        type: boolean
+        required: false        
+        default: false         
       repo_id:
         type: string
         required: true         
@@ -25,11 +29,7 @@ on:
       trace:
         type: boolean
         required: true        
-        default: false 
-      enable_llm_jobs:
-        type: boolean
-        required: true        
-        default: false                             
+        default: false                           
 
 env:
   EXT_GGUF: .gguf
