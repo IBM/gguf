@@ -18,11 +18,11 @@
                 },
                 {
                     "type": "model",                
-                    "repo_id": "mrutkows/ibm-granite/granite-guardian-3.2-3b-a800m-GGUF"
+                    "repo_id": "mrutkows/granite-guardian-3.2-3b-a800m-GGUF"
                 },
                 {
                     "type": "model",                
-                    "repo_id": "mrutkows/ibm-granite/granite-guardian-3.2-5b-GGUF"
+                    "repo_id": "mrutkows/granite-guardian-3.2-5b-GGUF"
                 }                                 
             ]
         }
