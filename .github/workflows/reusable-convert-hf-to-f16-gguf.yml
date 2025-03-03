@@ -37,17 +37,7 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
-jobs:  
-
-  # short-circuit:
-  #   runs-on: macos-latest   
-  #   steps:
-  #   - name: is-enable_llm_jobs
-  #     if: inputs.enable_llm_jobs == 'false'
-  #     run: |
-  #       echo "inputs.enable_llm_jobs == 'false'. Exiting..."
-  #       exit 0
-    
+jobs:    
   convert-f16:
     runs-on: macos-latest   
     if: ${{ inputs.enable_llm_jobs == true }}     

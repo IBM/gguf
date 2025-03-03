@@ -6,6 +6,10 @@ on:
   workflow_dispatch:   
   workflow_call:
     inputs:
+      enable_llm_jobs:
+        type: boolean
+        required: false        
+        default: false       
       repo_id:
         type: string
         required: true   
@@ -51,7 +55,7 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-
+    if: ${{ inputs.enable_llm_jobs == true }}  
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment
