@@ -17,11 +17,11 @@ def test_regex_match(regex_pattern:str, test_file:str) -> bool:
         with open(test_file, 'r') as file:
             test_string = file.read()
     except FileNotFoundError:
-        print(f"Error: File not found at path: {test_file}")
-        return None
-    except Exception as e:
-         print(f"An error occurred: {e}")
-         return None 
+        print(f"[ERROR]: File not found at path: '{test_file}'")
+        return False
+    except Exception as exc:
+         print(f"[ERROR] An error occurred: '{exc}'")
+         return False 
     
     match = re.search(regex_pattern, test_string)
     return bool(match)
