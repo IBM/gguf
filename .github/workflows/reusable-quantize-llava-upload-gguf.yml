@@ -10,6 +10,10 @@ name: quantize-llava-llm-upload-gguf-reusable
 on:
   workflow_call:
     inputs:
+      enable_vision_jobs:
+        type: boolean
+        required: false        
+        default: false        
       repo_id:
         type: string
         required: true   
@@ -47,7 +51,7 @@ env:
 jobs:
   quantize:
     runs-on: macos-latest
-
+    if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v4
 
