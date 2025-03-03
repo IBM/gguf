@@ -28,6 +28,9 @@ permissions:
 
 env:
   DEBUG: true
+  TRACE: false
+  ENABLE_LLM_JOBS: true  
+  ENABLE_VISION_JOBS: true     
   SOURCE_REPOS: "[ 
     'ibm-granite/granite-3.2-2b-instruct', 
     'ibm-granite/granite-3.2-8b-instruct'    
@@ -59,6 +62,9 @@ jobs:
     # Note: declaration of these outputs is essential to pass to the next job
     outputs:
       debug: ${{ steps.set-vars.outputs.debug }}
+      trace: ${{ steps.set-vars.outputs.trace }} 
+      enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}  
+      enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}      
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}   
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }} 
@@ -72,10 +78,14 @@ jobs:
         id: set-vars
         run: |
             echo "DEBUG: $DEBUG"        
+            echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
             echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"     
-            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"                    
+            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"   
+            echo "trace=$TRACE" >> "$GITHUB_OUTPUT"                                
+            echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"                            
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"   
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"    
@@ -84,15 +94,21 @@ jobs:
             echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"   
             echo "source_llava_repos=$SOURCE_LLAVA_REPOS" >> "$GITHUB_OUTPUT"  
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"                        
+   
       - name: Confirm GitHub output values were set
         run: |       
-            echo "debug: ${{ steps.set-vars.outputs.debug }}"         
+            echo "debug: ${{ steps.set-vars.outputs.debug }}"  
+            echo "trace: ${{ steps.set-vars.outputs.trace }}"             
+            echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"              
+            echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"                   
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"    
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'" 
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"                           
+            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"             
             echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"  
             echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'" 
-            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"             
+            echo "source_llava_repos: '${{ steps.set-vars.outputs.source_llava_repos }}'"  
+            echo "target_llava_quantizations: '${{ steps.set-vars.outputs.target_llava_quantizations }}'"             
 
       # - name: Dump runner context
       #   env:
@@ -136,6 +152,8 @@ jobs:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}  
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}      
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true'  }}       
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -219,12 +237,31 @@ jobs:
       quantization: "${{ matrix.quantization }}"      
     secrets: inherit
 
+  call-bvt-quantized-llm-vision-gguf-models:     
+    needs: [ call-quantize-vision-llm-and-upload-gguf, environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-hf-llava-quantized-models-gguf.yml@main    
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_llava_repos) }}      
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_llava_quantizations) }}              
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"    
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"      
+    secrets: inherit     
+
   # TODO: change collection from private to public (on success)    
   call-create-hf-collections:  
     needs: [ 
       environment-setup,      
       call-bvt-quantized-gguf-models, 
-      call-quantize-vision-llm-and-upload-gguf, 
+      call-bvt-quantized-llm-vision-gguf-models,
     ] 
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -233,4 +270,5 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}    
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}      
-    secrets: inherit      
+    secrets: inherit
+      
