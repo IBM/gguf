@@ -143,13 +143,12 @@ jobs:
     - name: test-is-granite-guardian
       run: |
         if [ ${{ contains(env.LOCAL_FNAME_QUANTIZED_GGUF, 'guardian') }} ]; then
-          echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF' contains 'guardian'."
-          exit(0)
+          echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF'='${{env.LOCAL_FNAME_QUANTIZED_GGUF}}' contains 'guardian'."
+          exit 0
         else
-          echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF' does NOT contain 'guardian'."
-          exit(1)
+          echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF'='${{env.LOCAL_FNAME_QUANTIZED_GGUF}}' does NOT contain 'guardian'."
+          exit 1
         fi
-        exit(2)
     
     - name: test-granite-guardian-risk-harm
       # if: env.TEST_LLAMA_CLI == 'true'  
