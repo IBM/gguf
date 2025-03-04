@@ -136,7 +136,7 @@ jobs:
     - name: verify-downloaded-files
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |
-        echo GGUF file(s) downloaded...    
+        echo "Finding file(s) matching '*.gguf' ..."
         echo "--------------------"                       
         find . -name \*.gguf -type f    
     
