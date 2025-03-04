@@ -27,7 +27,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LLM_JOBS: true
+  ENABLE_LLM_JOBS: false
   ENABLE_VISION_JOBS: false
   SOURCE_REPOS: "[
     'ibm-granite/granite-guardian-3.2-3b-a800m',
@@ -281,3 +281,24 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
+
+  call-bvt-quantized-gguf-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets: inherit    

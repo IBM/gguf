@@ -1,0 +1,5 @@
+<|start_of_role|>system<|end_of_role|>Knowledge Cutoff Date: April 2024.
+Today's Date: February 18, 2025.
+You are Granite, developed by IBM. You are a helpful AI assistant.<|end_of_text|>
+<|start_of_role|>user<|end_of_role|>What is the largest ocean on Earth?<|end_of_text|>
+<|start_of_role|>assistant<|end_of_role|>The largest ocean on Earth is the Pacific Ocean. It covers an area of about 63,800,000 square miles (165,250,000 square kilometers), which is more than all of Earth's land areas combined.<|end_of_text|>
