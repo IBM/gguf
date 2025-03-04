@@ -282,7 +282,7 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
-  call-bvt-quantized-gguf-models:
+  call-bvt-guardian-quantized-gguf-models:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
     permissions:
