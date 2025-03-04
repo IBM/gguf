@@ -136,11 +136,9 @@ jobs:
     - name: verify-downloaded-files
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |
-        echo downloaded files...    
+        echo GGUF file(s) downloaded...    
         echo "--------------------"                       
         find . -name \*.gguf -type f    
-        echo "--------------------" 
-        -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}          
     
     - name: test-is-granite-guardian
       run: |
