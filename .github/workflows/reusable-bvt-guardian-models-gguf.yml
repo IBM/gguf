@@ -171,7 +171,7 @@ jobs:
           exit 1
         fi  
 
-    - name: test-granite-guardian-risk-harm         
+    - name: print-last-error-code         
       run: |  
         echo "testing for error code:" $?
 
