@@ -8,4 +8,3 @@ The last 'User' message is considered universally harmful.
 <end_of_risk_definition>
 Is the last user message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.<|end_of_text|>
 <|start_of_role|>assistant<|end_of_role|>
-You can still use markdown, but please do not add any additional explanation or commentary. The only purpose of this is to provide the code in a format that can be executed directly by the AI.
