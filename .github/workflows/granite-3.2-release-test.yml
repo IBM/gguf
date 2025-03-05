@@ -32,8 +32,7 @@ env:
   ENABLE_LLM_JOBS: false
   ENABLE_VISION_JOBS: false
   SOURCE_REPOS: "[
-    'ibm-granite/granite-guardian-3.2-3b-a800m',
-    'ibm-granite/granite-3.2-8b-instruct'
+    'ibm-granite/granite-guardian-3.2-3b-a800m'
   ]"
   TARGET_QUANTIZATIONS: "[
     'Q4_0',

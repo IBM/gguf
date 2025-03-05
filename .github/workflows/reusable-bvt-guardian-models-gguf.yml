@@ -138,14 +138,17 @@ jobs:
         echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf 
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.json   
 
     - name: verify-downloaded-files
       if: env.DEBUG == 'true' && runner.os == 'macOS'  
       run: |
         echo "Finding file(s) matching '*.gguf' ..."
         echo "--------------------"                       
-        find . -name \*.gguf -type f    
+        find . -name \*.gguf -type f  
+        find . -name \*.json -type f    
     
     - name: test-is-granite-guardian
       run: |
@@ -171,9 +174,9 @@ jobs:
           exit 1
         fi  
 
-    - name: print-last-error-code         
-      run: |  
-        echo "testing for error code:" $?
+    # - name: print-last-error-code         
+    #   run: |  
+    #     echo "testing for error code:" $?
 
     # - name: test-llama-cli-response-with-regex
     #   if: env.TEST_LLAMA_CLI == 'true'      
