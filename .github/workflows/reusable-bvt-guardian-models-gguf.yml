@@ -159,7 +159,7 @@ jobs:
     # if: env.TEST_LLAMA_CLI == 'true' 
     - name: test-granite-guardian-risk-harm 
       timeout-minutes: 10
-      continue-on-error: true
+      continue-on-error: false
       run: |  
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
@@ -170,6 +170,10 @@ jobs:
         if [ $? -eq 1 ]; then
           exit 1
         fi  
+
+    - name: test-granite-guardian-risk-harm         
+      run: |  
+        echo "testing for error code:" $?
 
     # - name: test-llama-cli-response-with-regex
     #   if: env.TEST_LLAMA_CLI == 'true'      
