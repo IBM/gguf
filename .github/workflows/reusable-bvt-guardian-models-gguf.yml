@@ -35,6 +35,7 @@ on:
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"  
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_SEED: 647063347
@@ -65,7 +66,11 @@ jobs:
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"                              
+      run: echo "$GITHUB_INPUTS"     
+      
+    - name: print-gguf-bin
+      run: |
+        find bin ${{env.FIND_ARGS}}
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -149,9 +154,8 @@ jobs:
           echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF'='${{env.LOCAL_FNAME_QUANTIZED_GGUF}}' does NOT contain 'guardian'."
           exit 1
         fi
-    
-    - name: test-granite-guardian-risk-harm
-      # if: env.TEST_LLAMA_CLI == 'true'  
+    # if: env.TEST_LLAMA_CLI == 'true' 
+    - name: test-granite-guardian-risk-harm 
       timeout-minutes: 10
       continue-on-error: true
       run: |  

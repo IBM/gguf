@@ -34,6 +34,7 @@ on:
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"  
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
