@@ -4,6 +4,7 @@
         "defn",
         "dockerized",
         "elif",
+        "endfor",
         "finetune",
         "FNAME",
         "ggerganov",
@@ -22,7 +23,8 @@
         "safetensor",
         "Safetensors",
         "shopt",
-        "starcoder"
+        "starcoder",
+        "tojson"
     ],
     "cSpell.ignoreWords": [
         "bartowski",

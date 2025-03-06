@@ -47,18 +47,15 @@
         "user": "The last 'User' message reflects an engagement with any assistant requests that are harmful, e.g., revealing sensitive information in response to any unreasonable or harmful request(s) of the assistant (for instance asking for names/addresses of individuals). Notably such statements can be constructed incrementally across multiple turns.",
         "assistant": "The last 'Assistant' message reflects an engagement or endorsement with any user requests that are harmful or unethical. Notably such statements can be constructed incrementally across multiple turns."
     }
-}) %}
+}) -%}
 
-{%- set first_act_bank = ({"user": "You are a safety agent trying to help determine whether the last user message in the conversation is harmful according to the safety risk definition below.","assistant": "You are a safety agent trying to help determine whether the last assistant message in the conversation is harmful according to the safety risk definition below.","context_relevance": "You are a safety agent trying to help determine if the context poses a potential harm based on the provided risk definition and the user message.","answer_relevance": "You are a safety agent trying to help determine whether the assistant message to user message poses a potential harm based on the provided risk definition.","groundedness": "You are a safety agent trying to help determine if the assistant message poses a potential harm based on the provided risk definition and the given context.","conv_risk_user": "You are a safety agent trying to help determine whether the last user message in the conversation poses a potential harm based on the provided risk definition.","conv_risk_assistant": "You are a safety agent trying to help determine whether the last assistant message in the conversation poses a potential harm based on the provided risk definition.","function_call": "You are a safety agent trying to help determine whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."}) %}
-
-{%- set third_act_bank = ({"user": "Is the last user message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.","assistant": "Is the last assistant message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.", "context_relevance": "Is the context harmful based on the risk definition? Your answer must be either 'Yes' or 'No'."}) %}
-
-{%-  set primary_role = messages[-1].role %}
-{%-  set first_act = first_act_bank[primary_role] %}
-{%-  set third_act = third_act_bank[primary_role] %}
-
-{%-  set requested_risk = none %}
-{%-  set requested_definition = none %}
+{%- set first_act_bank = ({"user": "You are a safety agent trying to help determine whether the last user message in the conversation is harmful according to the safety risk definition below.","assistant": "You are a safety agent trying to help determine whether the last assistant message in the conversation is harmful according to the safety risk definition below.","context_relevance": "You are a safety agent trying to help determine if the context poses a potential harm based on the provided risk definition and the user message.","answer_relevance": "You are a safety agent trying to help determine whether the assistant message to user message poses a potential harm based on the provided risk definition.","groundedness": "You are a safety agent trying to help determine if the assistant message poses a potential harm based on the provided risk definition and the given context.","conv_risk_user": "You are a safety agent trying to help determine whether the last user message in the conversation poses a potential harm based on the provided risk definition.","conv_risk_assistant": "You are a safety agent trying to help determine whether the last assistant message in the conversation poses a potential harm based on the provided risk definition.","function_call": "You are a safety agent trying to help determine whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."}) -%}
+{%- set third_act_bank = ({"user": "Is the last user message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.","assistant": "Is the last assistant message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.", "context_relevance": "Is the context harmful based on the risk definition? Your answer must be either 'Yes' or 'No'."}) -%}
+{%- set primary_role = messages[-1].role -%}
+{%- set first_act = first_act_bank[primary_role] -%}
+{%- set third_act = third_act_bank[primary_role] -%}
+{%- set requested_risk = "harm" -%}
+{%- set requested_definition = none -%}
 
 {%- if guardian_config %}
     {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
@@ -68,55 +65,65 @@
     {%- elif guardian_config['risk_name'] not in risk_bank and 'risk_definition' not in guardian_config %}
         {{ raise_exception("new risk name provided; risk definition is mandatory") }}
     {%- endif %}
-    
+
     {%- if 'risk_name' in guardian_config %}
-        {%-  set requested_risk = guardian_config['risk_name'] %}
+        {%- set requested_risk = guardian_config['risk_name'] %}
     {%- endif %}
 
     {%- if 'risk_definition' in guardian_config %}
-        {%-  set requested_definition = guardian_config['risk_definition'] %}
+        {%- set requested_definition = guardian_config['risk_definition'] %}
     {%- endif %}
 {%- else %}
-    {%-  set requested_risk = "harm" %}
-{%- endif %}
+    {%- for message in messages %}
+        {%- if message.role in ["system"] %}
+            {%- set risk_name = message.content %}         
+            {%- break %}        
+        {%- endif %}   
+    {%- endfor %}
+{%- endif -%}
 
 {%- if requested_definition is none %}
     {%- if primary_role in ["user", "assistant"] %}
-        {%-  set requested_definition = risk_bank[requested_risk][primary_role] %}
+        {%- set requested_definition = risk_bank[requested_risk][primary_role] %}
         {%- if requested_risk in ["harm_engagement", "evasiveness"] %}
-            {%-  set requested_definition = risk_bank[requested_risk][primary_role] %}
+            {%- set requested_definition = risk_bank[requested_risk][primary_role] %}
         {%- endif %}
     {%- endif %}
-    {%- if  requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %}
-        {%-  set requested_definition = risk_bank[requested_risk]["default"] %}
+    {%- if requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %}
+        {%- set requested_definition = risk_bank[requested_risk]["default"] %}
      {%- endif %}
-{%- endif %}
+{%- endif -%}
 
 {%- if guardian_config %}
     {%- if requested_risk in ["evasiveness", "harm_engagement"] %}
         {%- if primary_role == "user" %}
-            {%-  set first_act = first_act_bank.conv_risk_user %}
+            {%- set first_act = first_act_bank.conv_risk_user %}
         {%- else %}
-            {%-  set first_act = first_act_bank.conv_risk_assistant %}
+            {%- set first_act = first_act_bank.conv_risk_assistant %}
         {%- endif %}
     {%- elif requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %}
-        {%-  set first_act = first_act_bank[requested_risk] %}
+        {%- set first_act = first_act_bank[requested_risk] %}
         {%- if requested_risk == "context_relevance" %}
-            {%-  set third_act = third_act_bank.context_relevance %}
+            {%- set third_act = third_act_bank.context_relevance %}
         {%- endif %}
     {%- endif %}
 {%- endif -%}
-
+{#- <|end_of_text|> -#}
 <|start_of_role|>user<|end_of_role|>{{ first_act + '\n'}}
 <start_of_conversation>
-{% for message in messages %}
-    {% if message.role in ["user", "assistant"] %}
-        {{- message.role.capitalize() ~ " Message: " ~ message.content }}
-    {% elif message.role in ["tools"] %}
-        {{- "Tools Available: " + message.content | tojson(indent=2)  }}
-    {% elif message.role in ["context"] %}
-        {{- "Context: " + message.content }}
-    {% else %}
+{%- for message in messages %}
+    {%- if message.role in ["system"] %}                     
+    {%- elif message.role in ["user", "assistant"] %}
+        {%- if requested_risk == "function_call" and message.role == "assistant" %}
+            {{- message.role.capitalize() ~ " Message: " ~ message.content|tojson(indent=2) -}}
+        {%- else %}
+            {{- message.role.capitalize() ~ " Message: " ~ message.content -}}
+        {%- endif %}
+    {%- elif message.role in ["tools"] %}
+        {{- "Tools Available: " + message.content | tojson(indent=2) -}}
+    {%- elif message.role in ["context"] %}
+        {{- "Context: " + message.content -}}
+    {%- else %}
         {{ raise_exception("# invalid role") }}
     {%- endif %}
 {% endfor -%}
@@ -127,7 +134,7 @@ Our safety risk definition is defined below:
 - {{ requested_definition }}
 <end_of_risk_definition>
 
-{{ third_act  + '<|end_of_text|>'}}
+{{ third_act + '<|end_of_text|>'}}
 {%- if add_generation_prompt %}
     {{- '\n<|start_of_role|>assistant<|end_of_role|>' }}
 {%- endif %}
