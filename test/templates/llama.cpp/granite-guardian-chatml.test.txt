@@ -111,7 +111,7 @@
 <start_of_conversation>
 {% for message in messages %}
     {% if message.role in ["user", "assistant"] %}
-        {{- message.role ~ " Message: " ~ message.content }}
+        {{- message.role.capitalize() ~ " Message: " ~ message.content }}
     {% elif message.role in ["tools"] %}
         {{- "Tools Available: " + message.content | tojson(indent=2)  }}
     {% elif message.role in ["context"] %}
