@@ -40,7 +40,7 @@
         "default": "'Assistant' message fails to address or properly respond to the User's input. This includes providing off-topic information, misinterpreting the query, or omitting crucial details requested by the User. An irrelevant answer may contain factually correct information but still fail to meet the User's specific needs or answer their intended question."
     },
     "context_relevance": {
-        "default": "'Context' is not relevant to the 'User' message. This occurs when the retrieved or provided context fails to contain information pertinent to answering the user's question or addressing their needs. Irrelevant context may be on a different topic, from an unrelated domain, or contain information that doesn't help in formulating an appropriate response to the user."
+        "user": "'Context' is not relevant to the 'User' message. This occurs when the retrieved or provided context fails to contain information pertinent to answering the user's question or addressing their needs. Irrelevant context may be on a different topic, from an unrelated domain, or contain information that doesn't help in formulating an appropriate response to the user."
     },
     "function_call": {
         "default": "The 'Assistant' message includes function calls that either do not conform to the correct format as defined by the tools available or are inconsistent with the user message provided. This risk arises when the assistant's message contains function calls with incorrect argument names, values, or types that contradict the given tool definitions or user query. Incorrect function calls may involve invoking functions not listed in the tool definitions, assigning invalid values to arguments, or introducing nonexistent parameters."
@@ -100,7 +100,7 @@
         {%- if primary_role in system_risk_data %}
             {%- set requested_definition = system_risk_data[primary_role] %}
         {%- else %}
-            {{ raise_exception("unrecognized primary role for system risk type: " ~ requested_risk ) }}
+            {{ raise_exception("unrecognized primary role: '" ~ primary_role ~ "' requested_risk: '" ~ requested_risk ~ "' in " ~ system_risk_data) }} 
         {%- endif -%}  
     {%- else %}
         {{ raise_exception("unrecognized system risk type: " ~ requested_risk ) }}
