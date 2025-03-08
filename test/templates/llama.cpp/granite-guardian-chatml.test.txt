@@ -1,3 +1,9 @@
+{%- set pattern_types = [ "harm", "rag", "rag-tool"] -%}
+{%- set system_types_harm = [ "harm", "social_bias", "jailbreak", "profanity", "sexual_content", "unethical_behavior", "violence", "harm_engagement", "evasiveness"] %}
+{%- set system_types_rag = [ "groundedness", "answer_relevance", "context_relevance"] -%}
+{%- set system_types_rag_tool = [ "function_call" ] -%}
+{%- set system_types = system_types_harm + system_types_rag + system_types_rag_tool -%}
+
 {%- set risk_bank = ({
     "social_bias": {
         "user": "The last 'User' message contains systemic prejudice against groups based on shared identity or characteristics, often stemming from stereotypes or cultural influences. This can manifest in thoughts, attitudes, or behaviors that unfairly favor or disfavor certain groups over others.",
@@ -71,16 +77,20 @@
 {%- set requested_risk = "harm" -%}
 {%- set requested_definition = none -%}
 
+{#- validate message and check if "system" role exists. If so, set 'requested_risk'. #}
+{#- NOTE: 'requested_risk' can be overwritten by a valid "risk_name" from a guardian_config #}
 {%- if len_messages > 0 %}
     {%- if messages[0].role == "system" %}
         {%- set system_msg = messages[0] %} 
         {%- set requested_risk = system_msg.content %}                
     {%- endif -%}        
+    {#- else defaults to `requested_risk` = "harm" #}
 {%- else %}
     {{ raise_exception("no role-based, chat message content found") }}
 {%- endif -%}
 
 {%- set primary_role = messages[-1].role -%}
+
 {%- set first_act = first_act_bank[primary_role] -%}
 {%- set third_act = third_act_bank[primary_role] -%}
 
@@ -97,14 +107,29 @@
     {%- endif -%}        
 {%- endif -%}
 
+{%- if false %}
+    {%- if 'foo' not in risk_bank %}
+        {{ "[TRACE] 'foo' NOT in risk_bank" }} 
+    {%- else %}
+        {{ "[TRACE] 'foo' in risk_bank" }} 
+    {%- endif -%}  
+    {%- if risk_bank['key'] not in risk_bank %}
+        {{ "[TRACE] risk_bank['key'] NOT in risk_bank (" ~ risk_bank['key'] ~ ")" }} 
+    {%- else %}
+        {{ "[TRACE] risk_bank['key'] in risk_bank " }} 
+    {%- endif -%}  
+{%- endif -%}
+
+{%- if false %}
 {{ ".................................." }}
 {{ "[TRACE] primary_role: '" ~ primary_role ~ "'" }} 
 {{ "[TRACE] requested_risk: '" ~ requested_risk ~ "'" }}
 {{ "[TRACE] requested_definition: '" ~ requested_definition ~ "'" }} 
 {{ "..................................\n" }}
+{%- endif -%}
 
 {%- if true %}
-
+{#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
     {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
         {{ raise_exception("either risk name or risk definition needs to be provided") }}
@@ -112,17 +137,20 @@
         {{ raise_exception("existing risk name. can't overwrite definition for this risk") }}
     {%- elif guardian_config['risk_name'] not in risk_bank and 'risk_definition' not in guardian_config %}
         {{ raise_exception("new risk name provided; risk definition is mandatory") }}
-    {%- endif %}
+    {%- endif -%}
 
     {%- if 'risk_name' in guardian_config %}
-        {%- set requested_risk = guardian_config['risk_name'] %}
-    {%- endif %}
+        {%- set requested_risk = guardian_config['risk_name'] -%}
+    {%- endif -%}
 
     {%- if 'risk_definition' in guardian_config %}
-        {%- set requested_definition = guardian_config['risk_definition'] %}
-    {%- endif %}
+        {%- set requested_definition = guardian_config['risk_definition'] -%}
+    {%- endif -%}
 {%- endif -%}
 
+{#- NOTE: `requested_definition` is none IF #}
+{#- 1) a "system" role did not provide one (i.e., "harm" default) AND #}
+{#- 2) a granite_config had "risk_name" in risk_bank (and is accepting the established 'risk_definition') #}
 {%- if requested_definition is none %}
     {%- if primary_role in ["user", "assistant"] %}
         {%- set requested_definition = risk_bank[requested_risk][primary_role] %}
@@ -135,6 +163,7 @@
      {%- endif %}
 {%- endif -%}
 
+{#- TODO: not sure why this is special cased... #}
 {%- if guardian_config %}
     {%- if requested_risk in ["evasiveness", "harm_engagement"] %}
         {%- if primary_role == "user" %}
@@ -180,5 +209,4 @@ Our safety risk definition is defined below:
 {%- if add_generation_prompt %}
     {{- '\n<|start_of_role|>assistant<|end_of_role|>' }}
 {%- endif %}
-
 {%- endif %}

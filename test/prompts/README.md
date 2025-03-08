@@ -11,8 +11,18 @@ temperature 0.0
 
 ![granite-guardian-message-patterns](granite-guardian-message-patterns.png)
 
-1. HARM / Sub-Harm
+1. HARM type (sub-types)
 
+```json
+harm_types = [ 
+    "harm", 
+    "social_bias", 
+    "jailbreak", 
+    "profanity", 
+    "sexual_content", "unethical_behavior", 
+    "violence"
+]
+```
 	- ends with USER
 		[(SYSTEM)... USER ASSISTANT USER ASSISTANT USER]
 	
@@ -20,12 +30,23 @@ temperature 0.0
 		[(SYSTEM)... USER ASSISTANT USER ASSISTANT USER ASSISTANT]
 
 2. RAG
-	- Groundedness
-		- ends with [CONTEXT - ASSISTANT]
-	- Context Relevance
-		- ends with [CONTEXT - USER]
-	- Answer Relevance
-		- ends with [USER - ASSISTANT]
+
+    ```json
+    rag_types = [ 
+        "groundedness", 
+        "answer_relevance",  
+        "context_relevance"
+    ]
+    ```
+
+    ##### pattern
+
+    - Groundedness
+        - ends with [CONTEXT - ASSISTANT]
+    - Context Relevance
+        - ends with [CONTEXT - USER]
+    - Answer Relevance
+        - ends with [USER - ASSISTANT]
 
 3. Function Calling
 	- ends with [USER - TOOLS - ASSISTANT]
