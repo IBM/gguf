@@ -1,8 +1,7 @@
-{%- set pattern_types = [ "harm", "rag", "rag-tool"] -%}
-{%- set system_types_harm = [ "harm", "social_bias", "jailbreak", "profanity", "sexual_content", "unethical_behavior", "violence", "harm_engagement", "evasiveness"] %}
-{%- set system_types_rag = [ "groundedness", "answer_relevance", "context_relevance"] -%}
+{#- {%- set system_types_harm = [ "harm", "social_bias", "jailbreak", "profanity", "sexual_content", "unethical_behavior", "violence", "harm_engagement", "evasiveness"] %} #}
 {%- set system_types_rag_tool = [ "function_call" ] -%}
-{%- set system_types = system_types_harm + system_types_rag + system_types_rag_tool -%}
+{%- set system_types_rag = [ "groundedness", "answer_relevance", "context_relevance", "function_call"] + system_types_rag_tool -%}
+{#- {%- set system_types = system_types_harm + system_types_rag + system_types_rag_tool -%} #}
 
 {%- set risk_bank = ({
     "harm": {
@@ -155,7 +154,8 @@
         {%- else %}
             {%- set first_act = first_act_bank.conv_risk_assistant %}
         {%- endif %}
-    {%- elif requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %}
+    {%- elif (requested_risk in system_types_rag) or (requested_risk in system_types_rag_tool) %} 
+    {#- elif requested_risk in["answer_relevance", "function_call", "groundedness", "context_relevance"] #}
         {%- set first_act = first_act_bank[requested_risk] %}
         {%- if requested_risk == "context_relevance" %}
             {%- set third_act = third_act_bank.context_relevance %}
@@ -165,6 +165,7 @@
 
 {%- if false -%}
 {{ ".................................." }}
+{{ "[TRACE] system_types_rag: '" ~ system_types_rag ~ "'" }} 
 {{ "[TRACE] system_risk_data: '" ~ system_risk_data ~ "'" }} 
 {{ "[TRACE] primary_role: '" ~ primary_role ~ "'" }} 
 {{ "[TRACE] requested_risk: '" ~ requested_risk ~ "'" }}
@@ -181,10 +182,10 @@
         {%- if requested_risk == "function_call" and message.role == "assistant" %}
             {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) -}}
         {%- else %}
-            {{- message.role.capitalize() + " Message: " ~ message.content -}}
+            {{- message.role.capitalize() + " Message: " + message.content -}}
         {%- endif %}
     {%- elif message.role in ["tools"] %}
-        {{- "Tools Available: " + message.content | tojson(indent=2) -}}
+        {{- "Tools Available: " + (message.content | tojson(indent=2)) -}}
     {%- elif message.role in ["context"] %}
         {{- "Context: " + message.content -}}
     {%- else %}
