@@ -11,3 +11,7 @@
 # built models
 /models
 *.gguf
+
+# Test output
+**/temp/
+**/tmp/
