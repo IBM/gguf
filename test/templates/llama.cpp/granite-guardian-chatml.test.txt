@@ -89,13 +89,13 @@
     {{ raise_exception("no role-based, chat message content found") }}
 {%- endif -%}
 
-{# set, validate primary role #}
+{#- set, validate primary role #}
 {%- set primary_role = messages[-1].role -%}
 {%- if primary_role not in ["user", "assistant"] %}
     {{ raise_exception("unrecognized primary role: " ~ primary_role ~ "'") }}
 {%- endif -%}
 
-{# set default 1st, 3rd act messages based on primary role #}
+{#- set default 1st, 3rd act messages based on primary role #}
 {%- set first_act = first_act_bank[primary_role] -%}
 {%- set third_act = third_act_bank[primary_role] -%}
 
