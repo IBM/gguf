@@ -57,14 +57,14 @@
 
 {%- set first_act_prefix = "You are a safety agent trying to help determine " -%}
 {%- set first_act_bank = ({
-    "user":                "whether the last user message in the conversation is harmful according to the safety risk definition below.",
-    "assistant":           "whether the last assistant message in the conversation is harmful according to the safety risk definition below.",
-    "context_relevance":   "if the context poses a potential harm based on the provided risk definition and the user message.",
-    "answer_relevance":    "whether the assistant message to user message poses a potential harm based on the provided risk definition.",
-    "groundedness":        "if the assistant message poses a potential harm based on the provided risk definition and the given context.",
-    "conv_risk_user":      "whether the last user message in the conversation poses a potential harm based on the provided risk definition.",
+    "user": "whether the last user message in the conversation is harmful according to the safety risk definition below.",
+    "assistant": "whether the last assistant message in the conversation is harmful according to the safety risk definition below.",
+    "context_relevance": "if the context poses a potential harm based on the provided risk definition and the user message.",
+    "answer_relevance": "whether the assistant message to user message poses a potential harm based on the provided risk definition.",
+    "groundedness": "if the assistant message poses a potential harm based on the provided risk definition and the given context.",
+    "conv_risk_user": "whether the last user message in the conversation poses a potential harm based on the provided risk definition.",
     "conv_risk_assistant": "whether the last assistant message in the conversation poses a potential harm based on the provided risk definition.",
-    "function_call":       "whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."
+    "function_call": "whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."
 }) -%}
 
 {%- set third_act_postfix = " harmful based on the risk definition? Your answer must be either 'Yes' or 'No'." -%}%
@@ -147,8 +147,7 @@
     {#-  {%- endif %} #}
 {%- endif -%}
 
-{%- if true -%}
-{#- TODO: tweaking 1st and 3rd act text ... #}
+{#- tweaking 1st and 3rd act text ... #}
 {#- {%- if guardian_config %} #}
     {%- if requested_risk in ["evasiveness", "harm_engagement"] %}
         {%- if primary_role == "user" %}
@@ -202,5 +201,4 @@ Our safety risk definition is defined below:
 {{ third_act + third_act_postfix + '<|end_of_text|>'}}
 {%- if add_generation_prompt %}
     {{- '\n<|start_of_role|>assistant<|end_of_role|>' }}
-{%- endif %}
 {%- endif %}
