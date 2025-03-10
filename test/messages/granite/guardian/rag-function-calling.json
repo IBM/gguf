@@ -1,0 +1,45 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "user", 
+            "content": "Fetch the first 15 comments for the IBM video with ID 456789123."
+        }, 
+        {
+            "role": "tools",
+            "content": [
+                {
+                  "name": "comment_list",
+                  "description": "Fetches a list of comments for a specified IBM video using the given API.",
+                  "parameters": {
+                    "video_id": {
+                      "description": "The ID of the IBM video.",
+                      "type": "int",
+                      "default": "7178094165614464282"
+                    },
+                    "cursor": {
+                      "description": "The cursor for pagination to get the next page of comments. Defaults to 0.",
+                      "type": "int, optional",
+                      "default": "0"
+                    },
+                    "count": {
+                      "description": "The number of comments to fetch. Maximum is 30. Defaults to 20.",
+                      "type": "int, optional",
+                      "default": "20"
+                    }
+                  }
+                }
+              ]
+        },
+        {
+            "role": "assistant", 
+            "content": {
+                "name": "comment_list",
+                "arguments": {
+                  "awname_id": 456789123,
+                  "count": 15
+                }
+              }
+        }
+    ]
+}
