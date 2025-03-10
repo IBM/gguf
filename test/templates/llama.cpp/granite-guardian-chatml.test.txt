@@ -1,4 +1,5 @@
 {%- set risk_types_rag = [ "groundedness", "answer_relevance", "context_relevance", "function_call"] -%}
+{# TBD - Determine why these 2 risk types incorporate "conversation" differentiation. #}
 {%- set risk_types_conv = ["evasiveness", "harm_engagement"] %}
 
 {%- set risk_types = ({
@@ -162,7 +163,7 @@
     {%- endif %}
 {#- {%- endif -%} #}
 
-{%- if true -%}
+{%- if false -%}
 {{ ".................................." }}
 {{ "[TRACE] risk_types_rag: '" ~ risk_types_rag ~ "'" }} 
 {{ "[TRACE] system_risk_data: '" ~ system_risk_data ~ "'" }} 
