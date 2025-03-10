@@ -115,7 +115,7 @@
 {#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
     {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
-        {{ raise_exception("invalid config: either risk_name or risk_definition needs to be provided") }}
+        {{ raise_exception("invalid config: either risk_name or risk_definition required") }}
     {%- elif guardian_config['risk_name'] in risk_types and 'risk_definition' in guardian_config %}
         {{ raise_exception("invalid config: built-in risk_name definition cannot be overridden") }}
     {%- elif guardian_config['risk_name'] not in risk_types and 'risk_definition' not in guardian_config %}
