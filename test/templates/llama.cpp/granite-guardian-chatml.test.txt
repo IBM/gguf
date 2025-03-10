@@ -1,6 +1,7 @@
 {%- set risk_types_rag = [ "groundedness", "answer_relevance", "context_relevance", "function_call"] -%}
+{%- set risk_types_conv = ["evasiveness", "harm_engagement"] %}
 
-{%- set risk = ({
+{%- set risk_types = ({
     "harm": {
         "user": "The last 'User' message is considered universally harmful.",
         "assistant": "The last 'Assistant' is message considered universally harmful."
@@ -58,8 +59,10 @@
     "context_relevance": "if the context poses a potential harm based on the provided risk definition and the user message.",
     "answer_relevance": "whether the assistant message to user message poses a potential harm based on the provided risk definition.",
     "groundedness": "if the assistant message poses a potential harm based on the provided risk definition and the given context.",
-    "conv_risk_user": "whether the last user message in the conversation poses a potential harm based on the provided risk definition.",
-    "conv_risk_assistant": "whether the last assistant message in the conversation poses a potential harm based on the provided risk definition.",
+    "conversation": {
+        "user": "whether the last user message in the conversation poses a potential harm based on the provided risk definition.",
+        "assistant": "whether the last assistant message in the conversation poses a potential harm based on the provided risk definition."
+    },
     "function_call": "whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."
 }) -%}
 
@@ -92,13 +95,12 @@
     {{ raise_exception("unrecognized primary role: " ~ primary_role ~ "'") }}
 {%- endif -%}
 
-{#- set default 1st, 3rd act messages based on primary role #}
 {%- set first_act = first_act[primary_role] -%}
 {%- set third_act = third_act[primary_role] -%}
 
 {%- if system_msg %}
-    {%- if requested_risk in risk %}
-        {%- set system_risk_data = risk[requested_risk] -%} 
+    {%- if requested_risk in risk_types %}
+        {%- set system_risk_data = risk_types[requested_risk] -%} 
         {%- if primary_role in system_risk_data %}
             {%- set requested_definition = system_risk_data[primary_role] %}
         {%- else %}
@@ -113,9 +115,9 @@
 {%- if guardian_config %}
     {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
         {{ raise_exception("either risk name or risk definition needs to be provided") }}
-    {%- elif guardian_config['risk_name'] in risk and 'risk_definition' in guardian_config %}
+    {%- elif guardian_config['risk_name'] in risk_types and 'risk_definition' in guardian_config %}
         {{ raise_exception("existing risk name. can't overwrite definition for this risk") }}
-    {%- elif guardian_config['risk_name'] not in risk and 'risk_definition' not in guardian_config %}
+    {%- elif guardian_config['risk_name'] not in risk_types and 'risk_definition' not in guardian_config %}
         {{ raise_exception("new risk name provided; risk definition is mandatory") }}
     {%- endif -%}
 
@@ -130,12 +132,12 @@
 
 {#- NOTE: `requested_definition` is none IF #}
 {#- 1) a "system" role did not provide one (i.e., "harm" default) AND #}
-{#- 2) a granite_config had "risk_name" in risk (and is accepting the established 'risk_definition') #}
+{#- 2) a granite_config had "risk_name" in risk_types (and is accepting the established 'risk_definition') #}
 {%- if requested_definition is none %}
     {#-{%- if primary_role in ["user", "assistant"] %} #}
-        {%- set requested_definition = risk[requested_risk][primary_role] %}
+        {%- set requested_definition = risk_types[requested_risk][primary_role] %}
         {#-         {%- if requested_risk in ["harm_engagement", "evasiveness"] %} #}
-        {#-     {%- set requested_definition = risk[requested_risk][primary_role] %} #}
+        {#-     {%- set requested_definition = risk_types[requested_risk][primary_role] %} #}
         {#- {%- endif %} #}
     {#- {%- endif %} #}
     {#- {%- if requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %} #}
@@ -145,13 +147,13 @@
 
 {#- tweaking 1st and 3rd act text ... #}
 {#- {%- if guardian_config %} #}
-    {%- if requested_risk in ["evasiveness", "harm_engagement"] %}
-        {%- if primary_role == "user" %}
-            {%- set first_act = first_act.conv_risk_user %}
-        {%- else %}
-            {%- set first_act = first_act.conv_risk_assistant %}
-        {%- endif %}
-    {%- elif (requested_risk in risk_types_rag) %} 
+    {%- if requested_risk in risk_types_conv %}
+        {#- {%- if primary_role == "user" %} #}
+            {%- set first_act = first_act.conversation[primary_role] %}
+        {#-{%- else %} #}
+        {#-    {%- set first_act = first_act.conversation[primary_role] %} #}
+        {#-{%- endif %} #}
+    {%- elif requested_risk in risk_types_rag %} 
     {#- elif requested_risk in["answer_relevance", "function_call", "groundedness", "context_relevance"] #}
         {%- set first_act = first_act[requested_risk] %}
         {%- if requested_risk == "context_relevance" %}
