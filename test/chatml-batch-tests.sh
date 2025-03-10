@@ -30,6 +30,7 @@ for test_file in "${message_test_files[@]}"; do
     -f  $chat_ml_template \
     -m "${messages_path}${test_file}" \
     -o "${output_dir}${test_file}.out.txt" 2>"${output_dir}${test_file}.err.txt"
+  echo $?
 done
 
 for test_file in "${message_test_files_with_errors[@]}"; do
@@ -38,4 +39,5 @@ for test_file in "${message_test_files_with_errors[@]}"; do
     -f  $chat_ml_template \
     -m "${messages_path}${test_file}" \
     -o "${output_dir}${test_file}.out.txt" 2>"${output_dir}${test_file}.err.txt"
+  echo $?    
 done
