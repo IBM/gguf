@@ -87,13 +87,13 @@
         {%- set requested_risk = system_msg.content %}                
     {%- endif -%}        
 {%- else %}
-    {{ raise_exception("no role-based, chat message content found") }}
+    {{ raise_exception("no messages found") }}
 {%- endif -%}
 
 {#- set, validate primary role #}
 {%- set primary_role = messages[-1].role -%}
 {%- if primary_role not in ["user", "assistant"] %}
-    {{ raise_exception("unrecognized primary role: " ~ primary_role ~ "'") }}
+    {{ raise_exception("unknown primary role: " ~ primary_role ~ "'") }}
 {%- endif -%}
 
 {%- set first_act = first_act_bank[primary_role] -%}
@@ -115,11 +115,11 @@
 {#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
     {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
-        {{ raise_exception("either risk name or risk definition needs to be provided") }}
+        {{ raise_exception("invalid config: either risk_name or risk_definition needs to be provided") }}
     {%- elif guardian_config['risk_name'] in risk_types and 'risk_definition' in guardian_config %}
-        {{ raise_exception("existing risk name. can't overwrite definition for this risk") }}
+        {{ raise_exception("invalid config: can not override existing risk_name definition") }}
     {%- elif guardian_config['risk_name'] not in risk_types and 'risk_definition' not in guardian_config %}
-        {{ raise_exception("new risk name provided; risk definition is mandatory") }}
+        {{ raise_exception("invalid config: new risk_name provided; risk_definition is mandatory") }}
     {%- endif -%}
 
     {%- if 'risk_name' in guardian_config %}
