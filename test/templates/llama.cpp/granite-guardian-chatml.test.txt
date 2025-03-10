@@ -140,16 +140,15 @@
         {#-         {%- if requested_risk in ["harm_engagement", "evasiveness"] %} #}
         {#-     {%- set requested_definition = risk_bank[requested_risk][primary_role] %} #}
         {#- {%- endif %} #}
-    {# {%- endif %} #}
+    {#- {%- endif %} #}
     {#- {%- if requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %} #}
     {#-     {%- set requested_definition = risk_bank[requested_risk]["default"] %} #}
     {#-  {%- endif %} #}
 {%- endif -%}
 
-{%- if true %}
-
+{%- if true -%}
 {#- TODO: tweaking 1st and 3rd act text ... #}
-{# {%- if guardian_config %} #}
+{#- {%- if guardian_config %} #}
     {%- if requested_risk in ["evasiveness", "harm_engagement"] %}
         {%- if primary_role == "user" %}
             {%- set first_act = first_act_bank.conv_risk_user %}
@@ -162,9 +161,9 @@
             {%- set third_act = third_act_bank.context_relevance %}
         {%- endif %}
     {%- endif %}
-{# {%- endif -%} #}
+{#- {%- endif -%} #}
 
-{%- if false %}
+{%- if false -%}
 {{ ".................................." }}
 {{ "[TRACE] system_risk_data: '" ~ system_risk_data ~ "'" }} 
 {{ "[TRACE] primary_role: '" ~ primary_role ~ "'" }} 
