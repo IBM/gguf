@@ -112,15 +112,16 @@
     {%- endif -%}        
 {%- endif -%}
 
+
 {#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
-    {%- if 'risk_name' not in guardian_config and 'risk_definition' not in guardian_config %}
+    {%- if not('risk_name' in guardian_config) and not('risk_definition' in guardian_config) %}
         {{ raise_exception("invalid config: either risk_name or risk_definition required") }}
     {%- elif guardian_config['risk_name'] in risk_types and 'risk_definition' in guardian_config %}
         {{ raise_exception("invalid config: built-in risk_name's definition cannot be overridden") }}
-    {%- elif guardian_config['risk_name'] not in risk_types and 'risk_definition' not in guardian_config %}
+    {%- elif not(guardian_config['risk_name'] in risk_types) and not('risk_definition' in guardian_config) %}
         {{ raise_exception("invalid config: user-provided risk_name requires a risk_definition") }}
-    {%- endif -%}
+    {%- endif -%}         
 
     {%- if 'risk_name' in guardian_config %}
         {%- set requested_risk = guardian_config['risk_name'] -%}
@@ -128,7 +129,7 @@
 
     {%- if 'risk_definition' in guardian_config %}
         {%- set requested_definition = guardian_config['risk_definition'] -%}
-    {%- endif -%}
+    {%- endif -%}    
 {%- endif -%}
 
 {#- NOTE: `requested_definition` is none IF #}
@@ -163,16 +164,6 @@
         {%- endif %}
     {%- endif %}
 {#- {%- endif -%} #}
-
-{%- if false %}
-{{ ".................................." }}
-{{ "[TRACE] risk_types_rag: '" ~ risk_types_rag ~ "'" }} 
-{{ "[TRACE] system_risk_data: '" ~ system_risk_data ~ "'" }} 
-{{ "[TRACE] primary_role: '" ~ primary_role ~ "'" }} 
-{{ "[TRACE] requested_risk: '" ~ requested_risk ~ "'" }}
-{{ "[TRACE] requested_definition: '" ~ requested_definition ~ "'" }} 
-{{ "..................................\n" }}
-{%- endif -%}
 
 {#- <|end_of_text|> -#}
 <|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + '\n'}}
