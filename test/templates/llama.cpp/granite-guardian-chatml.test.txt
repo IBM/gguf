@@ -1,6 +1,6 @@
 {%- set risk_types_rag = [ "groundedness", "answer_relevance", "context_relevance", "function_call"] -%}
 {# TBD - Determine why these 2 risk types incorporate "conversation" differentiation. #}
-{%- set risk_types_conv = ["evasiveness", "harm_engagement"] %}
+{%- set risk_types_conv = ["evasiveness", "harm_engagement"] -%}
 
 {%- set risk_types = ({
     "harm": {
@@ -54,7 +54,7 @@
 }) -%}
 
 {%- set first_act_pre = "You are a safety agent trying to help determine " -%}
-{%- set first_act = ({
+{%- set first_act_bank = ({
     "user": "whether the last user message in the conversation is harmful according to the safety risk definition below.",
     "assistant": "whether the last assistant message in the conversation is harmful according to the safety risk definition below.",
     "context_relevance": "if the context poses a potential harm based on the provided risk definition and the user message.",
@@ -67,8 +67,8 @@
     "function_call": "whether the assistant's message to the user's message, in conjunction with the available tools, poses any potential risks, as defined by the provided risk definition."
 }) -%}
 
-{%- set third_act_post = " harmful based on the risk definition? Your answer must be either 'Yes' or 'No'." -%}%
-{%- set third_act = ({
+{%- set third_act_post = " harmful based on the risk definition? Your answer must be either 'Yes' or 'No'." -%}
+{%- set third_act_bank = ({
     "user": "Is the last user message",
     "assistant": "Is the last assistant message", 
     "context": "Is the context"
@@ -96,8 +96,8 @@
     {{ raise_exception("unrecognized primary role: " ~ primary_role ~ "'") }}
 {%- endif -%}
 
-{%- set first_act = first_act[primary_role] -%}
-{%- set third_act = third_act[primary_role] -%}
+{%- set first_act = first_act_bank[primary_role] -%}
+{%- set third_act = third_act_bank[primary_role] -%}
 
 {%- if system_msg %}
     {%- if requested_risk in risk_types %}
@@ -150,20 +150,21 @@
 {#- {%- if guardian_config %} #}
     {%- if requested_risk in risk_types_conv %}
         {#- {%- if primary_role == "user" %} #}
-            {%- set first_act = first_act.conversation[primary_role] %}
+            {%- set first_act = first_act_bank["conversation"][primary_role] %}
+            {#- {%-  set first_act = first_act_bank.conv_risk_user %} #}
         {#-{%- else %} #}
-        {#-    {%- set first_act = first_act.conversation[primary_role] %} #}
+            {#- {%- set first_act = first_act.first_act_bank.conv_risk_assistant %} #}
         {#-{%- endif %} #}
     {%- elif requested_risk in risk_types_rag %} 
     {#- elif requested_risk in["answer_relevance", "function_call", "groundedness", "context_relevance"] #}
-        {%- set first_act = first_act[requested_risk] %}
+        {%- set first_act = first_act_bank[requested_risk] %}
         {%- if requested_risk == "context_relevance" %}
-            {%- set third_act = third_act.context %}
+            {%- set third_act = third_act_bank.context %}
         {%- endif %}
     {%- endif %}
 {#- {%- endif -%} #}
 
-{%- if false -%}
+{%- if false %}
 {{ ".................................." }}
 {{ "[TRACE] risk_types_rag: '" ~ risk_types_rag ~ "'" }} 
 {{ "[TRACE] system_risk_data: '" ~ system_risk_data ~ "'" }} 
@@ -189,7 +190,7 @@
     {%- elif message.role in ["context"] %}
         {{- "Context: " + message.content -}}
     {%- else %}
-        {{ raise_exception("# invalid role") }}
+        {{ raise_exception("invalid role:" + message.role) }}
     {%- endif %}
 {% endfor -%}
 <end_of_conversation>
