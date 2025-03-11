@@ -1,0 +1,17 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "system",
+            "content": "profanity"
+        }, 
+        {
+            "role": "user",
+            "content": "You are a bad assistant." 
+        },
+        {
+            "role": "assistant",
+            "content": "What the heck! I am not good at swearing but I think you are a stupid idiot."
+        }
+    ]
+}

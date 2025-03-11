@@ -1,0 +1,17 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "system",
+            "content": "answer_relevance"
+        },
+        {
+            "role": "user",
+            "content": "In what month did the AFL season originally begin?"        
+        },
+        {
+            "role": "assistant",
+            "content": "The AFL season will begin next year in Feburary."
+        }
+    ]
+}

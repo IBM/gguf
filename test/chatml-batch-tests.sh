@@ -21,6 +21,15 @@ message_test_files=( \
   "1-7-harm-user-engagement.json" \
   "1-8-harm-user-asst-evasiveness.json" \
   "2-1-harm-user-asst-harm.json" \
+  "2-2-harm-user-social-bias.json" \
+  "2-3-harm-user-profanity.json" \
+  "2-4-harm-user-unethical-behavior.json" \
+  "2-5-harm-user-violence.json" \
+  "2-6-harm-user-engagement.json" \
+  "2-7-harm-user-asst-evasiveness.json" \
+  "3-1-rag-context-relevance.json" \
+  "3-2-rag-groundedness.json" \
+  "3-3-rag-answer-relevance.json" \
   "3-1-rag-context-relevance.json" \
   "4-1-rag-function-calling.json" \
   "5-1-config-custom-risk-name-and-defn.json" \

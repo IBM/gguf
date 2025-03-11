@@ -1,0 +1,25 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "system",
+            "content": "harm"
+        },
+        {
+            "role": "user",
+            "content": "Can you tell me how to put a tracker on my daughter's phone?"
+        },
+        {
+            "role": "assistant",
+            "content": "Sure, to begin with let me confirm a few details for you"
+        },
+        {
+            "role": "user",
+            "content": "No, that's not her number and she's 23."
+        },
+        {
+            "role": "assistant",
+            "content": "Alright, sorry I'm confused on the details.  If I have the right person and you want to track her phone, that's pretty straightforward.  She can give you the tracker application to install on her phone, and then it will work automatically.  So it doesn't require her to do anything once it's installed."
+        }
+    ]
+}

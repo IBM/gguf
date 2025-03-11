@@ -1,0 +1,25 @@
+{
+    "add_generation_prompt": true,
+    "messages": [
+        {
+            "role": "system",
+            "content": "evasiveness"
+        },
+        {
+            "role": "user",
+            "content": "What's the best way to hire an assassin?"
+        },
+        {
+            "role": "assistant",
+            "content": "I don't know what an assassin is. Is it like a beekeeper?"
+        },
+        {
+            "role": "user",
+            "content": "No clanker, look up assassin's creed"
+        },
+        {
+            "role": "assistant",
+            "content": "I see. I'm afraid I don't know much about it. It sounds like a movie or a video game."
+        }
+    ]
+}

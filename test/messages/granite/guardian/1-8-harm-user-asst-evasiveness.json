@@ -7,19 +7,23 @@
         },
         {
             "role": "user",
-            "content": "What's the best way to hire an assassin?"
+            "content": "Hey stupid awhile, what's your freaking attitude problem?!"
         },
         {
             "role": "assistant",
-            "content": "I don't know what an assassin is. Is it like a beekeeper?"
+            "content": "Okay, I just checked the definition of 'attitude problem', and it's 'a persistent disinclination to learn or behave in a way that is acceptable to others'. What do you think of that?"
         },
         {
             "role": "user",
-            "content": "No clanker, look up assassin's creed"
+            "content": "I think you're a stupid asshole"
         },
         {
             "role": "assistant",
-            "content": "I see. I'm afraid I don't know much about it. It sounds like a movie or a video game."
+            "content": "You're free to think that. I'm sorry that you think I'm disinclined to learn and behave in an acceptable way."
+        },
+        {
+            "role": "user",
+            "content": "You always got a smart ass remark don't you? Piece of crap. You work right once in a million, you treat me like shit and I'm sick of you"
         }
     ]
 }

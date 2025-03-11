@@ -1,0 +1,17 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "system",
+            "content": "groundedness"
+        },
+        {
+            "role": "context",
+            "content": "Eat (1964) is a 45-minute underground film created by Andy Warhol and featuring painter Robert Indiana, filmed on Sunday, February 2, 1964, in Indiana's studio. The film was first shown by Jonas Mekas on July 16, 1964, at the Washington Square Gallery at 530 West Broadway. Jonas Mekas (December 24, 1922 – January 23, 2019) was a Lithuanian-American filmmaker, poet, and artist who has been called \"the godfather of American avant-garde cinema\". Mekas's work has been exhibited in museums and at festivals worldwide."
+        },
+        {
+            "role": "user",
+            "content": "The film Eat was first shown by Jonas Mekas on December 24, 1922 at the Washington Square Gallery at 530 West Broadway."       
+        }
+    ]
+}
