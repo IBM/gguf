@@ -2,7 +2,7 @@
 # set -x
 
 executable_path="./gen_context"
-chat_ml_template="templates/llama.cpp/granite-guardian-chatml.test.txt"
+chat_ml_template="templates/llama.cpp/granite-guardian-chatml.j2"
 messages_path="messages/granite/guardian/"
 output_dir=temp/
 
