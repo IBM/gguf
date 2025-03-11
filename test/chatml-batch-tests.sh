@@ -20,6 +20,7 @@ message_test_files=( \
   "1-6-harm-user-violence.json" \
   "1-7-harm-user-engagement.json" \
   "1-8-harm-user-asst-evasiveness.json" \
+  "2-1-harm-user-asst-harm.json" \
   "3-1-rag-context-relevance.json" \
   "4-1-rag-function-calling.json" \
   "5-1-config-custom-risk-name-and-defn.json" \
