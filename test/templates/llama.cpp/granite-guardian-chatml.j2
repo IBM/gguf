@@ -77,9 +77,6 @@
 {%- set system_msg = none -%}
 {%- set requested_risk = "harm" -%}
 {%- set requested_definition = none -%}
-
-{#- validate message and check if "system" role exists. If so, set 'requested_risk'. #}
-{#- NOTE: 'requested_risk' can be overwritten by a valid "risk_name" from a guardian_config #}
 {%- if len_messages > 0 %}
     {%- if messages[0].role == "system" %}
         {%- set system_msg = messages[0] %} 
@@ -89,7 +86,6 @@
     {{ raise_exception("no messages found") }}
 {%- endif -%}
 
-{#- set, validate primary role #}
 {%- set primary_role = messages[-1].role -%}
 {%- if primary_role not in ["user", "assistant"] %}
     {{ raise_exception("unknown primary role: " ~ primary_role ~ "'") }}
@@ -111,7 +107,6 @@
     {%- endif -%}        
 {%- endif -%}
 
-{#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
     {%- if not('risk_name' in guardian_config) and not('risk_definition' in guardian_config) %}
         {{ raise_exception("invalid config: either risk_name or risk_definition required") }}
@@ -130,14 +125,10 @@
     {%- endif -%}    
 {%- endif -%}
 
-{#- NOTE: `requested_definition` is none IF #}
-{#- 1) a "system" role did not provide one (i.e., "harm" default) AND #}
-{#- 2) a granite_config had "risk_name" in risk_types (and is accepting the established 'risk_definition') #}
 {%- if requested_definition is none %}
     {%- set requested_definition = risk_types[requested_risk][primary_role] %}
 {%- endif -%}
 
-{#- tweaking 1st and 3rd act text ... #}
 {%- if requested_risk in risk_types_conv %}
     {%- set first_act = first_act_bank["conversation"][primary_role] %}
 {%- elif requested_risk in risk_types_rag %} 
