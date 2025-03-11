@@ -9,7 +9,10 @@ output_dir=temp/
 message_test_files=( \
   "1-1-user-harm.json" \
   "1-1-user-asst-harm.json" \
+  "1-1-user-asst-harm-no-system.json" \
+  "1-1-config-user-harm-no-system.json" \
   "1-2-user-harm-social-bias.json" \
+  "1-7-user-harm-engagement.json" \
   "1-8-user-asst-evasiveness.json" \
   "3-1-rag-context-relevance.json" \
   "4-1-rag-function-calling.json" \
