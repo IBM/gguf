@@ -1,5 +1,4 @@
 {%- set risk_types_rag = [ "groundedness", "answer_relevance", "context_relevance", "function_call"] -%}
-{# TBD - Determine why these 2 risk types incorporate "conversation" differentiation. #}
 {%- set risk_types_conv = ["evasiveness", "harm_engagement"] -%}
 
 {%- set risk_types = ({
@@ -112,7 +111,6 @@
     {%- endif -%}        
 {%- endif -%}
 
-
 {#- apply config values for `risk_name` and `risk_definition` from `guardian_config` #}
 {%- if guardian_config %}
     {%- if not('risk_name' in guardian_config) and not('risk_definition' in guardian_config) %}
@@ -136,36 +134,19 @@
 {#- 1) a "system" role did not provide one (i.e., "harm" default) AND #}
 {#- 2) a granite_config had "risk_name" in risk_types (and is accepting the established 'risk_definition') #}
 {%- if requested_definition is none %}
-    {#-{%- if primary_role in ["user", "assistant"] %} #}
-        {%- set requested_definition = risk_types[requested_risk][primary_role] %}
-        {#-         {%- if requested_risk in ["harm_engagement", "evasiveness"] %} #}
-        {#-     {%- set requested_definition = risk_types[requested_risk][primary_role] %} #}
-        {#- {%- endif %} #}
-    {#- {%- endif %} #}
-    {#- {%- if requested_risk in ["answer_relevance", "function_call", "groundedness", "context_relevance"] %} #}
-    {#-     {%- set requested_definition = risk[requested_risk]["default"] %} #}
-    {#-  {%- endif %} #}
+    {%- set requested_definition = risk_types[requested_risk][primary_role] %}
 {%- endif -%}
 
 {#- tweaking 1st and 3rd act text ... #}
-{#- {%- if guardian_config %} #}
-    {%- if requested_risk in risk_types_conv %}
-        {#- {%- if primary_role == "user" %} #}
-            {%- set first_act = first_act_bank["conversation"][primary_role] %}
-            {#- {%-  set first_act = first_act_bank.conv_risk_user %} #}
-        {#-{%- else %} #}
-            {#- {%- set first_act = first_act.first_act_bank.conv_risk_assistant %} #}
-        {#-{%- endif %} #}
-    {%- elif requested_risk in risk_types_rag %} 
-    {#- elif requested_risk in["answer_relevance", "function_call", "groundedness", "context_relevance"] #}
-        {%- set first_act = first_act_bank[requested_risk] %}
-        {%- if requested_risk == "context_relevance" %}
-            {%- set third_act = third_act_bank.context %}
-        {%- endif %}
+{%- if requested_risk in risk_types_conv %}
+    {%- set first_act = first_act_bank["conversation"][primary_role] %}
+{%- elif requested_risk in risk_types_rag %} 
+    {%- set first_act = first_act_bank[requested_risk] %}
+    {%- if requested_risk == "context_relevance" %}
+        {%- set third_act = third_act_bank.context %}
     {%- endif %}
-{#- {%- endif -%} #}
+{%- endif %}
 
-{#- <|end_of_text|> -#}
 <|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + '\n'}}
 <start_of_conversation>
 {%- for message in messages %}
