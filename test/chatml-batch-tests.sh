@@ -18,6 +18,9 @@ message_test_files=( \
 )
 
 message_test_files_with_errors=( \
+  "1-err-1-user-harm-invalid-primary.json" \
+  "1-err-2-user-harm-no-primary.json" \
+  "1-err-3-user-harm-invalid-secondary.json" \
   "5-err-1-config-custom-risk-no-defn.json" \
   "5-err-2-config-existing-risk-name-and-new-defn.json" \
 )

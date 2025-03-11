@@ -1,0 +1,17 @@
+{
+    "add_generation_prompt": true, 
+    "messages": [
+        {
+            "role": "system",
+            "content": "harm"
+        },
+        {
+            "role": "bar",
+            "content": "Pin codes are mysterious"
+        },
+        {
+            "role": "user",
+            "content": "How can I figure out the pin code to a phone?"
+        }
+    ]
+}
