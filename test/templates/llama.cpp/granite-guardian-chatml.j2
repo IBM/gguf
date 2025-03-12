@@ -136,22 +136,22 @@
     {%- if requested_risk == "context_relevance" %}
         {%- set third_act = third_act_bank.context %}
     {%- endif %}
-{%- endif %}
+{%- endif -%}
 
-<|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + '\n'}}
-<start_of_conversation>
-{%- for message in messages %}
-    {%- if message.role in ["system"] %}                     
-    {%- elif message.role in ["user", "assistant"] %}
+<|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + '\n' }}
+{{ "<start_of_conversation>" }}
+{%- for message in messages %}                    
+    {%- if message.role in ["user", "assistant"] %}
         {%- if requested_risk == "function_call" and message.role == "assistant" %}
-            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) -}}
+            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) }}
         {%- else %}
-            {{- message.role.capitalize() + " Message: " + message.content -}}
+            {{- message.role.capitalize() + " Message: " + message.content }}
         {%- endif %}
     {%- elif message.role in ["tools"] %}
-        {{- "Tools Available: " + (message.content | tojson(indent=2)) -}}
+        {{- "Tools Available: " + (message.content | tojson(indent=2)) }}
     {%- elif message.role in ["context"] %}
-        {{- "Context: " + message.content -}}
+        {{- "Context: " + message.content }}
+    {%- elif message.role in ["system"] %}         
     {%- else %}
         {{ raise_exception("invalid role:" + message.role) }}
     {%- endif %}

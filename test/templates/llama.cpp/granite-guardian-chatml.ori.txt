@@ -108,19 +108,18 @@
 {%- endif -%}
 
 <|start_of_role|>user<|end_of_role|>{{ first_act + '\n'}}
-{{ "<start_of_conversation>" }}
-{% for message in messages -%}
-    {% if message.role in ["user", "assistant"] -%}
-        {% if requested_risk == "function_call" and message.role == "assistant" -%}
-            {{- message.role + " Message: " ~ message.content|tojson(indent=2) }}
-        {% else -%}
-            {{- message.role + " Message: " ~ message.content }}
-        {% endif -%}
-    {% elif message.role in ["tools"] -%}
-        {{- "Tools Available: " ~ message.content | tojson(indent=2) }}
-    {% elif message.role in ["context"] -%}
+<start_of_conversation>
+{% for message in messages %}
+    {% if message.role in ["user", "assistant"] %}
+        {% if requested_risk == "function_call" and message.role == "assistant" %}
+            {{- message.role.split()|map('capitalize')|join ~ ' ' "Message: " ~ message.content|tojson(indent=2) }}
+        {% else %}
+            {{- message.role.split()|map('capitalize')|join ~ ' ' "Message: " ~ message.content }}
+        {% endif %}
+    {% elif message.role in ["tools"] %}
+        {{- "Tools Available: " ~ message.content | tojson(indent=2)  }}
+    {% elif message.role in ["context"] %}
         {{- "Context: " ~ message.content }}
-    {% elif message.role in ["system"] -%}        
     {% else %}
         {{ raise_exception("# invalid role") }}
     {%- endif %}
