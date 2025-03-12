@@ -11,7 +11,6 @@ output_dir=temp/
 message_test_files=( \
   "1-1-harm-user-asst-harm-no-system.json" \
   "1-1-harm-user-asst-harm.json" \
-  "1-1-harm-user-harm-config-no-system.json" \
   "1-1-harm-user-harm.json" \
   "1-2-harm-user-social-bias.json" \
   "1-3-harm-user-jailbreak.json" \

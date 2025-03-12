@@ -18,18 +18,25 @@ if __name__ == "__main__":
 
     with open(args.prompt_inputs, 'r') as file:
         json_data = json.load(file)
-        print(f"json data:\n{json_data}")
+        print(f"json data:\n{json.dumps(json_data, indent=4)}")
 
-    messages = json_data['messages']
+    if "messages" in json_data:
+        messages = json_data['messages']
     print(f"messages: {messages}")
 
-    guardian_config = json_data['guardian_config']
+    guardian_config = None
+    if "guardian_config" in json_data:
+        guardian_config = json_data['guardian_config']
     print(f"guardian_config: {guardian_config}")    
 
-    tools = json_data['tools']
+    tools = None
+    if "tools" in json_data:
+        tools = json_data['tools']
     print(f"tools: {tools}")
 
-    add_gen_prompt = json_data['add_generation_prompt']
+    add_gen_prompt:bool = True
+    if "add_generation_prompt" in json_data:
+        add_gen_prompt = json_data['add_generation_prompt']
     print(f"add_gen_prompt: {add_gen_prompt}")    
 
     chat = tokenizer.apply_chat_template(messages, guardian_config = guardian_config, tokenize=False, add_generation_prompt=True)
