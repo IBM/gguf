@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
 
-executable_path="./bin/gen_context"
+executable_path="./bin/gen_minja_prompt"
 chat_ml_template="templates/llama.cpp/granite-guardian-chatml.j2"
 messages_path="messages/granite/guardian/"
 output_dir=temp/
