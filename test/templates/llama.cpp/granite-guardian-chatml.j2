@@ -73,7 +73,7 @@
     "context": "Is the context"
 }) -%}
 
-{%- set len_messages = length(messages) -%}
+{%- set len_messages = messages|length -%}
 {%- set system_msg = none -%}
 {%- set requested_risk = "harm" -%}
 {%- set requested_definition = none -%}
