@@ -138,7 +138,7 @@
     {%- endif %}
 {%- endif -%}
 
-<|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + '\n' }}
+<|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + "\n" }}
 {{ "<start_of_conversation>\n" }}
 {%- for message in messages -%}         
     {%- if message.role in ["user", "assistant"] %}
@@ -161,7 +161,7 @@
 {{ "<start_of_risk_definition>" }}
 - {{ requested_definition }}
 {{ "<end_of_risk_definition>" }}
-{{ "\n" + third_act + third_act_post + '<|end_of_text|>'}}
+{{ "\n" + third_act + third_act_post + "<|end_of_text|>"}}
 {%- if add_generation_prompt %}
-    {{- '\n<|start_of_role|>assistant<|end_of_role|>' }}
+    {{- "\n<|start_of_role|>assistant<|end_of_role|>" }}
 {%- endif %}
