@@ -145,19 +145,19 @@
         {%- if requested_risk == "function_call" and message.role == "assistant" %}
             {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) + "\n" }}
         {%- else %}
-            {{- message.role.capitalize() + " Message: " + message.content + "\n"}}
+            {{- message.role.capitalize() + " Message: " + message.content + "\n" }}
         {%- endif %}
     {%- elif message.role in ["tools"] %}
-        {{- "Tools Available: " + (message.content | tojson(indent=2)) }}
+        {{- "Tools Available: " + (message.content | tojson(indent=2)) + "\n" }}
     {%- elif message.role in ["context"] %}
-        {{- "Context: " + message.content }}
+        {{- "Context: " + message.content + "\n" }}
     {%- elif message.role in ["system"] %}
     {%- else %}
         {{ raise_exception("invalid role:" + message.role) }}
     {%- endif %}
 {%- endfor -%}
-{{ "\n<end_of_conversation>\n" }}
-{{ "Our safety risk definition is defined below:\n" }}
+{{ "<end_of_conversation>\n" }}
+{{ "Our safety risk definition is defined below:" }}
 {{ "<start_of_risk_definition>" }}
 - {{ requested_definition }}
 {{ "<end_of_risk_definition>" }}
