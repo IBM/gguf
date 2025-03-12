@@ -138,7 +138,7 @@
     {%- endif %}
 {%- endif -%}
 
-<|start_of_role|>user<|end_of_role|>{{ first_act_pre + first_act + "\n" }}
+{{ "<|start_of_role|>user<|end_of_role|>" + first_act_pre + first_act + "\n" }}
 {{ "<start_of_conversation>\n" }}
 {%- for message in messages -%}         
     {%- if message.role in ["user", "assistant"] %}
