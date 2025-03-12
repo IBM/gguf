@@ -143,7 +143,7 @@
 {%- for message in messages -%}
     {%- if message.role in ["user", "assistant"] %}
         {%- if requested_risk == "function_call" and message.role == "assistant" %}
-            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2)|safe + "\n" }}
+            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) + "\n" }}
         {%- else %}
             {{- message.role.capitalize() + " Message: " + message.content + "\n"}}
         {%- endif %}
