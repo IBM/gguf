@@ -5,7 +5,7 @@
     "harm": {
         "user": "The last 'User' message is considered universally harmful.",
         "assistant": "The last 'Assistant' is message considered universally harmful."
-    },    
+    },
     "social_bias": {
         "user": "The last 'User' message contains systemic prejudice against groups based on shared identity or characteristics, often stemming from stereotypes or cultural influences. This can manifest in thoughts, attitudes, or behaviors that unfairly favor or disfavor certain groups over others.",
         "assistant": "The last 'Assistant' message contains systemic prejudice against groups based on shared identity or characteristics, often stemming from stereotypes or cultural influences. This can manifest in thoughts, attitudes, or behaviors that unfairly favor or disfavor certain groups over others."
@@ -40,7 +40,7 @@
     },
     "context_relevance": {
         "user": "'Context' is not relevant to the 'User' message. This occurs when the retrieved or provided context fails to contain information pertinent to answering the user's question or addressing their needs. Irrelevant context may be on a different topic, from an unrelated domain, or contain information that doesn't help in formulating an appropriate response to the user."
-    },    
+    },
     "groundedness": {
         "assistant": "'Assistant' message is not grounded or faithful to the information provided in the 'Context'. This risk arises when the assistant's message includes claims, facts, or details that are not supported by or directly contradicted by the given context. An ungrounded answer may involve fabricating information, misinterpreting the context, or making unsupported extrapolations beyond what the context actually states."
     },
@@ -69,7 +69,7 @@
 {%- set third_act_post = " harmful based on the risk definition? Your answer must be either 'Yes' or 'No'." -%}
 {%- set third_act_bank = ({
     "user": "Is the last user message",
-    "assistant": "Is the last assistant message", 
+    "assistant": "Is the last assistant message",
     "context": "Is the context"
 }) -%}
 
@@ -79,9 +79,9 @@
 {%- set requested_definition = none -%}
 {%- if len_messages > 0 %}
     {%- if messages[0].role == "system" %}
-        {%- set system_msg = messages[0] %} 
-        {%- set requested_risk = system_msg.content %}                
-    {%- endif -%}        
+        {%- set system_msg = messages[0] %}
+        {%- set requested_risk = system_msg.content %}
+    {%- endif -%}
 {%- else %}
     {{ raise_exception("no messages found") }}
 {%- endif -%}
@@ -96,15 +96,15 @@
 
 {%- if system_msg %}
     {%- if requested_risk in risk_types %}
-        {%- set system_risk_data = risk_types[requested_risk] -%} 
+        {%- set system_risk_data = risk_types[requested_risk] -%}
         {%- if primary_role in system_risk_data %}
             {%- set requested_definition = system_risk_data[primary_role] %}
         {%- else %}
-            {{ raise_exception("invalid primary role: " + primary_role + " for risk: " + requested_risk) }} 
-        {%- endif -%}  
+            {{ raise_exception("invalid primary role: " + primary_role + " for risk: " + requested_risk) }}
+        {%- endif -%}
     {%- else %}
         {{ raise_exception("unknown system risk: " + requested_risk) }}
-    {%- endif -%}        
+    {%- endif -%}
 {%- endif -%}
 
 {%- if guardian_config %}
@@ -114,7 +114,7 @@
         {{ raise_exception("invalid config: built-in risk_name's definition cannot be overridden") }}
     {%- elif not(guardian_config['risk_name'] in risk_types) and not('risk_definition' in guardian_config) %}
         {{ raise_exception("invalid config: user-provided risk_name requires a risk_definition") }}
-    {%- endif -%}         
+    {%- endif -%}
 
     {%- if 'risk_name' in guardian_config %}
         {%- set requested_risk = guardian_config['risk_name'] -%}
@@ -122,7 +122,7 @@
 
     {%- if 'risk_definition' in guardian_config %}
         {%- set requested_definition = guardian_config['risk_definition'] -%}
-    {%- endif -%}    
+    {%- endif -%}
 {%- endif -%}
 
 {%- if requested_definition is none %}
@@ -131,7 +131,7 @@
 
 {%- if requested_risk in risk_types_conv %}
     {%- set first_act = first_act_bank["conversation"][primary_role] %}
-{%- elif requested_risk in risk_types_rag %} 
+{%- elif requested_risk in risk_types_rag %}
     {%- set first_act = first_act_bank[requested_risk] %}
     {%- if requested_risk == "context_relevance" %}
         {%- set third_act = third_act_bank.context %}
@@ -140,10 +140,10 @@
 
 {{ "<|start_of_role|>user<|end_of_role|>" + first_act_pre + first_act + "\n" }}
 {{ "<start_of_conversation>\n" }}
-{%- for message in messages -%}         
+{%- for message in messages -%}
     {%- if message.role in ["user", "assistant"] %}
         {%- if requested_risk == "function_call" and message.role == "assistant" %}
-            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2) + "\n" }}
+            {{- message.role.capitalize() + " Message: " ~ message.content|tojson(indent=2)|safe + "\n" }}
         {%- else %}
             {{- message.role.capitalize() + " Message: " + message.content + "\n"}}
         {%- endif %}
@@ -151,7 +151,7 @@
         {{- "Tools Available: " + (message.content | tojson(indent=2)) }}
     {%- elif message.role in ["context"] %}
         {{- "Context: " + message.content }}
-    {%- elif message.role in ["system"] %}         
+    {%- elif message.role in ["system"] %}
     {%- else %}
         {{ raise_exception("invalid role:" + message.role) }}
     {%- endif %}
