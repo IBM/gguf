@@ -156,7 +156,7 @@
         {{ raise_exception("invalid role:" + message.role) }}
     {%- endif %}
 {%- endfor -%}
-{{ "\n<start_of_conversation>\n" }}    
+{{ "\n<end_of_conversation>\n" }}
 {{ "Our safety risk definition is defined below:\n" }}
 {{ "<start_of_risk_definition>" }}
 - {{ requested_definition }}
