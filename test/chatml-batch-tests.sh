@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
 
-executable_path="./gen_context"
+executable_path="./bin/gen_context"
 chat_ml_template="templates/llama.cpp/granite-guardian-chatml.j2"
 messages_path="messages/granite/guardian/"
 output_dir=temp/
@@ -61,5 +61,5 @@ for test_file in "${message_test_files_with_errors[@]}"; do
     -f  $chat_ml_template \
     -m "${messages_path}${test_file}" \
     -o "${output_dir}${test_file}.out.txt" 2>"${output_dir}${test_file}.err.txt"
-  echo $?    
+  echo $?
 done
