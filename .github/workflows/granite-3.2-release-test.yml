@@ -29,7 +29,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LLM_JOBS: false
+  ENABLE_LLM_JOBS: true
   ENABLE_VISION_JOBS: false
   SOURCE_REPOS: "[
     'ibm-granite/granite-guardian-3.2-3b-a800m',
@@ -38,12 +38,14 @@ env:
   TARGET_QUANTIZATIONS: "[
     'Q8_0'
   ]"
-  SOURCE_LLAVA_REPOS: "[]"
-  #   'ibm-granite/granite-vision-3.2-2b'
-  # ]"
-  TARGET_LLAVA_QUANTIZATIONS: "[]"
-  #   'Q4_K_M'
-  # ]"
+  SOURCE_LLAVA_REPOS: "[
+    'ibm-granite/granite-vision-3.2-2b'
+  ]"
+  TARGET_LLAVA_QUANTIZATIONS: "[
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q8_0'
+  ]"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows
   TARGET_REPO_PRIVATE: true
