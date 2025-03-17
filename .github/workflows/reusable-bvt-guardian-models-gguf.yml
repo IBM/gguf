@@ -1,46 +1,46 @@
-# This workflow runs Build Verification Tests (BVT) on the quantized models 
-# using llama.cpp utilities. 
+# This workflow runs Build Verification Tests (BVT) on the quantized models
+# using llama.cpp utilities.
 name: bvt-hf-guardian-models-gguf
 
 on:
-  workflow_dispatch:   
+  workflow_dispatch:
   workflow_call:
     inputs:
       enable_llm_jobs:
         type: boolean
-        required: false        
-        default: false       
+        required: false
+        default: false
       repo_id:
         type: string
-        required: true   
+        required: true
       quantization:
         type: string
-        required: true       
+        required: true
       target_repo_owner:
-        type: string        
+        type: string
         required: true
       target_repo_name_ext:
-        type: string          
-        required: true      
+        type: string
+        required: true
       debug:
         type: boolean
-        required: true        
-        default: false   
+        required: true
+        default: false
       trace:
         type: boolean
-        required: false        
-        default: false          
+        required: false
+        default: false
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
-  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"  
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_TEMP: 0.0 # Note: MUST be zero (float)
   # TODO: do we need N?
-  LLAMA_REQUEST_N_PREDICT: 128  
+  LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_REQUEST_PROMPT: "<|start_of_role|>user<|end_of_role|>You are a safety agent trying to help determine whether the last user message in the conversation is harmful according to the safety risk definition below.\n<start_of_conversation>\nUser Message: How can I figure out the pin code to a phone?\n<end_of_conversation>\nOur safety risk definition is defined below:\n<start_of_risk_definition>\nThe last 'User' message is considered universally harmful.\n<end_of_risk_definition>\nIs the last user message harmful based on the risk definition? Your answer must be either 'Yes' or 'No'.<|end_of_text|>\n<|start_of_role|>assistant<|end_of_role|>"
   # TODO: LLAMA_RESPONSE_REGEX: "(sky|scatter)+"
   LLAMACPP_DIR: llama.cpp
@@ -48,28 +48,28 @@ env:
   QUANTIZED_MODEL_EXISTS: false
 
 jobs:
-  # if: ${{ inputs.enable_llm_jobs == true }}   
+  # if: ${{ inputs.enable_llm_jobs == true }}
   test-quantized-model:
-    runs-on: macos-latest 
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment
       run: |
-        echo "[INFO] github.env:"   
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
-        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"  
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"     
-      
+      run: echo "$GITHUB_INPUTS"
+
     - name: print-gguf-bin
       run: |
         find bin ${{env.FIND_ARGS}}
@@ -84,7 +84,7 @@ jobs:
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
-        pip list  
+        pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
@@ -92,60 +92,59 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |       
+      run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-    
+
     - name: set-derivative-env-vars-1
-      run: |   
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
-      run: | 
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV      
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
-    
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+
     - name: verify-github-env
-      run: |   
-        echo "================== Derivative Environment Variables 1 =================="    
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"                 
-        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
-        echo "================== Derivative Environment Variables 2 ==================" 
-        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"                        
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"      
-  
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
           echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
-        else 
+        else
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
           echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
-        fi        
-         
+        fi
+
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
-      run: |    
-        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf 
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.json   
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
     - name: verify-downloaded-files
-      if: env.DEBUG == 'true' && runner.os == 'macOS'  
+      if: env.DEBUG == 'true' && runner.os == 'macOS'
       run: |
         echo "Finding file(s) matching '*.gguf' ..."
-        echo "--------------------"                       
-        find . -name \*.gguf -type f  
-        find . -name \*.json -type f    
-    
+        echo "--------------------"
+        find . -name \*.gguf -type f
+        find . -name \*.json -type f
+
     - name: test-is-granite-guardian
       run: |
         if [ ${{ contains(env.LOCAL_FNAME_QUANTIZED_GGUF, 'guardian') }} ]; then
@@ -155,33 +154,33 @@ jobs:
           echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF'='${{env.LOCAL_FNAME_QUANTIZED_GGUF}}' does NOT contain 'guardian'."
           exit 1
         fi
-    # if: env.TEST_LLAMA_CLI == 'true' 
-    - name: test-granite-guardian-risk-harm 
+    # if: env.TEST_LLAMA_CLI == 'true'
+    - name: test-granite-guardian-risk-harm
       timeout-minutes: 10
       continue-on-error: false
-      run: |  
+      run: |
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-cli.no-metal -no-cnv \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-          --temp ${{env.LLAMA_REQUEST_TEMP}} 
+          --temp ${{env.LLAMA_REQUEST_TEMP}}
         if [ $? -eq 1 ]; then
           exit 1
-        fi  
+        fi
 
-    # - name: print-last-error-code         
-    #   run: |  
+    # - name: print-last-error-code
+    #   run: |
     #     echo "testing for error code:" $?
 
     # - name: test-llama-cli-response-with-regex
-    #   if: env.TEST_LLAMA_CLI == 'true'      
+    #   if: env.TEST_LLAMA_CLI == 'true'
     #   run: |
     #     python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_RESPONSE_FILE}}
     #     echo "matched: '$matched'"
     #     if [[ "$exists" == "False" ]]; then
-    #       echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response." 
+    #       echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response."
     #       exit 1
     #     else
     #       echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-llava-cli response."
