@@ -56,6 +56,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: confirm-environment
       run: |
+        uname -a
+        uname -m
+        uname -s
         echo "[INFO] github.env:"
         echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
