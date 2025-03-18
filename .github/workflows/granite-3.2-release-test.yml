@@ -280,8 +280,8 @@ jobs:
     secrets: inherit
 
   call-bvt-guardian-quantized-gguf-models:
-    # needs: [ environment-setup ]
-    needs: [ call-quantize-upload-gguf, environment-setup ]
+    needs: [ environment-setup ]
+    #needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
     permissions:
       contents: write
