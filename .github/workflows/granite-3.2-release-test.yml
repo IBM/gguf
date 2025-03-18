@@ -125,7 +125,8 @@ jobs:
       #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
   call-create-hf-repos:
-    needs: [ environment-setup ]
+    # needs: [ environment-setup ]
+    needs: [ environment-setup, call-bvt-guardian-quantized-gguf-models ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
