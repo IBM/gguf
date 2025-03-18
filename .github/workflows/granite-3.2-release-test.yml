@@ -124,8 +124,8 @@ jobs:
       #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
       #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
+  # needs: [ environment-setup ]
   call-create-hf-repos:
-    # needs: [ environment-setup ]
     needs: [ environment-setup, call-bvt-guardian-quantized-gguf-models ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -280,9 +280,9 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
+  # needs: [ call-quantize-upload-gguf, environment-setup ]
   call-bvt-guardian-quantized-gguf-models:
     needs: [ environment-setup ]
-    #needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
     permissions:
       contents: write
