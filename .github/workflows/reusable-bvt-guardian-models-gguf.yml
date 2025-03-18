@@ -170,7 +170,7 @@ jobs:
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp ${{env.LLAMA_REQUEST_TEMP}} \
-          ${{ LLAMA_REQUEST_GPU_LAYERS }}
+          ${{ env.LLAMA_REQUEST_GPU_LAYERS }}
         if [ $? -eq 1 ]; then
           exit 1
         fi
