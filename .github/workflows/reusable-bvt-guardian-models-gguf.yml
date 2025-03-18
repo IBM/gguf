@@ -185,7 +185,7 @@ jobs:
       run: |
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli.no-metal -no-cnv \
+        ./bin/llama-cli -no-cnv \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
