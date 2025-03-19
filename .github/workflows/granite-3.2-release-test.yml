@@ -277,7 +277,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  call-bvt-quantized-llm-vision-gguf-models:
+  call-vision-bvt-quantized-gguf-models:
     needs: [ environment-setup, call-quantize-vision-llm-and-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-hf-llava-quantized-models-gguf.yml@main
     permissions:
@@ -373,8 +373,8 @@ jobs:
     needs: [
       environment-setup,
       call-bvt-quantized-gguf-models,
-      call-bvt-quantized-llm-vision-gguf-models,
-      call-bvt-guardian-quantized-gguf-models,
+      call-vision-bvt-quantized-gguf-models,
+      call-guardian-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
