@@ -49,25 +49,15 @@ env:
   QUANTIZED_MODEL_EXISTS: false
 
 jobs:
-  test-llama-cpp-exec:
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v4
-    - name: Dump GitHub inputs
-      run : |
-        uname -a
-        ./bin/llama-cli --help
-
-  test-llama-cpp-exec-no-metal:
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v4
-    - name: Dump GitHub inputs
-      run : |
-        uname -a
-        ./bin/llama-cli.no-metal --help
+  # test-llama-cpp-exec:
+  #   runs-on: macos-latest
+  #   continue-on-error: true
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Dump GitHub inputs
+  #     run : |
+  #       uname -a
+  #       ./bin/llama-cli --help
 
   test-quantized-model:
     runs-on: macos-latest
@@ -176,7 +166,7 @@ jobs:
           echo "Environment variable 'LOCAL_FNAME_QUANTIZED_GGUF'='${{env.LOCAL_FNAME_QUANTIZED_GGUF}}' does NOT contain 'guardian'."
           exit 1
         fi
-    # if: env.TEST_LLAMA_CLI == 'true'
+
     - name: test-granite-guardian-risk-harm
       timeout-minutes: 10
       continue-on-error: false
