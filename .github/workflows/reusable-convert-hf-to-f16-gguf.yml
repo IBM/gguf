@@ -8,97 +8,108 @@ on:
     inputs:
       enable_llm_jobs:
         type: boolean
-        required: false        
-        default: false         
+        required: false
+        default: false
+      enable_guardian_jobs:
+        type: boolean
+        required: false
+        default: false
       repo_id:
         type: string
-        required: true         
+        required: true
       hf_collection_config:
-        type: string        
+        type: string
         required: true
       target_repo_owner:
-        type: string        
+        type: string
         required: true
       target_repo_name_ext:
-        type: string          
-        required: true      
+        type: string
+        required: true
       debug:
         type: boolean
-        required: true        
-        default: false    
+        required: true
+        default: false
       trace:
         type: boolean
-        required: true        
-        default: false                           
+        required: true
+        default: false
 
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"  
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
-jobs:    
+jobs:
   convert-f16:
-    runs-on: macos-latest   
-    if: ${{ inputs.enable_llm_jobs == true }}     
+    runs-on: macos-latest
+    if: ${{ inputs.enable_llm_jobs == true  || inputs.enable_guardian_jobs == true }}
     steps:
     - uses: actions/checkout@v4
-    
+
     # - name: Dump GitHub context
     #   env:
     #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT" 
+    #   run: echo "$GH_CONTEXT"
 
     # - name: Dump GitHub quiet
     #   env:
     #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"      
+    #   run: echo "$GH_QUIET"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: |
-        echo "$GITHUB_INPUTS"  
+        echo "$GITHUB_INPUTS"
         echo "==============="
         printenv | sort
-        echo "==============="   
+        echo "==============="
         echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+        echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
 
     - name: is-enable_llm_jobs
       run: |
         echo "enable_llm_jobs: '$enable_llm_jobs'"
+        echo "enable_guardian_jobs: '$enable_guardian_jobs'"
         if [[ "$enable_llm_jobs" == 'false' ]]; then
           echo "enable_llm_jobs == 'false'. Exiting..."
           exit 1
         fi
+        if [[ "$enable_guardian_jobs" == 'false' ]]; then
+          echo "enable_guardian_jobs == 'false'. Exiting..."
+          exit 1
+        fi
 
     - run: |
-        echo "[INFO] github.env:"   
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"                 
-        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-        echo "[INFO] >> run_id: '${{ env.enable_llm_jobs }}'"            
+        echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"
+        echo "[INFO] >> enable_guardian_jobs: '${{ env.enable_guardian_jobs }}'"
 
     - name: confirm-environment
       run: |
-        uname -a          
+        uname -a
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
-        echo "inputs.repo_id: ${{ inputs.repo_id }}"    
-        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
-        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
-        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"                            
+        echo "inputs.repo_id: ${{ inputs.repo_id }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
+    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
     - name: create-aliases
       if: runner.os == 'macOS'
@@ -118,14 +129,14 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |       
+      run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
 
     - name: verify-github-env
-      run: |               
+      run: |
         echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"    
+        echo "REPO_NAME=$REPO_NAME"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -152,35 +163,35 @@ jobs:
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
- 
+
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-        pip list      
+        pip list
 
-    # TODO: need a "source" and "target" HF_TOKEN    
+    # TODO: need a "source" and "target" HF_TOKEN
     - name: download-model-snapshot
-      run: |                         
+      run: |
         python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
-      run: |    
-        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
+      run: |
+        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"   
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
 
     - name: download-safetensors-convert-to-f16-gguf
       run: |
         python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} --verbose
-        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf        
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV  
-        echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV    
-      
-    - name: upload-f16-gguf-to-target-repo 
-      run: |  
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"                
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"       
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
+        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+
+    - name: upload-f16-gguf-to-target-repo
+      run: |
+        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}

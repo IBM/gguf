@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      enable_llm_jobs:
+      enable_guardian_jobs:
         type: boolean
         required: false
         default: false
@@ -65,7 +65,7 @@ jobs:
 
   test-quantized-model:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true }}
+    if: ${{ inputs.enable_guardian_jobs == true }}
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment
