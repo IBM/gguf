@@ -168,6 +168,11 @@ jobs:
           exit 1
         fi
 
+    - name: encode-test-prompt:
+      run: |
+       ./test/scripts/encode_whitespace.py test/prompts/granite/guardian/guardian_harm.txt guardian_harm.enc.txt
+       cat guardian_harm.enc.txt
+
     - name: test-granite-guardian-risk-harm
       timeout-minutes: 10
       continue-on-error: false
