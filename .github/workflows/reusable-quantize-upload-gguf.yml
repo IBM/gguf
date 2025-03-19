@@ -55,7 +55,7 @@ env:
 jobs:
   quantize:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true }}
+    if: ${{ inputs.enable_llm_jobs == true || inputs.enable_guardian_jobs == true}}
     steps:
     - uses: actions/checkout@v4
 

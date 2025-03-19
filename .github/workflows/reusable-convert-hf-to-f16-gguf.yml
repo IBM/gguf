@@ -67,21 +67,21 @@ jobs:
         echo "==============="
         printenv | sort
         echo "==============="
-        echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
-        echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
+      # echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+      # echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
 
-    - name: is-enable_llm_jobs
-      run: |
-        echo "enable_llm_jobs: '$enable_llm_jobs'"
-        echo "enable_guardian_jobs: '$enable_guardian_jobs'"
-        if [[ "$enable_llm_jobs" == 'false' ]]; then
-          echo "enable_llm_jobs == 'false'. Exiting..."
-          exit 1
-        fi
-        if [[ "$enable_guardian_jobs" == 'false' ]]; then
-          echo "enable_guardian_jobs == 'false'. Exiting..."
-          exit 1
-        fi
+    # - name: is-enable_llm_jobs
+    #   run: |
+    #     echo "enable_llm_jobs: '$enable_llm_jobs'"
+    #     echo "enable_guardian_jobs: '$enable_guardian_jobs'"
+    #     if [[ "$enable_llm_jobs" == 'false' ]]; then
+    #       echo "enable_llm_jobs == 'false'. Exiting..."
+    #       exit 1
+    #     fi
+    #     if [[ "$enable_guardian_jobs" == 'false' ]]; then
+    #       echo "enable_guardian_jobs == 'false'. Exiting..."
+    #       exit 1
+    #     fi
 
     - run: |
         echo "[INFO] github.env:"
@@ -94,8 +94,8 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-        echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"
-        echo "[INFO] >> enable_guardian_jobs: '${{ env.enable_guardian_jobs }}'"
+      # echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"
+      # echo "[INFO] >> enable_guardian_jobs: '${{ env.enable_guardian_jobs }}'"
 
     - name: confirm-environment
       run: |
