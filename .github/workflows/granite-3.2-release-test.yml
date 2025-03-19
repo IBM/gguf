@@ -272,6 +272,7 @@ jobs:
       environment-setup,
       call-bvt-quantized-gguf-models,
       call-bvt-quantized-llm-vision-gguf-models,
+      call-bvt-guardian-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
