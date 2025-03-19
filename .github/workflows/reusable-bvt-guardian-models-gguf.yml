@@ -168,7 +168,7 @@ jobs:
           exit 1
         fi
 
-    - name: encode-test-prompt:
+    - name: encode-test-prompt
       run: |
        ./test/scripts/encode_whitespace.py test/prompts/granite/guardian/guardian_harm.txt guardian_harm.enc.txt
        cat guardian_harm.enc.txt
