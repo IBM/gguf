@@ -201,11 +201,19 @@ jobs:
         path: ${{env.LLAMA_RESPONSE_OUTPUT_FILE}}
 
     - name: upload-files-to-github-release
-      uses: svenstaro/upload-release-action@v1
+      uses: Shopify/upload-to-release@v1
       with:
-        file: ${{env.BASE_FNAME_QUANTIZED_GGUF}}-${{matrix.quantization}}.output.txt
-        repo_token: ${{ github.token }}
-        tag: ${{ github.ref_name }}
+        name: ${{env.BASE_FNAME_QUANTIZED_GGUF}}-${{matrix.quantization}}.output.txt
+        path: ${{env.BASE_FNAME_QUANTIZED_GGUF}}-${{matrix.quantization}}.output.txt
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        content-type: text/plain # Optional
+
+    # - name: upload-files-to-github-release
+    #   uses: svenstaro/upload-release-action@v1
+    #   with:
+    #     file: ${{env.BASE_FNAME_QUANTIZED_GGUF}}-${{matrix.quantization}}.output.txt
+    #     repo_token: ${{ github.token }}
+    #     tag: ${{ github.ref_name }}
 
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'
