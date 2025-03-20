@@ -155,7 +155,7 @@ jobs:
   # ===========================================================================
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
-  call-create-hf-repos:
+  create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -169,8 +169,8 @@ jobs:
   # ===========================================================================
   # Granite Instruct
   # ===========================================================================
-  call-convert-hf-to-f16-gguf:
-    needs: [ environment-setup, call-create-hf-repos ]
+  convert-hf-to-f16-gguf:
+    needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -189,8 +189,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit
 
-  call-quantize-upload-gguf:
-    needs: [ environment-setup, call-convert-hf-to-f16-gguf ]
+  quantize-upload-gguf:
+    needs: [ environment-setup, convert-hf-to-f16-gguf ]
     permissions:
       contents: write
       packages: write
@@ -211,8 +211,8 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  call-bvt-quantized-gguf-models:
-    needs: [ environment-setup, call-quantize-upload-gguf ]
+  bvt-quantized-gguf-models:
+    needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -233,10 +233,10 @@ jobs:
     secrets: inherit
 
   # TODO: change collection from private to public (on success)
-  call-create-hf-collections:
+  create-hf-collections:
     needs: [
       environment-setup,
-      call-bvt-quantized-gguf-models,
+      bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -252,8 +252,8 @@ jobs:
   # ===========================================================================
   # Granite Vision
   # ===========================================================================
-  call-convert-hf-llava-to-f16-gguf:
-    needs: [ environment-setup, call-create-hf-repos ]
+  convert-hf-llava-to-f16-gguf:
+    needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -272,8 +272,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit
 
-  call-quantize-vision-llm-and-upload-gguf:
-    needs: [ environment-setup, call-convert-hf-llava-to-f16-gguf ]
+  quantize-vision-llm-and-upload-gguf:
+    needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -294,8 +294,8 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  call-vision-bvt-quantized-gguf-models:
-    needs: [ environment-setup, call-quantize-vision-llm-and-upload-gguf ]
+  vision-bvt-quantized-gguf-models:
+    needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-hf-llava-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -316,10 +316,10 @@ jobs:
     secrets: inherit
 
   # TODO: change collection from private to public (on success)
-  call-create-hf-collections:
+  vision-create-hf-collections:
     needs: [
       environment-setup,
-      call-vision-bvt-quantized-gguf-models,
+      vision-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -335,8 +335,8 @@ jobs:
   # ===========================================================================
   # Granite Guardian
   # ===========================================================================
-  call-guardian-convert-hf-to-f16-gguf:
-    needs: [ environment-setup, call-create-hf-repos ]
+  guardian-convert-hf-to-f16-gguf:
+    needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -355,8 +355,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
     secrets: inherit
 
-  call-guardian-quantize-upload-gguf:
-    needs: [ environment-setup, call-guardian-convert-hf-to-f16-gguf ]
+  guardian-quantize-upload-gguf:
+    needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
     permissions:
       contents: write
       packages: write
@@ -377,8 +377,8 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  call-guardian-bvt-quantized-gguf-models:
-    needs: [ environment-setup, call-guardian-quantize-upload-gguf ]
+  guardian-bvt-quantized-gguf-models:
+    needs: [ environment-setup, guardian-quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
     permissions:
       contents: write
@@ -399,10 +399,10 @@ jobs:
     secrets: inherit
 
   # TODO: change collection from private to public (on success)
-  call-create-hf-collections:
+  guardian-create-hf-collections:
     needs: [
       environment-setup,
-      call-guardian-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
