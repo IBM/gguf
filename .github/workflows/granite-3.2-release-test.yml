@@ -379,7 +379,7 @@ jobs:
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
-    uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write

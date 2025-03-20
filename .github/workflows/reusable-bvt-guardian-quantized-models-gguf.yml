@@ -193,6 +193,12 @@ jobs:
         fi
         cat ${{env.LLAMA_RESPONSE_OUTPUT_FILE}}
 
+    - name: upload-response-artifact
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{env.BASE_FNAME_QUANTIZED_GGUF}}-${{matrix.quantization}}.output.txt
+        path: ${{env.LLAMA_RESPONSE_OUTPUT_FILE}} # path/to/artifact/world.tx
+
     # - name: print-last-error-code
     #   run: |
     #     echo "testing for error code:" $?

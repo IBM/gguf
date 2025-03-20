@@ -171,6 +171,7 @@ jobs:
       if: env.F16_FILE_EXISTS == '1'
       run: |
         echo "Downloading f16 GGUF using hf_file_download..."
+        echo "Repo ID: ${{ env.TARGET_REPO_ID }}, Model Name: ${{ env.BASE_FNAME_F16_GGUF }}"
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.HF_TOKEN}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
