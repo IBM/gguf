@@ -9,6 +9,9 @@ name: create-hf-collections-reusable
 on:
   workflow_call:
     inputs:
+      granite_family:
+        type: string
+        required: true
       enable_llm_jobs:
         type: boolean
         required: false
@@ -81,4 +84,4 @@ jobs:
     # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
     - name: create-hf-collections
       run: |
-        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} ${{ inputs.target_collection_private }} ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} ${{inputs.granite_family}} ${{ inputs.target_collection_private }} ${{secrets.HF_TOKEN}}

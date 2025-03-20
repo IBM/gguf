@@ -6,24 +6,29 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_id": "mrutkows/granite-3.2-2b-instruct-GGUF"
+                    "repo_id": "mrutkows/granite-3.2-2b-instruct-GGUF",
+                    "family": "instruct"
                 },
                 {
-                    "type": "model",                
-                    "repo_id": "mrutkows/granite-3.2-8b-instruct-GGUF"
+                    "type": "model",
+                    "repo_id": "mrutkows/granite-3.2-8b-instruct-GGUF",
+                    "family": "instruct"
                 },
                 {
-                    "type": "model",                
-                    "repo_id": "mrutkows/granite-vision-3.2-2b-GGUF"
+                    "type": "model",
+                    "repo_id": "mrutkows/granite-vision-3.2-2b-GGUF",
+                    "family": "vision"
                 },
                 {
-                    "type": "model",                
-                    "repo_id": "mrutkows/granite-guardian-3.2-3b-a800m-GGUF"
+                    "type": "model",
+                    "repo_id": "mrutkows/granite-guardian-3.2-3b-a800m-GGUF",
+                    "family": "guardian"
                 },
                 {
-                    "type": "model",                
-                    "repo_id": "mrutkows/granite-guardian-3.2-5b-GGUF"
-                }                                 
+                    "type": "model",
+                    "repo_id": "mrutkows/granite-guardian-3.2-5b-GGUF",
+                    "family": "guardian"
+                }
             ]
         }
     ]

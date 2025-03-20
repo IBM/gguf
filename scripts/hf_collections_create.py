@@ -15,11 +15,11 @@ HF_COLLECTION_DESC_MAX_LEN = 150
 def get_collections_in_namespace(hf_owner:str="", hf_token:str="") -> None:
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False    
+        return False
     if hf_token == "":
         print("Please provide a token")
-        return False  
-    
+        return False
+
     collections = list_collections(owner=hf_owner, token=hf_token)
     return collections
 
@@ -30,11 +30,11 @@ def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> C
         return False
     if title == "":
         print("Please provide a title for the new collection")
-        return False      
+        return False
     if hf_token == "":
         print("Please provide a token")
-        return False          
-    
+        return False
+
     collections = get_collections_in_namespace(hf_owner=hf_owner, hf_token=hf_token)
     for c in collections:
         if c.title == title:
@@ -51,7 +51,7 @@ def list_collection_attributes(collections:Collection=None, list_items:bool=Fals
     print(f"title: `{collection.title}`, private: {collection.private}, description: `{collection.description}`, slug: `{collection.slug}`")
     print(f"list_items: {list_items} ({type(list_items)})")
     if list_items is not None:
-        list_collection_items(collection=collection) 
+        list_collection_items(collection=collection)
 
 
 def list_collection_items(collection:Collection=None) -> None:
@@ -61,7 +61,7 @@ def list_collection_items(collection:Collection=None) -> None:
     num_items = len(collection.items)
     if num_items > 0:
         for item in collection.items:
-            print(f"item_id: '{item.item_id}' ({item.item_type}), position: '{item.position}', item_object_id: '{item.item_object_id}'")        
+            print(f"item_id: '{item.item_id}' ({item.item_type}), position: '{item.position}', item_object_id: '{item.item_object_id}'")
             if item.note is not None:
                 print(f"\t| {item.note}")
     else:
@@ -77,16 +77,16 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         return False
     if description == "":
         print("Please provide a description for the collection")
-        return False   
+        return False
     if hf_token == "":
         print("Please provide a token")
-        return False           
-    
+        return False
+
     try:
         # We want to test if the collection already exists before creating it (and not rely on exceptions)
         collection = get_collection_by_title(hf_owner=hf_owner, title=title, hf_token=hf_token)
         if collection is None:
-            print(f"[INFO] Creating collection '{title}' ({'private' if private else 'public'}) in namespace '{hf_owner}'...")            
+            print(f"[INFO] Creating collection '{title}' ({'private' if private else 'public'}) in namespace '{hf_owner}'...")
             collection = create_collection(
                 namespace=hf_owner,
                 title=title,
@@ -106,7 +106,7 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         print(f"Timeout: {exc}")
     except requests.exceptions.RequestException as exc:
         print(f"RequestException: {exc}")
-    else: 
+    else:
         return collection
     return None
 
@@ -117,15 +117,15 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
         return False
     if repo_id == "":
         print("Please provide a repo_id for the collection item.")
-        return False      
+        return False
     if hf_token == "":
         print("Please provide a token")
-        return False      
-    
-    # If an item already exists in a collection (same item_id/item_type pair), 
-    # an HTTP 409 error will be raised. 
-    # You can choose to ignore this error by setting exists_ok=True   
-    # TODO: do we need to support "note" arg.? It is Optional; not sure where this appears in HF UI. 
+        return False
+
+    # If an item already exists in a collection (same item_id/item_type pair),
+    # an HTTP 409 error will be raised.
+    # You can choose to ignore this error by setting exists_ok=True
+    # TODO: do we need to support "note" arg.? It is Optional; not sure where this appears in HF UI.
     try:
         collection = add_collection_item(
             collection_slug,
@@ -144,42 +144,43 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
         print(f"Timeout: {exc}")
     except requests.exceptions.RequestException as exc:
         print(f"RequestException: {exc}")
-    else: 
+    else:
         return collection
     return None
 
 
-if __name__ == "__main__":       
+if __name__ == "__main__":
     arg_len = len(sys.argv)
-    if arg_len < 5:   
+    if arg_len < 5:
         script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <private:bool> <hf_token:str>")
+        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
-       
-    # Parse input arguments into named params.   
+
+    # Parse input arguments into named params.
     fx_name = sys.argv[0]
-    target_owner = sys.argv[1]  
-    # TODO: "private should default to True (confirmed by "pre" tags); 
+    target_owner = sys.argv[1]
+    # TODO: "private should default to True (confirmed by "pre" tags);
     # if workflow was started with a "release" tag, then change to False
     collection_config = sys.argv[2]
-    private = sys.argv[3] 
-    hf_token = sys.argv[4]
-    
+    family = sys.argv[3]
+    private = sys.argv[4]
+    hf_token = sys.argv[5]
+
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', private='{private}' ({type(private)}), hf_token='{hf_token}'")     
-    
+    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', family='{family}', private='{private}' ({type(private)}), hf_token='{hf_token}'")
+
     # private needs to be a boolean
     if type(private) is str:
-        print(f"[WARNING] private='{private}' is a string. Converting to boolean...")         
+        print(f"[WARNING] private='{private}' is a string. Converting to boolean...")
         if private.lower() == "true":
             private = True
         else:
-            private = False            
-    
+            private = False
+
     # invoke fx
-    import json   
+    import json
     with open(collection_config, "r") as file:
         json_data = json.load(file)
         formatted_json = json.dumps(json_data, indent=4)
@@ -201,9 +202,9 @@ if __name__ == "__main__":
             sys.exit(2)
         # Create the actual collection
         collection = safe_create_collection_in_namespace(
-            hf_owner=target_owner, 
-            title=collection_title, 
-            description=collection_desc, 
+            hf_owner=target_owner,
+            title=collection_title,
+            description=collection_desc,
             hf_token=hf_token,
         )
         # Fail fast if the collection was not created
@@ -211,19 +212,20 @@ if __name__ == "__main__":
             # Something went wrong creating
             print(f"[ERROR] Collection '{collection_title}' not created in namespace '{target_owner}'")
             sys.exit(1)
-        
+
         print(f"[INFO] Collection: '{collection}' created in namespace '{target_owner}'")
-            
+
         # upload all models associated with the collection
         for item_defn in collection_items:
             item_type = item_defn["type"]
-            repo_id = item_defn["repo_id"]           
-            print(f"[INFO] >> Adding item: '{item_defn}'")                                
-            add_update_collection_item(
-                collection_slug=collection.slug, 
-                repo_id=repo_id, 
-                hf_token=hf_token)
-    
+            repo_id = item_defn["repo_id"]
+            item_family = item_defn["family"]
+            if family == item_family:
+                print(f"[INFO] >> Adding item: '{item_defn}'")
+                add_update_collection_item(
+                    collection_slug=collection.slug,
+                    repo_id=repo_id,
+                    hf_token=hf_token)
+
     # Exit successfully
-    sys.exit(0) 
-    
+    sys.exit(0)

@@ -232,6 +232,23 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
+  # TODO: change collection from private to public (on success)
+  call-create-hf-collections:
+    needs: [
+      environment-setup,
+      call-bvt-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "instruct"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets: inherit
+
   # ===========================================================================
   # Granite Vision
   # ===========================================================================
@@ -296,6 +313,23 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+    secrets: inherit
+
+  # TODO: change collection from private to public (on success)
+  call-create-hf-collections:
+    needs: [
+      environment-setup,
+      call-vision-bvt-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "vision"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
   # ===========================================================================
@@ -364,23 +398,16 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  # ===========================================================================
-  # HF Collections
-  # ===========================================================================
-
   # TODO: change collection from private to public (on success)
   call-create-hf-collections:
     needs: [
       environment-setup,
-      call-bvt-quantized-gguf-models,
-      call-vision-bvt-quantized-gguf-models,
       call-guardian-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
+      granite_family: "guardian"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
-      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
