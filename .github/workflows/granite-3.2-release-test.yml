@@ -1,21 +1,6 @@
 name: granite-3.2-tagged-test-release
 run-name: "[TEST] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
-# Full matrix:
-# repo_id: "[
-#   'ibm-granite/granite-3.2-2b-instruct',
-#   'ibm-granite/granite-3.2-8b-instruct',
-#   'ibm-granite/granite-guardian-3.2-3b-a800m',
-#   'ibm-granite/granite-guardian-3.2-5b'
-# ]"
-# quantization: "[
-#   'Q2_K',
-#   'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-#   'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-#   'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-#   'Q6_K',
-#   'Q8_0'
-# ]"
 on:
   push:
     tags:
@@ -33,12 +18,14 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
   SOURCE_REPOS: "[
-    'ibm-granite/granite-guardian-3.2-3b-a800m',
-    'ibm-granite/granite-guardian-3.2-5b'
+    'ibm-granite/granite-3.2-2b-instruct',
+    'ibm-granite/granite-3.2-8b-instruct'
   ]"
   TARGET_QUANTIZATIONS: "[
-    'Q4_K_M',
-    'Q5_K_M',
+    'Q2_K',
+    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
     'Q6_K',
     'Q8_0'
   ]"
