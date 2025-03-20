@@ -198,9 +198,9 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  bvt-quantized-gguf-models:
+  bvt-instruct-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
-    uses: IBM/gguf/.github/workflows/reusable-bvt-hf-quantized-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -223,7 +223,7 @@ jobs:
   create-hf-collections:
     needs: [
       environment-setup,
-      bvt-quantized-gguf-models,
+      bvt-instruct-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -281,9 +281,9 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets: inherit
 
-  vision-bvt-quantized-gguf-models:
+  bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
-    uses: IBM/gguf/.github/workflows/reusable-bvt-hf-llava-quantized-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -306,7 +306,7 @@ jobs:
   vision-create-hf-collections:
     needs: [
       environment-setup,
-      vision-bvt-quantized-gguf-models,
+      bvt-vision-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
