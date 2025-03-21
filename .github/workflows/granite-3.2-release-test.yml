@@ -75,7 +75,7 @@ jobs:
       target_llava_quantizations: "${{ steps.set-vars.outputs.target_llava_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
-      api_token: "${{ steps.set-token.outputs.api_token }}"
+      api_token: "${{ steps.set-vars.outputs.api_token }}"
     # Path: workflows/reusable-create-hf-repos.yml
     steps:
       - name: Set environment variables in GitHub output
@@ -101,6 +101,7 @@ jobs:
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
 
       - name: Confirm GitHub output values were set
         run: |
@@ -120,10 +121,10 @@ jobs:
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
-      - name: Set secret as output
-        id: set-token
-        run: |
-          echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
+      # - name: Set secret as output
+      #   id: set-token
+      #   run: |
+      #     echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
 
       # - name: Dump runner context
       #   env:
