@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LLM_JOBS: true
+  ENABLE_LLM_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   SOURCE_REPOS: "[
     'ibm-granite/granite-3.2-2b-instruct',
     'ibm-granite/granite-3.2-8b-instruct'
@@ -77,55 +77,46 @@ jobs:
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
     steps:
       - name: Set environment variables in GitHub output
-        id: set-env-vars
+        id: set-vars
         run: |
-          echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
-          echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
-          echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
-          echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
-          echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
-          echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
-          echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
-          echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
-          echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT"
-          echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-          echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
-          echo "source_llava_repos=$SOURCE_LLAVA_REPOS" >> "$GITHUB_OUTPUT"
-          echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-          echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
-          echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "DEBUG: $DEBUG"
-      #     echo "TRACE: $TRACE"
-      #     echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
-      #     echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
-      #     echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
-      #     echo "runner.os: ${{ runner.os }}"
-      #     echo "runner.arch: ${{ runner.arch }}"
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+            echo "DEBUG: $DEBUG"
+            echo "TRACE: $TRACE"
+            echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
+            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
+            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
+            echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
+            echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
+            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "source_repos=$SOURCE_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_quantizations=$TARGET_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "source_llava_repos=$SOURCE_LLAVA_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
-          echo "debug: ${{ steps.set-vars.outputs.debug }}"
-          echo "trace: ${{ steps.set-vars.outputs.trace }}"
-          echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"
-          echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
-          echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
-          echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
-          echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
-          echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
-          echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
-          echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"
-          echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'"
-          echo "source_llava_repos: '${{ steps.set-vars.outputs.source_llava_repos }}'"
-          echo "target_llava_quantizations: '${{ steps.set-vars.outputs.target_llava_quantizations }}'"
-          echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
-          echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
+            echo "debug: ${{ steps.set-vars.outputs.debug }}"
+            echo "trace: ${{ steps.set-vars.outputs.trace }}"
+            echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"
+            echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
+            echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
+            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
+            echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
+            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
+            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
+            echo "source_repos: '${{ steps.set-vars.outputs.source_repos }}'"
+            echo "target_quantizations: '${{ steps.set-vars.outputs.target_quantizations }}'"
+            echo "source_llava_repos: '${{ steps.set-vars.outputs.source_llava_repos }}'"
+            echo "target_llava_quantizations: '${{ steps.set-vars.outputs.target_llava_quantizations }}'"
+            echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
+            echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
       # - name: Dump runner context
       #   env:
@@ -137,23 +128,28 @@ jobs:
       #     GH_CONTEXT: ${{ toJson(github) }}
       #   run: echo "$GH_CONTEXT"
 
-      # - name: Dump GitHub env
-      #   env:
-      #     GH_ENV: ${{ toJson(env) }}
-      #   run: echo "$GH_ENV"
 
-      # - name: Dump GitHub quiet
-      #   env:
-      #     GH_QUIET: ${{ toJson(secrets) }}
-      #   run: echo "$GH_QUIET"
+      - name: Dump GitHub quiet
+        env:
+          GH_QUIET: ${{ toJson(secrets) }}
+        run: echo "$GH_QUIET"
+
+      # - name: confirm-environment
+      #   run: |
+      #     uname -a
+      #     echo "runner.os: ${{ runner.os }}"
+      #     echo "runner.arch: ${{ runner.arch }}"
+      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
   # ===========================================================================
   # HF Repos.
   # ===========================================================================
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
-  # hf_token: ${{ secrets.HF_TOKEN }}
   create-hf-repos:
+    if: ${{ false }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -164,7 +160,6 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
-  # if: ${{ false }}
   # ===========================================================================
   # Granite Instruct
   # ===========================================================================
