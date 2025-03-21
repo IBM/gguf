@@ -143,7 +143,7 @@ jobs:
           GH_QUIET: ${{ toJson(secrets) }}
         run: echo "$GH_QUIET"
 
-        - name: Dump GitHub secrets
+        - name: Dump GitHub env
         env:
           GH_ENV: ${{ toJson(env) }}
         run: echo "$GH_QUIET"
