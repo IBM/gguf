@@ -128,7 +128,6 @@ jobs:
       #     GH_CONTEXT: ${{ toJson(github) }}
       #   run: echo "$GH_CONTEXT"
 
-
       - name: Dump GitHub quiet
         env:
           GH_QUIET: ${{ toJson(secrets) }}
@@ -149,10 +148,10 @@ jobs:
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
   create-hf-repos:
-    if: ${{ false }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
+      api_token: ${{secrets.HF_TOKEN}}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -164,6 +163,7 @@ jobs:
   # Granite Instruct
   # ===========================================================================
   convert-hf-to-f16-gguf:
+    if: ${{ false }}
     needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
