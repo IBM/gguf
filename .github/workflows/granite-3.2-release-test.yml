@@ -96,19 +96,19 @@ jobs:
           echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
           echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
 
-      - name: confirm-environment
-        run: |
-          uname -a
-          echo "DEBUG: $DEBUG"
-          echo "TRACE: $TRACE"
-          echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
-          echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
-          echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
-          echo "runner.os: ${{ runner.os }}"
-          echo "runner.arch: ${{ runner.arch }}"
-          echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-          echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-          echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+      # - name: confirm-environment
+      #   run: |
+      #     uname -a
+      #     echo "DEBUG: $DEBUG"
+      #     echo "TRACE: $TRACE"
+      #     echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
+      #     echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
+      #     echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+      #     echo "runner.os: ${{ runner.os }}"
+      #     echo "runner.arch: ${{ runner.arch }}"
+      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
       - name: Confirm GitHub output values were set
         run: |
