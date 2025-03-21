@@ -167,7 +167,6 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      inherit: true
       api_token2: ${{ secrets.HF_TOKEN }}
 
   # ===========================================================================
