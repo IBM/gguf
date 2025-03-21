@@ -75,6 +75,8 @@ jobs:
       target_llava_quantizations: "${{ steps.set-vars.outputs.target_llava_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
+      api_token: "${{ steps.set-vars.outputs.api_token }}"
+    # Path: workflows/reusable-create-hf-repos.yml
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -118,6 +120,11 @@ jobs:
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
+      - name: Set secret as output
+        id: set-token
+        run: |
+          echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
+
       # - name: Dump runner context
       #   env:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
@@ -151,7 +158,6 @@ jobs:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
-      api_token: ${{secrets.HF_TOKEN}}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
