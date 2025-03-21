@@ -152,11 +152,11 @@ jobs:
   # ===========================================================================
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
+  # hf_token: ${{ secrets.HF_TOKEN }}
   create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
-      hf_token: ${{ secrets.HF_TOKEN }}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
