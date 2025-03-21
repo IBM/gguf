@@ -143,10 +143,10 @@ jobs:
       #     GH_QUIET: ${{ toJson(secrets) }}
       #   run: echo "$GH_QUIET"
 
-      #   - name: Dump GitHub env
-      #   env:
-      #     GH_ENV: ${{ toJson(env) }}
-      #   run: echo "$GH_ENV"
+      - name: Dump GitHub env
+        env:
+          GH_ENV: ${{ toJson(env) }}
+        run: echo "$GH_ENV"
 
   # ===========================================================================
   # HF Repos.
