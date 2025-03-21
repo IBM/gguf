@@ -146,7 +146,7 @@ jobs:
         - name: Dump GitHub env
         env:
           GH_ENV: ${{ toJson(env) }}
-        run: echo "$GH_QUIET"
+        run: echo "$GH_ENV"
 
   # ===========================================================================
   # HF Repos.
