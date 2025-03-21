@@ -10,6 +10,7 @@
         "ggerganov",
         "ggml",
         "GGUF",
+        "ghapi",
         "granitemoe",
         "groundedness",
         "huggingface",
