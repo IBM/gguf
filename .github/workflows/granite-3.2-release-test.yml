@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LLM_JOBS: false
+  ENABLE_LLM_JOBS: true
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: true
+  ENABLE_GUARDIAN_JOBS: false
   SOURCE_REPOS: "[
     'ibm-granite/granite-3.2-2b-instruct',
     'ibm-granite/granite-3.2-8b-instruct'
@@ -77,13 +77,9 @@ jobs:
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
     steps:
       - name: Set environment variables in GitHub output
-        id: set-vars
+        id: set-env-vars
         run: |
-            echo "DEBUG: $DEBUG"
-            echo "TRACE: $TRACE"
-            echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
-            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
-            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+            echo "api_token=${{ secrets.HF_TOKEN }}" >> "$GITHUB_OUTPUT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
@@ -99,6 +95,20 @@ jobs:
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+
+      - name: confirm-environment
+        run: |
+          uname -a
+          echo "DEBUG: $DEBUG"
+          echo "TRACE: $TRACE"
+          echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
+          echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
+          echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+          echo "runner.os: ${{ runner.os }}"
+          echo "runner.arch: ${{ runner.arch }}"
+          echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+          echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+          echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -123,25 +133,20 @@ jobs:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
       #   run: echo "$RUNNER_CONTEXT"
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GH_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GH_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"
 
-
-      - name: Dump GitHub quiet
+      - name: Dump GitHub secrets
         env:
           GH_QUIET: ${{ toJson(secrets) }}
         run: echo "$GH_QUIET"
 
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "runner.os: ${{ runner.os }}"
-      #     echo "runner.arch: ${{ runner.arch }}"
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+        - name: Dump GitHub secrets
+        env:
+          GH_ENV: ${{ toJson(env) }}
+        run: echo "$GH_QUIET"
 
   # ===========================================================================
   # HF Repos.
@@ -149,7 +154,6 @@ jobs:
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
   create-hf-repos:
-    if: ${{ false }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -164,6 +168,7 @@ jobs:
   # Granite Instruct
   # ===========================================================================
   convert-hf-to-f16-gguf:
+    if: ${{ false }}
     needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
