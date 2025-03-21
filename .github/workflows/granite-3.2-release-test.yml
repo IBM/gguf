@@ -133,20 +133,20 @@ jobs:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
       #   run: echo "$RUNNER_CONTEXT"
 
-      - name: Dump GitHub context
-        env:
-          GH_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GH_CONTEXT"
+      # - name: Dump GitHub context
+      #   env:
+      #     GH_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GH_CONTEXT"
 
-      - name: Dump GitHub env
-        env:
-          GH_ENV: ${{ toJson(env) }}
-        run: echo "$GH_ENV"
+      # - name: Dump GitHub env
+      #   env:
+      #     GH_ENV: ${{ toJson(env) }}
+      #   run: echo "$GH_ENV"
 
-      - name: Dump GitHub quiet
-        env:
-          GH_QUIET: ${{ toJson(secrets) }}
-        run: echo "$GH_QUIET"
+      # - name: Dump GitHub quiet
+      #   env:
+      #     GH_QUIET: ${{ toJson(secrets) }}
+      #   run: echo "$GH_QUIET"
 
   # ===========================================================================
   # HF Repos.
