@@ -192,6 +192,7 @@ jobs:
     secrets: inherit
 
   quantize-upload-gguf:
+    if: ${{ false }}
     needs: [ environment-setup, convert-hf-to-f16-gguf ]
     permissions:
       contents: write
@@ -214,6 +215,7 @@ jobs:
     secrets: inherit
 
   bvt-instruct-quantized-gguf-models:
+    if: ${{ false }}
     needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
@@ -236,6 +238,7 @@ jobs:
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
+    if: ${{ false }}
     needs: [
       environment-setup,
       bvt-instruct-quantized-gguf-models,
