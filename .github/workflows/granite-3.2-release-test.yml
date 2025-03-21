@@ -164,11 +164,11 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets: inherit
 
+  # if: ${{ false }}
   # ===========================================================================
   # Granite Instruct
   # ===========================================================================
   convert-hf-to-f16-gguf:
-    if: ${{ false }}
     needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
