@@ -101,7 +101,7 @@ jobs:
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "api_token=${{ secrets.HF_TOKEN | base64 -w 0 }}" >> $GITHUB_OUTPUT
 
       - name: Confirm GitHub output values were set
         run: |
