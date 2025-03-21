@@ -79,7 +79,6 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-env-vars
         run: |
-          echo "hf_token=${{ secrets.HF_TOKEN }}" >> "$GITHUB_OUTPUT"
           echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
           echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
           echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
