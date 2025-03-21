@@ -79,7 +79,7 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-env-vars
         run: |
-          echo "api_token=${{ secrets.HF_TOKEN }}" >> "$GITHUB_OUTPUT"
+          echo "hf_token=${{ secrets.HF_TOKEN }}" >> "$GITHUB_OUTPUT"
           echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
           echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
           echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
@@ -157,6 +157,7 @@ jobs:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
+      hf_token: ${{ secrets.HF_TOKEN }}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
