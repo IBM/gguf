@@ -4,7 +4,9 @@ on:
   workflow_call:
     secrets:
       api_token:
-        required: true
+        required: false
+      api_token2:
+        required: false
     inputs:
       hf_collection_config:
         type: string

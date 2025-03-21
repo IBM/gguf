@@ -101,9 +101,10 @@ jobs:
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo TEMP_TK="-n ${{ secrets.HF_TOKEN }} | base64 -w 0"
-            echo "TEMP_TK: $TEMP_TK"
-            echo "api_token=$TEMP_TK" >> $GITHUB_OUTPUT
+            echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
+      # echo TEMP_TK="-n ${{ secrets.HF_TOKEN }} | base64 -w 0"
+      # echo "TEMP_TK: $TEMP_TK"
+      # echo "api_token=$TEMP_TK" >> $GITHUB_OUTPUT
 
       - name: Confirm GitHub output values were set
         run: |
@@ -154,11 +155,12 @@ jobs:
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
   # TODO: api_token: ${{ needs.environment-setup.outputs.api_token }}
+  # DID NOT WORK: api_token2: ${{ secrets.HF_TOKEN }} # secrets not recognized
   create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
-      api_token: ${{ secrets.HF_TOKEN }}
+      api_token: ${{ needs.environment-setup.outputs.api_token }}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
