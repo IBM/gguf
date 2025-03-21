@@ -149,6 +149,7 @@ jobs:
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
   create-hf-repos:
+    if: ${{ false }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
