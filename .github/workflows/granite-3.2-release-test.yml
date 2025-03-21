@@ -138,7 +138,7 @@ jobs:
           GH_CONTEXT: ${{ toJson(github) }}
         run: echo "$GH_CONTEXT"
 
-      - name: Dump GitHub secrets
+      - name: Dump GitHub quiet
         env:
           GH_QUIET: ${{ toJson(secrets) }}
         run: echo "$GH_QUIET"
