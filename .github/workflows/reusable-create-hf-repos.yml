@@ -2,10 +2,10 @@ name: create-hf-repos-reusable
 
 on:
   workflow_call:
-    inputs:
+    secrets:
       api_token:
-        required: false
-        type: string
+        required: true
+    inputs:
       hf_collection_config:
         type: string
         required: true
@@ -49,6 +49,11 @@ jobs:
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: echo "$GITHUB_INPUTS"
+
+    - name: Dump GitHub quiet
+      env:
+        GH_QUIET: ${{ toJson(secrets) }}
+      run: echo "$GH_QUIET"
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"

@@ -124,11 +124,6 @@ jobs:
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
-      # - name: Set secret as output
-      #   id: set-token
-      #   run: |
-      #     echo "api_token=${{ secrets.HF_TOKEN }}" >> $GITHUB_OUTPUT
-
       # - name: Dump runner context
       #   env:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
@@ -158,11 +153,12 @@ jobs:
   # ===========================================================================
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
+  # TODO: api_token: ${{ needs.environment-setup.outputs.api_token }}
   create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
-      api_token: ${{ needs.environment-setup.outputs.api_token }}
+      api_token: ${{ secrets.HF_TOKEN }}
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
