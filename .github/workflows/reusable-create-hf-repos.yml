@@ -3,9 +3,9 @@ name: create-hf-repos-reusable
 on:
   workflow_call:
     inputs:
-      hf_token:
-        required: true
-        type: string
+      # hf_token:
+      #   required: true
+      #   type: string
       hf_collection_config:
         type: string
         required: true
