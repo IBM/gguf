@@ -5,6 +5,8 @@ on:
     secrets:
       hf_token:
         required: false
+      api_token:
+        required: false
     inputs:
       hf_collection_config:
         type: string
