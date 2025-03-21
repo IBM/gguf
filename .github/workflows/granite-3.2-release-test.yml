@@ -164,7 +164,7 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      api_token: ${{ needs.environment-setup.outputs.api_token }}
+      api_token: ${{ steps.set-vars.outputs.api_token }}
 
   # ===========================================================================
   # Granite Instruct
