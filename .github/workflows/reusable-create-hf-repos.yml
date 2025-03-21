@@ -3,9 +3,7 @@ name: create-hf-repos-reusable
 on:
   workflow_call:
     secrets:
-      api_token:
-        required: false
-      api_token2:
+      hf_token:
         required: false
     inputs:
       hf_collection_config:
@@ -71,4 +69,4 @@ jobs:
 
     - name: create-hf-repos
       run: |
-        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.target_repo_private }} ${{ secrets.HF_TOKEN }}
+        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }}
