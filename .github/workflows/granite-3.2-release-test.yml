@@ -56,6 +56,7 @@ jobs:
   # ===========================================================================
   # Environment setup
   # ===========================================================================
+  # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
   #  api_token: "${{ steps.set-vars.outputs.api_token }}"
   #  echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
@@ -150,7 +151,6 @@ jobs:
   # ===========================================================================
 
   # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
-  # TODO: remove api_token: ${{ needs.environment-setup.outputs.api_token }}
   create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
@@ -167,7 +167,6 @@ jobs:
   # Granite Instruct
   # ===========================================================================
   convert-hf-to-f16-gguf:
-    if: ${{ false }}
     needs: [ environment-setup, create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
@@ -188,7 +187,6 @@ jobs:
     secrets: inherit
 
   quantize-upload-gguf:
-    if: ${{ false }}
     needs: [ environment-setup, convert-hf-to-f16-gguf ]
     permissions:
       contents: write
@@ -212,7 +210,6 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   bvt-instruct-quantized-gguf-models:
-    if: ${{ false }}
     needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
@@ -236,7 +233,6 @@ jobs:
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
-    if: ${{ false }}
     needs: [
       environment-setup,
       bvt-instruct-quantized-gguf-models,
