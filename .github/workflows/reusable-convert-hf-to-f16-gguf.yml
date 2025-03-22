@@ -5,6 +5,9 @@ name: convert-hf-safetensors-to-f16-gguf-reusable
 
 on:
   workflow_call:
+    secrets:
+      hf_token:
+        required: true
     inputs:
       enable_llm_jobs:
         type: boolean

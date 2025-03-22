@@ -4,7 +4,7 @@ on:
   workflow_call:
     secrets:
       hf_token:
-        required: false
+        required: true
       api_token:
         required: false
     inputs:

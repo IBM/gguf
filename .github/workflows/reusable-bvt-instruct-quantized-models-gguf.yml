@@ -1,35 +1,38 @@
-# This workflow runs Build Verification Tests (BVT) on the quantized models 
-# using llama.cpp utilities. 
+# This workflow runs Build Verification Tests (BVT) on the quantized models
+# using llama.cpp utilities.
 name: bvt-hf-quantized-models-gguf
 
 on:
-  workflow_dispatch:   
+  workflow_dispatch:
   workflow_call:
+    secrets:
+      hf_token:
+        required: true
     inputs:
       enable_llm_jobs:
         type: boolean
-        required: false        
-        default: false       
+        required: false
+        default: false
       repo_id:
         type: string
-        required: true   
+        required: true
       quantization:
         type: string
-        required: true       
+        required: true
       target_repo_owner:
-        type: string        
+        type: string
         required: true
       target_repo_name_ext:
-        type: string          
-        required: true      
+        type: string
+        required: true
       debug:
         type: boolean
-        required: true        
-        default: false   
+        required: true
+        default: false
       trace:
         type: boolean
-        required: false        
-        default: false          
+        required: false
+        default: false
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
@@ -55,30 +58,30 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true }}  
+    if: ${{ inputs.enable_llm_jobs == true }}
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment
       run: |
-        echo "[INFO] github.env:"   
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
-        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     # - name: Dump GitHub context
     #   env:
     #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"   
+    #   run: echo "$GH_CONTEXT"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"                              
+      run: echo "$GITHUB_INPUTS"
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -90,7 +93,7 @@ jobs:
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
-        pip list  
+        pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
@@ -98,92 +101,92 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |       
+      run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-    
+
     - name: set-derivative-env-vars-1
-      run: |   
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
-      run: | 
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV         
-    
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+
     - name: set-derivative-env-vars-3
-      run: |         
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
+      run: |
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
-      run: |   
-        echo "================== Derivative Environment Variables 1 =================="    
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"                 
-        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
-        echo "================== Derivative Environment Variables 2 ==================" 
-        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
-        echo "================== Derivative Environment Variables 3 =================="              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"      
-  
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 3 =================="
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
           echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
-        else 
+        else
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
           echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
-        fi        
-         
+        fi
+
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
-      run: |    
-        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf    
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
     - name: verify-downloaded-files
-      if: env.DEBUG == 'true' && runner.os == 'macOS'  
+      if: env.DEBUG == 'true' && runner.os == 'macOS'
       run: |
-        echo downloaded files...    
-        echo "--------------------"                       
-        find . -name \*.gguf -type f    
-        echo "--------------------" 
+        echo downloaded files...
+        echo "--------------------"
+        find . -name \*.gguf -type f
+        echo "--------------------"
 
     # - name: print-storage-memory-info
-    #   if: env.DEBUG == 'true' && runner.os == 'macOS'  
+    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
     #   run: |
     #     df
-    #     echo "--------------------"         
-    #     xcodebuild -version        
+    #     echo "--------------------"
+    #     xcodebuild -version
     #     clang --version
-    #     echo "--------------------"      
-    #     top -l 1 | grep -E "^CPU|^PhysMem"  
-    #     echo "--------------------"          
-    
+    #     echo "--------------------"
+    #     top -l 1 | grep -E "^CPU|^PhysMem"
+    #     echo "--------------------"
+
     # TODO:
     # - name: validate-sha256
-    #   if: env.DEBUG == 'true' 
+    #   if: env.DEBUG == 'true'
     #   run: |
-    #     echo "validating sha256..."    
-    #     echo "--------------------" 
-    #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt      
-        
-    - name: test-llama-server-with-quantized-gguf
-      if: env.TEST_LLAMA_SERVER == 'true'     
-      timeout-minutes: 5   
-      run: |      
-        echo "--------------------"             
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"          
-        echo "--------------------"    
-        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"      
-        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &         
+    #     echo "validating sha256..."
+    #     echo "--------------------"
+    #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
-    # echo waiting for llama-server to start...  
+    - name: test-llama-server-with-quantized-gguf
+      if: env.TEST_LLAMA_SERVER == 'true'
+      timeout-minutes: 5
+      run: |
+        echo "--------------------"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+        echo "--------------------"
+        echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
+        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &
+
+    # echo waiting for llama-server to start...
     # retry_count=0
     # max_retries=10
     # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
@@ -194,12 +197,12 @@ jobs:
     #   else
     #     echo "Connection failed, retrying..."
     #     echo "sleeping 1 second..." && sleep 1
-    #     retry_count=$((retry_count + 1)) 
-    #   fi          
-    # done   
-           
+    #     retry_count=$((retry_count + 1))
+    #   fi
+    # done
+
     - name: test-llama-server-connection
-      if: env.TEST_LLAMA_SERVER == 'true'     
+      if: env.TEST_LLAMA_SERVER == 'true'
       run: |
         echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
         echo "netstat:\n$(netstat -an -p tcp | grep ".${{env.LLAMA_SERVER_HOST}}")"
@@ -210,13 +213,13 @@ jobs:
           echo "Failure: Connection to llama-server failed."
           # ps aux
           exit 1
-        fi           
+        fi
 
     - name: test-llama-server-with-curl
       timeout-minutes: 5
-      if: env.TEST_LLAMA_SERVER == 'true'  
-      run: | 
-        curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health      
+      if: env.TEST_LLAMA_SERVER == 'true'
+      run: |
+        curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
         echo "TODO: Test for {"status":"ok"} from GET /health"
         curl --request POST \
           --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
@@ -226,61 +229,61 @@ jobs:
             "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
             "seed": ${{env.LLAMA_REQUEST_SEED}} \
           }'
-        echo "TODO: Test for JSON response from POST /completion endpoint using jq"          
-    
-    # TODO:    
+        echo "TODO: Test for JSON response from POST /completion endpoint using jq"
+
+    # TODO:
     # - name: kill-llama-server
-    #   if: env.TEST_LLAMA_SERVER == 'true'  
+    #   if: env.TEST_LLAMA_SERVER == 'true'
     #   run: |
-    #     echo "TODO: is netstat and ps commands to get PID and kill..." 
+    #     echo "TODO: is netstat and ps commands to get PID and kill..."
 
     - name: test-llama-cli
-      if: env.TEST_LLAMA_CLI == 'true'  
+      if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
       continue-on-error: true
-      # 2>/dev/null 
-      run: |  
+      # 2>/dev/null
+      run: |
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-cli -no-cnv \
           -s ${{env.LLAMA_REQUEST_SEED}} \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p "${{env.LLAMA_REQUEST_PROMPT}}" \
-          -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}  
+          -n ${{env.LLAMA_REQUEST_N_PREDICT}} --log-file ${{env.LLAMA_CLI_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           exit 1
-        fi  
+        fi
 
     - name: test-print-llama-cli-response-with-metrics
-      if: env.TEST_LLAMA_CLI == 'true'      
+      if: env.TEST_LLAMA_CLI == 'true'
       run: |
         echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
     - name: test-llama-cli-response-with-regex
-      if: env.TEST_LLAMA_CLI == 'true'      
+      if: env.TEST_LLAMA_CLI == 'true'
       run: |
         python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_RESPONSE_FILE}}
         echo "matched: '$matched'"
         if [[ "$exists" == "False" ]]; then
-          echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response." 
+          echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response."
           exit 1
         else
           echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-llava-cli response."
         fi
 
     - name: test-print-llama-cli-generated-log
-      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'   
-      continue-on-error: true   
+      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
+      continue-on-error: true
       run: |
-        echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"     
+        echo "llama-cli: ${{env.LLAMA_CLI_LOG_FILE}}: '$(cat ${{env.LLAMA_CLI_LOG_FILE}})'"
 
     - name: test-llama-run
       if: env.TEST_LLAMA_RUN == 'true'
       timeout-minutes: 10
       continue-on-error: true
       run: |
-        echo "invoking llama-run to test inference..."      
+        echo "invoking llama-run to test inference..."
         ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
         if [ $? -eq 1 ]; then
           exit 1
-        fi  
+        fi

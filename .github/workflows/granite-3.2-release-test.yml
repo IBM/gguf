@@ -56,6 +56,10 @@ jobs:
   # ===========================================================================
   # Environment setup
   # ===========================================================================
+  # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
+  #  api_token: "${{ steps.set-vars.outputs.api_token }}"
+  #  echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
+  #  echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
   environment-setup:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
@@ -75,7 +79,6 @@ jobs:
       target_llava_quantizations: "${{ steps.set-vars.outputs.target_llava_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
-      api_token: "${{ steps.set-vars.outputs.api_token }}"
     # Path: workflows/reusable-create-hf-repos.yml
     steps:
       - name: Set environment variables in GitHub output
@@ -101,11 +104,9 @@ jobs:
             echo "target_llava_quantizations=$TARGET_LLAVA_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
 
       - name: Confirm GitHub output values were set
         run: |
-            echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
             echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"
@@ -122,6 +123,13 @@ jobs:
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
+      # - name: confirm-environment
+      #   run: |
+      #     uname -a
+      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+
       # - name: Dump runner context
       #   env:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
@@ -136,15 +144,6 @@ jobs:
         env:
           GH_QUIET: ${{ toJson(secrets) }}
         run: echo "$GH_QUIET"
-
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "runner.os: ${{ runner.os }}"
-      #     echo "runner.arch: ${{ runner.arch }}"
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
   # ===========================================================================
   # HF Repos.
@@ -163,7 +162,6 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      api_token: ${{ needs.environment-setup.outputs.api_token }}
 
   # ===========================================================================
   # Granite Instruct
@@ -210,7 +208,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   bvt-instruct-quantized-gguf-models:
     if: ${{ false }}
@@ -232,7 +231,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
@@ -250,7 +250,8 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # ===========================================================================
   # Granite Vision
