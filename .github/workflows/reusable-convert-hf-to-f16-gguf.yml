@@ -8,6 +8,8 @@ on:
     secrets:
       hf_token:
         required: true
+      ibm_granite_token:
+        required: true
     inputs:
       enable_llm_jobs:
         type: boolean
@@ -184,7 +186,7 @@ jobs:
     # TODO: need a "source" and "target" HF_TOKEN
     - name: download-model-snapshot
       run: |
-        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
+        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.ibm_granite_token}}
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
