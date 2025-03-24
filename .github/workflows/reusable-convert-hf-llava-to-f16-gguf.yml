@@ -188,6 +188,8 @@ jobs:
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/examples/llava/requirements.txt
+        pip uninstall --yes transformers
+        pip install transformers==4.49.0
         pip list
 
     # TODO: need a "source" and "target" HF_TOKEN
