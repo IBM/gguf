@@ -1,6 +1,6 @@
-# This workflow 
+# This workflow
 # - Downloads the source HF (safetensors) llava model from the Hugging Face hub.
-# - Separates the "vision" portion of a llava (granite vision) model from HF (in safetensors format) 
+# - Separates the "vision" portion of a llava (granite vision) model from HF (in safetensors format)
 # - Converts the vision (projector) model to an f16 GGUF format vision encoder model.
 # - Uploads the f16 vision encoder model to Hugging Face Hub for the 'repo_id' (from the build matrix).
 # - Uses HF Transformers to save just the LLM portion of the llava model to an f16 GGUF
@@ -11,45 +11,50 @@ name: convert-hf-llava-to-f16-gguf-reusable
 
 on:
   workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      ibm_granite_token:
+        required: true
     inputs:
       enable_vision_jobs:
         type: boolean
-        required: false        
-        default: false       
+        required: false
+        default: false
       repo_id:
         type: string
-        required: true         
+        required: true
       hf_collection_config:
-        type: string        
+        type: string
         required: true
       target_repo_owner:
-        type: string        
+        type: string
         required: true
       target_repo_name_ext:
-        type: string          
-        required: true      
+        type: string
+        required: true
       debug:
         type: boolean
-        required: true        
-        default: false   
+        required: true
+        default: false
       trace:
         type: boolean
-        required: true        
-        default: false                              
+        required: true
+        default: false
 
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model  
-  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"  
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   VISION_CONFIG: resources/json/granite-3.2/vision_config.json
   LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
 
-jobs:  
+jobs:
   convert-f16:
-    runs-on: macos-latest    
+    runs-on: macos-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v4
@@ -57,21 +62,21 @@ jobs:
     # - name: Dump GitHub context
     #   env:
     #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT" 
+    #   run: echo "$GH_CONTEXT"
 
     # - name: Dump GitHub quiet
     #   env:
     #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"      
+    #   run: echo "$GH_QUIET"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: |
-        echo "$GITHUB_INPUTS"  
+        echo "$GITHUB_INPUTS"
         echo "==============="
         printenv | sort
-        echo "==============="   
+        echo "==============="
         echo "enable_vision_jobs=${{inputs.enable_vision_jobs}}" >> $GITHUB_ENV
 
     - name: is-enable_vision_jobs
@@ -83,14 +88,14 @@ jobs:
         fi
 
     - run: |
-        echo "[INFO] github.env:"   
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"                 
-        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
@@ -100,13 +105,13 @@ jobs:
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
-        echo "inputs.repo_id: ${{ inputs.repo_id }}"    
-        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"          
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"      
-        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"          
-        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"                         
+        echo "inputs.repo_id: ${{ inputs.repo_id }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"    
+    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
     - name: create-aliases
       if: runner.os == 'macOS'
@@ -126,30 +131,30 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |       
+      run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV         
-        echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV  
+        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+        echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV
         echo "LLM_EXPORT_PATH=$PWD/granite_vision_llm" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-1
-      run: |    
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "LOCAL_VISUAL_GGUF_F16=${{env.ENCODER_PATH}}/mmproj-model-f16.gguf" >> $GITHUB_ENV
         echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
 
     - name: verify-github-env
-      run: |               
+      run: |
         echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME" 
+        echo "REPO_NAME=$REPO_NAME"
         echo "LOCAL_MODEL_PATH=$LOCAL_MODEL_PATH"
         echo "ENCODER_PATH=$ENCODER_PATH"
-        echo "TARGET_REPO_ID=$TARGET_REPO_ID"        
+        echo "TARGET_REPO_ID=$TARGET_REPO_ID"
         echo "LOCAL_VISUAL_GGUF_F16=$LOCAL_VISUAL_GGUF_F16"
-        echo "BASE_FNAME_F16_GGUF=$BASE_FNAME_F16_GGUF"  
-        echo "BASE_FNAME_MMPROJ_F16_GGUF=$BASE_FNAME_MMPROJ_F16_GGUF"              
+        echo "BASE_FNAME_F16_GGUF=$BASE_FNAME_F16_GGUF"
+        echo "BASE_FNAME_MMPROJ_F16_GGUF=$BASE_FNAME_MMPROJ_F16_GGUF"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -177,33 +182,33 @@ jobs:
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
- 
+
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/examples/llava/requirements.txt
-        pip list      
+        pip list
 
-    # TODO: need a "source" and "target" HF_TOKEN    
+    # TODO: need a "source" and "target" HF_TOKEN
     - name: download-model-snapshot
-      run: |                         
-        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
+      run: |
+        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.ibm_granite_token}}
         find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
       if: inputs.debug == true
-      run: |    
-        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"    
+      run: |
+        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
-        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"  
-    
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
+
     - name: separate-clip-and-projector-tensors
-      run: | 
+      run: |
         echo "Separating CLIP and projector tensors... (llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }})"
         python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
-        ls -al ${{ env.LOCAL_MODEL_PATH }} 
-      
+        ls -al ${{ env.LOCAL_MODEL_PATH }}
+
     - name: validate-clip-and-projector-tensors
       run: |
         python ./scripts/torch_llava_validate_tensors.py ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
@@ -212,7 +217,7 @@ jobs:
     - name: convert-image-encoder-to-gguf
       run: |
         mkdir ${{ env.ENCODER_PATH }}
-        cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector      
+        cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.ENCODER_PATH }}/pytorch_model.bin
         cp ./resources/json/granite-3.2/vision_config.json ${{ env.ENCODER_PATH }}/config.json
         python ./llama.cpp/examples/llava/convert_image_encoder_to_gguf.py \
@@ -222,42 +227,41 @@ jobs:
           --clip-model-is-vision \
           --clip-model-is-siglip \
           --image-mean 0.5 0.5 0.5 --image-std 0.5 0.5 0.5
-        ls -al ${{ env.ENCODER_PATH }} 
-    
-    - name: find-gguf-files-1
-      if: inputs.debug == true 
-      run: |                      
-        find . -name \*.gguf -type f   
-        echo "--------------------"           
+        ls -al ${{ env.ENCODER_PATH }}
 
-    - name: upload-mmproj-f16-gguf-to-target-repo 
-      run: |                 
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
+    - name: find-gguf-files-1
+      if: inputs.debug == true
+      run: |
+        find . -name \*.gguf -type f
+        echo "--------------------"
+
+    - name: upload-mmproj-f16-gguf-to-target-repo
+      run: |
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
         echo "LOCAL_VISUAL_GGUF_F16=${{env.LOCAL_VISUAL_GGUF_F16}}"
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}         
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
     - name: separate-llm-from-vision-model
       run: |
-        echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"  
-        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"    
+        echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"
+        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
-        ls -al ${{ env.LLM_EXPORT_PATH }}   
-        
+        ls -al ${{ env.LLM_EXPORT_PATH }}
+
     - name: convert-vision-model-llm-to-gguf-f16
-      run: |  
-        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"    
+      run: |
+        echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LLM_EXPORT_PATH }} --outfile ${{ env.BASE_FNAME_F16_GGUF }} --verbose
-        ls -al *.gguf      
-        
+        ls -al *.gguf
+
     - name: find-gguf-files-2
-      if: inputs.debug == true 
-      run: |                     
-        find . -name \*.gguf -type f   
-        echo "--------------------"          
-        
-    - name: upload-vision-llm-f16-gguf-to-target-repo 
-      run: |                 
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"   
-        echo "BASE_FNAME_F16_GGUF=${{env.BASE_FNAME_F16_GGUF}}" 
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_F16_GGUF}} ${{secrets.HF_TOKEN}} ${{github.workflow_ref}} ${{github.run_id}}       
-        
+      if: inputs.debug == true
+      run: |
+        find . -name \*.gguf -type f
+        echo "--------------------"
+
+    - name: upload-vision-llm-f16-gguf-to-target-repo
+      run: |
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
+        echo "BASE_FNAME_F16_GGUF=${{env.BASE_FNAME_F16_GGUF}}"
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_F16_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}

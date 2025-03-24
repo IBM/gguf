@@ -1,45 +1,48 @@
-# This workflow runs Build Verification Tests (BVT) on the quantized models 
-# using llama.cpp utilities. 
+# This workflow runs Build Verification Tests (BVT) on the quantized models
+# using llama.cpp utilities.
 name: bvt-hf-llava-quantized-models-gguf
 
 on:
-  workflow_dispatch:   
+  workflow_dispatch:
   workflow_call:
+    secrets:
+      hf_token:
+        required: true
     inputs:
       enable_vision_jobs:
         type: boolean
-        required: false        
-        default: false        
+        required: false
+        default: false
       repo_id:
         type: string
-        required: true   
+        required: true
       quantization:
         type: string
-        required: true       
+        required: true
       target_repo_owner:
-        type: string        
+        type: string
         required: true
       target_repo_name_ext:
-        type: string          
-        required: true      
+        type: string
+        required: true
       debug:
         type: boolean
-        required: true        
-        default: false    
+        required: true
+        default: false
       trace:
         type: boolean
-        required: false        
-        default: false         
+        required: false
+        default: false
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"  
+  EXT_NAME_F16: "-f16.gguf"
   LLAMA_CLI_RESPONSE_FILE: response.txt
-  LLAMA_CLI_STDOUT_FILE: output.txt  
+  LLAMA_CLI_STDOUT_FILE: output.txt
   LLAMA_CLI_STDERR_FILE: error.txt
-  LLAMA_REQUEST_TEMP: 0  
+  LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
   LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
@@ -49,7 +52,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   TEST_LLAMA_CLI: true
-  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model   
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
 
 jobs:
   build:
@@ -59,25 +62,25 @@ jobs:
     - uses: actions/checkout@v4
     - name: confirm-environment
       run: |
-        echo "[INFO] github.env:"   
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"       
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"         
-        echo "[INFO] >> event_type: '${{ github.event_type }}'" 
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"          
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     # - name: Dump GitHub context
     #   env:
     #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"   
+    #   run: echo "$GH_CONTEXT"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"                              
+      run: echo "$GITHUB_INPUTS"
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -89,7 +92,7 @@ jobs:
     - name: install-dependencies
       run: |
         python -m pip install -r ./requirements.txt
-        pip list  
+        pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
@@ -97,75 +100,75 @@ jobs:
     # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
     - name: set-github-env
       id: set_github_env
-      run: |       
+      run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-    
+
     - name: set-derivative-env-vars-1
-      run: |   
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV         
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV        
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
-      run: | 
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV         
-    
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV
+
     - name: set-derivative-env-vars-3
-      run: |         
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV                 
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV                     
+      run: |
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
-      run: |   
-        echo "================== Derivative Environment Variables 1 =================="    
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"                 
-        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})" 
-        echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})" 
-        echo "================== Derivative Environment Variables 2 ==================" 
-        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"           
-        echo "================== Derivative Environment Variables 3 =================="              
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"      
-  
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 3 =================="
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})   
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
           echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
           exit 2
-        else 
+        else
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
           echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
-        fi                
-         
+        fi
+
     - name: download-quantized-llm-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
-      run: |    
-        echo "Downloading model: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."      
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf   
-        
+      run: |
+        echo "Downloading model: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+
     - name: download-mmproj-gguf-hf-hub-download
-      run: |    
-        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."      
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.HF_TOKEN}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf          
+      run: |
+        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
     - name: verify-downloaded-files
-      if: env.DEBUG == 'true' && runner.os == 'macOS'  
-      run: |                    
-        find . -name \*.gguf -type f    
-        find . -name \*.jpg -type f                   
-     
+      if: env.DEBUG == 'true' && runner.os == 'macOS'
+      run: |
+        find . -name \*.gguf -type f
+        find . -name \*.jpg -type f
+
     - name: test-llama-llava-cli
       timeout-minutes: 10
       continue-on-error: true
-      run: |  
+      run: |
         echo "invoking llama-llava-cli to test inference..."
-        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"        
-        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" 
+        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
@@ -181,12 +184,12 @@ jobs:
         cat ${{env.LLAMA_CLI_STDOUT_FILE}}
 
     - name: test-llama-cli-response-with-regex
-      if: env.TEST_LLAMA_CLI == 'true'      
+      if: env.TEST_LLAMA_CLI == 'true'
       run: |
         matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_STDOUT_FILE}})
         echo "matched: '$matched'"
         if [[ "$exists" == "False" ]]; then
-          echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response." 
+          echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response."
           exit 1
         else
           echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-llava-cli response."

@@ -5,6 +5,8 @@ name: bvt-hf-guardian-models-gguf
 on:
   workflow_dispatch:
   workflow_call:
+    hf_token:
+      required: true
     inputs:
       enable_guardian_jobs:
         type: boolean
@@ -133,7 +135,7 @@ jobs:
 
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}})
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
         echo "exists: '$exists'"
         if [[ "$exists" == "False" ]]; then
           echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
@@ -149,7 +151,7 @@ jobs:
       run: |
         echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
