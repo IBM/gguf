@@ -75,6 +75,7 @@ jobs:
       target_llava_quantizations: "${{ steps.set-vars.outputs.target_llava_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
+    # Path: workflows/reusable-create-hf-repos.yml
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -118,6 +119,13 @@ jobs:
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
 
+      # - name: confirm-environment
+      #   run: |
+      #     uname -a
+      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+
       # - name: Dump runner context
       #   env:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
@@ -128,14 +136,10 @@ jobs:
       #     GH_CONTEXT: ${{ toJson(github) }}
       #   run: echo "$GH_CONTEXT"
 
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "runner.os: ${{ runner.os }}"
-      #     echo "runner.arch: ${{ runner.arch }}"
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+      - name: Dump GitHub quiet
+        env:
+          GH_QUIET: ${{ toJson(secrets) }}
+        run: echo "$GH_QUIET"
 
   # ===========================================================================
   # HF Repos.
@@ -151,7 +155,8 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Instruct
@@ -174,7 +179,9 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-upload-gguf:
     needs: [ environment-setup, convert-hf-to-f16-gguf ]
@@ -196,7 +203,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   bvt-instruct-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
@@ -217,7 +225,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
@@ -234,7 +243,8 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Vision
@@ -257,7 +267,9 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
@@ -279,7 +291,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
@@ -300,7 +313,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   vision-create-hf-collections:
@@ -317,7 +331,8 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Guardian
@@ -340,7 +355,9 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
@@ -362,7 +379,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
@@ -383,7 +401,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   guardian-create-hf-collections:
@@ -400,4 +419,5 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-    secrets: inherit
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
