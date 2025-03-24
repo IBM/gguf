@@ -143,20 +143,19 @@ jobs:
       #     GH_CONTEXT: ${{ toJson(github) }}
       #   run: echo "$GH_CONTEXT"
 
-      - name: Dump GitHub quiet
-        env:
-          GH_QUIET: ${{ toJson(secrets) }}
-        run: echo "$GH_QUIET"
+      # - name: Dump GitHub quiet
+      #   env:
+      #     GH_QUIET: ${{ toJson(secrets) }}
+      #   run: echo "$GH_QUIET"
 
   # ===========================================================================
-  # HF Repos.
+  # Granite Instruct
   # ===========================================================================
-
-  # TODO: create jobs for each model family (i.e., instruct, llava, guardian)
-  create-hf-repos:
+  instruct-create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
+      granite_family: "instruct"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -165,11 +164,8 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  # ===========================================================================
-  # Granite Instruct
-  # ===========================================================================
   convert-hf-to-f16-gguf:
-    needs: [ environment-setup, create-hf-repos ]
+    needs: [ environment-setup, instruct-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -256,8 +252,21 @@ jobs:
   # ===========================================================================
   # Granite Vision
   # ===========================================================================
+  vision-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      granite_family: "instruct"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
   convert-hf-llava-to-f16-gguf:
-    needs: [ environment-setup, create-hf-repos ]
+    needs: [ environment-setup, vision-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -344,8 +353,21 @@ jobs:
   # ===========================================================================
   # Granite Guardian
   # ===========================================================================
+  guardian-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      granite_family: "instruct"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
   guardian-convert-hf-to-f16-gguf:
-    needs: [ environment-setup, create-hf-repos ]
+    needs: [ environment-setup, guardian-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write

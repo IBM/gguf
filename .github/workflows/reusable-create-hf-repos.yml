@@ -8,6 +8,9 @@ on:
       api_token:
         required: false
     inputs:
+      granite_family:
+        type: string
+        required: true
       hf_collection_config:
         type: string
         required: true
