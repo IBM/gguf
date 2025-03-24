@@ -64,16 +64,19 @@ jobs:
     #     GH_QUIET: ${{ toJson(secrets) }}
     #   run: echo "$GH_QUIET"
 
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: |
-        echo "$GITHUB_INPUTS"
-        echo "==============="
-        printenv | sort
-        echo "==============="
-      # echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
-      # echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
+    # - name: Dump GitHub inputs
+    #   env:
+    #     GITHUB_INPUTS: ${{ toJson(inputs) }}
+    #   run: |
+    #     echo "$GITHUB_INPUTS"
+    #     echo "==============="
+    #     printenv | sort
+    #     echo "==============="
+
+    # - name: Alternative way to get env. vars.
+    #   run: |
+    #     echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+    #     echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
 
     # - name: is-enable_llm_jobs
     #   run: |
