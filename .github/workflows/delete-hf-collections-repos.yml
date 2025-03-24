@@ -1,15 +1,16 @@
-name: g3.1-hf-delete-collections-repos
+name: delete-hf-collections-repos
 
 on:
-  workflow_dispatch:      
- 
+  workflow_dispatch:
+
 permissions:
  contents: write
  packages: write
 
+# Note: by default, this workflow is configured to delete "test" repos. and collections
 env:
-  TARGET_REPO_OWNER: mrutkows # ibm-research  
-  COLLECTION_CONFIG: "resources/json/granite-3.1/hf_collection_mapping_test_ibm_research.json" # "resources/json/granite-3.1/hf_collection_mapping_ibm_research.json"
+  TARGET_REPO_OWNER: mrutkows # ibm-research
+  COLLECTION_CONFIG: resources/json/granite-3.2/hf_collection_mapping_test_private.json
 
 jobs:
   delete-collections:
@@ -28,23 +29,23 @@ jobs:
     - name: Dump GitHub context
       env:
         GH_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GH_CONTEXT"         
+      run: echo "$GH_CONTEXT"
 
     - name: confirm-environment
       run: |
         uname -a
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
-        echo "github.workspace: ${{ github.workspace}}"        
-        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"        
-        echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"                 
+        echo "github.workspace: ${{ github.workspace}}"
+        echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+        echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
- 
+
     # primarily huggingface_hub
     - name: install-dependencies
       run: |
