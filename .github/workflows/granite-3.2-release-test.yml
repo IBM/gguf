@@ -15,8 +15,8 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LLM_JOBS: false
-  ENABLE_VISION_JOBS: true
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_VISION_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   SOURCE_REPOS: "[
     'ibm-granite/granite-3.2-2b-instruct',
     'ibm-granite/granite-3.2-8b-instruct'
