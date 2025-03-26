@@ -1,5 +1,4 @@
-import os
-import sys
+import argparse
 import re
 
 def test_regex_match(regex_pattern, test_string) -> bool:
@@ -7,7 +6,7 @@ def test_regex_match(regex_pattern, test_string) -> bool:
     Tests if a regex pattern matches a given text.
 
     Args:
-        regex_pattern (str): The regex pattern to search for (Use: r"raw string").
+        regex_pattern (str): The regex pattern to search for (Note: can use: r"raw string").
         test_string (str): The text to search within.
 
     Returns:
@@ -16,22 +15,33 @@ def test_regex_match(regex_pattern, test_string) -> bool:
     match = re.search(regex_pattern, test_string)
     return bool(match)
 
-if __name__ == "__main__":   
-    arg_len = len(sys.argv)
-    if arg_len < 3:   
-        script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <regex_pattern> <test_string>")
-        print(f"Actual: sys.argv[]: '{sys.argv}'")
-        sys.exit(1)
-       
-    # Parse input arguments into named params.   
-    fx_name = sys.argv[0]   
-    regex_pattern = sys.argv[1]
-    test_string = sys.argv[2]   
-     
-    # invoke fx
-    # NOTE: This script MUST only print True | False to stdout.
-    matched = test_regex_match(regex_pattern=regex_pattern, test_string=test_string)
+if __name__ == "__main__":
+    """
+    Tests if a regex pattern matches a given text.
 
-    # Return result
+    Args:
+        regex-pattern (str): The regex pattern to search for.
+        text (str): The text to search within.
+
+    Returns:
+        bool: True if the pattern is found in the text, False otherwise.
+    """
+    parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
+    parser.add_argument("--regex-pattern", "-r", required=True, help="The regex pattern to search for")
+    parser.add_argument("--text", "-t", required=True, help="The input text to search within")
+    parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
+    parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
+
+    # try:
+    args = parser.parse_args()
+    # NOTE: This script MUST only print True | False to stdout.
+    matched = test_regex_match(regex_pattern=args.regex_pattern, test_string=args.text)
     print(matched)
+    # except SystemExit as se:
+    #     print(f"Usage: {parser.format_usage()}")
+    #     print("False")
+    #     exit(se)
+    # except Exception as e:
+    #     print(f"Error: {e}")
+    #     print(f"Usage: {parser.format_usage()}")
+    #     exit(2)
