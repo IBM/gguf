@@ -42,6 +42,7 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
 
 if __name__ == "__main__":
     try:
+        # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
@@ -50,7 +51,6 @@ if __name__ == "__main__":
         parser.add_argument('hf_token', help='HF access token')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
-
 
         # parse argv[] values
         args = parser.parse_args()
