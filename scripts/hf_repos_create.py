@@ -60,6 +60,7 @@ if __name__ == "__main__":
     # hf_token = sys.argv[5]
 
     try:
+        fx_name = sys.argv[0]
         private = sys.argv[4]
         # private needs to be a boolean
         if type(private) is str:
@@ -79,7 +80,7 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
         # Print input variables being used for this run
-        print(f">> {args.prog}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
+        print(f">> {fx_name}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
 
         # private needs to be a boolean
         if type(args.private) is str:
