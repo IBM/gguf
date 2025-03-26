@@ -60,15 +60,15 @@ if __name__ == "__main__":
     # hf_token = sys.argv[5]
 
     try:
-        fx_name = sys.argv[0]
-        private = sys.argv[4]
-        # private needs to be a boolean
-        if type(private) is str:
-            print(f"[WARNING] private='{private}' is a string. Converting to boolean...")
-            if private.lower() == "true":
-                private = True
-            else:
-                private = False
+        # fx_name = sys.argv[0]
+        # private = sys.argv[4]
+        # # private needs to be a boolean
+        # if type(private) is str:
+        #     print(f"[WARNING] private='{private}' is a string. Converting to boolean...")
+        #     if private.lower() == "true":
+        #         private = True
+        #     else:
+        #         private = False
 
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
@@ -80,12 +80,12 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
         # Print input variables being used for this run
-        print(f">> {fx_name}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
+        print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
 
         # private needs to be a boolean
         if type(args.private) is str:
             print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
-            if private.lower() == "true":
+            if args.private.lower() == "true":
                 private = True
             else:
                 private = False
