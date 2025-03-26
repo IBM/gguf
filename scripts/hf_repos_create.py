@@ -41,20 +41,13 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
 
 
 if __name__ == "__main__":
-    arg_len = len(sys.argv)
-    if arg_len < 5:
-        script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
-        print(f"Actual: sys.argv[]: '{sys.argv}'")
-        # Exit with an error code
-        sys.exit(1)
-
-    parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-    parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
-    parser.add_argument("collection_config", help="The input text to search within")
-    parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
-    parser.add_argument('private', default=True, action='store_true', help='Create the repo. as private')
-    parser.add_argument('hf_token', help='HF access token')
+    # arg_len = len(sys.argv)
+    # if arg_len < 5:
+    #     script_name = os.path.basename(__file__)
+    #     print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
+    #     print(f"Actual: sys.argv[]: '{sys.argv}'")
+    #     # Exit with an error code
+    #     sys.exit(1)
 
     # # Parse input arguments into named params.
     # fx_name = sys.argv[0]
@@ -67,17 +60,26 @@ if __name__ == "__main__":
     # hf_token = sys.argv[5]
 
     try:
-        args = parser.parse_args()
-        # Print input variables being used for this run
-        print(f">> {args.prog}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
-
+        private = sys.argv[4]
         # private needs to be a boolean
-        if type(args.private) is str:
+        if type(private) is str:
             print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
-            if args.private.lower() == "true":
+            if private.lower() == "true":
                 private = True
             else:
                 private = False
+
+        parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
+        parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
+        parser.add_argument("collection_config", help="The input text to search within")
+        parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
+        parser.add_argument('private', default="True", help='Create the repo. as private')
+        parser.add_argument('hf_token', help='HF access token')
+
+        args = parser.parse_args()
+
+        # Print input variables being used for this run
+        print(f">> {args.prog}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
 
         # invoke fx
         import json
