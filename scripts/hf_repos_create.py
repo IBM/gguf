@@ -81,6 +81,14 @@ if __name__ == "__main__":
         # Print input variables being used for this run
         print(f">> {args.prog}: owner='{args.target_owner}', config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}'")
 
+        # private needs to be a boolean
+        if type(args.private) is str:
+            print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
+            if private.lower() == "true":
+                private = True
+            else:
+                private = False
+
         # invoke fx
         import json
         with open(args.collection_config, "r") as file:
