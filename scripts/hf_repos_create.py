@@ -63,7 +63,7 @@ if __name__ == "__main__":
         private = sys.argv[4]
         # private needs to be a boolean
         if type(private) is str:
-            print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
+            print(f"[WARNING] private='{private}' is a string. Converting to boolean...")
             if private.lower() == "true":
                 private = True
             else:
