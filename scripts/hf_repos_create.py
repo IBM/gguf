@@ -50,11 +50,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-    parser.add_argument("target_owner", required=True, help="Target HF organization owner for repo. create")
-    parser.add_argument("collection_config", required=True, help="The input text to search within")
-    parser.add_argument('family', default=True, help='Granite family (i.e., instruct|vision|guardian)')
+    parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
+    parser.add_argument("collection_config", help="The input text to search within")
+    parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
     parser.add_argument('private', default=True, action='store_true', help='Create the repo. as private')
-    parser.add_argument('hf_token', default=True, help='HF access token')
+    parser.add_argument('hf_token', help='HF access token')
 
     # # Parse input arguments into named params.
     # fx_name = sys.argv[0]
