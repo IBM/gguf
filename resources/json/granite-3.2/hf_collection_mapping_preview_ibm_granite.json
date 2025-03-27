@@ -28,6 +28,16 @@
                     "type": "model",
                     "repo_id": "ibm-granite/granite-guardian-3.2-5b-GGUF",
                     "family": "guardian"
+                },
+                {
+                    "type": "model",
+                    "repo_id": "ibm-granite/granite-embedding-30m-sparse-GGUF",
+                    "family": "embedding"
+                },
+                {
+                    "type": "model",
+                    "repo_id": "ibm-granite/granite-embedding-30m-english-GGUF",
+                    "family": "embedding"
                 }
             ]
         }
