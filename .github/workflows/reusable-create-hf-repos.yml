@@ -16,6 +16,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_embedding_jobs:
+        type: boolean
+        required: false
+        default: false
       enable_vision_jobs:
         type: boolean
         required: false
@@ -44,7 +48,7 @@ on:
 jobs:
   reusable_create_hf_repos:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true }}
+    if: ${{ inputs.enable_llm_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs ==true }}
     steps:
     - uses: actions/checkout@v4
     - run: |

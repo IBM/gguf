@@ -19,6 +19,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_embedding_jobs:
+        type: boolean
+        required: false
+        default: false
       repo_id:
         type: string
         required: true
@@ -50,7 +54,7 @@ env:
 jobs:
   convert-f16:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true  || inputs.enable_guardian_jobs == true }}
+    if: ${{ inputs.enable_llm_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
     steps:
     - uses: actions/checkout@v4
 
