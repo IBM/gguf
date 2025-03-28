@@ -31,12 +31,22 @@
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-granite/granite-embedding-30m-sparse-GGUF",
+                    "repo_id": "ibm-granite/granite-embedding-30m-english-GGUF",
                     "family": "embedding"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-granite/granite-embedding-30m-english-GGUF",
+                    "repo_id": "ibm-granite/granite-embedding-125m-english-GGUF",
+                    "family": "embedding"
+                },
+                {
+                    "type": "model",
+                    "repo_id": "ibm-granite/granite-embedding-107m-multilingual-GGUF",
+                    "family": "embedding"
+                },
+                {
+                    "type": "model",
+                    "repo_id": "ibm-granite/granite-embedding-278m-multilingual-GGUF",
                     "family": "embedding"
                 }
             ]
