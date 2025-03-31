@@ -6,48 +6,48 @@
             "items": [
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-3.2-2b-instruct-GGUF",
-                    "family": "instruct"
+                    "family": "instruct",
+                    "repo_name": "granite-3.2-2b-instruct"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-3.2-8b-instruct-GGUF",
-                    "family": "instruct"
+                    "family": "instruct",
+                    "repo_name": "granite-3.2-8b-instruct"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-vision-3.2-2b-GGUF",
-                    "family": "vision"
+                    "family": "vision",
+                    "repo_name": "granite-vision-3.2-2b"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-guardian-3.2-3b-a800m-GGUF",
-                    "family": "guardian"
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.2-3b-a800m"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-guardian-3.2-5b-GGUF",
-                    "family": "guardian"
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.2-5b"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-embedding-30m-english-GGUF",
-                    "family": "embedding"
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-30m-english"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-embedding-125m-english-GGUF",
-                    "family": "embedding"
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-125m-english"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-embedding-107m-multilingual-GGUF",
-                    "family": "embedding"
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-107m-multilingual"
                 },
                 {
                     "type": "model",
-                    "repo_id": "ibm-research/granite-embedding-278m-multilingual-GGUF",
-                    "family": "embedding"
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-278m-multilingual"
                 }
             ]
         }
