@@ -53,6 +53,7 @@ if __name__ == "__main__":
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
         parser.add_argument('hf_token', help='HF access token')
+        parser.add_argument('--repo-ext', help='optional repo. name extenstion (e.g., \'-GGUF\')')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
 
@@ -98,6 +99,9 @@ if __name__ == "__main__":
                 item_family = item_defn["family"]
 
                 repo_id_2 = "/".join([args.target_owner, repo_name])
+
+                if args.repo_ext is not None:
+                    repo_id_2 += args.repo_ext
 
                 if args.family == item_family:
                     repo_org, repo_name = os.path.split(repo_id)
