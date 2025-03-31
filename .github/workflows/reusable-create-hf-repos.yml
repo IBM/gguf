@@ -91,4 +91,5 @@ jobs:
 
     - name: create-hf-repos
       run: |
+        echo ${{ type(inputs.target_repo_private) }}
         python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }}

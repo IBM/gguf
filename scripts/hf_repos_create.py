@@ -39,12 +39,16 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
         return repo_url
     return None
 
+def test_empty_string(value:str):
+        if not value:
+            raise ValueError("Argument must not be an empty string")
+        return value
 
 if __name__ == "__main__":
     try:
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-        parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
+        parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
@@ -85,19 +89,25 @@ if __name__ == "__main__":
 
             # upload all models associated with the collection
             for item_defn in collection_items:
-                if( args.debug):
+                if(args.debug):
                     print(f"item_defn: '{item_defn}'")
+
                 item_type = item_defn["type"]
+                repo_name = item_defn["repo_name"]
                 repo_id = item_defn["repo_id"]
                 item_family = item_defn["family"]
+
+                repo_id_2 = "/".join([args.target_owner, repo_name])
+
                 if args.family == item_family:
                     repo_org, repo_name = os.path.split(repo_id)
                     if args.verbose:
+                        print(f"[INFO] Creating repo_id_2: repo_id: '{repo_id_2}'...")
                         print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
                         print(f"[INFO] Creating repo: repo_org: '{repo_org}', repo_name: '{repo_name}'...")
 
                     repoUrl = safe_create_repo_in_namespace(
-                        repo_id=repo_id,
+                        repo_id=repo_id_2,
                         private=private,
                         hf_token=args.hf_token,
                     )
