@@ -101,19 +101,16 @@ if __name__ == "__main__":
                 repo_id = item_defn["repo_id"]
                 item_family = item_defn["family"]
 
+                # construct the full HF repo. ID
                 repo_id = "/".join([args.target_owner, repo_name]) + args.ext
-
-                # if args.ext:
-                #     repo_id += args.ext
 
                 if args.family == item_family:
                     repo_org, repo_name = os.path.split(repo_id)
                     if args.verbose:
                         print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
-                        print(f"[INFO] Creating repo: repo_org: '{repo_org}', repo_name: '{repo_name}'...")
 
                     repoUrl = safe_create_repo_in_namespace(
-                        repo_id=repo_id_2,
+                        repo_id=repo_id,
                         private=private,
                         hf_token=args.hf_token,
                     )
