@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
     parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-    parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
+    parser.add_argument("target_owner", help="Target HF organization owner for repo. create")
     parser.add_argument("collection_config", help="The input text to search within")
     parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
     parser.add_argument('private', default="True", help='Create the repo. as private')
