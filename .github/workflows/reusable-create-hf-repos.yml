@@ -93,4 +93,4 @@ jobs:
       run: |
         echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
         echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
-        python ./scripts/hf_repos_create.py --repo-ext ${{ inputs.target_repo_name_ext }} ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }}
+        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --repo-ext "${{ inputs.target_repo_name_ext }}"
