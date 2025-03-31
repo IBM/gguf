@@ -104,7 +104,7 @@ if __name__ == "__main__":
                 repo_id_2 = "/".join([args.target_owner, repo_name])
 
                 if args.repo_ext:
-                    repo_id_2 += args.repo_ext
+                    repo_id_2 += ("-" + args.repo_ext)
 
                 if args.family == item_family:
                     repo_org, repo_name = os.path.split(repo_id)
