@@ -46,6 +46,9 @@ def test_empty_string(value:str):
 
 if __name__ == "__main__":
     try:
+
+        print(f"argv: {sys.argv}")
+
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
