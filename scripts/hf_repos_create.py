@@ -56,7 +56,7 @@ if __name__ == "__main__":
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
         parser.add_argument('hf_token', help='HF access token')
-        parser.add_argument('--repo-ext', help='optional repo. name extension (e.g., \'-GGUF\')')
+        parser.add_argument('--repo-ext', default="", help='optional repo. name extension (e.g., \'-GGUF\')')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
 
