@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
@@ -150,38 +151,57 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
 
 
 if __name__ == "__main__":
-    arg_len = len(sys.argv)
-    if arg_len < 5:
-        script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
-        print(f"Actual: sys.argv[]: '{sys.argv}'")
-        # Exit with an error code
-        sys.exit(1)
+    # print(f"argv: {sys.argv}")
 
-    # Parse input arguments into named params.
-    fx_name = sys.argv[0]
-    target_owner = sys.argv[1]
-    # TODO: "private should default to True (confirmed by "pre" tags);
-    # if workflow was started with a "release" tag, then change to False
-    collection_config = sys.argv[2]
-    family = sys.argv[3]
-    private = sys.argv[4]
-    hf_token = sys.argv[5]
+    # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
+    parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
+    parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
+    parser.add_argument("collection_config", help="The input text to search within")
+    parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
+    parser.add_argument('private', default="True", help='Create the repo. as private')
+    parser.add_argument('hf_token', help='HF access token')
+    parser.add_argument('-x', '--ext', type=str, default="", help='optional repo. name extension (e.g., \'-GGUF\')')
+    parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
+    parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
+
+    # parse argv[] values
+    args = parser.parse_args()
+
+    if(args.debug):
+        # Print input variables being used for this run
+        print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
+
+    # arg_len = len(sys.argv)
+    # if arg_len < 5:
+    #     script_name = os.path.basename(__file__)
+    #     print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
+    #     print(f"Actual: sys.argv[]: '{sys.argv}'")
+    #     # Exit with an error code
+    #     sys.exit(1)
+    # # Parse input arguments into named params.
+    # fx_name = sys.argv[0]
+    # target_owner = sys.argv[1]
+    # # TODO: "private should default to True (confirmed by "pre" tags);
+    # # if workflow was started with a "release" tag, then change to False
+    # collection_config = sys.argv[2]
+    # family = sys.argv[3]
+    # private = sys.argv[4]
+    # hf_token = sys.argv[5]
 
     # Print input variables being used for this run
-    print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', family='{family}', private='{private}' ({type(private)}), hf_token='{hf_token}'")
+    # print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', family='{family}', private='{private}' ({type(private)}), hf_token='{hf_token}'")
 
     # private needs to be a boolean
-    if type(private) is str:
-        print(f"[WARNING] private='{private}' is a string. Converting to boolean...")
-        if private.lower() == "true":
+    if type(args.private) is str:
+        print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
+        if args.private.lower() == "true":
             private = True
         else:
             private = False
 
     # invoke fx
     import json
-    with open(collection_config, "r") as file:
+    with open(args.collection_config, "r") as file:
         json_data = json.load(file)
         formatted_json = json.dumps(json_data, indent=4)
         print(formatted_json)
@@ -200,32 +220,37 @@ if __name__ == "__main__":
         if len(collection_desc) > HF_COLLECTION_DESC_MAX_LEN:
             print(f"[ERROR] title='{collection_desc}' exceeds {HF_COLLECTION_DESC_MAX_LEN} character limit.")
             sys.exit(2)
+
         # Create the actual collection
         collection = safe_create_collection_in_namespace(
-            hf_owner=target_owner,
+            hf_owner=args.target_owner,
             title=collection_title,
             description=collection_desc,
-            hf_token=hf_token,
+            hf_token=args.hf_token,
         )
         # Fail fast if the collection was not created
         if collection is None:
             # Something went wrong creating
-            print(f"[ERROR] Collection '{collection_title}' not created in namespace '{target_owner}'")
+            print(f"[ERROR] Collection '{collection_title}' not created in namespace '{args.target_owner}'")
             sys.exit(1)
 
-        print(f"[INFO] Collection: '{collection}' created in namespace '{target_owner}'")
+        print(f"[INFO] Collection: '{collection}' created in namespace '{args.target_owner}'")
 
         # upload all models associated with the collection
         for item_defn in collection_items:
             item_type = item_defn["type"]
             repo_name = item_defn["repo_name"]
             item_family = item_defn["family"]
-            if family == item_family:
+
+            # construct the full HF repo. ID
+            repo_id = "/".join([args.target_owner, repo_name]) + args.ext
+
+            if args.family == item_family:
                 print(f"[INFO] >> Adding item: '{item_defn}'")
                 add_update_collection_item(
                     collection_slug=collection.slug,
-                    repo_id=repo_name+"-GGUF",
-                    hf_token=hf_token)
+                    repo_id=repo_id,
+                    hf_token=args.hf_token)
 
     # Exit successfully
     sys.exit(0)

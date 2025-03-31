@@ -46,8 +46,7 @@ def test_empty_string(value:str):
 
 if __name__ == "__main__":
     try:
-
-        print(f"argv: {sys.argv}")
+        # print(f"argv: {sys.argv}")
 
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
@@ -63,8 +62,9 @@ if __name__ == "__main__":
         # parse argv[] values
         args = parser.parse_args()
 
-        # Print input variables being used for this run
-        print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
+        if(args.debug):
+            # Print input variables being used for this run
+            print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
         # private needs to be a boolean
         if type(args.private) is str:

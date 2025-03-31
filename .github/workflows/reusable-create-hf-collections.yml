@@ -91,4 +91,4 @@ jobs:
     # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
     - name: create-hf-collections
       run: |
-        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} ${{inputs.granite_family}} ${{ inputs.target_collection_private }} ${{ secrets.hf_token }}
+        python ./scripts/hf_collections_create.py ${{inputs.target_repo_owner}} ${{inputs.hf_collection_config}} ${{inputs.granite_family}} ${{ inputs.target_collection_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}"
