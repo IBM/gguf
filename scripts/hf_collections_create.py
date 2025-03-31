@@ -218,13 +218,13 @@ if __name__ == "__main__":
         # upload all models associated with the collection
         for item_defn in collection_items:
             item_type = item_defn["type"]
-            repo_id = item_defn["repo_id"]
+            repo_name = item_defn["repo_name"]
             item_family = item_defn["family"]
             if family == item_family:
                 print(f"[INFO] >> Adding item: '{item_defn}'")
                 add_update_collection_item(
                     collection_slug=collection.slug,
-                    repo_id=repo_id+"-GGUF",
+                    repo_id=repo_name+"-GGUF",
                     hf_token=hf_token)
 
     # Exit successfully
