@@ -224,7 +224,7 @@ if __name__ == "__main__":
                 print(f"[INFO] >> Adding item: '{item_defn}'")
                 add_update_collection_item(
                     collection_slug=collection.slug,
-                    repo_id=repo_id,
+                    repo_id=repo_id+"-GGUF",
                     hf_token=hf_token)
 
     # Exit successfully
