@@ -216,7 +216,101 @@ Each release type has a collection mapping file that defines which models reposi
 
 **Note**: The version portion of the file path will vary depending on IBM Granite release version (e.g., `granite-3.2`).
 
+###### What to update
+
+The JSON collection mapping files have the following structure using the "Public" release as an example:
+
+```json
+{
+    "collections": [
+        {
+            "title": "Granite 3.2 Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite 3.2 models. Licensed under the Apache 2.0 license.",
+            "items": [
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.2-2b-instruct"
+                },
+                ...
+                {
+                    "type": "model",
+                    "family": "vision",
+                    "repo_name": "granite-vision-3.2-2b"
+                },
+                ...
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.2-3b-a800m"
+                },
+                ...
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-30m-english"
+                },
+                ...
+            ]
+        }
+    ]
+}
+```
+
+Simple add a new object under the `items` array for each new IBM Granite repo. you want added to the corresponding (GGUF) collection.
+
+Currently, the only HF item type supported is `model` and valid families (which have supported workflows) include: `instruct` (language), `vision`, `guardian` and `embedding`.
+
+**Note**: If you need to change the HF collection description, please know that *HF limits this string to **150 chars.** or less*.
+
+#### Release workflow files
+
+Each release type has a corresponding (parent, master) workflow that configures and controls which model family (i.e., `instruct` (language), `vision`, `guardian` and `embedding`) are executed for a given GitHub (tagged) release.
+
+For example, a `3.2` versioned release uses the following files which correspond to one of the release types (i.e., `Test`, `Preview` or `Public`):
+
+- **Test**: [.github/workflows/granite-3.2-release-test.yml](.github/workflows/granite-3.2-release-test.yml)
+- **Preview**: [.github/workflows/granite-3.2-release-preview-ibm-granite.yml](.github/workflows/granite-3.2-release-preview-ibm-granite.yml)
+- **Public**: [.github/workflows/granite-3.2-release-ibm-research.yml](.github/workflows/granite-3.2-release-ibm-research.yml)
+
+###### What to update
+
+The YAML GitHub workflow files have a few environment variables that may need to be updated to reflect which collections, models and quantizations should be included on the next, subsequent GitHub (tagged)release. Using the "Public" release YAML file as an example:
+
+```yaml
+env:
+  ENABLE_LLM_JOBS: false
+  ENABLE_VISION_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
+  SOURCE_INSTRUCT_REPOS: "[
+    'ibm-granite/granite-3.2-2b-instruct',
+    ...
+  ]"
+  TARGET_INSTRUCT_QUANTIZATIONS: "[
+    'Q2_K',
+    ...
+  ]"
+  SOURCE_GUARDIAN_REPOS: "[
+    'ibm-granite/granite-guardian-3.2-3b-a800m',
+    ...
+  ]"
+  TARGET_GUARDIAN_QUANTIZATIONS: "[
+    'Q4_K_M',
+    ...
+  ]"
+  SOURCE_VISION_REPOS: "[
+    'ibm-granite/granite-vision-3.2-2b'
+  ]"
+  TARGET_VISION_QUANTIZATIONS: "[
+    'Q4_K_M',
+    ...
+  ]"
+  ...
+  COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json"
+```
+
+**Note**: that the `COLLECTION_CONFIG` env. var. provides the relative path to the collection configuration file, which is located in the `resources/json` directory of the repository for the specific Granite release.
 
 ### Triggering a release
 
-This section contains the steps required to successfully "trigger" a release workflow.
+This section contains the steps required to successfully "trigger" a release workflow for one or more supported Granite models families (i.e., `instruct` (language), `vision`, `guardian` and `embedding`).

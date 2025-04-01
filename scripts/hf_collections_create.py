@@ -171,26 +171,6 @@ if __name__ == "__main__":
         # Print input variables being used for this run
         print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
-    # arg_len = len(sys.argv)
-    # if arg_len < 5:
-    #     script_name = os.path.basename(__file__)
-    #     print(f"Usage: python {script_name} <target_owner:str> <collection_config:str> <family:str> <private:bool> <hf_token:str>")
-    #     print(f"Actual: sys.argv[]: '{sys.argv}'")
-    #     # Exit with an error code
-    #     sys.exit(1)
-    # # Parse input arguments into named params.
-    # fx_name = sys.argv[0]
-    # target_owner = sys.argv[1]
-    # # TODO: "private should default to True (confirmed by "pre" tags);
-    # # if workflow was started with a "release" tag, then change to False
-    # collection_config = sys.argv[2]
-    # family = sys.argv[3]
-    # private = sys.argv[4]
-    # hf_token = sys.argv[5]
-
-    # Print input variables being used for this run
-    # print(f">> {fx_name}: owner='{target_owner}', config='{collection_config}', family='{family}', private='{private}' ({type(private)}), hf_token='{hf_token}'")
-
     # private needs to be a boolean
     if type(args.private) is str:
         print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
