@@ -175,3 +175,48 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - [Importing a model](https://github.com/ollama/ollama/blob/main/docs/import.md) - includes Safetensors, GGUF.
     - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
     - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
+
+---
+
+## Releasing GGUF model Conversions & Quantizations
+
+This repository uses GitHub workflows and actions to convert IBM Granite models hosted on Huggingface to GGUF format, quantize them, run build-verification tests on the resultant models and publish them to target GGUF collections in IBM owned Huggingface organizations (e.g., `ibm-research` and `ibm-granite`).
+
+### Types of releases
+
+There are 3 types of releases that can be performed on this repository:
+
+1. **Test** (private) - releases GGUF models to a test (or private) repo. on Huggingface.
+2. **Preview** (private) - releases GGUF models to a GGUF collection within the `ibm-granite` HF organization for time-limited access to select IBM partners (typically for pre-release testing and integration).
+3. **Public** - releases GGUF models to a public GGUF collection within the `ibm-research` HF organization for general use.
+
+**Note**: *The Huggingface (HF) term "private" means that repos. and collections created in the target HF organization are only visible to organization contributors and not visible (or hidden) from normal users.*
+
+### Configuring a release
+
+Prior to "triggering" release workflows, some files need to be configured depending on the release type.
+
+#### Github secrets
+
+Project maintainers for this repo. are able to access the secrets (tokens) that are made available to the CI/CD release workflows/actions:
+
+[https://github.com/IBM/gguf/settings/secrets/actions](https://github.com/IBM/gguf/settings/secrets/actions)
+
+Secrets are used to authenticate with Github and Huggingface (HF) and are already configured for the `ibm-granite` and `ibm-research` HF organizations for "preview" and "public" release types.
+
+For "test" (or private) builds, users can fork the repo. and add a repository secret named `HF_TOKEN_TEST` with a token (value) created on their test (personal, private) HF organization account with appropriate privileges to allow write access to repos. and collections.
+
+#### Collection mapping files (JSON)
+
+Each release type has a collection mapping file that defines which models repositories along with titles, descriptions and family designations. Family designations allow granular control over the which model families are included in a release which allows for "staggered" releases typically by model architecture.  These files are:
+
+- **Test**: [resources/json/granite-3.2/hf_collection_mapping_test_private.json](resources/json/granite-3.2/hf_collection_mapping_test_private.json)
+- **Preview**: [resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json](resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json)
+- **Public**: [resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json](resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json)
+
+**Note**: The version portion of the file path will vary depending on IBM Granite release version (e.g., `granite-3.2`).
+
+
+### Triggering a release
+
+This section contains the steps required to successfully "trigger" a release workflow.
