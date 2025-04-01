@@ -13,6 +13,7 @@ This repository contains the canonical information to use when converting IBM AI
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
 - [GGUF Verification Testing](#gguf-verification-testing)
 - [References](#references)
+- [Releasing GGUF model conversions & quantizations](#releasing-gguf-model-conversions--quantizations)
 
 ---
 
@@ -178,7 +179,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 ---
 
-## Releasing GGUF model Conversions & Quantizations
+## Releasing GGUF model conversions & quantizations
 
 This repository uses GitHub workflows and actions to convert IBM Granite models hosted on Huggingface to GGUF format, quantize them, run build-verification tests on the resultant models and publish them to target GGUF collections in IBM owned Huggingface organizations (e.g., `ibm-research` and `ibm-granite`).
 
