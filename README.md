@@ -2,9 +2,21 @@
 
 This repository contains the canonical information to use when converting IBM AI models to the GGUF format. It includes conversion scripts and testing requirements.  Aspirationally, this repo. wil include and automated CI/CD process to convert, test and deploy models to the official IBM GGUF collection in Hugging Face.
 
+#### Topic index
+
+- [Target IBM models for format conversion](#target-ibm-models-for-format-conversion)
+  - [Supported IBM Granite models (GGUF)](#supported-ibm-granite-models-gguf)
+    - [Language](#language)
+    - [Guardian](#guardian)
+    - [Vision](#vision)
+    - [Embedding](#embedding-dense)
+- [GGUF Conversion & Quantization](#gguf-conversion--quantization)
+- [GGUF Verification Testing](#gguf-verification-testing)
+- [References](#references)
+
 ---
 
-### Target IBM Models
+### Target IBM models for format conversion
 
 Format conversions (i.e., GGUF) and  quantizations will only be provided for canonically hosted model repositories hosted in an official IBM Huggingface organization.
 
@@ -27,11 +39,13 @@ Select quantization will only be made available when:
     - *e.g., Reduced model size intended running locally on small form-factor devices such as watches and mobile devices.*
 - **Performance** provides significant benefit without compromising on accuracy (or enabling hallucination).
 
-#### Supported IBM Granite models
+#### Supported IBM Granite models (GGUF)
 
 Specifically, the following Granite model repositories are currently supported in GGUF format (by collection) with listed:
 
-###### Language (instruct)
+###### Language
+
+Typically, this model category includes "instruct" models.
 
 | HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
 | --- | --- | --- |
@@ -137,6 +151,7 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - "Ollama does not support this yet. Follow this issue for more info: https://github.com/ollama/ollama/issues/5245"
     - e.g., `ollama pull hf.co/Qwen/Qwen2.5-14B-Instruct-GGUF`
 
+---
 
 ## References
 
