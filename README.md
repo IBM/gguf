@@ -320,11 +320,11 @@ This section contains the steps required to successfully "trigger" a release wor
 1. Click the "Draft a new release" button near the top of the releases page.
 1. Click the "Choose a tag" drop-down menu and enter a tag name that starts with one of the following strings relative to which release type you want to "trigger":
 
-- **Test**: `test-v3.2`
-- **Preview**: `preview-v3.2`
-- **Preview**: `v3.2`
+    - **Test**: `test-v3.2`
+    - **Preview**: `preview-v3.2`
+    - **Preview**: `v3.2`
 
-Treat these strings as "prefixes" which you must append a unique build version.
+    Treat these strings as "prefixes" which you must append a unique build version.
 
 1. "Create a new tag: on publish" near the bottom of the drop-down list.
 
