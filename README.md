@@ -279,7 +279,7 @@ The YAML GitHub workflow files have a few environment variables that may need to
 
 ```yaml
 env:
-  ENABLE_LLM_JOBS: false
+  ENABLE_INSTRUCT_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
   SOURCE_INSTRUCT_REPOS: "[
@@ -287,7 +287,7 @@ env:
     ...
   ]"
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q2_K',
+    'Q4_K_M',
     ...
   ]"
   SOURCE_GUARDIAN_REPOS: "[
@@ -299,7 +299,8 @@ env:
     ...
   ]"
   SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.2-2b'
+    'ibm-granite/granite-vision-3.2-2b',
+    ...
   ]"
   TARGET_VISION_QUANTIZATIONS: "[
     'Q4_K_M',
@@ -314,3 +315,31 @@ env:
 ### Triggering a release
 
 This section contains the steps required to successfully "trigger" a release workflow for one or more supported Granite models families (i.e., `instruct` (language), `vision`, `guardian` and `embedding`).
+
+1. Click the [`Releases`](https://github.com/IBM/gguf/releases) link from the right column of the repo. home page which should be the URL [https://github.com/IBM/gguf/releases](https://github.com/IBM/gguf/releases).
+1. Click the "Draft a new release" button near the top of the releases page.
+1. Click the "Choose a tag" drop-down menu and enter a tag name that starts with one of the following strings relative to which release type you want to "trigger":
+
+- **Test**: `test-v3.2`
+- **Preview**: `preview-v3.2`
+- **Preview**: `v3.2`
+
+Treat these strings as "prefixes" which you must append a unique build version.
+
+1. "Create a new tag: on publish" near the bottom of the drop-down list.
+
+1.  By convention, add the same "tag" name you created in the previous step into the "Release title" entry field.
+
+1. Adjust the "Set as a pre-release" and "Set as the latest release" checkboxes to your desired settings.
+
+1. Click the "Publish release" button.
+
+At this point, you can observe the CI/CD workflows being run by the GitHub service "runners".  Please note that during heavy traffic times, assignment of a "runner" (for each workflow job) may take longer.
+
+To observe the CI/CD process in action, please navigate to the following URL:
+
+- https://github.com/IBM/gguf/actions
+
+and look for the name of the tag you entered above in the workflow run title.
+
+**Note**: It is common to see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run jobs" button to re-trigger the failed job(s).

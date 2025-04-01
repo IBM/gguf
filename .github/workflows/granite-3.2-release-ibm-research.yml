@@ -14,7 +14,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LLM_JOBS: false
+  ENABLE_INSTRUCT_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
   SOURCE_INSTRUCT_REPOS: "[
@@ -67,7 +67,7 @@ jobs:
     outputs:
       debug: ${{ steps.set-vars.outputs.debug }}
       trace: ${{ steps.set-vars.outputs.trace }}
-      enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}
+      enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
@@ -91,7 +91,7 @@ jobs:
             echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
-            echo "enable_llm_jobs=$ENABLE_LLM_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_language_jobs=$ENABLE_INSTRUCT_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
@@ -109,7 +109,7 @@ jobs:
         run: |
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
-            echo "enable_llm_jobs: ${{ steps.set-vars.outputs.enable_llm_jobs }}"
+            echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
@@ -154,7 +154,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -175,7 +175,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -198,7 +198,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
@@ -221,7 +221,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
@@ -239,7 +239,7 @@ jobs:
     with:
       granite_family: "instruct"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      enable_llm_jobs: ${{ needs.environment-setup.outputs.enable_llm_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}

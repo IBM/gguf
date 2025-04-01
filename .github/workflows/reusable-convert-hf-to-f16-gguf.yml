@@ -11,7 +11,7 @@ on:
       ibm_granite_token:
         required: true
     inputs:
-      enable_llm_jobs:
+      enable_language_jobs:
         type: boolean
         required: false
         default: false
@@ -54,7 +54,7 @@ env:
 jobs:
   convert-f16:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+    if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
     steps:
     - uses: actions/checkout@v4
 
@@ -79,15 +79,15 @@ jobs:
 
     # - name: Alternative way to get env. vars.
     #   run: |
-    #     echo "enable_llm_jobs=${{inputs.enable_llm_jobs}}" >> $GITHUB_ENV
+    #     echo "enable_language_jobs=${{inputs.enable_language_jobs}}" >> $GITHUB_ENV
     #     echo "enable_guardian_jobs=${{inputs.enable_guardian_jobs}}" >> $GITHUB_ENV
 
-    # - name: is-enable_llm_jobs
+    # - name: is-enable_language_jobs
     #   run: |
-    #     echo "enable_llm_jobs: '$enable_llm_jobs'"
+    #     echo "enable_language_jobs: '$enable_language_jobs'"
     #     echo "enable_guardian_jobs: '$enable_guardian_jobs'"
-    #     if [[ "$enable_llm_jobs" == 'false' ]]; then
-    #       echo "enable_llm_jobs == 'false'. Exiting..."
+    #     if [[ "$enable_language_jobs" == 'false' ]]; then
+    #       echo "enable_language_jobs == 'false'. Exiting..."
     #       exit 1
     #     fi
     #     if [[ "$enable_guardian_jobs" == 'false' ]]; then
@@ -106,7 +106,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-      # echo "[INFO] >> enable_llm_jobs: '${{ env.enable_llm_jobs }}'"
+      # echo "[INFO] >> enable_language_jobs: '${{ env.enable_language_jobs }}'"
       # echo "[INFO] >> enable_guardian_jobs: '${{ env.enable_guardian_jobs }}'"
 
     - name: confirm-environment

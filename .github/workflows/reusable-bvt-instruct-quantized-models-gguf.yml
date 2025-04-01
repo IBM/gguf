@@ -9,7 +9,7 @@ on:
       hf_token:
         required: true
     inputs:
-      enable_llm_jobs:
+      enable_language_jobs:
         type: boolean
         required: false
         default: false
@@ -58,7 +58,7 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    if: ${{ inputs.enable_llm_jobs == true }}
+    if: ${{ inputs.enable_language_jobs == true }}
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment
