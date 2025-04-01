@@ -175,6 +175,3 @@ As a baseline, each converted model MUST successfully be run in the following pr
     - [Importing a model](https://github.com/ollama/ollama/blob/main/docs/import.md) - includes Safetensors, GGUF.
     - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
     - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
-
-- Huggingface Granite
-    - Bartowski: https://huggingface.co/bartowski?search_models=granite
