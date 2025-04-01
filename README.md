@@ -72,7 +72,7 @@ Specifically, the following Granite model repositories are currently supported i
 
 ###### RAG LoRA support**
 
-- LoRA support is currently in planned for future work.
+- LoRA support is currently in plan (no date).
 
 ---
 
