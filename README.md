@@ -44,8 +44,8 @@ Specifically, the following Granite model repositories are currently supported i
 
 | HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
 | --- | --- | --- |
-| TBD | ibm-granite/granite-guardian-3.2-3b-a800m | ibm-research |
-| TBD | ibm-granite/granite-guardian-3.2-5b | ibm-research |
+| GraniteMoeForCausalLM (granitemoe) | ibm-granite/granite-guardian-3.2-3b-a800m | ibm-research |
+| GraniteMoeForCausalLM (granitemoe) | ibm-granite/granite-guardian-3.2-5b | ibm-research |
 
 - Supported quantizations: `fp16`, `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
@@ -53,7 +53,7 @@ Specifically, the following Granite model repositories are currently supported i
 
 | HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
 | --- | --- | --- |
-| TBD | ibm-granite/granite-vision-3.2-2b | ibm-research |
+| GraniteForCausalLM (granite), LlavaNextForConditionalGeneration | ibm-granite/granite-vision-3.2-2b | ibm-research |
 
 - Supported quantizations: `fp16`, `Q4_K_M`, `Q5_K_M`, `Q8_0`
 
@@ -61,10 +61,10 @@ Specifically, the following Granite model repositories are currently supported i
 
 | HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
 | --- | --- | --- |
-| Roberta (Roberta) | ibm-granite/granite-embedding-30m-english | ibm-research |
-| Roberta (Roberta) | ibm-granite/granite-embedding-125m-english | ibm-research |
-| Roberta (Roberta) | ibm-granite/granite-embedding-107m-multilingual | ibm-research |
-| Roberta (Roberta) | ibm-granite/granite-embedding-278m-multilingual | ibm-research |
+| Roberta (roberta-bpe) | ibm-granite/granite-embedding-30m-english | ibm-research |
+| Roberta (roberta-bpe) | ibm-granite/granite-embedding-125m-english | ibm-research |
+| Roberta (roberta-bpe) | ibm-granite/granite-embedding-107m-multilingual | ibm-research |
+| Roberta (roberta-bpe) | ibm-granite/granite-embedding-278m-multilingual | ibm-research |
 
 - Supported quantizations: `fp16`, `Q8_0`
 
