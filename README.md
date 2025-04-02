@@ -1,6 +1,9 @@
 # gguf
 
-This repository contains the canonical information to use when converting IBM AI models to the GGUF format. It includes conversion scripts and testing requirements.  Aspirationally, this repo. wil include and automated CI/CD process to convert, test and deploy models to the official IBM GGUF collection in Hugging Face.
+This repository provides an automated CI/CD process to convert, test and deploy IBM Granite models, in safetensor format, from the `ibm-granite` organization to versioned IBM GGUF collections in Hugging Face Hub under the [`ibm-research` organization](https://huggingface.co/collections/ibm-research). This includes:
+
+- [Granite 3.2 Models (GGUF)](https://huggingface.co/collections/ibm-research/granite-32-models-gguf-67bf411f8eb52909dde3532b)
+
 
 #### Topic index
 
@@ -325,7 +328,9 @@ This section contains the steps required to successfully "trigger" a release wor
     - **Preview**: `preview-v3.2`
     - **Preview**: `v3.2`
 
-    Treat these strings as "prefixes" which you must append a unique build version.
+    Treat these strings as "prefixes" which you must append a unique build version.  For example:
+
+    - `v3.2-rc-01` for a release candidate version 01
 
 1. "Create a new tag: on publish" near the bottom of the drop-down list.
 
@@ -335,12 +340,12 @@ This section contains the steps required to successfully "trigger" a release wor
 
 1. Click the "Publish release" button.
 
-At this point, you can observe the CI/CD workflows being run by the GitHub service "runners".  Please note that during heavy traffic times, assignment of a "runner" (for each workflow job) may take longer.
+At this point, you can observe the CI/CD workflows being run by the GitHub service "runners". *Please note that during heavy traffic times, assignment of a "runner" (for each workflow job) may take longer.*
 
 To observe the CI/CD process in action, please navigate to the following URL:
 
 - https://github.com/IBM/gguf/actions
 
-and look for the name of the tag you entered above in the workflow run title.
+and look for the name of the `tag` you entered for the release (above) in the workflow run title.
 
-**Note**: It is common to see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run jobs" button to re-trigger the failed job(s).
+**Note**: It is common to occasionally see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run failed jobs" button to re-trigger the failed job(s).
