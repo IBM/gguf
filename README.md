@@ -326,7 +326,7 @@ This section contains the steps required to successfully "trigger" a release wor
 
     - **Test**: `test-v3.2`
     - **Preview**: `preview-v3.2`
-    - **Preview**: `v3.2`
+    - **Public**: `v3.2`
 
     Treat these strings as "prefixes" which you must append a unique build version.  For example:
 
