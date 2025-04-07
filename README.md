@@ -60,7 +60,7 @@ Typically, this model category includes "instruct" models.
 
 ###### Guardian
 
-| Source Repo. ID | HF (llama.cpp) Architecture | Target Repo. ID |
+| Source Repo. ID | HF (llama.cpp) Architecture | Target HF Org. |
 | --- | --- | --- |
 | ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM (granitemoe) | ibm-research |
 | ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM (granitemoe) | ibm-research |
@@ -69,7 +69,7 @@ Typically, this model category includes "instruct" models.
 
 ###### Vision
 
-| HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
+| HF (llama.cpp) Architecture | Source Repo. ID | Target HF Org. |
 | --- | --- | --- |
 | ibm-granite/granite-vision-3.2-2b | GraniteForCausalLM (granite), LlavaNextForConditionalGeneration | ibm-research |
 
@@ -77,7 +77,7 @@ Typically, this model category includes "instruct" models.
 
 ###### Embedding (dense)
 
-| Source Repo. ID | HF (llama.cpp) Architecture | Target Repo. ID |
+| Source Repo. ID | HF (llama.cpp) Architecture | Target HF Org. |
 | --- | --- | --- |
 | ibm-granite/granite-embedding-30m-english | Roberta (roberta-bpe) | ibm-research |
 | ibm-granite/granite-embedding-125m-english | Roberta (roberta-bpe) | ibm-research |
