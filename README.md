@@ -348,4 +348,5 @@ To observe the CI/CD process in action, please navigate to the following URL:
 
 and look for the name of the `tag` you entered for the release (above) in the workflow run title.
 
-> [!NOTE] It is common to occasionally see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run failed jobs" button to re-trigger the failed job(s).
+> [!NOTE]
+> It is common to occasionally see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run failed jobs" button to re-trigger the failed job(s).
