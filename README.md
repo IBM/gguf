@@ -51,19 +51,19 @@ Specifically, the following Granite model repositories are currently supported i
 
 Typically, this model category includes "instruct" models.
 
-| HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
+| Source Repo. ID | HF (llama.cpp) Architecture | Target Repo. ID |
 | --- | --- | --- |
-| GraniteForCausalLM (gpt2) | ibm-granite/granite-3.2-2b-instruct | ibm-research |
-| GraniteForCausalLM (gpt2) | ibm-granite/granite-3.2-8b-instruct | ibm-research |
+| ibm-granite/granite-3.2-2b-instruct | GraniteForCausalLM (gpt2) | ibm-research |
+| ibm-granite/granite-3.2-8b-instruct | GraniteForCausalLM (gpt2) | ibm-research |
 
 - Supported quantizations: `fp16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
 ###### Guardian
 
-| HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
+| Source Repo. ID | HF (llama.cpp) Architecture | Target Repo. ID |
 | --- | --- | --- |
-| GraniteMoeForCausalLM (granitemoe) | ibm-granite/granite-guardian-3.2-3b-a800m | ibm-research |
-| GraniteMoeForCausalLM (granitemoe) | ibm-granite/granite-guardian-3.2-5b | ibm-research |
+| ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM (granitemoe) | ibm-research |
+| ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM (granitemoe) | ibm-research |
 
 - Supported quantizations: `fp16`, `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
@@ -71,18 +71,18 @@ Typically, this model category includes "instruct" models.
 
 | HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
 | --- | --- | --- |
-| GraniteForCausalLM (granite), LlavaNextForConditionalGeneration | ibm-granite/granite-vision-3.2-2b | ibm-research |
+| ibm-granite/granite-vision-3.2-2b | GraniteForCausalLM (granite), LlavaNextForConditionalGeneration | ibm-research |
 
 - Supported quantizations: `fp16`, `Q4_K_M`, `Q5_K_M`, `Q8_0`
 
 ###### Embedding (dense)
 
-| HF (llama.cpp) Architecture | Source Repo. ID | Target Repo. ID |
+| Source Repo. ID | HF (llama.cpp) Architecture | Target Repo. ID |
 | --- | --- | --- |
-| Roberta (roberta-bpe) | ibm-granite/granite-embedding-30m-english | ibm-research |
-| Roberta (roberta-bpe) | ibm-granite/granite-embedding-125m-english | ibm-research |
-| Roberta (roberta-bpe) | ibm-granite/granite-embedding-107m-multilingual | ibm-research |
-| Roberta (roberta-bpe) | ibm-granite/granite-embedding-278m-multilingual | ibm-research |
+| ibm-granite/granite-embedding-30m-english | Roberta (roberta-bpe) | ibm-research |
+| ibm-granite/granite-embedding-125m-english | Roberta (roberta-bpe) | ibm-research |
+| ibm-granite/granite-embedding-107m-multilingual | Roberta (roberta-bpe) | ibm-research |
+| ibm-granite/granite-embedding-278m-multilingual | Roberta (roberta-bpe) | ibm-research |
 
 - Supported quantizations: `fp16`, `Q8_0`
 
