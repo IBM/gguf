@@ -106,9 +106,9 @@ for example:
 python llama.cpp/convert-hf-to-gguf.py ./<model_repo> --outfile output_file.gguf --outtype q8_0
 ```
 
-#### Alternatives (planned)
+#### Alternatives
 
-##### Ollama CLI
+##### Ollama CLI (future)
 
 - https://github.com/ollama/ollama/blob/main/docs/import.md#quantizing-a-model
 
