@@ -17,10 +17,11 @@ env:
   ENABLE_INSTRUCT_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: true
+  ENABLE_EMBEDDING_JOBS:
+  # 'ibm-granite/granite-3.2-2b-instruct',
   # 'ibm-granite/granite-3.2-8b-instruct'
   SOURCE_INSTRUCT_REPOS: "[
-    'ibm-granite/granite-3.2-2b-instruct'
+    'ibm-granite/granite-3.2-8b-instruct'
   ]"
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
@@ -30,9 +31,10 @@ env:
   TARGET_INSTRUCT_QUANTIZATIONS: "[
     'Q2_K'
   ]"
+  # 'ibm-granite/granite-guardian-3.2-3b-a800m',
   # 'ibm-granite/granite-guardian-3.2-5b'
   SOURCE_GUARDIAN_REPOS: "[
-    'ibm-granite/granite-guardian-3.2-3b-a800m'
+    'ibm-granite/granite-guardian-3.2-5b'
   ]"
   # 'Q5_K_M',
   # 'Q6_K',
