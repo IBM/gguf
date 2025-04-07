@@ -50,6 +50,32 @@
                     "repo_name": "granite-embedding-278m-multilingual"
                 }
             ]
+        },
+        {
+            "title": "Granite Embedding Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite Embedding models. Licensed under the Apache 2.0 license.",
+            "items": [
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-30m-english"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-125m-english"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-107m-multilingual"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-278m-multilingual"
+                }
+            ]
         }
     ]
 }

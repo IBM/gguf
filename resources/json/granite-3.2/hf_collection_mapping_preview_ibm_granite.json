@@ -1,7 +1,7 @@
 {
     "collections": [
         {
-            "title": "Granite 3.2 Partner Models (GGUF)",
+            "title": "[PREVIEW] Granite 3.2 Partner Models (GGUF)",
             "description": "GGUF-formatted, preview versions of IBM Granite 3.2 models published for IBM Partners. Licensed under the Apache 2.0 license.",
             "items": [
                 {
@@ -29,6 +29,32 @@
                     "family": "guardian",
                     "repo_name": "granite-guardian-3.2-5b"
                 },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-30m-english"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-125m-english"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-107m-multilingual"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "repo_name": "granite-embedding-278m-multilingual"
+                }
+            ]
+        },
+        {
+            "title": "[PREVIEW] Granite Embedding Models (GGUF)",
+            "description": "GGUF-formatted, preview versions of of IBM Granite Embedding models. Licensed under the Apache 2.0 license.",
+            "items": [
                 {
                     "type": "model",
                     "family": "embedding",

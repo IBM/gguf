@@ -28,7 +28,13 @@
                     "type": "model",
                     "family": "guardian",
                     "repo_name": "granite-guardian-3.2-5b"
-                },
+                }
+            ]
+        },
+        {
+            "title": "[TEST] Granite Embedding Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite Embedding models. Licensed under the Apache 2.0 license.",
+            "items": [
                 {
                     "type": "model",
                     "family": "embedding",
