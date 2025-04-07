@@ -86,7 +86,7 @@ Typically, this model category includes "instruct" models.
 
 - Supported quantizations: `fp16`, `Q8_0`
 
-**Note**: Sparse model architecture (i.e., RobertaMaskedLM) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
+**Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
 
 ###### RAG LoRA support**
 
