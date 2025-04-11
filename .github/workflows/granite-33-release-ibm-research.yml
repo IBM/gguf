@@ -56,7 +56,7 @@ jobs:
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
   #  api_token: "${{ steps.set-vars.outputs.api_token }}"
-  #  echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
+  #  echo "api_token=${{ secrets.HF_TOKEN_IBM_RESEARCH }}" >> $GITHUB_OUTPUT
   #  echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
   environment-setup:
     runs-on: ubuntu-latest
@@ -166,7 +166,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   convert-hf-to-f16-gguf:
     needs: [ environment-setup, instruct-create-hf-repos ]
@@ -187,7 +187,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-upload-gguf:
@@ -211,7 +211,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   bvt-instruct-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
@@ -233,7 +233,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
@@ -251,7 +251,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Vision
@@ -268,7 +268,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   convert-hf-llava-to-f16-gguf:
     needs: [ environment-setup, vision-create-hf-repos ]
@@ -289,7 +289,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-vision-llm-and-upload-gguf:
@@ -313,7 +313,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
@@ -335,7 +335,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   vision-create-hf-collections:
@@ -353,7 +353,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Guardian
@@ -370,7 +370,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
@@ -391,7 +391,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   guardian-quantize-upload-gguf:
@@ -415,7 +415,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
@@ -437,7 +437,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   guardian-create-hf-collections:
@@ -455,7 +455,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # ===========================================================================
   # Granite Embedding
@@ -472,7 +472,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
@@ -493,7 +493,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   embedding-quantize-upload-gguf:
@@ -517,7 +517,7 @@ jobs:
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # embedding-bvt-quantized-gguf-models:
   #   needs: [ environment-setup, embedding-quantize-upload-gguf ]
@@ -539,7 +539,7 @@ jobs:
   #     repo_id: "${{ matrix.repo_id }}"
   #     quantization: "${{ matrix.quantization }}"
   #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
+  #     hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
   # TODO: change collection from private to public (on success)
   # TODO: needs: [ embedding-quantize-upload-gguf -> embedding-bvt-quantized-gguf-models ]
@@ -558,4 +558,4 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
