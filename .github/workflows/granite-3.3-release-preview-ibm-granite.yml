@@ -1,0 +1,561 @@
+name: granite-3.3-tagged-preview-release
+run-name: "[PREVIEW] Granite 3.3 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+
+on:
+  push:
+    tags:
+      - "preview-v3.3*"
+  workflow_dispatch:
+
+permissions:
+ contents: read
+ packages: read
+
+env:
+  DEBUG: true
+  TRACE: false
+  ENABLE_INSTRUCT_JOBS: true
+  ENABLE_VISION_JOBS: false
+  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_EMBEDDING_JOBS: false
+
+  SOURCE_INSTRUCT_REPOS: "[
+    'ibm-granite/granite-3.3-2b-instruct',
+    'ibm-granite/granite-3.3-8b-instruct'
+  ]"
+  TARGET_INSTRUCT_QUANTIZATIONS: "[
+    'Q2_K',
+    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+    'Q6_K',
+    'Q8_0'
+  ]"
+  SOURCE_GUARDIAN_REPOS: "[
+  ]"
+  TARGET_GUARDIAN_QUANTIZATIONS: "[
+  ]"
+  SOURCE_VISION_REPOS: "[
+  ]"
+  TARGET_VISION_QUANTIZATIONS: "[
+  ]"
+  # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
+  SOURCE_EMBEDDING_REPOS: "[
+  ]"
+  TARGET_EMBEDDING_QUANTIZATIONS: "[
+  ]"
+  TARGET_REPO_NAME_EXT: -GGUF
+  TARGET_REPO_OWNER: ibm-granite
+  TARGET_REPO_PRIVATE: true
+  COLLECTION_CONFIG: "resources/json/granite-3.3/hf_collection_mapping_preview_ibm_granite.json"
+
+jobs:
+  # ===========================================================================
+  # Environment setup
+  # ===========================================================================
+  # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
+  # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
+  #  api_token: "${{ steps.set-vars.outputs.api_token }}"
+  #  echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
+  #  echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
+  environment-setup:
+    runs-on: ubuntu-latest
+    # Note: declaration of these outputs is essential to pass to the next job
+    outputs:
+      debug: ${{ steps.set-vars.outputs.debug }}
+      trace: ${{ steps.set-vars.outputs.trace }}
+      enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}
+      enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
+      enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
+      enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
+      hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
+      target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
+      target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
+      source_instruct_repos: "${{ steps.set-vars.outputs.source_instruct_repos }}"
+      target_instruct_quantizations: "${{ steps.set-vars.outputs.target_instruct_quantizations }}"
+      source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
+      target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
+      source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
+      target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
+      source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
+      target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
+    steps:
+      - name: Set environment variables in GitHub output
+        id: set-vars
+        run: |
+            echo "DEBUG: $DEBUG"
+            echo "TRACE: $TRACE"
+            echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
+            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
+            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+            echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
+            echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
+            echo "enable_language_jobs=$ENABLE_INSTRUCT_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_instruct_quantizations=$TARGET_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm GitHub output values were set
+        run: |
+            echo "debug: ${{ steps.set-vars.outputs.debug }}"
+            echo "trace: ${{ steps.set-vars.outputs.trace }}"
+            echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
+            echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
+            echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
+            echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
+            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
+            echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
+            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
+            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
+            echo "source_instruct_repos: '${{ steps.set-vars.outputs.source_instruct_repos }}'"
+            echo "target_instruct_quantizations: '${{ steps.set-vars.outputs.target_instruct_quantizations }}'"
+            echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
+            echo "target_vision_quantizations: '${{ steps.set-vars.outputs.target_vision_quantizations }}'"
+            echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
+            echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
+            echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
+            echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
+
+      # - name: confirm-environment
+      #   run: |
+      #     uname -a
+      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
+      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
+      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+
+      # - name: Dump runner context
+      #   env:
+      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
+      #   run: echo "$RUNNER_CONTEXT"
+
+      # - name: Dump GitHub context
+      #   env:
+      #     GH_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GH_CONTEXT"
+
+      # - name: Dump GitHub quiet
+      #   env:
+      #     GH_QUIET: ${{ toJson(secrets) }}
+      #   run: echo "$GH_QUIET"
+
+  # ===========================================================================
+  # Granite Instruct
+  # ===========================================================================
+  instruct-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  convert-hf-to-f16-gguf:
+    needs: [ environment-setup, instruct-create-hf-repos ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  quantize-upload-gguf:
+    needs: [ environment-setup, convert-hf-to-f16-gguf ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  bvt-instruct-quantized-gguf-models:
+    needs: [ environment-setup, quantize-upload-gguf ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  create-hf-collections:
+    needs: [
+      environment-setup,
+      bvt-instruct-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "instruct"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # ===========================================================================
+  # Granite Vision
+  # ===========================================================================
+  vision-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "vision"
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  convert-hf-llava-to-f16-gguf:
+    needs: [ environment-setup, vision-create-hf-repos ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  quantize-vision-llm-and-upload-gguf:
+    needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
+    uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  bvt-vision-quantized-gguf-models:
+    needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  vision-create-hf-collections:
+    needs: [
+      environment-setup,
+      bvt-vision-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "vision"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # ===========================================================================
+  # Granite Guardian
+  # ===========================================================================
+  guardian-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "guardian"
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  guardian-convert-hf-to-f16-gguf:
+    needs: [ environment-setup, guardian-create-hf-repos ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  guardian-quantize-upload-gguf:
+    needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  guardian-bvt-quantized-gguf-models:
+    needs: [ environment-setup, guardian-quantize-upload-gguf ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  guardian-create-hf-collections:
+    needs: [
+      environment-setup,
+      guardian-bvt-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "guardian"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # ===========================================================================
+  # Granite Embedding
+  # ===========================================================================
+  embedding-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "embedding"
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  embedding-convert-hf-to-f16-gguf:
+    needs: [ environment-setup, embedding-create-hf-repos ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  embedding-quantize-upload-gguf:
+    needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # embedding-bvt-quantized-gguf-models:
+  #   needs: [ environment-setup, embedding-quantize-upload-gguf ]
+  #   uses: IBM/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
+  #   permissions:
+  #     contents: write
+  #     packages: write
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
+  #   with:
+  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+  #     trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+  #     enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+  #     repo_id: "${{ matrix.repo_id }}"
+  #     quantization: "${{ matrix.quantization }}"
+  #   secrets:
+  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  # TODO: needs: [ embedding-quantize-upload-gguf -> embedding-bvt-quantized-gguf-models ]
+  embedding-create-hf-collections:
+    needs: [
+      environment-setup,
+      embedding-quantize-upload-gguf,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "embedding"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
