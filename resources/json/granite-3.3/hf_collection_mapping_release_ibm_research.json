@@ -1,0 +1,20 @@
+{
+    "collections": [
+        {
+            "title": "Granite 3.3 Models (GGUF)",
+            "description": "GGUF-formatted versions of IBM Granite 3.3 models. Licensed under the Apache 2.0 license.",
+            "items": [
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.3-2b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.3-8b-instruct"
+                }
+            ]
+        }
+    ]
+}
