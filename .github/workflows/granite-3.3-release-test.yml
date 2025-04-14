@@ -31,8 +31,6 @@ env:
     'Q6_K',
     'Q8_0'
   ]"
-  # 'ibm-granite/granite-guardian-3.2-3b-a800m',
-  # 'ibm-granite/granite-guardian-3.2-5b'
   SOURCE_GUARDIAN_REPOS: "[
   ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
