@@ -14,10 +14,10 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_INSTRUCT_JOBS: false
+  ENABLE_INSTRUCT_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: true
+  ENABLE_EMBEDDING_JOBS: false
   # 'ibm-granite/granite-3.1-2b-instruct',
   # 'ibm-granite/granite-3.1-8b-instruct',
   # 'ibm-granite/granite-3.1-1b-a400m-instruct',
