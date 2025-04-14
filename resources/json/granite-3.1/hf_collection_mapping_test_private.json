@@ -1,0 +1,30 @@
+{
+    "collections": [
+        {
+            "title": "[TEST] Granite 3.1 Models (GGUF)",
+            "description": "GGUF-formatted, preview versions of IBM Granite models published in the 'ibm-granite' org. in Hugging Face. Licensed under the Apache 2.0 license",
+            "items": [
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.1-2b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.1-8b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.1-1b-a400m-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.1-3b-a800m-instruct"
+                }
+            ]
+        }
+    ]
+}
