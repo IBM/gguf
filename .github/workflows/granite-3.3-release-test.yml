@@ -20,8 +20,6 @@ env:
   ENABLE_EMBEDDING_JOBS: false
 
   SOURCE_INSTRUCT_REPOS: "[
-    'ibm-granite/granite-3.3-2b-instruct',
-    'ibm-granite/granite-3.3-8b-instruct',
     'ibm-granite/granite-3.3-2b-base',
     'ibm-granite/granite-3.3-8b-base'
   ]"
