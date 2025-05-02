@@ -1,5 +1,5 @@
 name: granite-3.3-tagged-release
-run-name: "[RELEASE] Granite 3.2 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+run-name: "[RELEASE] Granite 3.3 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
