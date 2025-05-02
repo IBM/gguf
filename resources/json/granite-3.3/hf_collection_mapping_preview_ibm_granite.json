@@ -13,6 +13,16 @@
                     "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.3-8b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.3-2b-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.3-8b-base"
                 }
             ]
         }
