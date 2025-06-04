@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  OLLAMA_DEBUG: 1
+  OLLAMA_DEBUG: true
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -79,7 +79,7 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
-            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG"
+            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG" >> "$GITHUB_OUTPUT"
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
