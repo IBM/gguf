@@ -167,9 +167,9 @@ jobs:
           OLLAMA_PORT: 11434
           OLLAMA_HOST: http://127.0.0.1:11434
         run: |
-          echo $OLLAMA_DEBUG
-          echo $OLLAMA_PORT
-          echo $OLLAMA_HOST
+          echo "$OLLAMA_DEBUG:" $OLLAMA_DEBUG
+          echo "$OLLAMA_PORT:" $OLLAMA_PORT
+          echo "$OLLAMA_HOST:" $OLLAMA_HOST
           echo "starting ollama on port: $OLLAMA_HOST ..."
           ./bin/ollama serve &
           echo "Sleeping..."
@@ -188,7 +188,9 @@ jobs:
           ./bin/ollama list
       - name: end-test
         run:
-          echo ${{env.OLLAMA_PORT}}
+          echo "$OLLAMA_PORT:" $OLLAMA_PORT
+          echo "$OLLAMA_PORT:" ${{env.OLLAMA_PORT}}
+          echo "Killing server..."
           kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           sleep 10
           lsof -i  | grep ollama
