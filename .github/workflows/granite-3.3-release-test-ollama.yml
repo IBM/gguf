@@ -160,7 +160,9 @@ jobs:
   # ===========================================================================
   ollama-startup:
     needs: [ environment-setup ]
-    run: exit 0
+    steps:
+      - name: ollama-setup
+        run: exit 0
 
   # ===========================================================================
   # Granite Instruct
