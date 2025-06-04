@@ -160,6 +160,10 @@ jobs:
       - name: Printenv
         run: printenv | sort
       - name: ollama-setup
+        run: |
+          echo $OLLAMA_DEBUG
+          ./bin/ollama serve
+      - name: end-test
         run: exit 0
 
   # ===========================================================================
