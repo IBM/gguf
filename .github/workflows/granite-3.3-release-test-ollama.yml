@@ -167,8 +167,9 @@ jobs:
         run: |
           echo $OLLAMA_DEBUG
           echo $OLLAMA_HOST
-          echo "starting ollama on port $OLLAMA_HOST"
-          nohup ./bin/ollama serve &
+          echo "starting ollama on port: $OLLAMA_HOST ..."
+          ./bin/ollama serve &
+          echo "Sleeping..."
           sleep 20
           lsof -i  | grep ollama
       - name: end-test
