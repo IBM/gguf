@@ -1,5 +1,5 @@
 name: granite-3.3-tagged-test-ollama-release
-run-name: "[TEST] Granite 3.3 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+run-name: "[TEST] Ollama release [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
@@ -19,7 +19,7 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   OLLAMA_DEBUG: 1
-  OLLAMA_HOST: 11534
+  # OLLAMA_HOST: 11534
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -173,7 +173,7 @@ jobs:
           lsof -i  | grep ollama
       - name: end-test
         run:
-          kill -9 $(lsof -i:$OLLAMA_HOST -t)
+          # kill -9 $(lsof -i:$OLLAMA_HOST -t)
           exit 0
 
   # ===========================================================================
