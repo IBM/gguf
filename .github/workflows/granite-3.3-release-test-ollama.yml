@@ -150,17 +150,15 @@ jobs:
       #     GH_QUIET: ${{ toJson(secrets) }}
       #   run: echo "$GH_QUIET"
 
-      - name: Printenv
-        env:
-          GH_QUIET: ${{ toJson(secrets) }}
-        run: printenv | sort
-
   # ===========================================================================
   # Ollama
   # ===========================================================================
   ollama-startup:
     needs: [ environment-setup ]
+    runs-on: macos-latest
     steps:
+      - name: Printenv
+        run: printenv | sort
       - name: ollama-setup
         run: exit 0
 
