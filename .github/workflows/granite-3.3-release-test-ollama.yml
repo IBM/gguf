@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  OLLAMA_DEBUG: true
+  OLLAMA_DEBUG: 1
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -125,8 +125,8 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
-            echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
-            echo "The value of OLLAMA_DEBUG is: ${{ env.OLLAMA_DEBUG }}"
+      #     echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
+      #     echo "The value of OLLAMA_DEBUG is: ${{ env.OLLAMA_DEBUG }}"
 
       # - name: confirm-environment
       #   run: |
