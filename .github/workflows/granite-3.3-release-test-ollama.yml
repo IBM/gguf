@@ -18,8 +18,6 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  OLLAMA_DEBUG: 1
-  # OLLAMA_HOST: 11434
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -165,6 +163,7 @@ jobs:
           lsof -i
       - name: ollama-setup
         env:
+          OLLAMA_DEBUG: 1
           OLLAMA_PORT: 11434
           OLLAMA_HOST: http://127.0.0.1:11434
         run: |
@@ -177,13 +176,18 @@ jobs:
           sleep 20
           echo "Getting PID..."
           lsof -i  | grep ollama
-      - name: ollama-list
+      - name: ollama-client
+        env:
+          OLLAMA_DEBUG: 1
+          OLLAMA_PORT: 11434
         run: |
-          echo "Getting PID..."
+          echo "Ollama help..."
+          ./bin/ollama
+          echo "Ollama list..."
           ./bin/ollama list
       - name: end-test
         run:
-          kill -9 $(lsof -i:$OLLAMA_HOST -t)
+          kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           sleep 10
           lsof -i  | grep ollama
           exit 0
