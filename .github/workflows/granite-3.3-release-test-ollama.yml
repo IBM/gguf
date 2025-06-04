@@ -166,7 +166,7 @@ jobs:
   # Granite Instruct
   # ===========================================================================
   instruct-create-hf-repos:
-    needs: [ start-ollama ]
+    needs: [ ollama-startup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
