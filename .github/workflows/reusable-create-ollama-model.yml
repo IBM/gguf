@@ -12,6 +12,10 @@ on:
       hf_token:
         required: true
     inputs:
+      debug:
+        type: boolean
+        required: true
+        default: false
       granite_family:
         type: string
         required: true
@@ -37,14 +41,12 @@ on:
       target_repo_name_ext:
         type: string
         required: true
-      debug:
-        type: boolean
+      repo_id:
+        type: string
         required: true
-        default: false
-      target_collection_private:
-        type: boolean
-        required: false
-        default: true
+      quantization:
+        type: string
+        required: true
 
 jobs:
   ollama-startup:

@@ -123,8 +123,6 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
-      #     echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
-      #     echo "The value of OLLAMA_DEBUG is: ${{ env.OLLAMA_DEBUG }}"
 
       # - name: confirm-environment
       #   run: |
@@ -154,14 +152,22 @@ jobs:
   ollama-create-model:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
   # ollama-startup:
