@@ -188,6 +188,7 @@ jobs:
           ./bin/ollama list
       - name: end-test
         run:
+          echo ${{env.OLLAMA_PORT}}
           kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           sleep 10
           lsof -i  | grep ollama
