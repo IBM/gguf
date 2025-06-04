@@ -164,10 +164,12 @@ jobs:
           printenv | sort
           lsof -i
       - name: ollama-setup
-        # env:
-        #   OLLAMA_HOST: 9843
+        env:
+          OLLAMA_PORT: 11
+          OLLAMA_HOST: http://127.0.0.1:$OLLAMA_PORT
         run: |
           echo $OLLAMA_DEBUG
+          echo $OLLAMA_PORT
           echo $OLLAMA_HOST
           echo "starting ollama on port: $OLLAMA_HOST ..."
           ./bin/ollama serve &
