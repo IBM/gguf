@@ -19,7 +19,7 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   OLLAMA_DEBUG: 1
-  # OLLAMA_HOST: 11534
+  OLLAMA_HOST: 11434
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -171,10 +171,16 @@ jobs:
           ./bin/ollama serve &
           echo "Sleeping..."
           sleep 20
+          echo "Getting PID..."
           lsof -i  | grep ollama
+      - name: ollama-list
+        run: |
+          ./bin/ollama list
       - name: end-test
         run:
-          # kill -9 $(lsof -i:$OLLAMA_HOST -t)
+          kill -9 $(lsof -i:$OLLAMA_HOST -t)
+          sleep 10
+          lsof -i  | grep ollama
           exit 0
 
   # ===========================================================================
