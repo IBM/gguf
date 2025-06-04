@@ -79,7 +79,7 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
-            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG" >> "$GITHUB_OUTPUT"
+            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG"
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
