@@ -161,6 +161,9 @@ jobs:
         run: printenv | sort
       - name: ollama-setup
         run: |
+          pwd
+          ls -al
+          ls -al ./bin
           echo $OLLAMA_DEBUG
           ./bin/ollama serve
       - name: end-test
