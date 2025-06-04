@@ -219,14 +219,6 @@ jobs:
   instruct-create-hf-repos:
     needs: [ ollama-create-model ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
