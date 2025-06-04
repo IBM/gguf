@@ -57,12 +57,96 @@ jobs:
       OLLAMA_HOST: http://127.0.0.1:11434
     steps:
       - uses: actions/checkout@v4
+      - name: confirm-environment
+        run: |
+          uname -a
+          echo "runner.os: ${{ runner.os }}"
+          echo "runner.arch: ${{ runner.arch }}"
+          echo "github.workspace: ${{ github.workspace }}"
+          echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+          echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
+          echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"
+          echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
+          echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+
       - name: Printenv
         run: |
           pwd
           printenv | sort
           lsof -i
-      - name: ollama-setup
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install -r ./requirements.txt
+          pip list
+
+      # Use this step to set values to the github context (shared across jobs/steps)
+      # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+      # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+      # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+      - name: set-github-env
+        id: set_github_env
+        run: |
+          echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+          echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-1
+        run: |
+          echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-2
+        run: |
+          echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-3
+        run: |
+          echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+
+      - name: verify-github-env
+        run: |
+          echo "================== Derivative Environment Variables 1 =================="
+          echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+          echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+          echo "================== Derivative Environment Variables 2 =================="
+          echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+          echo "================== Derivative Environment Variables 3 =================="
+          echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+      - name: test-quantized-model-exists
+        run: |
+          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+          echo "exists: '$exists'"
+          if [[ "$exists" == "False" ]]; then
+            echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+            exit 2
+          else
+            echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+            echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+            echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+          fi
+
+      - name: download-quantized-gguf-hf-hub-download
+        if: env.QUANTIZED_MODEL_EXISTS == 'true'
+        run: |
+          echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+          echo "--------------------"
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+          ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+
+      - name: verify-downloaded-files
+        if: env.DEBUG == 'true' && runner.os == 'macOS'
+        run: |
+          echo downloaded files...
+          echo "--------------------"
+          find . -name \*.gguf -type f
+          echo "--------------------"
+
+      - name: ollama-server-start
         run: |
           echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
           echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
@@ -81,7 +165,7 @@ jobs:
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
-      - name: end-test
+      - name: ollama-server-stop
         run:
           echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
           echo -e "Killing server...\n"
