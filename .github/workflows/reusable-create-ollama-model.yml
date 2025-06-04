@@ -48,44 +48,44 @@ on:
 
 jobs:
   ollama-startup:
-  needs: [ environment-setup ]
-  runs-on: macos-latest
-  env:
-    OLLAMA_DEBUG: 1
-    OLLAMA_PORT: 11434
-    OLLAMA_HOST: http://127.0.0.1:11434
-  steps:
-    - uses: actions/checkout@v4
-    - name: Printenv
-      run: |
-        pwd
-        printenv | sort
-        lsof -i
-    - name: ollama-setup
-      run: |
-        echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
-        echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
-        echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
-        echo -e "starting ollama on port: $OLLAMA_HOST...\n"
-        ./bin/ollama serve &
-        echo -e "Sleeping...\n"
-        sleep 10
-        echo -e "Getting PID...\n"
-        lsof -i  | grep ollama
-    - name: ollama-client
-      run: |
-        echo -e "Ollama help...\n"
-        ./bin/ollama
-        echo -e "Sleeping...\n"
-        sleep 2
-        echo -e "Ollama list...\n"
-        ./bin/ollama list
-    - name: end-test
-      run:
-        echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
-        echo -e "Killing server...\n"
-        kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
-        echo -e "Sleeping...\n"
-        sleep 10
-        lsof -i
-        exit 0
+    needs: [ environment-setup ]
+    runs-on: macos-latest
+    env:
+      OLLAMA_DEBUG: 1
+      OLLAMA_PORT: 11434
+      OLLAMA_HOST: http://127.0.0.1:11434
+    steps:
+      - uses: actions/checkout@v4
+      - name: Printenv
+        run: |
+          pwd
+          printenv | sort
+          lsof -i
+      - name: ollama-setup
+        run: |
+          echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
+          echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
+          echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
+          echo -e "starting ollama on port: $OLLAMA_HOST...\n"
+          ./bin/ollama serve &
+          echo -e "Sleeping...\n"
+          sleep 10
+          echo -e "Getting PID...\n"
+          lsof -i  | grep ollama
+      - name: ollama-client
+        run: |
+          echo -e "Ollama help...\n"
+          ./bin/ollama
+          echo -e "Sleeping...\n"
+          sleep 2
+          echo -e "Ollama list...\n"
+          ./bin/ollama list
+      - name: end-test
+        run:
+          echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
+          echo -e "Killing server...\n"
+          kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
+          echo -e "Sleeping...\n"
+          sleep 10
+          lsof -i
+          exit 0
