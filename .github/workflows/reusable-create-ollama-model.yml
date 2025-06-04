@@ -52,6 +52,7 @@ jobs:
   ollama-startup:
     runs-on: macos-latest
     env:
+      MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
       OLLAMA_DEBUG: 1
       OLLAMA_PORT: 11434
