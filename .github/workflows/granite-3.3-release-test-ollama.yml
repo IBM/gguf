@@ -79,7 +79,6 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
-            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG" >> "$GITHUB_OUTPUT"
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
@@ -103,6 +102,7 @@ jobs:
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+      # echo "OLLAMA_DEBUG: $OLLAMA_DEBUG" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
