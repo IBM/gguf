@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
         if(args.debug):
             # Print input variables being used for this run
-            print(f">> models_dir='{args.models_dir}', repo_id='{args.repo_id}', file_name='{args.file_name}', hf_token='{args.hf_token}'")
+            print(f">> models_dir='{args.models_dir}', repo_id='{args.repo_id}', model_file='{args.model_file}', hf_token='{args.hf_token}'")
 
         # arg_len = len(sys.argv)
         # if arg_len < 5:
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         # print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', file_name='{file_name}', hf_token='{hf_token}'")
 
         # invoke fx
-        download_dir = safe_download_file(models_dir=args.models_dir, repo_id=args.repo_id, file_name=args.file_name, hf_token=args.hf_token)
+        download_dir = safe_download_file(models_dir=args.models_dir, repo_id=args.repo_id, file_name=args.model_file, hf_token=args.hf_token)
 
         # Print output variables
         print(f"download_dir: {download_dir}")
