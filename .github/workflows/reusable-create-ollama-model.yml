@@ -31,9 +31,6 @@ on:
         type: boolean
         required: false
         default: false
-      hf_collection_config:
-        type: string
-        required: true
       target_repo_owner:
         type: string
         required: true
@@ -50,58 +47,45 @@ on:
         default: true
 
 jobs:
-  reusable_workflow_job:
-    runs-on: macos-latest
-    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
-    steps:
+  ollama-startup:
+  needs: [ environment-setup ]
+  runs-on: macos-latest
+  env:
+    OLLAMA_DEBUG: 1
+    OLLAMA_PORT: 11434
+    OLLAMA_HOST: http://127.0.0.1:11434
+  steps:
     - uses: actions/checkout@v4
-    - run: |
-        echo "[INFO] github.env:"
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"
-        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> event_type: '${{ github.event_type }}'"
-        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
-        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-
-    - name: Dump GitHub context
-      env:
-        GH_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GH_CONTEXT"
-
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"
-
-    - name: Install Ollama
+    - name: Printenv
       run: |
-        curl -L -o Ollama-darwin.zip https://ollama.com/download/Ollama-darwin.zip
-
-    # - name: Install Ollama
-    #   run: |
-    #     curl -L -o Ollama-darwin.zip https://ollama.com/download/Ollama-darwin.zip
-
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    # primarily huggingface_hub
-    - name: install-dependencies
+        pwd
+        printenv | sort
+        lsof -i
+    - name: ollama-setup
       run: |
-        python -m pip install -r ./requirements.txt
-        pip list
-
-    # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
-    - name: ollama-model-file-create
+        echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
+        echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
+        echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
+        echo -e "starting ollama on port: $OLLAMA_HOST...\n"
+        ./bin/ollama serve &
+        echo -e "Sleeping...\n"
+        sleep 10
+        echo -e "Getting PID...\n"
+        lsof -i  | grep ollama
+    - name: ollama-client
       run: |
-        ls -al
-
-    # Usage: python {script_name} <repo_name:str> <title:str> <description:str> <private:bool> <hf_token:str>")
-    - name: ollama-model-create
-      run: |
-        ls -al
+        echo -e "Ollama help...\n"
+        ./bin/ollama
+        echo -e "Sleeping...\n"
+        sleep 2
+        echo -e "Ollama list...\n"
+        ./bin/ollama list
+    - name: end-test
+      run:
+        echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
+        echo -e "Killing server...\n"
+        kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
+        echo -e "Sleeping...\n"
+        sleep 10
+        lsof -i
+        exit 0

@@ -151,59 +151,80 @@ jobs:
   # ===========================================================================
   # Ollama
   # ===========================================================================
-  ollama-startup:
-    needs: [ environment-setup ]
-    runs-on: macos-latest
-    env:
-      OLLAMA_DEBUG: 1
-      OLLAMA_PORT: 11434
-      OLLAMA_HOST: http://127.0.0.1:11434
-    steps:
-      - uses: actions/checkout@v4
-      - name: Printenv
-        run: |
-          pwd
-          printenv | sort
-          lsof -i
-      - name: ollama-setup
-        run: |
-          echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
-          echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
-          echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
-          echo -e "starting ollama on port: $OLLAMA_HOST...\n"
-          ./bin/ollama serve &
-          echo -e "Sleeping...\n"
-          sleep 10
-          echo -e "Getting PID...\n"
-          lsof -i  | grep ollama
-      - name: ollama-client
-        run: |
-          echo -e "Ollama help...\n"
-          ./bin/ollama
-          echo -e "Sleeping...\n"
-          sleep 2
-          echo -e "Ollama list...\n"
-          ./bin/ollama list
-      - name: end-test
-        run:
-          echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
-          echo -e "Killing server...\n"
-          kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
-          sleep 10
-          lsof -i
-          exit 0
-
-  # ===========================================================================
-  # Granite Instruct
-  # ===========================================================================
-  instruct-create-hf-repos:
-    needs: [ ollama-startup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+  ollama-create-model:
+      needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+  # ollama-startup:
+  #   needs: [ environment-setup ]
+  #   runs-on: macos-latest
+  #   env:
+  #     OLLAMA_DEBUG: 1
+  #     OLLAMA_PORT: 11434
+  #     OLLAMA_HOST: http://127.0.0.1:11434
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Printenv
+  #       run: |
+  #         pwd
+  #         printenv | sort
+  #         lsof -i
+  #     - name: ollama-setup
+  #       run: |
+  #         echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
+  #         echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
+  #         echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
+  #         echo -e "starting ollama on port: $OLLAMA_HOST...\n"
+  #         ./bin/ollama serve &
+  #         echo -e "Sleeping...\n"
+  #         sleep 10
+  #         echo -e "Getting PID...\n"
+  #         lsof -i  | grep ollama
+  #     - name: ollama-client
+  #       run: |
+  #         echo -e "Ollama help...\n"
+  #         ./bin/ollama
+  #         echo -e "Sleeping...\n"
+  #         sleep 2
+  #         echo -e "Ollama list...\n"
+  #         ./bin/ollama list
+  #     - name: end-test
+  #       run:
+  #         echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
+  #         echo -e "Killing server...\n"
+  #         kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
+  #         echo -e "Sleeping...\n"
+  #         sleep 10
+  #         lsof -i
+  #         exit 0
+
+  # ===========================================================================
+  # Granite Instruct
+  # ===========================================================================
+  instruct-create-hf-repos:
+    needs: [ ollama-create-model ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
