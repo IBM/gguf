@@ -166,38 +166,28 @@ jobs:
           printenv | sort
           lsof -i
       - name: ollama-setup
-        # env:
-        #   OLLAMA_DEBUG: 1
-        #   OLLAMA_PORT: 11434
-        #   OLLAMA_HOST: http://127.0.0.1:11434
         run: |
-          echo "OLLAMA_DEBUG:" $OLLAMA_DEBUG
-          echo "OLLAMA_PORT:" $OLLAMA_PORT
-          echo "OLLAMA_HOST:" $OLLAMA_HOST
-          echo "starting ollama on port: $OLLAMA_HOST ..."
+          echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
+          echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
+          echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
+          echo -e "starting ollama on port: $OLLAMA_HOST...\n"
           ./bin/ollama serve &
-          echo "Sleeping..."
-          sleep 20
-          echo "Getting PID..."
+          echo -e "Sleeping...\n"
+          sleep 10
+          echo -e "Getting PID...\n"
           lsof -i  | grep ollama
       - name: ollama-client
-        # env:
-        #   OLLAMA_DEBUG: 1
-        #   OLLAMA_PORT: 11434
         run: |
-          echo "Ollama help..."
+          echo -e "Ollama help...\n"
           ./bin/ollama
+          echo -e "Sleeping...\n"
           sleep 2
-          echo "Ollama list..."
+          echo -e "Ollama list...\n"
           ./bin/ollama list
       - name: end-test
-        # env:
-        #   OLLAMA_DEBUG: 1
-        #   OLLAMA_PORT: 11434
         run:
-          echo "OLLAMA_PORT:" $OLLAMA_PORT
-          echo "OLLAMA_PORT:" ${{env.OLLAMA_PORT}}
-          echo "Killing server..."
+          echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
+          echo -e "Killing server...\n"
           kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           sleep 10
           lsof -i
