@@ -154,6 +154,10 @@ jobs:
   ollama-startup:
     needs: [ environment-setup ]
     runs-on: macos-latest
+    env:
+      OLLAMA_DEBUG: 1
+      OLLAMA_PORT: 11434
+      OLLAMA_HOST: http://127.0.0.1:11434
     steps:
       - uses: actions/checkout@v4
       - name: Printenv
@@ -162,10 +166,10 @@ jobs:
           printenv | sort
           lsof -i
       - name: ollama-setup
-        env:
-          OLLAMA_DEBUG: 1
-          OLLAMA_PORT: 11434
-          OLLAMA_HOST: http://127.0.0.1:11434
+        # env:
+        #   OLLAMA_DEBUG: 1
+        #   OLLAMA_PORT: 11434
+        #   OLLAMA_HOST: http://127.0.0.1:11434
         run: |
           echo "$OLLAMA_DEBUG:" $OLLAMA_DEBUG
           echo "$OLLAMA_PORT:" $OLLAMA_PORT
@@ -177,9 +181,9 @@ jobs:
           echo "Getting PID..."
           lsof -i  | grep ollama
       - name: ollama-client
-        env:
-          OLLAMA_DEBUG: 1
-          OLLAMA_PORT: 11434
+        # env:
+        #   OLLAMA_DEBUG: 1
+        #   OLLAMA_PORT: 11434
         run: |
           echo "Ollama help..."
           ./bin/ollama
@@ -187,16 +191,16 @@ jobs:
           echo "Ollama list..."
           ./bin/ollama list
       - name: end-test
-        env:
-          OLLAMA_DEBUG: 1
-          OLLAMA_PORT: 11434
+        # env:
+        #   OLLAMA_DEBUG: 1
+        #   OLLAMA_PORT: 11434
         run:
           echo "$OLLAMA_PORT:" $OLLAMA_PORT
           echo "$OLLAMA_PORT:" ${{env.OLLAMA_PORT}}
           echo "Killing server..."
           kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           sleep 10
-          lsof -i  | grep ollama
+          lsof -i
           exit 0
 
   # ===========================================================================
