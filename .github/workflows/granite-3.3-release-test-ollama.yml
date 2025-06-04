@@ -19,7 +19,7 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   OLLAMA_DEBUG: 1
-  OLLAMA_HOST: 11634
+  OLLAMA_HOST: 11534
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -162,16 +162,18 @@ jobs:
         run: |
           pwd
           printenv | sort
+          lsof -i
       - name: ollama-setup
         run: |
           echo $OLLAMA_DEBUG
           echo $OLLAMA_HOST
+          echo "starting ollama on port $OLLAMA_HOST"
           nohup ./bin/ollama serve &
+          sleep 20
           lsof -i  | grep ollama
       - name: end-test
         run:
-          sleep 20
-          kill -9 $(lsof -i:11634 -t)
+          kill -9 $(lsof -i:$OLLAMA_HOST -t)
           exit 0
 
   # ===========================================================================
