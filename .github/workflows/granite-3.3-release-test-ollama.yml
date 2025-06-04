@@ -1,4 +1,4 @@
-name: granite-3.3-tagged-test-release
+name: granite-3.3-tagged-test-ollama-release
 run-name: "[TEST] Granite 3.3 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
