@@ -155,9 +155,9 @@ jobs:
   # ===========================================================================
   ollama-startup:
     needs: [ environment-setup ]
-    uses: actions/checkout@v4
     runs-on: macos-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Printenv
         run: printenv | sort
       - name: ollama-setup
