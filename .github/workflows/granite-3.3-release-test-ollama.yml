@@ -18,6 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
+  OLLAMA_DEBUG: 1
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -78,6 +79,7 @@ jobs:
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
+            echo "OLLAMA_DEBUG: $OLLAMA_DEBUG" >> "$GITHUB_OUTPUT"
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
@@ -104,6 +106,7 @@ jobs:
 
       - name: Confirm GitHub output values were set
         run: |
+            echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
             echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
@@ -122,6 +125,8 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
+            echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
+            echo "The value of OLLAMA_DEBUG is: ${{ env.OLLAMA_DEBUG }}"
 
       # - name: confirm-environment
       #   run: |
@@ -149,6 +154,13 @@ jobs:
         env:
           GH_QUIET: ${{ toJson(secrets) }}
         run: printenv | sort
+
+  # ===========================================================================
+  # Ollama
+  # ===========================================================================
+  instruct-create-hf-repos:
+    needs: [ environment-setup ]
+    run: exit 0
 
   # ===========================================================================
   # Granite Instruct
@@ -251,4 +263,3 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
