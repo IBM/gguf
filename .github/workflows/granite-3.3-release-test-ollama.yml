@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  OLLAMA_DEBUG: true
+  OLLAMA_DEBUG: 1
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -158,7 +158,7 @@ jobs:
   # ===========================================================================
   # Ollama
   # ===========================================================================
-  start-ollama:
+  ollama-startup:
     needs: [ environment-setup ]
     run: exit 0
 
@@ -166,7 +166,7 @@ jobs:
   # Granite Instruct
   # ===========================================================================
   instruct-create-hf-repos:
-    needs: [ start-ollama: ]
+    needs: [ start-ollama ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
