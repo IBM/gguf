@@ -164,8 +164,8 @@ jobs:
           printenv | sort
           lsof -i
       - name: ollama-setup
-        env:
-          OLLAMA_HOST: 9843
+        # env:
+        #   OLLAMA_HOST: 9843
         run: |
           echo $OLLAMA_DEBUG
           echo $OLLAMA_HOST
