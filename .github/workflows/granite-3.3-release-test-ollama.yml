@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  OLLAMA_DEBUG: 1
+  OLLAMA_DEBUG: true
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
