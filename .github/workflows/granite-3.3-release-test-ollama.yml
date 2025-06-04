@@ -187,6 +187,9 @@ jobs:
           echo "Ollama list..."
           ./bin/ollama list
       - name: end-test
+        env:
+          OLLAMA_DEBUG: 1
+          OLLAMA_PORT: 11434
         run:
           echo "$OLLAMA_PORT:" $OLLAMA_PORT
           echo "$OLLAMA_PORT:" ${{env.OLLAMA_PORT}}
