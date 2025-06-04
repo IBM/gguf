@@ -141,7 +141,6 @@ jobs:
           ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
       - name: verify-downloaded-files
-        if: env.DEBUG == 'true' && runner.os == 'macOS'
         run: |
           echo downloaded files...
           echo "--------------------"
