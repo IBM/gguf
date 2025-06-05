@@ -57,6 +57,9 @@ jobs:
       OLLAMA_DEBUG: 1
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
+      OLLAMA_MODEL_ORG: mrutkows
+      OLLAMA_MODEL_NAME: granite-test
+      OLLAMA_MODEL_PRIVATE: true
     steps:
       - uses: actions/checkout@v4
       - name: confirm-environment
@@ -99,25 +102,30 @@ jobs:
       - name: set-derivative-env-vars-1
         run: |
           echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+          echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        # echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-2
         run: |
+          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.BASE_NAME_QUANTIZED}}" >> $GITHUB_ENV
           echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-3
         run: |
           echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+          echo "OLLAMA_NAMESPACE=${{env.OLLAMA_MODEL_ORG}}/${{env.OLLAMA_MODEL_NAME}}" >> $GITHUB_ENV
 
       - name: verify-github-env
         run: |
           echo "================== Derivative Environment Variables 1 =================="
           echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
-          echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+          echo "BASE_NAME_QUANTIZED='$BASE_NAME_QUANTIZED' (${{ env.BASE_NAME_QUANTIZED }})"
           echo "================== Derivative Environment Variables 2 =================="
+          echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
           echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
           echo "================== Derivative Environment Variables 3 =================="
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+          echo "OLLAMA_NAMESPACE='$OLLAMA_NAMESPACE' (${{ env.OLLAMA_NAMESPACE }})"
 
       - name: test-quantized-model-exists
         run: |
@@ -184,7 +192,7 @@ jobs:
       - name: ollama-create-model
         run: |
           echo -e "Ollama creating model from Modelfile...\n"
-          ./bin/ollama create Modelfile
+          ./bin/ollama create ${{env.BASE_NAME_QUANTIZED}} -f Modelfile
           sleep 5
           echo -e "Ollama list...\n"
           ./bin/ollama list
