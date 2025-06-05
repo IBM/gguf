@@ -95,7 +95,6 @@ def test_empty_string(value:str):
 
 if __name__ == "__main__":
     try:
-
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("models_dir", type=test_empty_string, help="The directory where the model file will be downloaded to.")
@@ -103,30 +102,11 @@ if __name__ == "__main__":
         parser.add_argument("model_file", type=test_empty_string, help="The model file name to download")
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
-
-        # parse argv[] values
         args = parser.parse_args()
 
         if(args.debug):
             # Print input variables being used for this run
             print(f">> models_dir='{args.models_dir}', repo_id='{args.repo_id}', model_file='{args.model_file}', hf_token='{args.hf_token}'")
-
-        # arg_len = len(sys.argv)
-        # if arg_len < 5:
-        #     script_name = os.path.basename(__file__)
-        #     print(f"Usage: python {script_name} <models_dir> <repo_id> <model_file> <hf_token>")
-        #     print(f"Actual: sys.argv[]: '{sys.argv}'")
-        #     sys.exit(1)
-
-        # # Parse input arguments into named params.
-        # fx_name = sys.argv[0]
-        # models_dir = sys.argv[1]
-        # repo_id = sys.argv[2]
-        # file_name = sys.argv[3]
-        # hf_token = sys.argv[4]
-
-        # Print input variables being used for this run
-        # print(f">> {fx_name}: models_dir='{models_dir}', repo_id='{repo_id}', file_name='{file_name}', hf_token='{hf_token}'")
 
         # invoke fx
         download_dir = safe_download_file(models_dir=args.models_dir, repo_id=args.repo_id, file_name=args.model_file, hf_token=args.hf_token)
