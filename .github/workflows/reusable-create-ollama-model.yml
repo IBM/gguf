@@ -153,6 +153,15 @@ jobs:
             exit 1
           fi
 
+      - name: ollama-create-modelfile
+        run: |
+          cat <<EOF > Modelfile
+          FROM ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+          EOF
+          echo "Verifying Modelfile..."
+          ls -al Modelfile
+          cat Modelfile
+
       - name: ollama-server-start
         run: |
           echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
@@ -170,6 +179,13 @@ jobs:
           ./bin/ollama
           echo -e "Sleeping...\n"
           sleep 2
+          echo -e "Ollama list...\n"
+          ./bin/ollama list
+      - name: ollama-create-model
+        run: |
+          echo -e "Ollama creating model from Modelfile...\n"
+          ./bin/ollama create Modelfile
+          sleep 5
           echo -e "Ollama list...\n"
           ./bin/ollama list
       - name: ollama-server-stop

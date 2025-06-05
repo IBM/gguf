@@ -197,14 +197,17 @@ jobs:
         pip list
 
     - name: verify-downloaded-files
-      if: inputs.debug == true
       run: |
         echo downloaded files...
         echo "--------------------"
-        ls -al -d */
-        echo "--------------------"
         find . -name \*.gguf -type f
         echo "--------------------"
+        if [ -f ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ]; then
+          echo "File exists"
+        else
+          echo "File does not exist"
+          exit 1
+        fi
 
     - name: quantize-gguf
       run: |
