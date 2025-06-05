@@ -11,6 +11,8 @@ on:
     secrets:
       hf_token:
         required: true
+      ollama_private_key:
+        required: true
     inputs:
       debug:
         type: boolean
@@ -39,6 +41,9 @@ on:
         type: string
         required: true
       target_repo_name_ext:
+        type: string
+        required: true
+      target_ollama_organization:
         type: string
         required: true
       repo_id:
