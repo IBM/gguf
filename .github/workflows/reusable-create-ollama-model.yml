@@ -138,7 +138,7 @@ jobs:
           echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
           echo "--------------------"
           python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
-          ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+          ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
 
       - name: verify-downloaded-files
         run: |
@@ -146,6 +146,12 @@ jobs:
           echo "--------------------"
           find . -name \*.gguf -type f
           echo "--------------------"
+          if [ -f ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ]; then
+            echo "File exists"
+          else
+            echo "File does not exist"
+            exit 1
+          fi
 
       - name: ollama-server-start
         run: |
