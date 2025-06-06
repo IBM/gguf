@@ -78,6 +78,9 @@ jobs:
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       new_array: "${{ steps.set-vars.outputs.new_array }}"
     steps:
+      - name: List all environment variables 2
+        run: env | sort
+
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
@@ -105,8 +108,17 @@ jobs:
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
-            NEW_ARRAY=$(echo "$SOURCE_INSTRUCT_REPOS" | jq -s  '[ .[] + .["f16"] ]')
-            echo "new_array=$NEW_ARRAY" >> "$GITHUB_OUTPUT"
+      - name: add value to source quants
+        run: |
+          QUANT_F16="f16"
+          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), \",\") }}"
+          # Add the new value
+          NEW_ARRAY_STRING="${MY_ARRAY_STRING},${QUANT_F16}"
+          # Convert back to an array
+          NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
+          echo "NEW_ARRAY: ${{NEW_ARRAY}}"
+        # NEW_ARRAY=$(echo "$SOURCE_INSTRUCT_REPOS" | jq -s  '[ .[] + .["f16"] ]')
+        # echo "new_array=$NEW_ARRAY" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -131,7 +143,7 @@ jobs:
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
 
-      - name: List all environment variables
+      - name: List all environment variables 2
         run: env | sort
 
   # ===========================================================================
