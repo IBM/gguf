@@ -130,10 +130,10 @@ jobs:
       - name: add value to source quants
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
-          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), "','") }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          QUANT_F16=",f16"
-          NEW_ARRAY_STRING="[${TEMP_ARRAY_STRING}${QUANT_F16}]"
+          QUANT_F16="f16"
+          NEW_ARRAY_STRING="['${TEMP_ARRAY_STRING},'${QUANT_F16}'']"
           echo "NEW_ARRAY_STRING='$NEW_ARRAY_STRING'"
           echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
         # NEW_ARRAY_1="${{ fromJSON(${NEW_ARRAY_STRING}) }}"
@@ -142,9 +142,9 @@ jobs:
       - name: List all environment variables 1b
         run: env | sort
 
-      - name: create-new-array
-        run: |
-          echo ${{ fromJSON(env.NEW_ARRAY_STRING) }}
+      # - name: create-new-array
+      #   run: |
+      #     echo ${{ fromJSON(env.NEW_ARRAY_STRING) }}
       #     NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
       #     echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
