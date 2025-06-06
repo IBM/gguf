@@ -38,7 +38,7 @@ on:
       target_repo_name_ext:
         type: string
         required: true
-      target_ollama_organization:
+      target_ollama_org:
         type: string
         required: true
       repo_id:
@@ -57,7 +57,6 @@ jobs:
       OLLAMA_DEBUG: 1
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
-      OLLAMA_MODEL_ORG: mrutkows
       OLLAMA_MODEL_NAME: granite-test
       OLLAMA_MODEL_PRIVATE: true
     steps:
@@ -204,7 +203,13 @@ jobs:
           echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
           echo -e "Ollama creating model from Modelfile...\n"
           ./bin/ollama create ${{env.BASE_NAME_QUANTIZED}} -f Modelfile
-          sleep 5
+          sleep 2
+          echo -e "Ollama list...\n"
+          ./bin/ollama list
+      - name:
+        run: |
+          ./bin/ollama cp ${{env.BASE_NAME_QUANTIZED}} ${{env.TARGET_OLLAMA_ORG}}/${{BASE_NAME_QUANTIZED}}
+          sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
       - name: ollama-server-stop

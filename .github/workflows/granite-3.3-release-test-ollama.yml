@@ -75,7 +75,7 @@ jobs:
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
-      target_ollama_organization: ${{ steps.set-vars.outputs.target_ollama_organization }}
+      target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -103,7 +103,7 @@ jobs:
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_ollama_organization=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -126,7 +126,7 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
-            echo "target_ollama_organization: '${{ steps.set-vars.outputs.target_ollama_organization }}'"
+            echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
 
   # ===========================================================================
   # Ollama
@@ -148,7 +148,7 @@ jobs:
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_ollama_organization: ${{ needs.environment-setup.outputs.target_ollama_organization }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets: inherit
