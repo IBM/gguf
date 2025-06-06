@@ -109,31 +109,31 @@ jobs:
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout project scripts directory
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            scripts/
+      # - name: Checkout project scripts directory
+      #   uses: actions/checkout@v4
+      #   with:
+      #     sparse-checkout: |
+      #       scripts/
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.11'
 
-      - name: python-append
-        run: |
-          ls -al .
-          ls -al scripts
-          QUANT_F16="['f16']"
-          result=$(python ./scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "['f16']")
-          echo "result=$result"
+      # - name: python-append
+      #   run: |
+      #     ls -al .
+      #     ls -al scripts
+      #     QUANT_F16="['f16']"
+      #     result=$(python scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "${QUANT_F16}")
+      #     echo "result=$result"
 
       - name: add value to source quants
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
-          QUANT_F16=",f16"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
           echo $TEMP_ARRAY_STRING
-          NEW_ARRAY_STRING="${TEMP_ARRAY_STRING}${QUANT_F16}"
+          QUANT_F16=",f16"
+          NEW_ARRAY_STRING="[${TEMP_ARRAY_STRING}${QUANT_F16}]"
           echo $NEW_ARRAY_STRING
 
         # # Convert back to an array
