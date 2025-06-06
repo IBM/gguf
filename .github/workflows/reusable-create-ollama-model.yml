@@ -61,6 +61,11 @@ jobs:
       OLLAMA_MODEL_PRIVATE: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/
+            bin/
+
       - name: confirm-environment
         run: |
           uname -a

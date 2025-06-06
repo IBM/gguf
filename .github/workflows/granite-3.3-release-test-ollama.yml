@@ -84,6 +84,15 @@ jobs:
       - name: List all environment variables 1
         run: env | sort
 
+      - name: add f16 to target quants
+        run: |
+          echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_QUANTS="['${TEMP_ARRAY_STRING},'${{env.QUANT_F16}}']"
+          echo "TARGET_OLLAMA_QUANTS='$TARGET_OLLAMA_QUANTS'"
+          echo "TARGET_OLLAMA_QUANTS=$TARGET_OLLAMA_QUANTS" >> $GITHUB_ENV
+
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
@@ -111,36 +120,10 @@ jobs:
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_quants=$TARGET_OLLAMA_QUANTS" >> "$GITHUB_OUTPUT"
 
-      # - name: Checkout project scripts directory
-      #   uses: actions/checkout@v4
-      #   with:
-      #     sparse-checkout: |
-      #       scripts/
-
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: '3.11'
-
-      - name: add value to source quants
-        run: |
-          echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
-          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
-          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          NEW_ARRAY_STRING="['${TEMP_ARRAY_STRING},'${{env.QUANT_F16}}']"
-          echo "NEW_ARRAY_STRING='$NEW_ARRAY_STRING'"
-          echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
-        # NEW_ARRAY_1="${{ fromJSON(${NEW_ARRAY_STRING}) }}"
-        # echo "NEW_ARRAY_1: ${{NEW_ARRAY_1}}"
-
-      - name: List all environment variables 1b
+      - name: List all environment variables 2
         run: env | sort
-
-      # - name: create-new-array
-      #   run: |
-      #     echo ${{ fromJSON(env.NEW_ARRAY_STRING) }}
-      #     NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
-      #     echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -164,9 +147,7 @@ jobs:
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
-
-      - name: List all environment variables 2
-        run: env | sort
+            echo "target_ollama_quants: '${{ steps.set-vars.outputs.target_ollama_quants }}'"
 
   # ===========================================================================
   # Ollama
