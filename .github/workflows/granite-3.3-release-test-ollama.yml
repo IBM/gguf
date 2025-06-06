@@ -142,10 +142,10 @@ jobs:
       - name: List all environment variables 1b
         run: env | sort
 
-      - name: create-new-array
-        run: |
-          NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
-          echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
+      # - name: create-new-array
+      #   run: |
+      #     NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
+      #     echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
       - name: Confirm GitHub output values were set
         run: |
