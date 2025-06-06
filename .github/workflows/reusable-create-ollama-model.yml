@@ -73,11 +73,8 @@ jobs:
           echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-      # - name: Printenv
-      #   run: |
-      #     pwd
-      #     printenv | sort
-      #     lsof -i
+      - name: List all inputs
+        run: inputs | sort
 
       - name: Echo secret
         run: |
@@ -107,7 +104,7 @@ jobs:
         run: |
           echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
           echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
-          echo "TARGET_OLLAMA_ORG=${{ inputs.target_repo_org }}')" >> $GITHUB_ENV
+          echo "TARGET_OLLAMA_ORG=${{ inputs.target_repo_org }}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-2
         run: |
@@ -132,7 +129,7 @@ jobs:
           echo "OLLAMA_NAMESPACE='$OLLAMA_NAMESPACE' (${{ env.OLLAMA_NAMESPACE }})"
 
       - name: List all environment variables
-        run: env
+        run: env | sort
 
       - name: test-quantized-model-exists
         run: |
@@ -189,6 +186,7 @@ jobs:
           echo -e "Getting PID...\n"
           lsof -i  | grep ollama
           ls -al $HOME/.ollama
+
       - name: ollama-client
         run: |
           echo -e "Ollama help...\n"
@@ -197,11 +195,13 @@ jobs:
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
+
       - name: ollama-generate-model-name
         run: |
           model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
           echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
+
       - name: ollama-create-model
         run: |
           echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
@@ -210,12 +210,14 @@ jobs:
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
+
       - name:
         run: |
-          ./bin/ollama cp ${{env.BASE_NAME_QUANTIZED}} ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
+          ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}"
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
+
       - name: ollama-server-stop
         run:
           echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
