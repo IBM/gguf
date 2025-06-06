@@ -196,12 +196,12 @@ jobs:
           ./bin/ollama list
       - name: ollama-generate-model-name
         run: |
-          python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama
-          model_name=$(python my_script.py)
-          echo "The output from the Python script is: '$model_name'"
+          model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
+          echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
       - name: ollama-create-model
         run: |
+          echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
           echo -e "Ollama creating model from Modelfile...\n"
           ./bin/ollama create ${{env.BASE_NAME_QUANTIZED}} -f Modelfile
           sleep 5
