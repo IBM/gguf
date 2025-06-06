@@ -150,34 +150,6 @@ jobs:
             echo "target_ollama_quants: '${{ steps.set-vars.outputs.target_ollama_quants }}'"
 
   # ===========================================================================
-  # Ollama
-  # ===========================================================================
-  # quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
-  ollama-create-model:
-    needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-    with:
-      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      granite_family: "instruct"
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-      repo_id: ${{ matrix.repo_id }}
-      quantization: ${{ matrix.quantization }}
-    secrets: inherit
-      # hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      # ollama_token: "${{ secrets.OLLAMA_TOKEN }}
-
-  # ===========================================================================
   # Granite Instruct
   # ===========================================================================
   instruct-create-hf-repos:
@@ -278,3 +250,31 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # ===========================================================================
+  # Ollama
+  # ===========================================================================
+  # quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+  ollama-create-model:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets: inherit
+      # hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      # ollama_token: "${{ secrets.OLLAMA_TOKEN }}
