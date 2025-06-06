@@ -46,9 +46,9 @@ env:
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
   ]"
-  TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: ibm-granite
-  TARGET_REPO_PRIVATE: false
+  TARGET_HF_REPO_NAME_EXT: -GGUF
+  TARGET_HF_REPO_OWNER: ibm-granite
+  TARGET_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/granite-3.3/hf_collection_mapping_release_ibm_granite.json"
 
 jobs:
@@ -89,8 +89,8 @@ jobs:
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
-            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
-            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+            echo "TARGET_HF_REPO_OWNER: $TARGET_HF_REPO_OWNER"
+            echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_INSTRUCT_JOBS" >> "$GITHUB_OUTPUT"
@@ -98,11 +98,11 @@ jobs:
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
-            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
-            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_instruct_quantizations=$TARGET_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
@@ -131,12 +131,8 @@ jobs:
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
 
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+      # - name: List all environment variables
+      #   run: env | sort
 
       # - name: Dump runner context
       #   env:

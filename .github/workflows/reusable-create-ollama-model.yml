@@ -131,7 +131,7 @@ jobs:
       - name: List all environment variables
         run: env | sort
 
-      - name: test-quantized-model-exists
+      - name: verify-quantized-model-exists
         run: |
           exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
           echo "exists: '$exists'"
@@ -211,7 +211,7 @@ jobs:
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
-      - name:
+      - name: ollama-model-cp
         run: |
           ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}"
           sleep 2
