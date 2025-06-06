@@ -105,12 +105,12 @@ jobs:
         run: |
           echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
           echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-          echo "TARGET_OLLAMA_ORG=${{ inputs.target_repo_org }}')" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-1
         run: |
           echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
           echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
+          echo "TARGET_OLLAMA_ORG=${{ inputs.target_repo_org }}')" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-2
         run: |
