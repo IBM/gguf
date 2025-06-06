@@ -112,7 +112,7 @@ jobs:
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           QUANT_F16=", 'f16'"
-          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ",") }}"
+          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
           echo $MY_ARRAY_STRING
 
         # # Add the new value
