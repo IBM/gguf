@@ -76,7 +76,7 @@ jobs:
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
-      new_array: "${{ steps.set-vars.outputs.new_array }}"
+      target_ollama_quants: "${{ steps.set-vars.outputs.target_ollama_quants }}"
     env:
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
