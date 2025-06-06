@@ -137,7 +137,7 @@ jobs:
           echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
           NEW_ARRAY_1="${{ fromJSON(NEW_ARRAY_STRING) }}"
           echo "NEW_ARRAY_1: ${{NEW_ARRAY_1}}"
-      -name: create-new-array
+      - name: create-new-array
           NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
           echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
