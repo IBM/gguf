@@ -173,9 +173,9 @@ jobs:
       target_ollama_organization: ${{ needs.environment-setup.outputs.target_ollama_organization }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
-    secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_private_key: "${{ secrets.OLLAMA_PRIVATE_KEY }}
+    # secrets:
+    #   hf_token: ${{ secrets.HF_TOKEN_TEST }}
+    #   ollama_private_key: "${{ secrets.OLLAMA_PRIVATE_KEY }}
 
   # ===========================================================================
   # Granite Instruct

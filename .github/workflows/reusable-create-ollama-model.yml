@@ -8,11 +8,11 @@ name: create-ollama-model-reusable
 
 on:
   workflow_call:
-    secrets:
-      hf_token:
-        required: true
-      ollama_private_key:
-        required: true
+    # secrets:
+    #   hf_token:
+    #     required: true
+      # ollama_private_key:
+      #   required: true
     inputs:
       debug:
         type: boolean
