@@ -108,21 +108,29 @@ jobs:
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
-      - name: add value to source quants
-        run: |
-          echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
-          QUANT_F16=", 'f16'"
-          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
-          echo $TEMP_ARRAY_STRING
-          NEW_ARRAY_STRING="${TEMP_ARRAY_STRING}${QUANT_F16}"
-          echo $NEW_ARRAY_STRING
+
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
+
+        - name: python-append
+          run: |
+            QUANT_F16="['f16']"
+            result=$(python append_array.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "$QUANT_F16")
+            echo "result=$result"
+
+        - name: add value to source quants
+          run: |
+            echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
+            QUANT_F16=",f16"
+            TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
+            echo $TEMP_ARRAY_STRING
+            NEW_ARRAY_STRING="${TEMP_ARRAY_STRING}${QUANT_F16}"
+            echo $NEW_ARRAY_STRING
 
         # # Convert back to an array
         # NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
         # echo "NEW_ARRAY: ${{NEW_ARRAY}}"
-
-        # NEW_ARRAY=$(echo "$SOURCE_INSTRUCT_REPOS" | jq -s  '[ .[] + .["f16"] ]')
-        # echo "new_array=$NEW_ARRAY" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
