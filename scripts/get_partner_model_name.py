@@ -72,8 +72,8 @@ def enum_contains(enum_type, value):
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-        parser.add_argument("--hf-model-name", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
-        parser.add_argument("--partner", type=str, required=True, help="Partner name (e.g., 'ollama')")
+        parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
+        parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
         args = parser.parse_args()

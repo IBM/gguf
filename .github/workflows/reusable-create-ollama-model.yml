@@ -107,11 +107,11 @@ jobs:
       - name: set-derivative-env-vars-1
         run: |
           echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-          echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+          echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-2
         run: |
-          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.BASE_NAME_QUANTIZED}}" >> $GITHUB_ENV
+          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.BASE_NAME_QUANTIZED}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
           echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-3
@@ -196,7 +196,7 @@ jobs:
           ./bin/ollama list
       - name: ollama-generate-model-name
         run: |
-          python ./scripts/get_partner_model_name.py
+          python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama
           model_name=$(python my_script.py)
           echo "The output from the Python script is: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
