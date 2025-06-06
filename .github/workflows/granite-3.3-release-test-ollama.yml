@@ -142,8 +142,9 @@ jobs:
       - name: List all environment variables 1b
         run: env | sort
 
-      # - name: create-new-array
-      #   run: |
+      - name: create-new-array
+        run: |
+          echo ${{ fromJSON(env.NEW_ARRAY_STRING) }}
       #     NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
       #     echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
