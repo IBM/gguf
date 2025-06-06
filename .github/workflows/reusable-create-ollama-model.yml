@@ -185,6 +185,7 @@ jobs:
           sleep 10
           echo -e "Getting PID...\n"
           lsof -i  | grep ollama
+          ls -al $HOME/.ollama
       - name: ollama-client
         run: |
           echo -e "Ollama help...\n"
@@ -193,6 +194,12 @@ jobs:
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
+      - name: ollama-generate-model-name
+        run: |
+          python ./scripts/get_partner_model_name.py
+          model_name=$(python my_script.py)
+          echo "The output from the Python script is: '$model_name'"
+          echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
       - name: ollama-create-model
         run: |
           echo -e "Ollama creating model from Modelfile...\n"
