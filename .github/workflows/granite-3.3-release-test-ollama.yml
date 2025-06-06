@@ -153,7 +153,7 @@ jobs:
       quantization: ${{ matrix.quantization }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      # ollama_private_key: "${{ secrets.OLLAMA_PRIVATE_KEY }}
+      ollama_token: "${{ secrets.OLLAMA_TOKEN }}
 
   # ===========================================================================
   # Granite Instruct
