@@ -171,8 +171,8 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_ollama_organization: ${{ needs.environment-setup.outputs.target_ollama_organization }}
-      repo_id: "${{ matrix.repo_id }}"
-      quantization: "${{ matrix.quantization }}"
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ollama_private_key: "${{ secrets.OLLAMA_PRIVATE_KEY }}
