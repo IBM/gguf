@@ -11,8 +11,8 @@ on:
     secrets:
       hf_token:
         required: true
-      ollama_private_key:
-        required: true
+      # ollama_private_key:
+      #   required: true
     inputs:
       debug:
         type: boolean
