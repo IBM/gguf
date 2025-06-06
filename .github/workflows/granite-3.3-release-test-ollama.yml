@@ -109,12 +109,20 @@ jobs:
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
 
+      - name: Checkout project scripts directory
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: python-append
         run: |
+          ls -al .
+          ls -al scripts
           QUANT_F16="['f16']"
           result=$(python ./scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "['f16']")
           echo "result=$result"
