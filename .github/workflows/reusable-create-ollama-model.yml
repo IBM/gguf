@@ -73,6 +73,9 @@ jobs:
           echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
+      - name: List all environment variables
+        run: env
+
       - name: Printenv
         run: |
           pwd
@@ -102,6 +105,7 @@ jobs:
         run: |
           echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
           echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+          echo "TARGET_OLLAMA_ORG=${{ inputs.target_repo_org }}')" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-1
         run: |
