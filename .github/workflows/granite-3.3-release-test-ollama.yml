@@ -131,14 +131,15 @@ jobs:
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
-          echo $TEMP_ARRAY_STRING
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
           QUANT_F16=",f16"
           NEW_ARRAY_STRING="[${TEMP_ARRAY_STRING}${QUANT_F16}]"
-          echo $NEW_ARRAY_STRING
-
-        # # Convert back to an array
-        # NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
-        # echo "NEW_ARRAY: ${{NEW_ARRAY}}"
+          echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
+          NEW_ARRAY_1="${{ fromJSON(NEW_ARRAY_STRING) }}"
+          echo "NEW_ARRAY_1: ${{NEW_ARRAY_1}}"
+      -name: create-new-array
+          NEW_ARRAY_2="${{ fromJSON(env.NEW_ARRAY_STRING) }}"
+          echo "NEW_ARRAY_2: ${{NEW_ARRAY_2}}"
 
       - name: Confirm GitHub output values were set
         run: |
