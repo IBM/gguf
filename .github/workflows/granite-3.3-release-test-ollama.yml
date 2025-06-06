@@ -77,6 +77,9 @@ jobs:
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       new_array: "${{ steps.set-vars.outputs.new_array }}"
+    env:
+      ARRAY_SEP="','"
+      QUANT_F16="f16"
     steps:
       - name: List all environment variables 1
         run: env | sort
@@ -119,21 +122,12 @@ jobs:
       #   with:
       #     python-version: '3.11'
 
-      # - name: python-append
-      #   run: |
-      #     ls -al .
-      #     ls -al scripts
-      #     QUANT_F16="['f16']"
-      #     result=$(python scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "${QUANT_F16}")
-      #     echo "result=$result"
-
       - name: add value to source quants
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
-          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), "','") }}"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          QUANT_F16="f16"
-          NEW_ARRAY_STRING="['${TEMP_ARRAY_STRING},'${QUANT_F16}'']"
+          NEW_ARRAY_STRING="['${TEMP_ARRAY_STRING},'${{env.QUANT_F16}}']"
           echo "NEW_ARRAY_STRING='$NEW_ARRAY_STRING'"
           echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
         # NEW_ARRAY_1="${{ fromJSON(${NEW_ARRAY_STRING}) }}"
