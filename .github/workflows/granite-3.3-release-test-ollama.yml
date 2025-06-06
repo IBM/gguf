@@ -110,13 +110,17 @@ jobs:
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
       - name: add value to source quants
         run: |
-          QUANT_F16="f16"
-          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), \",\") }}"
-          # Add the new value
-          NEW_ARRAY_STRING="${MY_ARRAY_STRING},${QUANT_F16}"
-          # Convert back to an array
-          NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
-          echo "NEW_ARRAY: ${{NEW_ARRAY}}"
+          echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
+          QUANT_F16=", 'f16'"
+          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ",") }}"
+          echo $MY_ARRAY_STRING
+
+        # # Add the new value
+        # NEW_ARRAY_STRING="${MY_ARRAY_STRING},${QUANT_F16}"
+        # # Convert back to an array
+        # NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
+        # echo "NEW_ARRAY: ${{NEW_ARRAY}}"
+
         # NEW_ARRAY=$(echo "$SOURCE_INSTRUCT_REPOS" | jq -s  '[ .[] + .["f16"] ]')
         # echo "new_array=$NEW_ARRAY" >> "$GITHUB_OUTPUT"
 
