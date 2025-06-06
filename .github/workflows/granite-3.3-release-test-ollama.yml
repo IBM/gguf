@@ -23,7 +23,7 @@ env:
     'ibm-granite/granite-3.3-2b-instruct'
   ]"
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q2_K'
+    'Q2_K', 'Q4_K_M'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
   ]"
@@ -112,11 +112,11 @@ jobs:
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           QUANT_F16=", 'f16'"
-          MY_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
-          echo $MY_ARRAY_STRING
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), ',') }}"
+          echo $TEMP_ARRAY_STRING
+          NEW_ARRAY_STRING="${TEMP_ARRAY_STRING}${QUANT_F16}"
+          echo $NEW_ARRAY_STRING
 
-        # # Add the new value
-        # NEW_ARRAY_STRING="${MY_ARRAY_STRING},${QUANT_F16}"
         # # Convert back to an array
         # NEW_ARRAY="${{ fromJSON(\"[\"\"+ NEW_ARRAY_STRING + \"]\") }}"
         # echo "NEW_ARRAY: ${{NEW_ARRAY}}"
