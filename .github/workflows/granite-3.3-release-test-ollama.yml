@@ -116,7 +116,7 @@ jobs:
       - name: python-append
         run: |
           QUANT_F16="['f16']"
-          result=$(python scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "${QUANT_F16}")
+          result=$(python ./scripts/array_append_values.py "${{env.TARGET_INSTRUCT_QUANTIZATIONS}}" "['f16']")
           echo "result=$result"
 
       - name: add value to source quants
