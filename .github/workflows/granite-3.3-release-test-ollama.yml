@@ -152,6 +152,7 @@ jobs:
   # ===========================================================================
   # Ollama
   # ===========================================================================
+  # quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
   ollama-create-model:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
@@ -162,7 +163,6 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        # quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
