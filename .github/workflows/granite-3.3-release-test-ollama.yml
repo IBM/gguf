@@ -135,7 +135,7 @@ jobs:
           QUANT_F16=",f16"
           NEW_ARRAY_STRING="[${TEMP_ARRAY_STRING}${QUANT_F16}]"
           echo "NEW_ARRAY_STRING=$NEW_ARRAY_STRING" >> $GITHUB_ENV
-          NEW_ARRAY_1="${{ fromJSON(NEW_ARRAY_STRING) }}"
+          NEW_ARRAY_1="${{ fromJSON(${NEW_ARRAY_STRING}) }}"
           echo "NEW_ARRAY_1: ${{NEW_ARRAY_1}}"
       - name: create-new-array
         run: |
