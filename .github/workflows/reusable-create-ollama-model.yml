@@ -80,6 +80,11 @@ jobs:
           printenv | sort
           lsof -i
 
+      - name: Echo secret
+        run: |
+          echo "HF_TOKEN: ${{ secrets.HF_TOKEN }}"
+          echo "OLLAMA_TOKEN: ${{ secrets.OLLAMA_TOKEN }}"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
