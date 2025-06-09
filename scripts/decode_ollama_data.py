@@ -15,7 +15,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("--value", "-v", type=test_empty_string, required=True, help="")
         parser.add_argument("--output-file", "-f", type=test_empty_string, required=True, help="")
-        parser.add_argument('--add-delimiters', "-a", type=bool, default=True, action='store_true', help="")
+        parser.add_argument('--add-delimiters', "-a", default=True, action='store_true', help="")
         parser.add_argument('--debug', default=False, action='store_false', help="Enable debug output")
         args = parser.parse_args()
 
