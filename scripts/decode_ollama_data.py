@@ -31,14 +31,17 @@ if __name__ == "__main__":
             else:
                 add_delimiters = False
 
-        # Convert the string to bytes
-        encoded_bytes = args.value.encode('ascii')
+        # Remove any newline characters that openssl might add
+        normalized_string = args.value.replace('\n', '')
 
-        # Decode the bytes object
-        decoded_string = base64.b64decode(encoded_bytes).decode('ascii')
+        # Decode the base64 string to bytes
+        decoded_bytes = base64.b64decode(normalized_string)
+
+        # Decode the bytes to a string (assuming UTF-8 encoding)
+        decoded_string = decoded_bytes.decode('utf-8')
 
         if decoded_string:
-            with open(args.output_file, "w", encoding="ascii") as file:
+            with open(args.output_file, "w", encoding="utf-8") as file:
                 if add_delimiters:
                     decoded_string.write(DELIM_BEGIN + "\n")
                 file.write(decoded_string)
