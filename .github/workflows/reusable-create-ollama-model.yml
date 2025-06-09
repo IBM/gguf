@@ -229,6 +229,11 @@ jobs:
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
+      - name: ollama-push-model
+       run: |
+          echo -e "Ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}...\n"
+          ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
+
       - name: ollama-server-stop
         run:
           echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"

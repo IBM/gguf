@@ -18,6 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
+  ENABLE_OLLAMA_PUSH: true
 
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-instruct'
@@ -75,6 +76,7 @@ jobs:
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
+      enable_ollama_push: ${{ steps.set-vars.outputs.enable_ollama_push }}
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       target_ollama_quants: "${{ steps.set-vars.outputs.target_ollama_quants }}"
     env:
@@ -84,7 +86,8 @@ jobs:
       - name: List all environment variables 1
         run: env | sort
 
-      - name: add f16 to target quants
+      - name: append-f16-quant-to-ollama-targets
+        id: ollama-set-vars
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
@@ -119,6 +122,7 @@ jobs:
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "enable_ollama_push=$ENABLE_OLLAMA_PUSH" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
             echo "target_ollama_quants=$TARGET_OLLAMA_QUANTS" >> "$GITHUB_OUTPUT"
 
@@ -146,6 +150,7 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
+            echo "enable_ollama_push: '${{ steps.set-vars.outputs.enable_ollama_push }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
             echo "target_ollama_quants: '${{ steps.set-vars.outputs.target_ollama_quants }}'"
 
@@ -254,7 +259,6 @@ jobs:
   # ===========================================================================
   # Ollama
   # ===========================================================================
-  # quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
   ollama-create-model:
     needs: [ environment-setup]
     uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
@@ -269,6 +273,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -276,5 +281,3 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets: inherit
-      # hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      # ollama_token: "${{ secrets.OLLAMA_TOKEN }}
