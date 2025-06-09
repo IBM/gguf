@@ -16,6 +16,10 @@ on:
       granite_family:
         type: string
         required: true
+      enable_ollama_push:
+        type: boolean
+        required: false
+        default: false
       enable_language_jobs:
         type: boolean
         required: false
