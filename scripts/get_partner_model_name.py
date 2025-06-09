@@ -31,15 +31,11 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     B30 = "30b"
     T1  = "1t"
 
-# 'Q2_K',
-# 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-# 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-# 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-# 'Q6_K',
-# 'Q8_0'
 class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
+    F32     = "f32"
     F16     = "f16"
     FP16    = "fp16"
+    FP32    = "fp32"
     Q2_K    = "q2_K"
     Q3_K_S  = "q3_K_S"
     Q3_K_M  = "q3_K_M"

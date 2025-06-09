@@ -47,15 +47,17 @@ on:
         required: true
 
 jobs:
-  ollama-startup:
+  ollama-continuous-delivery:
     runs-on: macos-latest
+    if: |
+      ${{ inputs.enable_language_jobs == true }} ||
+      ${{ inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
     env:
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
       OLLAMA_DEBUG: 1
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
-      OLLAMA_MODEL_NAME: granite-test
       OLLAMA_MODEL_PRIVATE: true
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +119,6 @@ jobs:
       - name: set-derivative-env-vars-3
         run: |
           echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-        # echo "OLLAMA_NAMESPACE=${{env.OLLAMA_MODEL_ORG}}/${{env.OLLAMA_MODEL_NAME}}" >> $GITHUB_ENV
 
       - name: verify-github-env
         run: |
@@ -129,7 +130,6 @@ jobs:
           echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
           echo "================== Derivative Environment Variables 3 =================="
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-        # echo "OLLAMA_NAMESPACE='$OLLAMA_NAMESPACE' (${{ env.OLLAMA_NAMESPACE }})"
 
       - name: List all environment variables
         run: env | sort
