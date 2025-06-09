@@ -176,6 +176,10 @@ jobs:
 
       - name: ollama-create-modelfile
         run: |
+          cp ./resources/README.md .
+          sed -i 's/<BASE_MODEL_REPO_ORG>/${{env.REPO_ORG}}/g' README.md
+          sed -i 's/<BASE_MODEL_REPO_NAME>/${{env.REPO_NAME}}/g' README.md
+          cat README.md
           cat <<EOF > Modelfile
           FROM ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
           EOF
