@@ -67,6 +67,7 @@ jobs:
           sparse-checkout: |
             scripts/
             bin/
+            resources/
 
       - name: confirm-environment
         run: |
