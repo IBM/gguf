@@ -86,8 +86,8 @@ jobs:
       - name: List all environment variables 1
         run: env | sort
 
-      - name: append-f16-quant-to-ollama-targets
-        id: ollama-set-vars
+      - name: Append f16 to Ollama targets
+        id: ollama-append
         run: |
           echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
@@ -273,7 +273,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      # enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}

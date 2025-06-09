@@ -10,10 +10,10 @@ on:
       granite_family:
         type: string
         required: true
-      enable_ollama_push:
-        type: boolean
-        required: false
-        default: false
+      # enable_ollama_push:
+      #   type: boolean
+      #   required: false
+      #   default: false
       enable_language_jobs:
         type: boolean
         required: false
@@ -227,10 +227,12 @@ jobs:
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
-      - name: ollama-push-model
+      - name: ollama-model-push
        run: |
-          echo -e "Ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}...\n"
+          echo -e "Ollama push ...\n"
           ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
+          echo -e "Ollama list...\n"
+          ./bin/ollama list
 
       - name: ollama-server-stop
         run:
