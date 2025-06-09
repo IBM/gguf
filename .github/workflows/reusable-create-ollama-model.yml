@@ -117,7 +117,7 @@ jobs:
       - name: set-derivative-env-vars-3
         run: |
           echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-          echo "OLLAMA_NAMESPACE=${{env.OLLAMA_MODEL_ORG}}/${{env.OLLAMA_MODEL_NAME}}" >> $GITHUB_ENV
+        # echo "OLLAMA_NAMESPACE=${{env.OLLAMA_MODEL_ORG}}/${{env.OLLAMA_MODEL_NAME}}" >> $GITHUB_ENV
 
       - name: verify-github-env
         run: |
@@ -129,7 +129,7 @@ jobs:
           echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
           echo "================== Derivative Environment Variables 3 =================="
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-          echo "OLLAMA_NAMESPACE='$OLLAMA_NAMESPACE' (${{ env.OLLAMA_NAMESPACE }})"
+        # echo "OLLAMA_NAMESPACE='$OLLAMA_NAMESPACE' (${{ env.OLLAMA_NAMESPACE }})"
 
       - name: List all environment variables
         run: env | sort
@@ -213,7 +213,6 @@ jobs:
 
       - name: ollama-create-model
         run: |
-          echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
           echo -e "Ollama creating model from Modelfile...\n"
           ./bin/ollama create ${{env.BASE_NAME_QUANTIZED}} -f Modelfile
           sleep 2
@@ -222,7 +221,8 @@ jobs:
 
       - name: ollama-model-cp
         run: |
-          ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}"
+          echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
+          ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}"
           sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
@@ -230,7 +230,7 @@ jobs:
       - name: ollama-model-push
         run: |
           echo -e "Ollama push ...\n"
-          ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
+          ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
