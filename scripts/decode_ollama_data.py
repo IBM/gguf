@@ -32,13 +32,21 @@ if __name__ == "__main__":
             else:
                 add_delimiters = False
 
-        # Remove any newline characters that openssl might add
-        normalized_string = args.value.replace('\n', '')
+        # # Remove any newline characters that openssl might add
+        # normalized_string = args.value.replace('\n', '')
 
-        # Decode the base64 string to bytes
-        decoded_bytes = base64.b64decode(normalized_string)
+        # # Decode the base64 string to bytes
+        # decoded_bytes = base64.b64decode(normalized_string)
 
-        # Decode the bytes to a string (assuming UTF-8 encoding)
+        # # Decode the bytes to a string (assuming UTF-8 encoding)
+        # decoded_string = decoded_bytes.decode('utf-8')
+
+        # Encode the string to bytes using ASCII
+        encoded_bytes = args.value.encode('ascii')
+        print(f"encoded_bytes='{encoded_bytes}'")
+        # Decode the Base64 string to bytes
+        decoded_bytes = base64.b64decode(encoded_bytes)
+        # Decode the bytes to a string using UTF-8
         decoded_string = decoded_bytes.decode('utf-8')
 
         if decoded_string:
