@@ -227,12 +227,12 @@ jobs:
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
-      - name: ollama-model-push
-       run: |
-          echo -e "Ollama push ...\n"
-          ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
-          echo -e "Ollama list...\n"
-          ./bin/ollama list
+      # - name: ollama-model-push
+      #  run: |
+      #     echo -e "Ollama push ...\n"
+      #     ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.BASE_NAME_QUANTIZED}}
+      #     echo -e "Ollama list...\n"
+      #     ./bin/ollama list
 
       - name: ollama-server-stop
         run:
