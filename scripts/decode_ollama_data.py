@@ -2,9 +2,6 @@ import argparse
 import base64
 import sys
 
-DELIM_BEGIN="-----BEGIN OPENSSH PRIVATE KEY-----"
-DELIM_END="-----END OPENSSH PRIVATE KEY-----"
-
 def test_empty_string(value:str):
         if not value:
             raise ValueError("Argument must not be an empty string")
@@ -32,15 +29,6 @@ if __name__ == "__main__":
             else:
                 add_delimiters = False
 
-        # # Remove any newline characters that openssl might add
-        # normalized_string = args.value.replace('\n', '')
-
-        # # Decode the base64 string to bytes
-        # decoded_bytes = base64.b64decode(normalized_string)
-
-        # # Decode the bytes to a string (assuming UTF-8 encoding)
-        # decoded_string = decoded_bytes.decode('utf-8')
-
         # Encode the string to bytes using ASCII
         encoded_bytes = args.value.encode('ascii')
         print(f"encoded_bytes='{encoded_bytes}'")
@@ -51,12 +39,9 @@ if __name__ == "__main__":
 
         if decoded_string:
             with open(args.output_file, "w", encoding="utf-8") as file:
-                if add_delimiters:
-                    decoded_string.write(DELIM_BEGIN + "\n")
                 file.write(decoded_string)
-                if add_delimiters:
-                    decoded_string.write(DELIM_END + "\n")
-            print(f"Decoded string saved to '{args.output_file}'")
+            if args.debug:
+                print(f"Decoded string saved to '{args.output_file}'")
 
     except SystemExit as se:
         print(f"Usage: {parser.format_usage()}")

@@ -138,8 +138,8 @@ jobs:
 
       - name: decode-ollama-data
         run: |
+          ls $HOME/.ollama
           python ./scripts/decode_ollama_data.py -v ${{secrets.OLLAMA_TOKEN}} -f test.txt --debug
-          cat test.txt
 
       - name: verify-quantized-model-exists
         run: |
