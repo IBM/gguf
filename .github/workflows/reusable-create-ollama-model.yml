@@ -177,15 +177,17 @@ jobs:
             exit 1
           fi
 
-      - name: ollama-create-modelfile
+      - name: prepare-readme
         run: |
           cp ./resources/README.md .
           sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' README.md
           sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' README.md
           cat README.md
+
+      - name: ollama-create-modelfile
+        run: |
           cat <<EOF > Modelfile
           FROM ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
-          COPY ./README.md README.md
           EOF
           echo "Verifying Modelfile..."
           ls -al Modelfile
