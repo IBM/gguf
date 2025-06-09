@@ -1,4 +1,3 @@
-import os
 import sys
 import argparse
 import requests
@@ -58,8 +57,6 @@ if __name__ == "__main__":
         parser.add_argument('-x', '--ext', type=str, default="", help='optional repo. name extension (e.g., \'-GGUF\')')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
-
-        # parse argv[] values
         args = parser.parse_args()
 
         if(args.debug):
