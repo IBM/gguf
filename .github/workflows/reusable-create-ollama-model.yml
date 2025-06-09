@@ -182,9 +182,10 @@ jobs:
           cp ./resources/README.md .
           sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' README.md
           sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' README.md
-          cat README.md
+          cat README.md /app/README.md
           cat <<EOF > Modelfile
           FROM ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+          COPY ./README.md
           EOF
           echo "Verifying Modelfile..."
           ls -al Modelfile
