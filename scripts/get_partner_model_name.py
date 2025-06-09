@@ -34,8 +34,6 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
 class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
     F32     = "f32"
     F16     = "f16"
-    FP16    = "fp16"
-    FP32    = "fp32"
     Q2_K    = "q2_K"
     Q3_K_S  = "q3_K_S"
     Q3_K_M  = "q3_K_M"
