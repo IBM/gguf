@@ -179,10 +179,9 @@ jobs:
 
       - name: prepare-readme
         run: |
-          cp ./resources/README.md .
-          sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' README.md
-          sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' README.md
-          cat README.md
+          sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
+          sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
+          cat ./resources/README.md
 
       - name: ollama-create-modelfile
         run: |
