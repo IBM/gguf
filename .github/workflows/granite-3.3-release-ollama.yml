@@ -85,7 +85,9 @@ jobs:
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
       enable_ollama_push: ${{ steps.set-vars.outputs.enable_ollama_push }}
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
-      target_ollama_quants: "${{ steps.set-vars.outputs.target_ollama_quants }}"
+      target_ollama_llm_quants: "${{ steps.set-vars.outputs.target_ollama_llm_quants }}"
+      target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
+      target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
     env:
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
@@ -93,15 +95,32 @@ jobs:
       - name: List all environment variables 1
         run: env | sort
 
-      - name: Append f16 to Ollama targets
-        id: ollama-append
+      - name: Append f16 to Ollama llm quants
+        id: ollama-append-llm-quants
         run: |
-          echo "TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
+          echo "Appending to TARGET_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
-          echo "TARGET_OLLAMA_QUANTS='$TARGET_OLLAMA_QUANTS'"
-          echo "TARGET_OLLAMA_QUANTS=$TARGET_OLLAMA_QUANTS" >> $GITHUB_ENV
+          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          echo "TARGET_OLLAMA_LLM_QUANTS=$TARGET_OLLAMA_LLM_QUANTS" >> $GITHUB_ENV
+
+      - name: Append f16 to Ollama guardian quants
+        id: ollama-append-guardian-quants
+        run: |
+          echo "Appending to TARGET_GUARDIAN_QUANTIZATIONS: '${{ fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_GUARDIAN_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          echo "TARGET_OLLAMA_GUARDIAN_QUANTS=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> $GITHUB_ENV
+
+      - name: Append f16 to Ollama embedding quants
+        id: ollama-append-embedding-quants
+        run: |
+          echo "Appending to TARGET_GUARDIAN_QUANTIZATIONS: '${{ fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_GUARDIAN_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          echo "TARGET_OLLAMA_EMBEDDING_QUANTS=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> $GITHUB_ENV
 
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -131,7 +150,9 @@ jobs:
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "enable_ollama_push=$ENABLE_OLLAMA_PUSH" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
-            echo "target_ollama_quants=$TARGET_OLLAMA_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_llm_quants=$TARGET_OLLAMA_LLM_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_guardian_quants=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_embedding_quants=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> "$GITHUB_OUTPUT"
 
       - name: List all environment variables 2
         run: env | sort
@@ -159,7 +180,9 @@ jobs:
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
             echo "enable_ollama_push: '${{ steps.set-vars.outputs.enable_ollama_push }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
-            echo "target_ollama_quants: '${{ steps.set-vars.outputs.target_ollama_quants }}'"
+            echo "target_ollama_llm_quants: '${{ steps.set-vars.outputs.target_ollama_llm_quants }}'"
+            echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
+            echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
 
   # ===========================================================================
   # Ollama (llm/instruct)
@@ -174,7 +197,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_llm_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
@@ -187,29 +210,9 @@ jobs:
       quantization: ${{ matrix.quantization }}
     secrets: inherit
 
-  ollama-release-llm-models:
-    needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-    with:
-      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      granite_family: "instruct"
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-      repo_id: ${{ matrix.repo_id }}
-      quantization: ${{ matrix.quantization }}
-    secrets: inherit
-
+  # ===========================================================================
+  # Ollama (guardian)
+  # ===========================================================================
   ollama-release-guardian-models:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
@@ -220,12 +223,12 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_guardian_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
@@ -233,29 +236,28 @@ jobs:
       quantization: ${{ matrix.quantization }}
     secrets: inherit
 
-  # run_reusable_create_push_ollama_models:
-  #   runs-on: ubuntu-latest
-  #   needs: [ environment-setup ]
-  #   if: ${{ env.ENABLE_INSTRUCT_JOBS == 'true' }}
-  #   steps:
-  #     - name: create-push-ollama-model
-  #       uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
-  #       permissions:
-  #         contents: write
-  #         packages: write
-  #       strategy:
-  #         fail-fast: false
-  #         matrix:
-  #           repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-  #           quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-  #       with:
-  #         debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #         granite_family: "instruct"
-  #         enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-  #         enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #         target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-  #         target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-  #         target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-  #         repo_id: ${{ matrix.repo_id }}
-  #         quantization: ${{ matrix.quantization }}
-  #       secrets: inherit
+  # ===========================================================================
+  # Ollama (embedding)
+  # ===========================================================================
+  ollama-release-embedding-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_embedding_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets: inherit
