@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
         for language in SUPPORTED_MODEL_LANGUAGES:
            if language.lower() in normalized_model_name:
-               model_language = quantization
+               model_language = language
                break
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
