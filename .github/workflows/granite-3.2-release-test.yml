@@ -17,7 +17,7 @@ env:
   ENABLE_INSTRUCT_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
   # 'ibm-granite/granite-3.2-2b-instruct',
   # 'ibm-granite/granite-3.2-8b-instruct'
   SOURCE_INSTRUCT_REPOS: "[
