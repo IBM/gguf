@@ -324,6 +324,42 @@ env:
 
 **Note**: that the `COLLECTION_CONFIG` env. var. provides the relative path to the collection configuration file, which is located in the `resources/json` directory of the repository for the specific Granite release.
 
+### Updating Tools
+
+#### llama.cpp
+
+Clone and build the following llama.cpp binaries using these build/link flags:
+
+##### Build intermediate CMake build files
+
+These should ensure we can build in both `macos` and `ubuntu` container images and not attempt to use GPUs since the current GitHub Virtual Machines really do not support that.
+
+```
+cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
+```
+
+**Note**: As flags have changed often, the following minimal set of flags MAY work but needs testing:
+
+```
+cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_NO_ACCELERATE=ON -DCMAKE_CROSSCOMPILING=TRUE
+```
+
+##### Build release binaries
+
+```
+cmake --build build --config Release
+```
+
+##### Copy binaries and push to `bin`
+
+Copy the following files to this repository's `bin` directory:
+
+- llama-cli
+- llama-quantize
+- llama-run
+- llama-server
+- llama-llava-cli *(May no longer be needed/supported as of May 2025 as llava support has been rolled into general libs under multimodal support aka. `mtmd` )*
+
 ### Triggering a release
 
 This section contains the steps required to successfully "trigger" a release workflow for one or more supported Granite models families (i.e., `instruct` (language), `vision`, `guardian` and `embedding`).
