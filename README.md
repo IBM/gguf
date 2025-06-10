@@ -157,16 +157,6 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 ---
 
-### Base64 encoding
-
-If you need to encode information for project CI, please use the following macos command and assure there are no line breaks:
-
-```
-base64 -i <input_file> > <output_file>
-```
-
----
-
 ## References
 
 - GGUF format
@@ -219,6 +209,14 @@ Project maintainers for this repo. are able to access the secrets (tokens) that 
 Secrets are used to authenticate with Github and Huggingface (HF) and are already configured for the `ibm-granite` and `ibm-research` HF organizations for "preview" and "public" release types.
 
 For "test" (or private) builds, users can fork the repo. and add a repository secret named `HF_TOKEN_TEST` with a token (value) created on their test (personal, private) HF organization account with appropriate privileges to allow write access to repos. and collections.
+
+##### Base64 encoding
+
+If you need to encode information for project CI GitHub workflows, please use the following macos command and assure there are no line breaks:
+
+```
+base64 -i <input_file> > <output_file>
+```
 
 #### Collection mapping files (JSON)
 
