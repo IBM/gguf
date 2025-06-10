@@ -2,7 +2,8 @@ import sys
 import argparse
 from enum import StrEnum
 
-MODEL_NAME_SEP = "-"
+MODEL_NAME_SEP = ":"
+MODEL_ATTRIBUTE_SEP = "-"
 MODEL_FAMILY = "granite"
 MODEL_FORMAT_GGUF = "gguf"
 
@@ -24,12 +25,26 @@ class SUPPORTER_MODEL_VERSIONS(StrEnum):
     GRANITE_4_1  = "4.1"
 
 class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
-    B1  = "1b"
-    B2  = "2b"
-    B7  = "7b"
-    B8  = "8b"
-    B30 = "30b"
-    T1  = "1t"
+    M30  = "30m"
+    M38  = "38m"
+    M84  = "84m"  # "medical"
+    M107 = "107m"
+    M125 = "125m"
+    M278 = "278m"
+    B1   = "1b"
+    B2   = "2b"
+    B3   = "3b"
+    B5   = "5b"
+    B7   = "7b"
+    B8   = "8b"
+    B20  = "20b"  # "function-calling"
+    B30  = "30b"
+    T1   = "1t"
+    TINY    = "tiny"  # NOTE: for v4.0 models we declare relative sizes using names
+    SMALL   = "small"
+    MEDIUM  = "medium"
+    LARGE   = "large"
+    LIGHT   = "light" # NOTE: this may be a temp. named used for Think conf. May, 2025
 
 class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
     F32     = "f32"
@@ -57,12 +72,27 @@ class MODEL_LAYER_CONNECTION_TYPES(StrEnum):
     DENSE = "dense"
     SPARSE = "sparse"
 
+class SUPPORTED_MODEL_LANGUAGES(StrEnum):
+    ENGLISH = "english"
+    CHINESE = "chinese"
+    MULTILINGUAL = "multilingual"
+
 def enum_contains(enum_type, value):
     try:
         enum_type(value)
         return True
     except ValueError:
         return False
+
+def model_name_append_attribute(current_model_name: str, attribute: str, base_sep: str, attr_sep:str) -> str:
+    # if this is not the first attribute after the designated separator
+    if not current_model_name.endswith(base_sep):
+        current_model_name += attr_sep
+    updated_model_name = f"{current_model_name}{attribute}"
+    return updated_model_name
+
+def ollama_append_attribute(current_model_name: str, attribute: str) -> str:
+    return model_name_append_attribute(current_model_name, attribute, MODEL_NAME_SEP, MODEL_ATTRIBUTE_SEP)
 
 if __name__ == "__main__":
     try:
@@ -88,11 +118,12 @@ if __name__ == "__main__":
             raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
 
         # strip model format (if present)
-        normalized_model_name = normalized_model_name.replace(MODEL_NAME_SEP+MODEL_FORMAT_GGUF, "")
+        normalized_model_name = normalized_model_name.replace(MODEL_ATTRIBUTE_SEP+MODEL_FORMAT_GGUF, "")
 
         model_family = MODEL_FAMILY.lower()
         model_version = ""
-        model_modality = ""
+        model_modality = "" # e.g., "instruct", "vision"
+        model_language = "" # e.g., "english", "multilingual"
         model_parameter_size = "" # e.g., 2B, 8B, 1T
         model_quantization = ""  # e.g., q8_0, q4_K_M
         model_active_parameter_count = "" # e.g., a800m, a400m
@@ -100,31 +131,31 @@ if __name__ == "__main__":
         for modality in SUPPORTED_MODEL_MODALITIES:
            if modality in normalized_model_name:
                model_modality = modality
-               #print(f"model_name contains modality: '{model_modality}'", file=sys.stderr)
                break
 
         for version in SUPPORTER_MODEL_VERSIONS:
            if version in normalized_model_name:
                model_version = version
-               #print(f"model_name contains version: '{model_version}'", file=sys.stderr)
                break
 
         for param_size in SUPPORTED_MODEL_PARAMETER_SIZES:
            if param_size in normalized_model_name:
                model_parameter_size = param_size
-               #print(f"model_name contains parameter size: '{model_parameter_size}'", file=sys.stderr)
                break
 
         for active_param_count in SUPPORTED_MODEL_ACTIVE_PARAMETER_COUNTS:
            if active_param_count in normalized_model_name:
                model_active_parameter_count = active_param_count
-               #print(f"model_name contains parameter size: '{model_parameter_size}'", file=sys.stderr)
                break
 
         for quantization in SUPPORTED_MODEL_QUANTIZATIONS:
            if quantization.lower() in normalized_model_name:
                model_quantization = quantization
-               #print(f"model_name contains quantization: '{model_quantization}'", file=sys.stderr)
+               break
+
+        for language in SUPPORTED_MODEL_LANGUAGES:
+           if language.lower() in normalized_model_name:
+               model_language = quantization
                break
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
@@ -138,9 +169,21 @@ if __name__ == "__main__":
             # if model_active_parameter_count is not None:
             #     partner_model_base += f"-{model_active_parameter_count}"
 
-            partner_model_name = f"{partner_model_base}:{model_parameter_size}"
+            # For Ollama the model name-modality/version defines the model
+            # everything that follows are model attributes that appear after a colon ":"
+            partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
+
+            if model_parameter_size is not None:
+                # partner_model_name += f"{model_parameter_size}"
+                partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
+
+            if model_language is not None:
+                # partner_model_name += f"-{model_language}"
+                partner_model_name = ollama_append_attribute(partner_model_name, model_language)
+
             if model_quantization is not None:
-                partner_model_name += f"-{model_quantization}"
+                # partner_model_name += f"-{model_quantization}"
+                partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
 
         # NOTE: This script MUST only return a string
         print(partner_model_name)

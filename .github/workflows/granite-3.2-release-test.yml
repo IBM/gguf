@@ -64,7 +64,7 @@ env:
     'ibm-granite/granite-embedding-30m-english',
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-    'Q8_0'
+    'Q4_K_M', 'Q8_0'
   ]"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: mrutkows
