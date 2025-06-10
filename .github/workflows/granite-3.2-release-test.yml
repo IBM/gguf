@@ -35,6 +35,7 @@ env:
   # 'ibm-granite/granite-guardian-3.2-3b-a800m',
   # 'ibm-granite/granite-guardian-3.2-5b'
   SOURCE_GUARDIAN_REPOS: "[
+    'ibm-granite/granite-guardian-3.2-3b-a800m','
     'ibm-granite/granite-guardian-3.2-5b'
   ]"
   # 'Q4_K_M',
@@ -60,9 +61,6 @@ env:
   # 'ibm-granite/granite-embedding-278m-multilingual'
   SOURCE_EMBEDDING_REPOS: "[
     'ibm-granite/granite-embedding-30m-english',
-    'ibm-granite/granite-embedding-125m-english',
-    'ibm-granite/granite-embedding-107m-multilingual',
-    'ibm-granite/granite-embedding-278m-multilingual'
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
     'Q8_0'
