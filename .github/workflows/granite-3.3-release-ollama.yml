@@ -157,52 +157,52 @@ jobs:
   # ===========================================================================
   # Ollama (llm/instruct)
   # ===========================================================================
-  # ollama-release-llm-models:
-  #   needs: [ environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     granite_family: "instruct"
-  #     enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-  #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-  #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-  #     target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-  #     repo_id: ${{ matrix.repo_id }}
-  #     quantization: ${{ matrix.quantization }}
-  #   secrets: inherit
-
-  run_reusable_create_push_ollama_models:
-    runs-on: ubuntu-latest
+  ollama-release-llm-models:
     needs: [ environment-setup ]
-    if: ${{ env.ENABLE_INSTRUCT_JOBS == 'true' }}
-    steps:
-      - name: create-push-ollama-model
-        uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
-        permissions:
-          contents: write
-          packages: write
-        strategy:
-          fail-fast: false
-          matrix:
-            repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-            quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-        with:
-          debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-          granite_family: "instruct"
-          enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-          enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-          target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-          target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-          target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-          repo_id: ${{ matrix.repo_id }}
-          quantization: ${{ matrix.quantization }}
-        secrets: inherit
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets: inherit
+
+  # run_reusable_create_push_ollama_models:
+  #   runs-on: ubuntu-latest
+  #   needs: [ environment-setup ]
+  #   if: ${{ env.ENABLE_INSTRUCT_JOBS == 'true' }}
+  #   steps:
+  #     - name: create-push-ollama-model
+  #       uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+  #       permissions:
+  #         contents: write
+  #         packages: write
+  #       strategy:
+  #         fail-fast: false
+  #         matrix:
+  #           repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+  #           quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+  #       with:
+  #         debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+  #         granite_family: "instruct"
+  #         enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+  #         enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+  #         target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+  #         target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+  #         target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+  #         repo_id: ${{ matrix.repo_id }}
+  #         quantization: ${{ matrix.quantization }}
+  #       secrets: inherit
