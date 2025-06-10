@@ -50,6 +50,7 @@ jobs:
   ollama-continuous-delivery:
     runs-on: macos-latest
     if: |
+      ${{ inputs.enable_ollama_push == true }} ||
       ${{ inputs.enable_language_jobs == true }} ||
       ${{ inputs.enable_vision_jobs == true }} ||
       ${{ inputs.enable_guardian_jobs == true }} ||
@@ -177,7 +178,7 @@ jobs:
             exit 1
           fi
 
-      - name: prepare-readme
+      - name: customize-readme
         run: |
           sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
           sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md

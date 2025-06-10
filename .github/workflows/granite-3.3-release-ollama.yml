@@ -155,25 +155,11 @@ jobs:
             echo "target_ollama_quants: '${{ steps.set-vars.outputs.target_ollama_quants }}'"
 
   # ===========================================================================
-  # Granite Instruct
+  # Ollama (llm/instruct)
   # ===========================================================================
-  # instruct-create-hf-repos:
+  # ollama-release-llm-models:
   #   needs: [ environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     granite_family: "instruct"
-  #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-  #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-  #     target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
-  # convert-hf-to-f16-gguf:
-  #   needs: [ environment-setup, instruct-create-hf-repos ]
-  #   uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+  #   uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
   #   permissions:
   #     contents: write
   #     packages: write
@@ -181,103 +167,42 @@ jobs:
   #     fail-fast: false
   #     matrix:
   #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
   #   with:
   #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+  #     granite_family: "instruct"
+  #     enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
   #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
   #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
   #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+  #     target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
   #     repo_id: ${{ matrix.repo_id }}
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
-  #     ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+  #     quantization: ${{ matrix.quantization }}
+  #   secrets: inherit
 
-  # quantize-upload-gguf:
-  #   needs: [ environment-setup, convert-hf-to-f16-gguf ]
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
-  #   uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-  #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
-  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
-  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-  #     repo_id: "${{ matrix.repo_id }}"
-  #     quantization: "${{ matrix.quantization }}"
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
-  # bvt-instruct-quantized-gguf-models:
-  #   needs: [ environment-setup, quantize-upload-gguf ]
-  #   uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-  #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
-  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-  #     repo_id: "${{ matrix.repo_id }}"
-  #     quantization: "${{ matrix.quantization }}"
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
-  # TODO: change collection from private to public (on success)
-  # create-hf-collections:
-  #   needs: [
-  #     environment-setup,
-  #     bvt-instruct-quantized-gguf-models,
-  #   ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
-  #   with:
-  #     granite_family: "instruct"
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-  #     target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-  #     target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
-  # ===========================================================================
-  # Ollama
-  # ===========================================================================
-  ollama-create-model:
-    needs: [ environment-setup]
-    uses: IBM/gguf/.github/workflows/reusable-create-ollama-model.yml@main
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
-    with:
-      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      granite_family: "instruct"
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
-      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-      repo_id: ${{ matrix.repo_id }}
-      quantization: ${{ matrix.quantization }}
-    secrets: inherit
+  run_reusable_create_push_ollama_models:
+    runs-on: ubuntu-latest
+    needs: [ environment-setup ]
+    if: ${{ env.ENABLE_INSTRUCT_JOBS == 'true' }}
+    steps:
+      - name: create-push-ollama-model
+        uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+        permissions:
+          contents: write
+          packages: write
+        strategy:
+          fail-fast: false
+          matrix:
+            repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+            quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_quants) }}
+        with:
+          debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+          granite_family: "instruct"
+          enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+          enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+          target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+          target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+          target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+          repo_id: ${{ matrix.repo_id }}
+          quantization: ${{ matrix.quantization }}
+        secrets: inherit
