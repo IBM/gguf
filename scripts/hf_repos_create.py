@@ -59,7 +59,7 @@ if __name__ == "__main__":
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
         parser.add_argument('-x', '--ext', type=str, default="", help='optional repo. name extension (e.g., \'-GGUF\')')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
-        parser.add_argument('--debug', "-d", default=False, action='store_false', help='Enable debug output')
+        parser.add_argument('--debug', "-d", default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
 
         if(args.debug):
@@ -67,8 +67,8 @@ if __name__ == "__main__":
             print(f">> include='{args.include}', Type: {type(args.include_repos)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
+        print("HERE!")
         repo_list = json.loads(args.include)
-
         print(f"repo_list: {repo_list}, type: {type(repo_list)}")
 
         # private needs to be a boolean
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                 private = False
 
         # invoke fx
-        import json
+        # import json
         with open(args.collection_config, "r") as file:
             json_data = json.load(file)
             formatted_json = json.dumps(json_data, indent=4)
