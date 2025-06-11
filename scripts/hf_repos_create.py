@@ -122,15 +122,14 @@ if __name__ == "__main__":
                 item_family = item_defn["family"]
 
                 # construct the full HF repo. ID
-                repo_id = "/".join([args.target_owner, repo_name]) + args.ext
+                if (args.family == item_family) and (repo_id in repo_list):
+                    if args.family == item_family:
+                        repo_id = "/".join([args.target_owner, repo_name]) + args.ext
+                        if args.verbose:
+                            print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
 
-                if args.family == item_family:
-                    if args.verbose:
-                        print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
-
-                    # Only create the repo. if it appears in the "include" list (i.e., in the build matrix)
-                    if repo_id in repo_list:
-                        print(f"[INFO] Creating repo_id='{repo_id}')...")
+                        # Only create the repo. if it appears in the "include" list (i.e., in the build matrix)
+                        # if repo_id in repo_list:
                         repoUrl = safe_create_repo_in_namespace(
                             repo_id=repo_id,
                             private=private,
@@ -143,8 +142,8 @@ if __name__ == "__main__":
                             sys.exit(1)
                         if args.verbose:
                             print(f"[SUCCESS] Repo. created. repoUrl: '{repoUrl}')")
-                    else:
-                        print(f"[INFO] repo_id='{repo_id}') not in repo_list. Skipping...")
+                else:
+                    print(f"[INFO] Skipping repo_id='{repo_id}'...")
 
 
     except SystemExit as se:
