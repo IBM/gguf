@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         if(args.debug):
             # Print input variables being used for this run
-            print(f">> include='{args.include}', Type: {type(args.include_repos)}")
+            print(f">> include='{args.include}', Type: {type(args.include)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
         print("HERE!")
