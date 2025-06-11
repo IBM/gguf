@@ -45,6 +45,17 @@ def test_empty_string(value:str):
             raise ValueError("Argument must not be an empty string")
         return value
 
+def remove_repo_org(repo_id):
+    index = repo_id.find('\\')
+    if index != -1:
+        return repo_id[index:]
+    return repo_id
+
+def remove_repo_org_from_list(repo_list):
+    for i in range(len(repo_list)):
+        repo_list[i] = remove_repo_org(repo_list[i])
+    return repo_list
+
 if __name__ == "__main__":
     try:
         print(f"argv: {sys.argv}")
@@ -72,6 +83,8 @@ if __name__ == "__main__":
         normalized_include = args.include.replace("'", '"')
         print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
         repo_list = json.loads(normalized_include)
+        print(f"repo_list: {repo_list}, type: {type(repo_list)}")
+        repo_list = remove_repo_org_from_list(repo_list)
         print(f"repo_list: {repo_list}, type: {type(repo_list)}")
 
         # private needs to be a boolean
