@@ -56,7 +56,7 @@ if __name__ == "__main__":
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
         parser.add_argument('-x', '--ext', type=str, default="", help='optional repo. name extension (e.g., \'-GGUF\')')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
-        parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
+        parser.add_argument('--debug', "-d", default=False, action='store_false', help='Enable debug output')
         args = parser.parse_args()
 
         if(args.debug):
