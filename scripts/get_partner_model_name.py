@@ -86,7 +86,7 @@ def enum_contains(enum_type, value):
 
 def model_name_append_attribute(current_model_name: str, attribute: str, base_sep: str, attr_sep:str) -> str:
     # if this is not the first attribute after the designated separator
-    if attribute is not None:
+    if attribute:
         if not current_model_name.endswith(base_sep):
             current_model_name += attr_sep
         updated_model_name = f"{current_model_name}{attribute}"
@@ -183,13 +183,13 @@ if __name__ == "__main__":
             # everything that follows are model attributes that appear after a colon ":"
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
 
-            if model_parameter_size is not None:
+            if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
 
-            if model_language is not None:
+            if model_language:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_language)
 
-            if model_quantization is not None:
+            if model_quantization:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
 
         # NOTE: This script MUST only return a string
