@@ -67,8 +67,9 @@ if __name__ == "__main__":
             print(f">> include='{args.include}', Type: {type(args.include)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
-        print("HERE!")
-        repo_list = json.loads(args.include)
+        normalized_include = args.include.replace("'", '"')
+        print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
+        repo_list = json.loads(normalized_include)
         print(f"repo_list: {repo_list}, type: {type(repo_list)}")
 
         # private needs to be a boolean

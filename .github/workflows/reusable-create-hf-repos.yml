@@ -93,11 +93,11 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
+      # target_repos=$(echo $target_repos | sed "s/'/\"/g")
+      # echo "target_repos='$target_repos'"
     - name: set-local-env-vars
       run: |
         echo "target_repos=${{ inputs.target_repos }}"
-        target_repos=$(echo $target_repos | sed "s/'/\"/g")
-        echo "target_repos='$target_repos'"
         echo "target_repos=$target_repos" >> "$GITHUB_ENV"
 
     - name: List all environment variables
