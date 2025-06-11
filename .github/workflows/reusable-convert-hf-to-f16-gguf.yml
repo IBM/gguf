@@ -55,6 +55,7 @@ jobs:
   convert-f16:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+    timeout-minutes: 12
     steps:
     - uses: actions/checkout@v4
 
@@ -189,6 +190,9 @@ jobs:
         pip uninstall --yes transformers
         pip install transformers==4.49.0
         pip list
+
+    - name: Check available disk space
+      run: df -h
 
     # TODO: need a "source" and "target" HF_TOKEN
     - name: download-model-snapshot
