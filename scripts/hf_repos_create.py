@@ -48,7 +48,7 @@ def test_empty_string(value:str):
 def remove_repo_org(repo_id):
     index = repo_id.find('/')
     if index != -1:
-        return repo_id[index:]
+        return repo_id[index+1:]
     return repo_id
 
 def remove_repo_org_from_list(repo_list):
