@@ -93,10 +93,13 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
+    - name: set-local-env-vars
+      run: |
+        echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
+
     # "${{ inputs.target_repos }}"
     - name: create-hf-repos
       run: |
-        echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_OUTPUT"
         echo "inputs.target_repos: '${{ inputs.target_repos }}'"
         echo "target_repos='$target_repos'"
         echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
