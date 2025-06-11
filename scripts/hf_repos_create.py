@@ -45,16 +45,11 @@ def test_empty_string(value:str):
             raise ValueError("Argument must not be an empty string")
         return value
 
-def remove_repo_org(repo_id):
-    index = repo_id.find('/')
-    if index != -1:
-        return repo_id[index+1:]
-    return repo_id
-
-def remove_repo_org_from_list(repo_list):
+def is_repo_name_in_list(repo_name, repo_list) -> bool:
     for i in range(len(repo_list)):
-        repo_list[i] = remove_repo_org(repo_list[i])
-    return repo_list
+        if repo_name in repo_list[i]:
+            return True
+    return False
 
 if __name__ == "__main__":
     try:
@@ -84,8 +79,8 @@ if __name__ == "__main__":
         print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
         repo_list = json.loads(normalized_include)
         print(f"repo_list: {repo_list}, type: {type(repo_list)}")
-        repo_list = remove_repo_org_from_list(repo_list)
-        print(f"repo_list: {repo_list}, type: {type(repo_list)}")
+        # repo_list = remove_repo_org_from_list(repo_list)
+        # print(f"repo_list: {repo_list}, type: {type(repo_list)}")
 
         # private needs to be a boolean
         if type(args.private) is str:
@@ -122,7 +117,7 @@ if __name__ == "__main__":
                 item_family = item_defn["family"]
 
                 # construct the full HF repo. ID
-                if (args.family == item_family) and (repo_id in repo_list):
+                if (args.family == item_family) and is_repo_name_in_list(repo_name, repo_list):
                     if args.family == item_family:
                         repo_id = "/".join([args.target_owner, repo_name]) + args.ext
                         if args.verbose:
