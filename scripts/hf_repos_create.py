@@ -1,6 +1,7 @@
 import sys
 import argparse
 import requests
+import ast
 
 from huggingface_hub import create_repo, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
@@ -45,12 +46,11 @@ def test_empty_string(value:str):
 
 if __name__ == "__main__":
     try:
-        # print(f"argv: {sys.argv}")
-
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
+        parser.add_argument('--include-repos', type=ast.literal_eval, help='A string representation of a list of repo. names to include')
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
@@ -61,6 +61,7 @@ if __name__ == "__main__":
 
         if(args.debug):
             # Print input variables being used for this run
+            print(f">> include_repos='{args.include_repos}', Type: {type(args.include_repos)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
         # private needs to be a boolean
