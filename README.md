@@ -332,7 +332,7 @@ Clone and build the following llama.cpp binaries using these build/link flags:
 
 ##### Build intermediate CMake build files
 
-These should ensure we can build in both `macos` and `ubuntu` container images and not attempt to use GPUs since the current GitHub Virtual Machines really do not support that.
+The following command will create the proper CMake `build` files for generating code that will run within both `macos` and `ubuntu` container images.  They also assure that the llama.cpp libraries will not attempt to use GPUs since the current GitHub Virtual Machines for both operating systems do not support this.
 
 ```
 cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
@@ -346,13 +346,15 @@ cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_NO_ACCELERATE=ON -DCMAKE_CROSSCOMP
 
 ##### Build release binaries
 
+Use this command to build all llama.cpp tool binaries to `build/bin` directory:
+
 ```
 cmake --build build --config Release
 ```
 
-##### Copy binaries and push to `bin`
+##### Copy built binaries and push to `bin`
 
-Copy the following files to this repository's `bin` directory:
+Once built locally, copy the following files from your `build/bin` directory to this repository's `bin` directory:
 
 - llama-cli
 - llama-quantize
@@ -368,13 +370,13 @@ This section contains the steps required to successfully "trigger" a release wor
 1. Click the "Draft a new release" button near the top of the releases page.
 1. Click the "Choose a tag" drop-down menu and enter a tag name that starts with one of the following strings relative to which release type you want to "trigger":
 
-    - **Test**: `test-v3.2`
-    - **Preview**: `preview-v3.2`
-    - **Public**: `v3.2`
+    - **Test**: `test-v3.3` (private HF org.)
+    - **Preview**: `preview-v3.3` (IBM Granite, private/hidden)
+    - **Public**: `v3.3`  (IBM Granite)
 
     Treat these strings as "prefixes" which you must append a unique build version.  For example:
 
-    - `v3.2-rc-01` for a release candidate version 01
+    - `v3.3-rc-01` *for a release candidate version 01 under the IBM Granite org. on Hugging Face Hub.*
 
 1. "Create a new tag: on publish" near the bottom of the drop-down list.
 

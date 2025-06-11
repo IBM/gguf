@@ -184,6 +184,16 @@ jobs:
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
             echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
 
+      # - name: List all environment variables
+      #   run: env | sort
+
+      # - name: Dump runner context
+      #   env:
+      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
+      #   run: |
+      #     uname -a
+      #     echo "$RUNNER_CONTEXT"
+
   # ===========================================================================
   # Ollama (llm/instruct)
   # ===========================================================================

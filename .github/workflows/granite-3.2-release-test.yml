@@ -151,17 +151,15 @@ jobs:
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
 
-      # - name: confirm-environment
-      #   run: |
-      #     uname -a
-      #     echo "env.TARGET_REPO_OWNER: ${{env.TARGET_REPO_OWNER}}"
-      #     echo "env.TARGET_REPO_NAME_EXT: ${{env.TARGET_REPO_NAME_EXT}}"
-      #     echo "env.COLLECTION_CONFIG: ${{env.COLLECTION_CONFIG}}"
+      # - name: List all environment variables
+      #   run: env | sort
 
       # - name: Dump runner context
       #   env:
       #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-      #   run: echo "$RUNNER_CONTEXT"
+      #   run: |
+      #     uname -a
+      #     echo "$RUNNER_CONTEXT"
 
       # - name: Dump GitHub context
       #   env:
