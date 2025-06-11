@@ -165,7 +165,7 @@ jobs:
       granite_family: "instruct"
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      target_repos: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+      target_repos: ${{ needs.environment-setup.outputs.source_instruct_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -268,7 +268,7 @@ jobs:
       granite_family: "vision"
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      target_repos: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+      target_repos: ${{ needs.environment-setup.outputs.source_instruct_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -371,7 +371,7 @@ jobs:
       granite_family: "guardian"
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      target_repos: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+      target_repos: ${{ needs.environment-setup.outputs.source_instruct_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -474,7 +474,7 @@ jobs:
       granite_family: "embedding"
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      target_repos: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+      target_repos: ${{ needs.environment-setup.outputs.source_instruct_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
