@@ -97,7 +97,7 @@ jobs:
       run: |
         echo "target_repos=${{ inputs.target_repos }}"
         target_repos=$(echo "$string" | sed "s/'/\"/g")
-        echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
+        echo "target_repos=$target_repos" >> "$GITHUB_ENV"
 
     # "${{ inputs.target_repos }}"
     - name: create-hf-repos
