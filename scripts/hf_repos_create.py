@@ -141,8 +141,9 @@ if __name__ == "__main__":
                     print(f"[INFO] Skipping repo_id='{repo_id}'...")
 
     except SystemExit as se:
-        print(f"Usage: {parser.format_usage()}")
-        exit(se)
+        if se.code != 0:
+            print(f"Usage: {parser.format_usage()}")
+            exit(se)
     except Exception as e:
         print(f"Error: {e}")
         print(f"Usage: {parser.format_usage()}")
