@@ -84,9 +84,6 @@ jobs:
     #     GH_QUIET: ${{ toJson(secrets) }}
     #   run: echo "$GH_QUIET"
 
-    - name: exit early
-      run: exit 0
-
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
