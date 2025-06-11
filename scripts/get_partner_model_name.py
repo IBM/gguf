@@ -86,10 +86,12 @@ def enum_contains(enum_type, value):
 
 def model_name_append_attribute(current_model_name: str, attribute: str, base_sep: str, attr_sep:str) -> str:
     # if this is not the first attribute after the designated separator
-    if not current_model_name.endswith(base_sep):
-        current_model_name += attr_sep
-    updated_model_name = f"{current_model_name}{attribute}"
-    return updated_model_name
+    if attribute is not None:
+        if not current_model_name.endswith(base_sep):
+            current_model_name += attr_sep
+        updated_model_name = f"{current_model_name}{attribute}"
+        return updated_model_name
+    return current_model_name
 
 def ollama_append_attribute(current_model_name: str, attribute: str) -> str:
     return model_name_append_attribute(current_model_name, attribute, MODEL_NAME_SEP, MODEL_ATTRIBUTE_SEP)
@@ -158,6 +160,14 @@ if __name__ == "__main__":
                model_language = language
                break
 
+        # print(f"model_family='{model_family}'\n \
+        #     model_version='{model_version}'\n \
+        #     model_parameter_size='{model_parameter_size}'\n \
+        #     model_active_parameter_count='{model_active_parameter_count}'\n \
+        #     model_quantization='{model_quantization}'\n \
+        #     model_language='{model_language}' \
+        #     ")
+
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
         if args.partner == SUPPORTED_PARTNERS.OLLAMA:
@@ -174,15 +184,12 @@ if __name__ == "__main__":
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
 
             if model_parameter_size is not None:
-                # partner_model_name += f"{model_parameter_size}"
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
 
             if model_language is not None:
-                # partner_model_name += f"-{model_language}"
                 partner_model_name = ollama_append_attribute(partner_model_name, model_language)
 
             if model_quantization is not None:
-                # partner_model_name += f"-{model_quantization}"
                 partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
 
         # NOTE: This script MUST only return a string
