@@ -73,14 +73,15 @@ if __name__ == "__main__":
             print(f">> include='{args.include}', Type: {type(args.include)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
-        # normalized_include = args.include
-        # print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
+        # The repo. array string needs to use double quotes for list items
+        # or it will not parse to JSON
         normalized_include = args.include.replace("'", '"')
-        print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
         repo_list = json.loads(normalized_include)
-        print(f"repo_list: {repo_list}, type: {type(repo_list)}")
-        # repo_list = remove_repo_org_from_list(repo_list)
         # print(f"repo_list: {repo_list}, type: {type(repo_list)}")
+
+        if len(repo_list) == 0:
+            print(f"[INFO] repo_list empty. Exiting...")
+            sys.exit(0)
 
         # private needs to be a boolean
         if type(args.private) is str:
@@ -90,8 +91,7 @@ if __name__ == "__main__":
             else:
                 private = False
 
-        # invoke fx
-        # import json
+        # read the HF collection config. file
         with open(args.collection_config, "r") as file:
             json_data = json.load(file)
             formatted_json = json.dumps(json_data, indent=4)
@@ -116,15 +116,15 @@ if __name__ == "__main__":
                 repo_name = item_defn["repo_name"]
                 item_family = item_defn["family"]
 
-                # construct the full HF repo. ID
+                # Only create the repo. if the family matches the input family
+                # AND if it appears in the "include" list (i.e., in the build matrix)
                 if (args.family == item_family) and is_repo_name_in_list(repo_name, repo_list):
                     if args.family == item_family:
+                        # construct the full HF repo. ID
                         repo_id = "/".join([args.target_owner, repo_name]) + args.ext
                         if args.verbose:
                             print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
 
-                        # Only create the repo. if it appears in the "include" list (i.e., in the build matrix)
-                        # if repo_id in repo_list:
                         repoUrl = safe_create_repo_in_namespace(
                             repo_id=repo_id,
                             private=private,
@@ -139,7 +139,6 @@ if __name__ == "__main__":
                             print(f"[SUCCESS] Repo. created. repoUrl: '{repoUrl}')")
                 else:
                     print(f"[INFO] Skipping repo_id='{repo_id}'...")
-
 
     except SystemExit as se:
         print(f"Usage: {parser.format_usage()}")
