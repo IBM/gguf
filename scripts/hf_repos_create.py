@@ -2,6 +2,7 @@ import sys
 import argparse
 import requests
 import ast
+import json
 
 from huggingface_hub import create_repo, RepoUrl
 from huggingface_hub.utils import HfHubHTTPError
