@@ -14,7 +14,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_INSTRUCT_JOBS: true
+  ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: true
@@ -132,7 +132,7 @@ jobs:
             echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
-            echo "enable_language_jobs=$ENABLE_INSTRUCT_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
