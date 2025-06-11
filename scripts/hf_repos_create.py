@@ -50,7 +50,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
-        parser.add_argument('include-repos', type=ast.literal_eval, help='A string representation of a list of repo. names to include')
+        parser.add_argument('include-repos', type=str, help='A string representation of a list of repo. names to include')
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
