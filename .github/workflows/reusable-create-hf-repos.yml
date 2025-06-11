@@ -96,8 +96,12 @@ jobs:
     - name: set-local-env-vars
       run: |
         echo "target_repos=${{ inputs.target_repos }}"
-        target_repos=$(echo "$target_repos" | sed "s/'/\"/g")
+        target_repos=$(echo $target_repos | sed "s/'/\"/g")
+        echo "target_repos='$target_repos'"
         echo "target_repos=$target_repos" >> "$GITHUB_ENV"
+
+    - name: List all environment variables
+      run: env | sort
 
     # "${{ inputs.target_repos }}"
     - name: create-hf-repos
