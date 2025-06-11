@@ -66,6 +66,10 @@ if __name__ == "__main__":
             print(f">> include='{args.include}', Type: {type(args.include_repos)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
+        repo_list = json.loads(args.include)
+
+        print(f"repo_list: {repo_list}, type: {type(repo_list)}")
+
         # private needs to be a boolean
         if type(args.private) is str:
             print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
