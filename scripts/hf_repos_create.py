@@ -52,7 +52,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
-        parser.add_argument('include-repos', type=str, help='A string representation of a list of repo. names to include')
+        parser.add_argument('include', type=str, help='A string representation of a list of repo. names to include')
         parser.add_argument('family', help='Granite family (i.e., instruct|vision|guardian)')
         parser.add_argument('private', default="True", help='Create the repo. as private')
         parser.add_argument('hf_token', help='Hugging Face Hub API access token.')
@@ -63,10 +63,9 @@ if __name__ == "__main__":
 
         if(args.debug):
             # Print input variables being used for this run
-            print(f">> include_repos='{args.include_repos}', Type: {type(args.include_repos)}")
+            print(f">> include='{args.include}', Type: {type(args.include_repos)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
-        sys.exit(0)
         # private needs to be a boolean
         if type(args.private) is str:
             print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
