@@ -67,9 +67,9 @@ if __name__ == "__main__":
             print(f">> include='{args.include}', Type: {type(args.include)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
-        normalized_include = args.include
-        print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
-        normalized_include = normalized_include.replace("'", '"')
+        # normalized_include = args.include
+        # print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
+        normalized_include = args.include.replace("'", '"')
         print(f">> normalized_include='{normalized_include}', Type: {type(normalized_include)}")
         repo_list = json.loads(normalized_include)
         print(f"repo_list: {repo_list}, type: {type(repo_list)}")
@@ -115,18 +115,24 @@ if __name__ == "__main__":
                     if args.verbose:
                         print(f"[INFO] Creating repo: repo_id: '{repo_id}'...")
 
-                    repoUrl = safe_create_repo_in_namespace(
-                        repo_id=repo_id,
-                        private=private,
-                        hf_token=args.hf_token,
-                    )
+                    # Only create the repo. if it appears in the "include" list (i.e., in the build matrix)
+                    if repo_id in repo_list:
+                        print(f"[INFO] Creating repo_id='{repo_id}')...")
+                        repoUrl = safe_create_repo_in_namespace(
+                            repo_id=repo_id,
+                            private=private,
+                            hf_token=args.hf_token,
+                        )
 
-                    if repoUrl is None:
-                        # Something went wrong creating
-                        print(f"[ERROR] Repo: repo_id: '{repo_id}' not created.")
-                        sys.exit(1)
-                    if args.verbose:
-                        print(f"[SUCCESS] Repo. created. repoUrl: '{repoUrl}')")
+                        if repoUrl is None:
+                            # Something went wrong creating
+                            print(f"[ERROR] Repo: repo_id: '{repo_id}' not created.")
+                            sys.exit(1)
+                        if args.verbose:
+                            print(f"[SUCCESS] Repo. created. repoUrl: '{repoUrl}')")
+                    else:
+                        print(f"[INFO] repo_id='{repo_id}') not in repo_list. Skipping...")
+
 
     except SystemExit as se:
         print(f"Usage: {parser.format_usage()}")
