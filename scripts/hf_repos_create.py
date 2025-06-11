@@ -64,6 +64,7 @@ if __name__ == "__main__":
             print(f">> include_repos='{args.include_repos}', Type: {type(args.include_repos)}")
             print(f">> target_owner='{args.target_owner}', collection_config='{args.collection_config}', family='{args.family}', private='{args.private}' ({type(args.private)}), hf_token='{args.hf_token}', ext='{args.ext}'")
 
+        sys.exit(0)
         # private needs to be a boolean
         if type(args.private) is str:
             print(f"[WARNING] private='{args.private}' is a string. Converting to boolean...")
