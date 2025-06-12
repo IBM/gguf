@@ -86,7 +86,7 @@ jobs:
         fi
 
     - uses: actions/checkout@v4
-      if: steps.verify-target-repo.conclusion == 'success'
+      if: ${{ steps.verify-target-repo.conclusion == 'success' }}
       with:
         sparse-checkout: |
           ./requirements.txt
@@ -102,6 +102,7 @@ jobs:
     # primarily, huggingface_hub and its deps. are installed
     - name: install-dependencies
       run: |
+        echo "steps.verify-target-repo.conclusion: ${{ steps.verify-target-repo.conclusion }}"
         python -m pip install -r ./requirements.txt
         pip list
 
