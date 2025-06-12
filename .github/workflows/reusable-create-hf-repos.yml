@@ -75,15 +75,28 @@ jobs:
       run: env | sort
 
     - name: Verify repo. ID exists
+      id: verify-target-repo-test
+      if: contains(env.target_repos, "None")
+      run: |
+        echo "Contains worked: '${{ env.target_repos }}'"
+
+    - name: Verify repo. ID exists
       id: verify-target-repo
       run: |
         if [[ "$target_repos" =~ "None" ]]; then
           echo "None detected."
+          echo "repo_exists=1" >> "$GITHUB_OUTPUT"
           exit 1
         else
           echo "None NOT detected."
+          echo "repo_exists=0" >> "$GITHUB_OUTPUT"
           exit 0
         fi
+
+    - name: exists-test
+      if: steps.verify-target-repo.repo_exists == "1"
+      run: |
+        echo "test: ${{ steps.verify-target-repo.repo_exists }}"
 
     - uses: actions/checkout@v4
       if: ${{ steps.verify-target-repo.conclusion == 'success' }}
