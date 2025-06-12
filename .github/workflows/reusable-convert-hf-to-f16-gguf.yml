@@ -55,7 +55,7 @@ jobs:
   convert-f16:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
-    timeout-minutes: 5
+    timeout-minutes: 20
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
