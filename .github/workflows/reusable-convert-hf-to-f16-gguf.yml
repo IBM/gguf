@@ -55,7 +55,10 @@ jobs:
   convert-f16:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
-    timeout-minutes: 12
+    timeout-minutes: 5
+    env:
+      HF_HUB_DISABLE_XET=1
+      HF_HUB_ENABLE_HF_TRANSFER=0
     steps:
     - uses: actions/checkout@v4
 
@@ -180,7 +183,7 @@ jobs:
       run: |
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
-        find llama.cpp ${{env.FIND_ARGS}}
+      # find llama.cpp ${{env.FIND_ARGS}}
 
     # Note: we need a later version of transformers lib. to work for IBM Vision (llava)
     - name: install-llama-cpp-dependencies
@@ -198,7 +201,7 @@ jobs:
     - name: download-model-snapshot
       run: |
         python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.ibm_granite_token}}
-        find models ${{env.FIND_ARGS}}
+      # find models ${{env.FIND_ARGS}}
 
     - name: debug-dynamic-environment
       run: |
