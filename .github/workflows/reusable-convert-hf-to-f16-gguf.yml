@@ -57,8 +57,8 @@ jobs:
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
     timeout-minutes: 5
     env:
-      HF_HUB_DISABLE_XET=1
-      HF_HUB_ENABLE_HF_TRANSFER=0
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
     steps:
     - uses: actions/checkout@v4
 
@@ -196,6 +196,9 @@ jobs:
 
     - name: Check available disk space
       run: df -h
+
+    - name: List all environment variables
+      run: env | sort
 
     # TODO: need a "source" and "target" HF_TOKEN
     # find models ${{env.FIND_ARGS}}
