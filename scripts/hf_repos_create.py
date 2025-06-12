@@ -95,12 +95,11 @@ if __name__ == "__main__":
         with open(args.collection_config, "r") as file:
             json_data = json.load(file)
             formatted_json = json.dumps(json_data, indent=4)
-            print(formatted_json)
+            if(args.debug):
+                print(formatted_json)
 
         collections_defn = json_data["collections"]
         for collection_defn in collections_defn:
-            # formatted_defn = json.dumps(collection_defn, indent=4)
-            # print(f"collection ({type(collection_defn)})='{formatted_defn}'")
             collection_title = collection_defn["title"]
             collection_desc = collection_defn["description"]
             collection_items = collection_defn["items"]
