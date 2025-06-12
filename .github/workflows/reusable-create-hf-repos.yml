@@ -88,7 +88,7 @@ jobs:
 
       - name: Set repo exists into output
         id: set-repo-exists-to-output
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           if [[ "$target_repos" =~ "None" ]]; then
             echo "None detected."
@@ -110,7 +110,7 @@ jobs:
       #     echo "test: '${{ steps.set-repo-exists-to-output.repo_exists }}'"
 
       - uses: actions/checkout@v4
-        if: ${{ steps.verify-target-repo.conclusion == 'success' }}
+        if: ${{ steps.set-repo-exists-to-output.conclusion == 'success' }}
         with:
           sparse-checkout: |
             ./requirements.txt
