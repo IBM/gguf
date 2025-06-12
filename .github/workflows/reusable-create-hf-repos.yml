@@ -60,11 +60,7 @@ jobs:
         echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> event_type: '${{ github.event_type }}'"
-        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
-        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
     - name: Dump GitHub inputs
       env:
@@ -79,15 +75,18 @@ jobs:
       run: env | sort
 
     - name: Verify repo. ID exists
+      id: verify-target-repo
       run: |
         if [[ "$target_repos" =~ "None" ]]; then
           echo "None detected."
-          exit 0
+          exit 1
         else
           echo "None NOT detected."
+          exit 0
         fi
 
     - uses: actions/checkout@v4
+      if: steps.verify-target-repo.conclusion == 'success'
       with:
         sparse-checkout: |
           ./requirements.txt
