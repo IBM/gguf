@@ -138,7 +138,7 @@ if __name__ == "__main__":
                         if args.verbose:
                             print(f"[SUCCESS] Repo. created. repoUrl: '{repoUrl}')")
                 else:
-                    print(f"[INFO] Skipping repo_id='{repo_id}'...")
+                    print(f"[INFO] Skipping repo_name='{repo_name}'...")
 
     except SystemExit as se:
         if se.code != 0:
