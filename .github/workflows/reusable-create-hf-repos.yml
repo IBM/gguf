@@ -93,7 +93,7 @@ jobs:
         fi
 
     - name: exists-test
-      if: steps.verify-target-repo.repo_exists == "1"
+      if: ${{ steps.verify-target-repo.outputs.repo_exists == '1' }}
       run: |
         echo "test: ${{ steps.verify-target-repo.repo_exists }}"
 
