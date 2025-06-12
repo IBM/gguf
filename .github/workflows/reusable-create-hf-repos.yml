@@ -74,9 +74,8 @@ jobs:
     - name: List all environment variables
       run: env | sort
 
-    - name: Verify repo. ID exists
-      id: verify-target-repo-test
-      if: contains(env.target_repos, "None")
+    - name: Verify repo. ID exists in rnv.
+      id: verify-target-repo-env
       run: |
         echo "Contains worked: '${{ env.target_repos }}'"
 
