@@ -54,81 +54,86 @@ jobs:
     if: |
       ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
     outputs:
-      repo_exists: ${{ steps.verify-target-repo.outputs.repo_exists }}
+      repo_exists: ${{ steps.set-repo-exists-to-output.outputs.repo_exists }}
     steps:
+      - run: |
+          echo "[INFO] github.env:"
+          echo "[INFO] >> run_id: '${{ github.run_id }}'"
+          echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+          echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+          echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
 
-    - run: |
-        echo "[INFO] github.env:"
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"
-        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+      - name: Dump GitHub inputs
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
 
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"
+      - name: set-local-env-vars
+        run: |
+          echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
+          if [[ "$target_repos" =~ "None" ]]; then
+            echo "repo_id_exists=1" >> "$GITHUB_ENV"
+          else
+            echo "repo_id_exists=0" >> "$GITHUB_ENV"
+          fi
 
-    - name: set-local-env-vars
-      run: |
-        echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
+      - name: List all environment variables
+        run: env | sort
 
-    - name: List all environment variables
-      run: env | sort
+      - name: Verify repo. ID exists in env.
+        id: target-repos-in-env
+        run: |
+          echo "env.target_repos: '${{ env.target_repos }}'"
+          echo "env.repo_id_exists: '${{ env.repo_id_exists }}'"
 
-    - name: Verify repo. ID exists in rnv.
-      id: target-repos-in-env
-      run: |
-        echo "env.target_repos: '${{ env.target_repos }}'"
+      - name: Set repo exists into output
+        id: set-repo-exists-to-output
+        continue-on-error: true
+        run: |
+          if [[ "$target_repos" =~ "None" ]]; then
+            echo "None detected."
+            echo "repo_exists=foo" >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "None NOT detected."
+            echo "repo_exists=bar" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-    - name: Verify repo. ID exists
-      id: verify-target-repo
-      run: |
-        if [[ "$target_repos" =~ "None" ]]; then
-          echo "None detected."
-          echo "repo_exists=1" >> "$GITHUB_OUTPUT"
-          exit 0
-        else
-          echo "None NOT detected."
-          echo "repo_exists=0" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
+      - name: does-repo-exists-in-output
+        run: |
+          echo "test: '${{ steps.set-repo-exists-to-output.repo_exists }}'"
 
-    - name: spit-it-out
-      run: |
-        echo "repo_exists: '$repo_exists'"
-        echo "test: ${{ steps.verify-target-repo.repo_exists }}"
+      # - name: exists-test
+      #   if: ${{ steps.set-repo-exists-to-output.outputs.repo_exists == '1' }}
+      #   run: |
+      #     echo "test: '${{ steps.set-repo-exists-to-output.repo_exists }}'"
 
-    - name: exists-test
-      if: ${{ steps.verify-target-repo.outputs.repo_exists == '1' }}
-      run: |
-        echo "test: ${{ steps.verify-target-repo.repo_exists }}"
+      - uses: actions/checkout@v4
+        if: ${{ steps.verify-target-repo.conclusion == 'success' }}
+        with:
+          sparse-checkout: |
+            ./requirements.txt
+            scripts/
+            resources/
 
-    - uses: actions/checkout@v4
-      if: ${{ steps.verify-target-repo.conclusion == 'success' }}
-      with:
-        sparse-checkout: |
-          ./requirements.txt
-          scripts/
-          resources/
+      # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+      # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      # primarily, huggingface_hub and its deps. are installed
+      - name: install-dependencies
+        run: |
+          echo "steps.verify-target-repo.conclusion: ${{ steps.verify-target-repo.conclusion }}"
+          python -m pip install -r ./requirements.txt
+          pip list
 
-    # primarily, huggingface_hub and its deps. are installed
-    - name: install-dependencies
-      run: |
-        echo "steps.verify-target-repo.conclusion: ${{ steps.verify-target-repo.conclusion }}"
-        python -m pip install -r ./requirements.txt
-        pip list
-
-    - name: create-hf-repos
-      run: |
-        echo "target_repos='$target_repos'"
-        echo "inputs.target_repos: '${{ inputs.target_repos }}'"
-        echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
-        echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
-        python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
+      - name: create-hf-repos
+        run: |
+          echo "target_repos='$target_repos'"
+          echo "inputs.target_repos: '${{ inputs.target_repos }}'"
+          echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
+          echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
+          python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
