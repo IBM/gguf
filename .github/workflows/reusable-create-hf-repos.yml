@@ -53,6 +53,8 @@ jobs:
     runs-on: macos-latest
     if: |
       ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+    outputs:
+      repo_exists: ${{ steps.verify-target-repo.outputs.repo_exists }}
     steps:
 
     - run: |
@@ -75,9 +77,9 @@ jobs:
       run: env | sort
 
     - name: Verify repo. ID exists in rnv.
-      id: verify-target-repo-env
+      id: target-repos-in-env
       run: |
-        echo "Contains worked: '${{ env.target_repos }}'"
+        echo "env.target_repos: '${{ env.target_repos }}'"
 
     - name: Verify repo. ID exists
       id: verify-target-repo
