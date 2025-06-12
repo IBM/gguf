@@ -39,17 +39,23 @@ env:
     'Q2_K'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
+    'None'
   ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
+    'None'
   ]"
   SOURCE_VISION_REPOS: "[
+    'None'
   ]"
   TARGET_VISION_QUANTIZATIONS: "[
+    'None'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[
+    'None'
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
+    'None'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows

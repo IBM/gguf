@@ -178,7 +178,7 @@ jobs:
 
     - name: test-llama-server-with-quantized-gguf
       if: env.TEST_LLAMA_SERVER == 'true'
-      timeout-minutes: 5
+      timeout-minutes: 10
       run: |
         echo "--------------------"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
