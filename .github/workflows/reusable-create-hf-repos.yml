@@ -102,12 +102,12 @@ jobs:
 
       - name: does-repo-exists-in-output
         run: |
-          echo "test: '${{ steps.set-repo-exists-to-output.repo_exists }}'"
+          echo "repo_exists: '${{ steps.set-repo-exists-to-output.outputs.repo_exists }}'"
 
       # - name: exists-test
       #   if: ${{ steps.set-repo-exists-to-output.outputs.repo_exists == '1' }}
       #   run: |
-      #     echo "test: '${{ steps.set-repo-exists-to-output.repo_exists }}'"
+      #     echo "repo_exists: '${{ steps.set-repo-exists-to-output.outputs.repo_exists }}'"
 
       - uses: actions/checkout@v4
         if: ${{ steps.set-repo-exists-to-output.conclusion == 'success' }}
@@ -126,14 +126,24 @@ jobs:
       # primarily, huggingface_hub and its deps. are installed
       - name: install-dependencies
         run: |
-          echo "steps.verify-target-repo.conclusion: ${{ steps.verify-target-repo.conclusion }}"
+          echo "steps.set-repo-exists-to-output.conclusion: ${{ steps.set-repo-exists-to-output.conclusion }}"
           python -m pip install -r ./requirements.txt
           pip list
 
       - name: create-hf-repos
         run: |
           echo "target_repos='$target_repos'"
+          echo "env.repo_id_exists: '${{ env.repo_id_exists }}'"
           echo "inputs.target_repos: '${{ inputs.target_repos }}'"
           echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
           echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
           python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
+
+  # test-repo-exists:
+  #   needs: [ reusable_create_hf_repos ]
+  #   with:
+  #     repo_exists: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
+  #   steps:
+  #     - run: |
+  #         echo "[INFO] github.env:"
+  #         echo "[INFO] >> run_id: '${{ github.run_id }}'"
