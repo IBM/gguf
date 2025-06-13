@@ -88,6 +88,7 @@ jobs:
           fi
 
       - name: display_outputs
+        if: ${{ github.event.inputs.debug }}
         run: |
           echo "steps.set-job-outputs.outputs.repo_exists: '${{ steps.set-job-outputs.outputs.repo_exists }}'"
           echo "steps.set-job-outputs.outputs.target_repos: '${{ steps.set-job-outputs.outputs.target_repos }}'"
