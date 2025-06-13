@@ -56,36 +56,30 @@ jobs:
   convert-f16:
     runs-on: macos-latest
     if: ${{ inputs.enable_vision_jobs == true }}
+    timeout-minutes: 30
+    env:
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
     steps:
     - uses: actions/checkout@v4
-
-    # - name: Dump GitHub context
-    #   env:
-    #     GH_CONTEXT: ${{ toJson(github) }}
-    #   run: echo "$GH_CONTEXT"
-
-    # - name: Dump GitHub quiet
-    #   env:
-    #     GH_QUIET: ${{ toJson(secrets) }}
-    #   run: echo "$GH_QUIET"
 
     - name: Dump GitHub inputs
       env:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: |
-        echo "$GITHUB_INPUTS"
-        echo "==============="
-        printenv | sort
-        echo "==============="
-        echo "enable_vision_jobs=${{inputs.enable_vision_jobs}}" >> $GITHUB_ENV
+      if: ${{ github.event.inputs.debug }}
+      run: echo "$GITHUB_INPUTS"
 
-    - name: is-enable_vision_jobs
-      run: |
-        echo "enable_vision_jobs: '$enable_vision_jobs'"
-        if [[ "$enable_vision_jobs" == 'false' ]]; then
-          echo "enable_vision_jobs == 'false'. Exiting..."
-          exit 1
-        fi
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    # - name: is-enable_vision_jobs
+    #   run: |
+    #     echo "enable_vision_jobs: '$enable_vision_jobs'"
+    #     if [[ "$enable_vision_jobs" == 'false' ]]; then
+    #       echo "enable_vision_jobs == 'false'. Exiting..."
+    #       exit 1
+    #     fi
 
     - run: |
         echo "[INFO] github.env:"
@@ -167,15 +161,17 @@ jobs:
         ref: 'master'  # default to master branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
+        # scripts
+        # examples/llava
         sparse-checkout: |
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
           requirements/requirements-convert_legacy_llama.txt
           requirements/requirements-convert_hf_to_gguf.txt
           requirements/requirements-convert_lora_to_gguf.txt
-          examples/llava
           gguf-py
-          scripts
+          tools/mtmd/requirements.txt
+          tools/mtmd/legacy-models
 
     - name: print-llamacpp
       run: |
@@ -205,10 +201,11 @@ jobs:
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
 
+    # python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
     - name: separate-clip-and-projector-tensors
       run: |
         echo "Separating CLIP and projector tensors... (llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }})"
-        python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
+        python ./llama.cpp/tools/mtmd/legacy-models/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
         ls -al ${{ env.LOCAL_MODEL_PATH }}
 
     - name: validate-clip-and-projector-tensors
@@ -216,13 +213,14 @@ jobs:
         python ./scripts/torch_llava_validate_tensors.py ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
         cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
 
+    # python ./llama.cpp/examples/llava/convert_image_encoder_to_gguf.py \
     - name: convert-image-encoder-to-gguf
       run: |
         mkdir ${{ env.ENCODER_PATH }}
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.ENCODER_PATH }}/pytorch_model.bin
         cp ./resources/json/granite-3.2/vision_config.json ${{ env.ENCODER_PATH }}/config.json
-        python ./llama.cpp/examples/llava/convert_image_encoder_to_gguf.py \
+        python ./llama.cpp/tools/mtmd/legacy-models/convert_image_encoder_to_gguf.py \
           -m ${{ env.ENCODER_PATH }} \
           --llava-projector ${{ env.ENCODER_PATH }}/llava.projector \
           --output-dir ${{ env.ENCODER_PATH }} \
