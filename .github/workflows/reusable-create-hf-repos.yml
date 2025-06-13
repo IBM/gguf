@@ -56,12 +56,18 @@ jobs:
     outputs:
       repo_exists: ${{ steps.set-job-outputs.outputs.repo_exists }}
       target_repos: ${{ steps.set-job-outputs.outputs.target_repos }}
+      env:
+        MY_REPOS: ${{ inputs.target_repos }}
     steps:
       - run: |
           echo "[INFO] >> github.run_id: '${{ github.run_id }}'"
           echo "[INFO] >> github.event.base_ref: '${{ github.event.base_ref }}'"
           echo "[INFO] >> github.workflow_ref: '${{ github.workflow_ref }}'"
           echo "[INFO] >> github.ref: '${{ github.ref }}', github.ref_name: '${{ github.ref_name }}', github.ref_type: '${{ github.ref_type }}'"
+
+      - name: set-local-env-vars
+        run: |
+          echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
 
       - name: Dump GitHub inputs
         env:
