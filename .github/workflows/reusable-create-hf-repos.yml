@@ -71,22 +71,17 @@ jobs:
       - name: List all environment variables
         run: env | sort
 
-      - name: Verify repo. ID exists in env.
-        id: target-repos-in-env
-        run: |
-          echo "env.target_repos: '${{ env.target_repos }}'"
-
       - name: Set job outputs
         id: set-job-outputs
         # continue-on-error: true
         run: |
+          echo "target_repos='$target_repos'"
           if [[ "$target_repos" =~ "None" ]]; then
-            echo "contains("None"): true"
             echo "repo_exists=false" >> "$GITHUB_OUTPUT"
           else
             echo "contains("None"): false"
             echo "repo_exists=true" >> "$GITHUB_OUTPUT"
-            echo "target_repos=${{ env.target_repos }}" >> "$GITHUB_OUTPUT"
+            echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: display_outputs
@@ -98,11 +93,7 @@ jobs:
   test-repo-exists:
     runs-on: ubuntu-latest
     needs: [ reusable_create_hf_repos ]
-    # with:
-    #   target_repos: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}
     if: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
-    # env:
-    #   foo: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}"
     steps:
       - name: my-repos
         run: |
@@ -140,7 +131,6 @@ jobs:
         run: |
           echo "target_repos='$target_repos'"
           echo "env.repo_id_exists: '${{ env.repo_id_exists }}'"
-          echo "steps.set-job-outputs.outputs.repo_exists: '${{ steps.set-job-outputs.outputs.repo_exists }}'"
           echo "inputs.target_repos: '${{ inputs.target_repos }}'"
           echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
           echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
