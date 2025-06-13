@@ -136,8 +136,7 @@ jobs:
 
   test-repo-exists:
     needs: [ reusable_create_hf_repos ]
-    with:
-      repo_exists: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
+    if: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
     steps:
       - run: |
           echo "env.target_repos: '${{ env.target_repos }}'"
