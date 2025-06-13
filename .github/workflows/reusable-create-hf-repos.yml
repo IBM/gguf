@@ -98,10 +98,16 @@ jobs:
   test-repo-exists:
     runs-on: ubuntu-latest
     needs: [ reusable_create_hf_repos ]
+    # with:
+    #   target_repos: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}
     if: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
-    with:
-      target_repos: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}
+    # env:
+    #   foo: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}"
     steps:
+      - name: my-repos
+        run: |
+          echo "target_repos: ${{ needs.reusable_create_hf_repos.outputs.target_repos }}"
+
       - name: Dump GitHub inputs
         env:
           GITHUB_INPUTS: ${{ toJson(inputs) }}
