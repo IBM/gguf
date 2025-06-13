@@ -87,6 +87,7 @@ jobs:
           else
             echo "contains("None"): false"
             echo "repo_exists=true" >> "$GITHUB_OUTPUT"
+            echo "t_repos=${{ inputs.target_repos }}"
             echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_OUTPUT"
           fi
 
@@ -127,17 +128,16 @@ jobs:
           python-version: '3.11'
 
       # primarily, huggingface_hub and its deps. are installed
+      #  echo "steps.set-job-outputs.conclusion: ${{ steps.set-job-outputs.conclusion }}"
       - name: install-dependencies
         run: |
-          echo "steps.set-job-outputs.conclusion: ${{ steps.set-job-outputs.conclusion }}"
           python -m pip install -r ./requirements.txt
           pip list
 
       - name: create-hf-repos
         run: |
           echo "target_repos='$target_repos'"
-          echo "env.repo_id_exists: '${{ env.repo_id_exists }}'"
           echo "inputs.target_repos: '${{ inputs.target_repos }}'"
           echo "inputs.target_repo_private: '${{ inputs.target_repo_private }}'"
           echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
-          python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
+          python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} ${{ inputs.target_repos }} ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
