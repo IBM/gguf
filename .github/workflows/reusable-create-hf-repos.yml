@@ -57,7 +57,7 @@ jobs:
       repo_exists: ${{ steps.set-job-outputs.outputs.repo_exists }}
       target_repos: ${{ steps.set-job-outputs.outputs.target_repos }}
       env:
-        MY_REPOS: ${{ github.event.inputs.target_repos }}
+        t_repos: ${{ github.event.inputs.target_repos }}
     steps:
       - run: |
           echo "[INFO] >> github.run_id: '${{ github.run_id }}'"
