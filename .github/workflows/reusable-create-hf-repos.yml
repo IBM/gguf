@@ -92,22 +92,17 @@ jobs:
         run: |
           if [[ "$target_repos" =~ "None" ]]; then
             echo "None detected."
-            echo "repo_exists=foo" >> "$GITHUB_OUTPUT"
+            echo "repo_exists=true" >> "$GITHUB_OUTPUT"
             exit 1
           else
             echo "None NOT detected."
-            echo "repo_exists=bar" >> "$GITHUB_OUTPUT"
+            echo "repo_exists=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
       - name: does-repo-exists-in-output
         run: |
           echo "repo_exists: '${{ steps.set-repo-exists-to-output.outputs.repo_exists }}'"
-
-      # - name: exists-test
-      #   if: ${{ steps.set-repo-exists-to-output.outputs.repo_exists == '1' }}
-      #   run: |
-      #     echo "repo_exists: '${{ steps.set-repo-exists-to-output.outputs.repo_exists }}'"
 
       - uses: actions/checkout@v4
         if: ${{ steps.set-repo-exists-to-output.conclusion == 'success' }}
@@ -139,11 +134,12 @@ jobs:
           echo "inputs.target_repo_name_ext: '${{ inputs.target_repo_name_ext }}'"
           python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
 
-  # test-repo-exists:
-  #   needs: [ reusable_create_hf_repos ]
-  #   with:
-  #     repo_exists: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
-  #   steps:
-  #     - run: |
-  #         echo "[INFO] github.env:"
-  #         echo "[INFO] >> run_id: '${{ github.run_id }}'"
+  test-repo-exists:
+    needs: [ reusable_create_hf_repos ]
+    with:
+      repo_exists: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
+    steps:
+      - run: |
+          echo "env.target_repos: '${{ env.target_repos }}'"
+          echo "env.repo_id_exists: '${{ env.repo_id_exists }}'"
+          echo "repo_exists: '${{ steps.set-repo-exists-to-output.outputs.repo_exists }}'"
