@@ -135,6 +135,7 @@ jobs:
           python ./scripts/hf_repos_create.py ${{ inputs.target_repo_owner }} ${{ inputs.hf_collection_config }} "$target_repos" ${{ inputs.granite_family }} ${{ inputs.target_repo_private }} ${{ secrets.hf_token }} --ext="${{ inputs.target_repo_name_ext}}" --debug
 
   test-repo-exists:
+    runs-on: ubuntu-latest
     needs: [ reusable_create_hf_repos ]
     if: ${{ needs.reusable_create_hf_repos.outputs.repo_exists == 'true' }}
     steps:
