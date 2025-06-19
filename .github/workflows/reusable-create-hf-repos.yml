@@ -66,6 +66,7 @@ jobs:
           echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
 
       - name: clean-repos
+        run: |
           cleaned_target_repos="${target_repos// /}"
           echo "cleaned_target_repos=$cleaned_target_repos"
 
