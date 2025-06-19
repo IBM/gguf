@@ -65,6 +65,10 @@ jobs:
         run: |
           echo "target_repos=${{ inputs.target_repos }}" >> "$GITHUB_ENV"
 
+      - name: clean-repos
+          cleaned_target_repos="${target_repos// /}"
+          echo "cleaned_target_repos=$cleaned_target_repos"
+
       - name: Dump GitHub inputs
         env:
           GITHUB_INPUTS: ${{ toJson(inputs) }}

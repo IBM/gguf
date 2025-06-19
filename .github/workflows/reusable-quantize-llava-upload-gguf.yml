@@ -83,22 +83,6 @@ jobs:
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"
-
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: install-dependencies
-      run: |
-        python -m pip install -r ./requirements.txt
-        pip list
-
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.
@@ -137,8 +121,28 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
 
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      if: ${{ github.event.inputs.debug }}
+      run: echo "$GITHUB_INPUTS"
+
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: install-general-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
     - name: test-f16-exists
-      # if: env.F16_OPT_ENABLED == 'true'
       run: |
         output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
         echo "output: '$output'"
@@ -152,13 +156,26 @@ jobs:
         fi
 
     - name: download-f16-gguf-hf-hub-download
-      # if: env.F16_FILE_EXISTS == '1'
       run: |
         echo "Downloading f16 GGUF using hf_file_download..."
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
         echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+
+    - name: verify-f16-gguf-hf-hub-download
+      run: |
+        echo downloaded files...
+        echo "--------------------"
+        find . -name \*.gguf -type f
+        echo "--------------------"
+        if [ -f ${{env.LOCAL_FNAME_F16_GGUF}} ]; then
+          echo "File exists"
+        else
+          env | sort
+          echo "File does not exist. env.LOCAL_FNAME_F16_GGUF=${{env.LOCAL_FNAME_F16_GGUF}}"
+          exit 1
+        fi
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -172,14 +189,14 @@ jobs:
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
-          ./LICENSE
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
-          requirements/requirements-convert_legacy_llama.txt
           requirements/requirements-convert_hf_to_gguf.txt
           requirements/requirements-convert_lora_to_gguf.txt
+          requirements/requirements-convert_legacy_llama.txt
           gguf-py
-          scripts
+          tools/mtmd/requirements.txt
+          tools/mtmd/legacy-models
 
     - name: print-llamacpp
       if: inputs.debug == true
@@ -195,19 +212,6 @@ jobs:
         pip uninstall --yes transformers
         pip install transformers==4.49.0
         pip list
-
-    - name: verify-downloaded-files
-      run: |
-        echo downloaded files...
-        echo "--------------------"
-        find . -name \*.gguf -type f
-        echo "--------------------"
-        if [ -f ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ]; then
-          echo "File exists"
-        else
-          echo "File does not exist"
-          exit 1
-        fi
 
     - name: quantize-gguf
       run: |

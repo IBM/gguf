@@ -104,17 +104,6 @@ jobs:
         shopt -s expand_aliases
         alias tree="find"
 
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: install-dependencies
-      run: |
-        python -m pip install -r ./requirements.txt
-        pip list
-
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.
@@ -124,11 +113,6 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-
-    - name: verify-github-env
-      run: |
-        echo "REPO_ORG=$REPO_ORG"
-        echo "REPO_NAME=$REPO_NAME"
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -156,6 +140,17 @@ jobs:
         echo "PATH: '{{$PATH}}'"
         ls -al llama.cpp
 
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: install-general-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
     # Note: we need a later version of transformers lib. to work for IBM Vision (llava)
     - name: install-llama-cpp-dependencies
       run: |
@@ -164,12 +159,6 @@ jobs:
         pip uninstall --yes transformers
         pip install transformers==4.49.0
         pip list
-
-    - name: Check available disk space
-      run: df -h
-
-    - name: List all environment variables
-      run: env | sort
 
     # TODO: need a "source" and "target" HF_TOKEN
     # find models ${{env.FIND_ARGS}}
