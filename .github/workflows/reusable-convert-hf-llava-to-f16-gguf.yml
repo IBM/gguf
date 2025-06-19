@@ -163,10 +163,10 @@ jobs:
         sparse-checkout-cone-mode: false
         # scripts
         # examples/llava
+        # requirements/requirements-convert_legacy_llama.txt # installed by: mtmd/requirements.txt
         sparse-checkout: |
           convert_hf_to_gguf.py
           convert_lora_to_gguf.py
-          requirements/requirements-convert_legacy_llama.txt
           requirements/requirements-convert_hf_to_gguf.txt
           requirements/requirements-convert_lora_to_gguf.txt
           gguf-py
@@ -183,7 +183,7 @@ jobs:
       run: |
         python -m pip install -r ./requirements.txt
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
-        python -m pip install -r ./llama.cpp/examples/llava/requirements.txt
+        python -m pip install -r ./llama.cpp/tools/mtmd/requirements.txt
         pip uninstall --yes transformers
         pip install transformers==4.49.0
         pip list
