@@ -122,7 +122,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'master'  # default to master branch
+        ref: 'b5717'  # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -171,6 +171,7 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
+        ls -al $MODEL_DOWNLOAD_DIR
 
     - name: download-safetensors-convert-to-f16-gguf
       run: |

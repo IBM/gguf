@@ -215,7 +215,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'master'  # default to master branch
+        ref: 'b5717' # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
