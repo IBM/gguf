@@ -34,7 +34,7 @@ env:
     'ibm-granite/granite-3.1-2b-instruct',
     'ibm-granite/granite-3.1-8b-instruct',
     'ibm-granite/granite-3.1-1b-a400m-instruct',
-    'ibm-granite/granite-3.1-3b-a800m-instruct',
+    'ibm-granite/granite-3.1-3b-a800m-instruct'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
