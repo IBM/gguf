@@ -25,8 +25,12 @@ env:
   # 'ibm-granite/granite-guardian-3.1-2b',
   # 'ibm-granite/granite-guardian-3.1-8b'
   SOURCE_INSTRUCT_REPOS: "[
+    'ibm-granite/granite-3.1-2b-instruct',
+    'ibm-granite/granite-3.1-8b-instruct',
     'ibm-granite/granite-3.1-1b-a400m-instruct',
-    'ibm-granite/granite-3.1-3b-a800m-instruct'
+    'ibm-granite/granite-3.1-3b-a800m-instruct',
+    'ibm-granite/granite-guardian-3.1-2b',
+    'ibm-granite/granite-guardian-3.1-8b'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -35,11 +39,17 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q4_K_M'
+    'Q2_K',
+    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+    'Q6_K',
+    'Q8_0'
   ]"
   # 'ibm-granite/granite-guardian-3.1-2b',
   # 'ibm-granite/granite-guardian-3.1-8b'
   SOURCE_GUARDIAN_REPOS: "[
+    'None'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
@@ -48,10 +58,12 @@ env:
   TARGET_GUARDIAN_QUANTIZATIONS: "[
   ]"
   SOURCE_VISION_REPOS: "[
+    'None'
   ]"
   TARGET_VISION_QUANTIZATIONS: "[
   ]"
   SOURCE_EMBEDDING_REPOS: "[
+    'None'
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
   ]"

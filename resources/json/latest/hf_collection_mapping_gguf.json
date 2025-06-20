@@ -4,6 +4,106 @@
             "title": "Granite GGUF Models",
             "description": "GGUF-formatted versions of IBM Granite models. Licensed under the Apache 2.0 license.",
             "items": [
+             {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-2b-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-8b-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-1b-a400m-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-3b-a800m-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-2b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-8b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-1b-a400m-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.0-3b-a800m-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-2b-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-8b-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-1b-a400m-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-3b-a800m-base"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-2b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-8b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-1b-a400m-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_id": "granite-3.1-3b-a800m-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_id": "granite-guardian-3.1-2b"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_id": "granite-guardian-3.1-8b"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.2-2b-instruct"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-3.2-8b-instruct"
+                },
                 {
                     "type": "model",
                     "family": "instruct",

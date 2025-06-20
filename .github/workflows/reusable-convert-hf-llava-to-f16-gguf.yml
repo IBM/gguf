@@ -42,6 +42,7 @@ on:
         required: true
         default: false
 
+# TODO: VISION_CONFIG is not currently used in this workflow (currently the config file loc. is hardcoded)
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
