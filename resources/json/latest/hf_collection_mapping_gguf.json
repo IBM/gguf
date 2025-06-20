@@ -7,92 +7,92 @@
              {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-2b-base"
+                    "repo_name": "granite-3.0-2b-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-8b-base"
+                    "repo_name": "granite-3.0-8b-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-1b-a400m-base"
+                    "repo_name": "granite-3.0-1b-a400m-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-3b-a800m-base"
+                    "repo_name": "granite-3.0-3b-a800m-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-2b-instruct"
+                    "repo_name": "granite-3.0-2b-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-8b-instruct"
+                    "repo_name": "granite-3.0-8b-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-1b-a400m-instruct"
+                    "repo_name": "granite-3.0-1b-a400m-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.0-3b-a800m-instruct"
+                    "repo_name": "granite-3.0-3b-a800m-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-2b-base"
+                    "repo_name": "granite-3.1-2b-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-8b-base"
+                    "repo_name": "granite-3.1-8b-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-1b-a400m-base"
+                    "repo_name": "granite-3.1-1b-a400m-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-3b-a800m-base"
+                    "repo_name": "granite-3.1-3b-a800m-base"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-2b-instruct"
+                    "repo_name": "granite-3.1-2b-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-8b-instruct"
+                    "repo_name": "granite-3.1-8b-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-1b-a400m-instruct"
+                    "repo_name": "granite-3.1-1b-a400m-instruct"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_id": "granite-3.1-3b-a800m-instruct"
+                    "repo_name": "granite-3.1-3b-a800m-instruct"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_id": "granite-guardian-3.1-2b"
+                    "repo_name": "granite-guardian-3.1-2b"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_id": "granite-guardian-3.1-8b"
+                    "repo_name": "granite-guardian-3.1-8b"
                 },
                 {
                     "type": "model",
