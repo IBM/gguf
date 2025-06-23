@@ -91,10 +91,6 @@ jobs:
   # Environment setup
   # ===========================================================================
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
-  # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
-  #  api_token: "${{ steps.set-vars.outputs.api_token }}"
-  #  echo "api_token=${{ secrets.HF_TOKEN_TEST }}" >> $GITHUB_OUTPUT
-  #  echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
   environment-setup:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
