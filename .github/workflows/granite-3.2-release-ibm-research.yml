@@ -52,7 +52,7 @@ env:
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-research
   TARGET_REPO_PRIVATE: false
-  COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json"
+  COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
 jobs:
   # ===========================================================================

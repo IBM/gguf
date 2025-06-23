@@ -142,22 +142,36 @@
                 {
                     "type": "model",
                     "family": "embedding",
+                    "version": "3.2",
                     "repo_name": "granite-embedding-30m-english"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
+                    "version": "3.2",
                     "repo_name": "granite-embedding-125m-english"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
+                    "version": "3.2",
                     "repo_name": "granite-embedding-107m-multilingual"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
+                    "version": "3.2",
                     "repo_name": "granite-embedding-278m-multilingual"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-tiny-preview"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-tiny-base-preview"
                 }
             ]
         }

@@ -222,7 +222,7 @@ base64 -i <input_file> > <output_file>
 
 Each release uses a model collection mapping file that defines which models repositories along with titles, descriptions and family designations belong to that collection. Family designations allow granular control over the which model families are included in a release which allows for "staggered" releases typically by model architecture (e.g., `vision`, `embedding`, etc.).
 
-Conceptually, different IBM Granite releases would have their own collection mapping file (e.g., [resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json](resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json))); however, we now use a single collection mapping file for all releases of GGUF model formats for simpler downstream consumption:
+Originally, different IBM Granite releases had their own collection mapping file; however, we now use a single collection mapping file for all releases of GGUF model formats for simpler downstream consumption:
 
 - **Unified mapping**: (all release types) [resources/json/latest/hf_collection_mapping_gguf.json](resources/json/latest/hf_collection_mapping_gguf.json)
 
@@ -317,7 +317,7 @@ env:
     ...
   ]"
   ...
-  COLLECTION_CONFIG: "resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json"
+  COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 ```
 
 **Note**: that the `COLLECTION_CONFIG` env. var. provides the relative path to the collection configuration file, which is located in the `resources/json` directory of the repository for the specific Granite release.
