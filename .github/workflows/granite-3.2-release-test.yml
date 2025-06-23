@@ -14,15 +14,14 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
+  ENABLE_EMBEDDING_JOBS: true
   # 'ibm-granite/granite-3.2-2b-instruct',
   # 'ibm-granite/granite-3.2-8b-instruct'
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-3.2-2b-instruct',
-    'ibm-granite/granite-3.2-8b-instruct'
+    'None'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -41,14 +40,18 @@ env:
   # 'ibm-granite/granite-guardian-3.2-3b-a800m',
   # 'ibm-granite/granite-guardian-3.2-5b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'ibm-granite/granite-guardian-3.2-3b-a800m',
+    'ibm-granite/granite-guardian-3.2-5b'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0'
   ]"
   # 'ibm-granite/granite-vision-3.2-2b'
   SOURCE_VISION_REPOS: "[
@@ -66,11 +69,14 @@ env:
   # 'ibm-granite/granite-embedding-107m-multilingual',
   # 'ibm-granite/granite-embedding-278m-multilingual'
   SOURCE_EMBEDDING_REPOS: "[
-    'None'
+    'ibm-granite/granite-embedding-30m-english',
+    'ibm-granite/granite-embedding-125m-english',
+    'ibm-granite/granite-embedding-107m-multilingual',
+    'ibm-granite/granite-embedding-278m-multilingual'
   ]"
   # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M', 'Q8_0'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
