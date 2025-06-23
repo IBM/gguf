@@ -117,7 +117,8 @@ jobs:
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       target_ollama_llm_quants: "${{ steps.set-vars.outputs.target_ollama_llm_quants }}"
       target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
-      target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
+      target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_embedding_quants }}"
+      target_ollama_vision_quants: "${{ steps.set-vars.outputs.target_ollama_vision_quants }}"
     env:
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
@@ -146,11 +147,20 @@ jobs:
       - name: Append f16 to Ollama embedding quants
         id: ollama-append-embedding-quants
         run: |
-          echo "Appending to TARGET_GUARDIAN_QUANTIZATIONS: '${{ fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS) }}'"
+          echo "Appending to TARGET_EMBEDDING_QUANTIZATIONS: '${{ fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
           TARGET_OLLAMA_EMBEDDING_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
           echo "TARGET_OLLAMA_EMBEDDING_QUANTS=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> $GITHUB_ENV
+
+      - name: Append f16 to Ollama vision quants
+        id: ollama-append-vision-quants
+        run: |
+          echo "Appending to TARGET_VISION_QUANTIZATIONS: '${{ fromJSON(env.TARGET_VISION_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_VISION_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_VISION_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          echo "TARGET_OLLAMA_VISION_QUANTS=$TARGET_OLLAMA_VISION_QUANTS" >> $GITHUB_ENV
 
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -266,7 +276,7 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_guardian_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      granite_family: "instruct"
+      granite_family: "guardian"
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -292,9 +302,35 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_embedding_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      granite_family: "instruct"
+      granite_family: "embedding"
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets: inherit
+
+  # ===========================================================================
+  # Ollama (vision)
+  # ===========================================================================
+  ollama-release-vision-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_vision_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "vision"
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
