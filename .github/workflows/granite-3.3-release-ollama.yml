@@ -4,7 +4,7 @@ run-name: "Ollama release [${{github.ref_type}}: ${{github.ref_name}}]"
 on:
   push:
     tags:
-      - "ollama-v3.3*"
+      - "test-ollama-*"
   workflow_dispatch:
 
 permissions:
