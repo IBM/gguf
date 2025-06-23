@@ -220,13 +220,9 @@ base64 -i <input_file> > <output_file>
 
 #### Collection mapping files (JSON)
 
-Each release type has a collection mapping file that defines which models repositories along with titles, descriptions and family designations. Family designations allow granular control over the which model families are included in a release which allows for "staggered" releases typically by model architecture.  These files are:
+Each release uses a model collection mapping file that defines which models repositories along with titles, descriptions and family designations belong to that collection. Family designations allow granular control over the which model families are included in a release which allows for "staggered" releases typically by model architecture (.e.g, [resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json](resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json)). Conceptually, different IBM Granite releases would have their own collection mapping file; however, we now use a single collection mapping file for all releases of GGUF model formats for simpler downstream consumption:
 
-- **Test**: [resources/json/granite-3.2/hf_collection_mapping_test_private.json](resources/json/granite-3.2/hf_collection_mapping_test_private.json)
-- **Preview**: [resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json](resources/json/granite-3.2/hf_collection_mapping_preview_ibm_granite.json)
-- **Public**: [resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json](resources/json/granite-3.2/hf_collection_mapping_release_ibm_research.json)
-
-**Note**: The version portion of the file path will vary depending on IBM Granite release version (e.g., `granite-3.2`).
+- **Unified mapping**: (all release types) [resources/json/latest/hf_collection_mapping_gguf.json](resources/json/latest/hf_collection_mapping_gguf.json)
 
 ###### What to update
 
@@ -236,13 +232,13 @@ The JSON collection mapping files have the following structure using the "Public
 {
     "collections": [
         {
-            "title": "Granite 3.2 Models (GGUF)",
-            "description": "GGUF-formatted versions of IBM Granite 3.2 models. Licensed under the Apache 2.0 license.",
+            "title": "Granite GGUF Models",
+            "description": "GGUF-formatted versions of IBM Granite models. Licensed under the Apache 2.0 license.",
             "items": [
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.2-2b-instruct"
+                    "repo_name": "granite-3.3-8b-instruct"
                 },
                 ...
                 {
