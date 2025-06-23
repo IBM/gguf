@@ -90,7 +90,6 @@ jobs:
   # ===========================================================================
   # Environment setup
   # ===========================================================================
-  # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   environment-setup:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
@@ -193,6 +192,7 @@ jobs:
             echo "target_ollama_llm_quants=$TARGET_OLLAMA_LLM_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_guardian_quants=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_embedding_quants=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_vision_quants=$TARGET_OLLAMA_VISION_QUANTS" >> "$GITHUB_OUTPUT"
 
       - name: List all environment variables 2
         run: env | sort
@@ -223,6 +223,7 @@ jobs:
             echo "target_ollama_llm_quants: '${{ steps.set-vars.outputs.target_ollama_llm_quants }}'"
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
             echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
+            echo "target_ollama_vision_quants: '${{ steps.set-vars.outputs.target_ollama_vision_quants }}'"
 
       # - name: List all environment variables
       #   run: env | sort
