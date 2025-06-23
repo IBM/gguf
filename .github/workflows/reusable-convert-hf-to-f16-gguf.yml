@@ -185,12 +185,6 @@ jobs:
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
         ls -al $MODEL_DOWNLOAD_DIR
 
-    - name: uninstall-general-dependencies
-      run: |
-        pip uninstall -r ./requirements.txt --yes
-        pip list
-        df -h
-
     - name: check-disk-space-3
       run: df -h
 
