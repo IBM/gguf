@@ -250,9 +250,7 @@ jobs:
   # Ollama (legacy llm/instruct)
   # ===========================================================================
   ollama-release-legacy-llm-models:
-    env:
-      ENABLE_LEGACY: true
-    if: ${{ env.ENABLE_LEGACY == true }}
+    if: ${{ "true" == "true" }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
