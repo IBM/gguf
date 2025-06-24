@@ -21,20 +21,20 @@ env:
   ENABLE_OLLAMA_PUSH: true
 
   SOURCE_INSTRUCT_REPOS: "[
-    'mrutkows/granite-3.0-2b-base'
-    'mrutkows/granite-3.0-8b-base'
-    'mrutkows/granite-3.0-1b-a400m-base'
-    'mrutkows/granite-3.0-3b-a800m-base'
-    'mrutkows/granite-3.0-2b-instruct'
-    'mrutkows/granite-3.0-8b-instruct'
+    'mrutkows/granite-3.0-2b-base',
+    'mrutkows/granite-3.0-8b-base',
+    'mrutkows/granite-3.0-1b-a400m-base',
+    'mrutkows/granite-3.0-3b-a800m-base',
+    'mrutkows/granite-3.0-2b-instruct',
+    'mrutkows/granite-3.0-8b-instruct',
     'mrutkows/granite-3.0-1b-a400m-instruct',
     'mrutkows/granite-3.0-3b-a800m-instruct',
-    'mrutkows/granite-3.1-2b-base'
-    'mrutkows/granite-3.1-8b-base'
-    'mrutkows/granite-3.1-1b-a400m-base'
-    'mrutkows/granite-3.1-3b-a800m-base'
-    'mrutkows/granite-3.1-2b-instruct'
-    'mrutkows/granite-3.1-8b-instruct'
+    'mrutkows/granite-3.1-2b-base',
+    'mrutkows/granite-3.1-8b-base',
+    'mrutkows/granite-3.1-1b-a400m-base',
+    'mrutkows/granite-3.1-3b-a800m-base',
+    'mrutkows/granite-3.1-2b-instruct',
+    'mrutkows/granite-3.1-8b-instruct',
     'mrutkows/granite-3.1-1b-a400m-instruct',
     'mrutkows/granite-3.1-3b-a800m-instruct',
     'mrutkows/granite-3.2-2b-instruct',
