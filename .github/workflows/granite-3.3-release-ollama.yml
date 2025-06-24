@@ -250,7 +250,7 @@ jobs:
   # Ollama (legacy llm/instruct)
   # ===========================================================================
   ollama-release-legacy-llm-models:
-    if: ${{ "true" == "true" }}
+    if: ${{ true }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
