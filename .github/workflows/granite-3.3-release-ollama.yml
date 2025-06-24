@@ -1,4 +1,4 @@
-name: granite-3-3-tagged-ollama-release
+name: granite-tagged-ollama-full-release
 run-name: "Ollama release [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
