@@ -20,9 +20,9 @@ env:
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_OLLAMA_PUSH: true
 
+  # 'mrutkows/granite-3.0-8b-base',
   SOURCE_INSTRUCT_REPOS: "[
     'mrutkows/granite-3.0-2b-base',
-    'mrutkows/granite-3.0-8b-base',
     'mrutkows/granite-3.0-1b-a400m-base',
     'mrutkows/granite-3.0-3b-a800m-base',
     'mrutkows/granite-3.0-2b-instruct',
