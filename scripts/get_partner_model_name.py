@@ -165,13 +165,13 @@ if __name__ == "__main__":
         if model_quantization == "":
             raise ValueError(f"Quantization not found in model name: `{normalized_model_name}`")
 
-        print(f"model_family='{model_family}'\n \
-            model_version='{model_version}'\n \
-            model_parameter_size='{model_parameter_size}'\n \
-            model_active_parameter_count='{model_active_parameter_count}'\n \
-            model_quantization='{model_quantization}'\n \
-            model_language='{model_language}' \
-            ")
+        # print(f"model_family='{model_family}'\n \
+        #     model_version='{model_version}'\n \
+        #     model_parameter_size='{model_parameter_size}'\n \
+        #     model_active_parameter_count='{model_active_parameter_count}'\n \
+        #     model_quantization='{model_quantization}'\n \
+        #     model_language='{model_language}' \
+        #     ")
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
