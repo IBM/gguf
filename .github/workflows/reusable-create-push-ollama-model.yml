@@ -79,7 +79,8 @@ jobs:
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
       - name: List all inputs
-        run: inputs | sort
+        # run: inputs | sort
+        run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Echo secret
         run: |

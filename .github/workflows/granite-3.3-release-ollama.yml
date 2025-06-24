@@ -14,13 +14,14 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
+  ENABLE_LEGACY_LANGUAGE_JOBS: false
   ENABLE_LANGUAGE_JOBS: true
-  ENABLE_VISION_JOBS: true
-  ENABLE_GUARDIAN_JOBS: true
-  ENABLE_EMBEDDING_JOBS: true
+  ENABLE_VISION_JOBS: false
+  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_EMBEDDING_JOBS: false
   ENABLE_OLLAMA_PUSH: true
 
-  SOURCE_INSTRUCT_REPOS: "[
+  SOURCE_LEGACY_INSTRUCT_REPOS: "[
     'mrutkows/granite-3.0-2b-base',
     'mrutkows/granite-3.0-8b-base',
     'mrutkows/granite-3.0-1b-a400m-base',
@@ -39,6 +40,9 @@ env:
     'mrutkows/granite-3.1-3b-a800m-instruct',
     'mrutkows/granite-3.2-2b-instruct',
     'mrutkows/granite-3.2-8b-instruct',
+  ]"
+
+  SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-3.3-2b-base',
     'ibm-granite/granite-3.3-8b-base',
     'ibm-granite/granite-3.3-2b-instruct',
@@ -97,6 +101,7 @@ jobs:
       debug: ${{ steps.set-vars.outputs.debug }}
       trace: ${{ steps.set-vars.outputs.trace }}
       enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}
+      enable_legacy_language_jobs: ${{ steps.set-vars.outputs.enable_legacy_language_jobs }}
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
@@ -105,6 +110,7 @@ jobs:
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
       source_instruct_repos: "${{ steps.set-vars.outputs.source_instruct_repos }}"
+      source_legacy_instruct_repos: "${{ steps.set-vars.outputs.source_legacy_instruct_repos }}"
       target_instruct_quantizations: "${{ steps.set-vars.outputs.target_instruct_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
@@ -122,7 +128,8 @@ jobs:
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
     steps:
-      - name: List all environment variables 1
+      - name: List all environment variables
+        id: list-env-vars
         run: env | sort
 
       - name: Append f16 to Ollama llm quants
@@ -172,6 +179,7 @@ jobs:
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_legacy_language_jobs=$ENABLE_LEGACY_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
@@ -179,6 +187,7 @@ jobs:
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
+            echo "source_legacy_instruct_repos=$SOURCE_LEGACY_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_instruct_quantizations=$TARGET_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
@@ -194,7 +203,8 @@ jobs:
             echo "target_ollama_embedding_quants=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_vision_quants=$TARGET_OLLAMA_VISION_QUANTS" >> "$GITHUB_OUTPUT"
 
-      - name: List all environment variables 2
+      - name: Verify updated environment variables
+        id: verify-updated-env-vars
         run: env | sort
 
       - name: Confirm GitHub output values were set
@@ -211,6 +221,7 @@ jobs:
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
             echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
             echo "source_instruct_repos: '${{ steps.set-vars.outputs.source_instruct_repos }}'"
+            echo "source_legacy_instruct_repos: '${{ steps.set-vars.outputs.source_legacy_instruct_repos }}'"
             echo "target_instruct_quantizations: '${{ steps.set-vars.outputs.target_instruct_quantizations }}'"
             echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
             echo "target_vision_quantizations: '${{ steps.set-vars.outputs.target_vision_quantizations }}'"
@@ -234,6 +245,33 @@ jobs:
       #   run: |
       #     uname -a
       #     echo "$RUNNER_CONTEXT"
+
+  # ===========================================================================
+  # Ollama (legacy llm/instruct)
+  # ===========================================================================
+  ollama-release-legacy-llm-models:
+    if: ${{ env.ENABLE_LEGACY_LANGUAGE_JOBS == 'true' }}
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_legacy_instruct_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_llm_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets: inherit
 
   # ===========================================================================
   # Ollama (llm/instruct)
