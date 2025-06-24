@@ -77,10 +77,6 @@ jobs:
           echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-      - name: List all inputs
-        # run: inputs | sort
-        run: echo "${{ toJSON(github.event.inputs) }}"
-
       - name: Echo secret
         run: |
           echo "HF_TOKEN: ${{ secrets.HF_TOKEN }}"
@@ -204,10 +200,6 @@ jobs:
 
       - name: ollama-client
         run: |
-          echo -e "Ollama help...\n"
-          ./bin/ollama
-          echo -e "Sleeping...\n"
-          sleep 2
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
@@ -233,12 +225,18 @@ jobs:
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
+      - name: ollama-push-start
+        run: |
+          echo "OLLAMA_PUSH_START=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
+
       - name: ollama-model-push
         run: |
           echo -e "Ollama push ...\n"
           ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}
-          echo -e "Ollama list...\n"
-          ./bin/ollama list
+
+      - name: ollama-push-stop
+        run: |
+          echo "OLLAMA_PUSH_STOP=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
 
       - name: ollama-server-stop
         run:

@@ -54,10 +54,12 @@ class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
     Q3_K_M  = "q3_K_M"
     Q3_K_L  = "q3_K_L"
     Q4_0    = "q4_0"
+    Q4_1    = "q4_1"
     Q4_K_S  = "q4_K_S"
     Q4_K_M  = "q4_K_M"
     Q4_K_L  = "q4_K_L"
     Q5_0    = "q5_0"
+    Q5_1    = "q5_1"
     Q5_K_S  = "q5_K_S"
     Q5_K_M  = "q5_K_M"
     Q5_K_L  = "q5_K_L"
@@ -160,13 +162,16 @@ if __name__ == "__main__":
                model_language = language
                break
 
-        # print(f"model_family='{model_family}'\n \
-        #     model_version='{model_version}'\n \
-        #     model_parameter_size='{model_parameter_size}'\n \
-        #     model_active_parameter_count='{model_active_parameter_count}'\n \
-        #     model_quantization='{model_quantization}'\n \
-        #     model_language='{model_language}' \
-        #     ")
+        if model_quantization == "":
+            raise ValueError(f"Quantization not found in model name: `{normalized_model_name}`")
+
+        print(f"model_family='{model_family}'\n \
+            model_version='{model_version}'\n \
+            model_parameter_size='{model_parameter_size}'\n \
+            model_active_parameter_count='{model_active_parameter_count}'\n \
+            model_quantization='{model_quantization}'\n \
+            model_language='{model_language}' \
+            ")
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
