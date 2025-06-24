@@ -2,7 +2,6 @@ import os
 import sys
 import requests
 
-from typing import List
 from huggingface_hub import file_exists
 from huggingface_hub.utils import HfHubHTTPError
 
@@ -11,37 +10,28 @@ from huggingface_hub.utils import HfHubHTTPError
 ###########################################
 
 def model_file_exists(
-    repo_id:str="", 
-    test_filename:str="", 
-    hf_token:str="",   
+    repo_id:str="",
+    test_filename:str="",
+    hf_token:str="",
 ) -> bool:
     if repo_id == "":
         print("Please provide a repo_id")
         return False
     if test_filename == "":
         print("Please provide a test_filename")
-        return False    
+        return False
     if hf_token == "":
         print("Please provide a token")
-        return False        
-    
+        return False
+
     try:
-    # def file_exists(
-    #     self,
-    #     repo_id: str,
-    #     filename: str,
-    #     *,
-    #     repo_type: Optional[str] = None,
-    #     revision: Optional[str] = None,
-    #     token: Union[str, bool, None] = None,
-    # ) -> bool:
         return file_exists(
             repo_id=repo_id,
             filename=test_filename,
             repo_type="model",
             token=hf_token,
         )
-        
+
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', test_file_name: '{test_filename}'")
         return False
@@ -56,35 +46,35 @@ def model_file_exists(
     except Exception as exc:
         print(f"Exception: {exc}")
     return False
- 
- 
+
+
 if __name__ == "__main__":
     arg_len = len(sys.argv)
-    if arg_len < 4:   
+    if arg_len < 4:
         script_name = os.path.basename(__file__)
         print(f"Usage: python {script_name} <repo_id:str> <file_name:str> <hf_token:str>")
         print(f"Actual: sys.argv[]: '{sys.argv}'")
         # Exit with an error code
         sys.exit(1)
-       
-    # Parse input arguments into named params.   
+
+    # Parse input arguments into named params.
     fx_name = sys.argv[0]
     repo_id = sys.argv[1]
-    test_filename = sys.argv[2]   
+    test_filename = sys.argv[2]
     hf_token = sys.argv[3]
-    
+
     # Print input variables being used for this run
-    # print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")     
-    
+    # print(f">> {fx_name}: repo_id='{repo_id}', test_filename='{test_filename}', hf_token='{hf_token}'")
+
     # invoke fx
     exists = model_file_exists(repo_id=repo_id, test_filename=test_filename, hf_token=hf_token)
-    
+
     # Print output variables
-    # print(f"{fx_name}: returns: {exists}") 
+    # print(f"{fx_name}: returns: {exists}")
     if exists:
         print("True")
     else:
         print("False")
-    
+
     # Exit successfully
-    sys.exit(0)      
+    sys.exit(0)
