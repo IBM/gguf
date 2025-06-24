@@ -125,7 +125,6 @@ jobs:
       target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_embedding_quants }}"
       target_ollama_vision_quants: "${{ steps.set-vars.outputs.target_ollama_vision_quants }}"
     env:
-      ENABLE_LEGACY: true
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
     steps:
@@ -251,6 +250,8 @@ jobs:
   # Ollama (legacy llm/instruct)
   # ===========================================================================
   ollama-release-legacy-llm-models:
+    env:
+      ENABLE_LEGACY: true
     if: ${{ env.ENABLE_LEGACY == true }}
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
