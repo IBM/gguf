@@ -265,7 +265,7 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' && needs.environment-setup.outputs.enable_legacy_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
