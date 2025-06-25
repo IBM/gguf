@@ -231,6 +231,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -257,6 +258,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "guardian"
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -283,6 +285,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "embedding"
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -309,6 +312,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "vision"
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
