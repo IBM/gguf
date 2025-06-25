@@ -62,8 +62,8 @@ jobs:
         with:
           sparse-checkout: |
             scripts/
-            bin/
-            resources/
+            bin/ollama
+            resources/json/latest
 
       - name: confirm-environment
         run: |

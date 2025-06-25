@@ -15,9 +15,11 @@ class SUPPORTED_MODEL_MODALITIES(StrEnum):
     INSTRUCT = "instruct"
     GUARDIAN = "guardian"
     VISION = "vision"
+    SPEECH = "speech"
     EMBEDDING = "embedding"
 
 class SUPPORTER_MODEL_VERSIONS(StrEnum):
+    GRANITE_3_0  = "3.0"
     GRANITE_3_1  = "3.1"
     GRANITE_3_2  = "3.2"
     GRANITE_3_3  = "3.3"
@@ -103,8 +105,9 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
         parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
+        parser.add_argument('--default', default=False, action='store_true', help='Model represents the default quantization for partner platform')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
-        parser.add_argument('--debug', default=False, action='store_false', help='Enable debug output')
+        parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
 
         if(args.debug):
@@ -162,6 +165,9 @@ if __name__ == "__main__":
                model_language = language
                break
 
+        if model_parameter_size == "":
+            raise ValueError(f"Parameter size not found in model name: `{normalized_model_name}`")
+
         if model_quantization == "":
             raise ValueError(f"Quantization not found in model name: `{normalized_model_name}`")
 
@@ -191,11 +197,13 @@ if __name__ == "__main__":
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
 
-            if model_language:
-                partner_model_name = ollama_append_attribute(partner_model_name, model_language)
+            # Note: used to trick registry into applying parameter size tag
+            if not args.default:
+                if model_language:
+                    partner_model_name = ollama_append_attribute(partner_model_name, model_language)
 
-            if model_quantization:
-                partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
+                if model_quantization:
+                    partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
 
         # NOTE: This script MUST only return a string
         print(partner_model_name)
