@@ -45,6 +45,9 @@ on:
       quantization:
         type: string
         required: true
+      hf_collection_config:
+        type: string
+        required: true
 
 jobs:
   ollama-continuous-delivery:
@@ -208,6 +211,10 @@ jobs:
           model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
           echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
+
+      - name: ollama-is-default_quant
+        run: |
+          model_name=$(python ./scripts/is_model_quant_default.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
 
       - name: ollama-create-model
         run: |
