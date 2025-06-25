@@ -236,7 +236,6 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "instruct"
-      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -244,6 +243,7 @@ jobs:
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
     secrets: inherit
 
   # ===========================================================================
