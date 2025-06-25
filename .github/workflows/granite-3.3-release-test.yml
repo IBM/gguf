@@ -24,7 +24,7 @@ env:
   # 'ibm-granite/granite-3.3-2b-instruct',
   # 'ibm-granite/granite-3.3-8b-instruct',
   SOURCE_LANGUAGE_REPOS: "[
-    'None'
+    'ibm-granite/granite-3.3-2b-base'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -49,7 +49,7 @@ env:
   ]"
   # 'ibm-granite/granite-vision-3.2-2b'
   SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.2-2b'
+    'None'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
