@@ -1,5 +1,5 @@
-name: granite-tagged-ollama-full-release
-run-name: "Ollama release [${{github.ref_type}}: ${{github.ref_name}}]"
+name: ollama-publish-granite-3.2
+run-name: "Ollama publish [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
