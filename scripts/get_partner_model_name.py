@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
         if(args.debug):
             # Print input variables being used for this run
-            print(f">> hf_model_name='{args.hf_model_name}', partner='{args.partner}'")
+            print(f">> hf_model_name='{args.hf_model_name}', partner='{args.partner}', default_quant='{args.default_quant}'")
 
         normalized_model_name = args.hf_model_name.lower()
 
@@ -204,7 +204,7 @@ if __name__ == "__main__":
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
 
             # Note: used to trick registry into applying parameter size tag
-            if not args.default:
+            if not args.default_quant:
                 if model_language:
                     partner_model_name = ollama_append_attribute(partner_model_name, model_language)
 
