@@ -244,7 +244,7 @@ jobs:
 
       - name: ollama-is-default-model
         run: |
-          $(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
+          python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}}
           if [ $? -eq 0 ]; then
             echo "Default model"
             echo "IS_DEFAULT_QUANT=true" >> $GITHUB_ENV
