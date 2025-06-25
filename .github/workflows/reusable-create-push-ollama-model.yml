@@ -214,7 +214,7 @@ jobs:
 
       - name: ollama-is-default-quant
         run: |
-          model_name=$(python ./scripts/is_model_quant_default.py -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
+          model_name=$(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
 
       - name: ollama-create-model
         run: |
