@@ -265,9 +265,12 @@ jobs:
             sleep 2
             echo -e "Ollama list...\n"
             ./bin/ollama list
+            echo -e "Ollama push ...\n"
+            ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}
           else
             echo "IS_DEFAULT_QUANT is false."
           fi
+          exit 0
 
       - name: ollama-server-stop
         run:
