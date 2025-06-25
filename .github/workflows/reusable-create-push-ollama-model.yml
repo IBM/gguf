@@ -212,9 +212,9 @@ jobs:
           echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
 
-      - name: ollama-is-default_quant
+      - name: ollama-is-default-quant
         run: |
-          model_name=$(python ./scripts/is_model_quant_default.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
+          model_name=$(python ./scripts/is_model_quant_default.py -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
 
       - name: ollama-create-model
         run: |
