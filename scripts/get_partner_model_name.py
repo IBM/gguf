@@ -101,12 +101,17 @@ def model_name_append_attribute(current_model_name: str, attribute: str, base_se
 def ollama_append_attribute(current_model_name: str, attribute: str) -> str:
     return model_name_append_attribute(current_model_name, attribute, MODEL_NAME_SEP, MODEL_ATTRIBUTE_SEP)
 
+# def test_empty_string(value:str):
+#         if not value:
+#             raise ValueError("Argument must not be an empty string")
+#         return value
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
         parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
-        parser.add_argument('--default', default=False, action='store_true', help='Model represents the default quantization for partner platform')
+        parser.add_argument('--default-quant', "-q", type=str, required=False, help='Model represents the default quantization for model family/size')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
