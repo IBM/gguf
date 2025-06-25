@@ -60,6 +60,7 @@ jobs:
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
       OLLAMA_MODEL_PRIVATE: true
+      IS_DEFAULT_QUANT: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -212,10 +213,6 @@ jobs:
           echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
 
-      - name: ollama-is-default-quant
-        run: |
-          model_name=$(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
-
       - name: ollama-create-model
         run: |
           echo -e "Ollama creating model from Modelfile...\n"
@@ -244,6 +241,32 @@ jobs:
       - name: ollama-push-stop
         run: |
           echo "OLLAMA_PUSH_STOP=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
+
+      - name: ollama-is-default-quant
+        run: |
+          $(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
+          if [ $? -eq 0 ]; then
+            echo "Default model"
+            echo "IS_DEFAULT_QUANT=true" >> $GITHUB_ENV
+            model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama --default-quant)
+            echo "model_name (default): '$model_name'"
+            echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
+          else
+            echo "NOT the default model"
+          fi
+
+      - name: upload-model-as-default-quant
+        run: |
+          if [[ "$IS_DEFAULT_QUANT" == "true" ]]; then
+            echo "IS_DEFAULT_QUANT is true."
+            echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
+            ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}"
+            sleep 2
+            echo -e "Ollama list...\n"
+            ./bin/ollama list
+          else
+            echo "IS_DEFAULT_QUANT is false."
+          fi
 
       - name: ollama-server-stop
         run:
