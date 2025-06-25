@@ -1,5 +1,4 @@
 name: ollama-publish-granite-3.3
-on
 run-name: "Ollama publish [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
