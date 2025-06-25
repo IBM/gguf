@@ -253,8 +253,8 @@ jobs:
             echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
           else
             echo "NOT the default model"
-            exit 0
           fi
+          exit 0
 
       - name: upload-model-as-default-quant
         run: |
