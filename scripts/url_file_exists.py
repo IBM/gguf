@@ -42,7 +42,7 @@ if __name__ == "__main__":
             print(f"File exists at: {args.url}")
             sys.exit(0)
         else:
-            print(f"File exists at: {args.url}")
+            print(f"File does NOTE exist at: {args.url}")
             sys.exit(1)
 
     except Exception as exc:
