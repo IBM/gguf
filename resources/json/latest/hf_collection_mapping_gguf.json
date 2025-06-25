@@ -7,171 +7,204 @@
              {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-2b-base"
+                    "repo_name": "granite-3.0-2b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-8b-base"
+                    "repo_name": "granite-3.0-8b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-1b-a400m-base"
+                    "repo_name": "granite-3.0-1b-a400m-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-3b-a800m-base"
+                    "repo_name": "granite-3.0-3b-a800m-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-2b-instruct"
+                    "repo_name": "granite-3.0-2b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-8b-instruct"
+                    "repo_name": "granite-3.0-8b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-1b-a400m-instruct"
+                    "repo_name": "granite-3.0-1b-a400m-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.0-3b-a800m-instruct"
+                    "repo_name": "granite-3.0-3b-a800m-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-2b-base"
+                    "repo_name": "granite-3.1-2b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-8b-base"
+                    "repo_name": "granite-3.1-8b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-1b-a400m-base"
+                    "repo_name": "granite-3.1-1b-a400m-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-3b-a800m-base"
+                    "repo_name": "granite-3.1-3b-a800m-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-2b-instruct"
+                    "repo_name": "granite-3.1-2b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-8b-instruct"
+                    "repo_name": "granite-3.1-8b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-1b-a400m-instruct"
+                    "repo_name": "granite-3.1-1b-a400m-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.1-3b-a800m-instruct"
+                    "repo_name": "granite-3.1-3b-a800m-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-2b"
+                    "repo_name": "granite-guardian-3.1-2b",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-8b"
+                    "repo_name": "granite-guardian-3.1-8b",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.2-2b-instruct"
+                    "repo_name": "granite-3.2-2b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.2-8b-instruct"
+                    "repo_name": "granite-3.2-8b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.3-2b-base"
+                    "repo_name": "granite-3.3-2b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.3-8b-base"
+                    "repo_name": "granite-3.3-8b-base",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.3-2b-instruct"
+                    "repo_name": "granite-3.3-2b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.3-8b-instruct"
+                    "repo_name": "granite-3.3-8b-instruct",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "vision",
-                    "repo_name": "granite-vision-3.2-2b"
+                    "repo_name": "granite-vision-3.2-2b",
+                    "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_name": "granite-guardian-3.2-3b-a800m"
+                    "repo_name": "granite-guardian-3.2-3b-a800m",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_name": "granite-guardian-3.2-5b"
+                    "repo_name": "granite-guardian-3.2-5b",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
-                    "repo_name": "granite-embedding-30m-english"
+                    "repo_name": "granite-embedding-30m-english",
+                    "default_quant": "f16"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
-                    "repo_name": "granite-embedding-125m-english"
+                    "repo_name": "granite-embedding-125m-english",
+                    "default_quant": "f16"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
-                    "repo_name": "granite-embedding-107m-multilingual"
+                    "repo_name": "granite-embedding-107m-multilingual",
+                    "default_quant": "f16"
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
-                    "repo_name": "granite-embedding-278m-multilingual"
+                    "repo_name": "granite-embedding-278m-multilingual",
+                    "default_quant": "f16"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-4.0-tiny-preview"
+                    "repo_name": "granite-4.0-tiny-preview",
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-4.0-tiny-base-preview"
+                    "repo_name": "granite-4.0-tiny-base-preview",
+                    "default_quant": "q4_K_M"
                 }
             ]
         }
