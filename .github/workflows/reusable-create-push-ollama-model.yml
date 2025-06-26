@@ -259,6 +259,10 @@ jobs:
 
       - name: upload-model-as-default-quant
         run: |
+          if [[ "$REPO_NAME" =~ "base" ]]; then
+            echo "Environment variable contains 'base'. Exiting."
+            exit 0
+          fi
           if [[ "$IS_DEFAULT_QUANT" == "true" ]]; then
             echo "IS_DEFAULT_QUANT is true."
             echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
