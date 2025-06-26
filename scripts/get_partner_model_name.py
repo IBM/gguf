@@ -190,7 +190,11 @@ if __name__ == "__main__":
         if args.partner == SUPPORTED_PARTNERS.OLLAMA:
             # model_version = model_version.replace(".", "")
             model_version = model_version.replace("v", "")
-            partner_model_base = f"{model_family}{model_version}-{model_modality}"
+            partner_model_base = f"{model_family}{model_version}"
+
+            if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
+                model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
+                partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # TODO: determine if we need to append this for partner models:
             # if model_active_parameter_count is not None:
