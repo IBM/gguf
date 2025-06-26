@@ -21,6 +21,13 @@ env:
   ENABLE_OLLAMA_PUSH: true
 
   # 'mrutkows/granite-3.0-8b-base',
+  # 'mrutkows/granite-3.0-2b-base',
+  # 'mrutkows/granite-3.0-1b-a400m-base',
+  # 'mrutkows/granite-3.0-3b-a800m-base',
+  # 'mrutkows/granite-3.0-2b-instruct',
+  # 'mrutkows/granite-3.0-8b-instruct',
+  # 'mrutkows/granite-3.0-1b-a400m-instruct',
+  # 'mrutkows/granite-3.0-3b-a800m-instruct'
   SOURCE_INSTRUCT_REPOS: "[
     'mrutkows/granite-3.0-2b-base',
     'mrutkows/granite-3.0-1b-a400m-base',
@@ -30,13 +37,14 @@ env:
     'mrutkows/granite-3.0-1b-a400m-instruct',
     'mrutkows/granite-3.0-3b-a800m-instruct'
   ]"
+    # 'Q2_K',
+    # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+    # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+    # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+    # 'Q6_K',
+    # 'Q8_0'
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q2_K',
-    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-    'Q6_K',
-    'Q8_0'
+    'Q4_K_M'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'None'
