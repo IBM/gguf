@@ -188,7 +188,7 @@ if __name__ == "__main__":
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
         if args.partner == SUPPORTED_PARTNERS.OLLAMA:
-            model_version = model_version.replace(".", "")
+            # model_version = model_version.replace(".", "")
             model_version = model_version.replace("v", "")
             partner_model_base = f"{model_family}{model_version}-{model_modality}"
 
