@@ -192,6 +192,8 @@ if __name__ == "__main__":
             model_version = model_version.replace("v", "")
             partner_model_base = f"{model_family}{model_version}"
 
+            # for models that are not "instruct" or "base" language, we add
+            # the modality classifier after before the separator to follow established conventions.
             if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
                 model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
                 partner_model_base = f"{partner_model_base}-{model_modality}"
@@ -206,6 +208,12 @@ if __name__ == "__main__":
 
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
+
+            # for "instruct" and "base" language models, we add the modality classifier after the
+            # parameter size to follow established conventions.
+            if (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
+                model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT):
+                partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # Note: used to trick registry into applying parameter size tag
             if not args.default_quant:
