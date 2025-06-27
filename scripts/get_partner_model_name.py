@@ -210,9 +210,10 @@ if __name__ == "__main__":
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
 
             # for "instruct" and "base" language models, we add the modality classifier after the
-            # parameter size to follow established conventions.
-            if (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
-                model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT):
+            # parameter size to follow established conventions (if not the default quant.).
+            if ((model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
+                model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT) and
+                not args.default_quant):
                 partner_model_name = f"{partner_model_name}-{model_modality}"
 
             # Note: used to trick registry into applying parameter size tag
