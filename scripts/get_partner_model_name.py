@@ -213,7 +213,7 @@ if __name__ == "__main__":
             # parameter size to follow established conventions.
             if (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
                 model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT):
-                partner_model_base = f"{partner_model_base}-{model_modality}"
+                partner_model_name = f"{partner_model_name}-{model_modality}"
 
             # Note: used to trick registry into applying parameter size tag
             if not args.default_quant:
