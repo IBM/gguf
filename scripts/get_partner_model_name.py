@@ -17,6 +17,8 @@ class SUPPORTED_MODEL_MODALITIES(StrEnum):
     VISION = "vision"
     SPEECH = "speech"
     EMBEDDING = "embedding"
+    LEGACY_DENSE = "dense"
+    LEGACY_MOE = "moe"
 
 class SUPPORTER_MODEL_VERSIONS(StrEnum):
     GRANITE_3_0  = "3.0"
@@ -135,11 +137,13 @@ if __name__ == "__main__":
 
         model_family = MODEL_FAMILY.lower()
         model_version = ""
+        model_arch = "" # e.g., "dense", "moe" (only used for 3.0, 3.1 legacy)
         model_modality = "" # e.g., "instruct", "vision"
         model_language = "" # e.g., "english", "multilingual"
         model_parameter_size = "" # e.g., 2B, 8B, 1T
         model_quantization = ""  # e.g., q8_0, q4_K_M
         model_active_parameter_count = "" # e.g., a800m, a400m
+
 
         for modality in SUPPORTED_MODEL_MODALITIES:
            if modality in normalized_model_name:
@@ -188,12 +192,37 @@ if __name__ == "__main__":
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
         if args.partner == SUPPORTED_PARTNERS.OLLAMA:
-            # model_version = model_version.replace(".", "")
+
+            # Strip "v" from semver.
             model_version = model_version.replace("v", "")
+
+            # Note: Special casing legacy names for Ollama ONLY
+            # "instruct" => "dense" or "moe" depending on parameter size (implies underlying arch.)
+            if (model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT or
+                model_modality == SUPPORTED_MODEL_MODALITIES.BASE ):
+                if (model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_3_0 or
+                    model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_3_1):
+                    if (model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B1 or
+                        model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B3):
+                        model_arch = SUPPORTED_MODEL_MODALITIES.LEGACY_MOE
+                    elif (model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B2 or
+                        model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B8):
+                        model_arch = SUPPORTED_MODEL_MODALITIES.LEGACY_DENSE
+
+            # Note: Special casing legacy names for Ollama ONLY
+            if model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_3_0:
+                model_version = model_version.replace(SUPPORTER_MODEL_VERSIONS.GRANITE_3_0, "3")
+
+            # establish "base" model name with version:
             partner_model_base = f"{model_family}{model_version}"
 
-            # for models that are not "instruct" or "base" language, we add
-            # the modality classifier after before the separator to follow established conventions.
+            # Append model arch if it exists
+            if model_arch:
+                partner_model_base = f"{partner_model_base}-{model_arch}"
+
+            # Append modality
+            # Note: Special case for models that are "instruct" or "base" language models
+            # where we leave off the modality classifier (i.e., "language" is implied)
             if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
                 model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
                 partner_model_base = f"{partner_model_base}-{model_modality}"
