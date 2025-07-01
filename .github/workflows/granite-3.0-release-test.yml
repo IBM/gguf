@@ -52,8 +52,8 @@ env:
   # 'ibm-granite/granite-guardian-3.0-2b',
   # 'ibm-granite/granite-guardian-3.0-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'granite-guardian-3.0-2b',
-    'granite-guardian-3.0-8b'
+    'ibm-granite/granite-guardian-3.0-2b',
+    'ibm-granite/granite-guardian-3.0-8b'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
