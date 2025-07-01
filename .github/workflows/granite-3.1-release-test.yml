@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   # 'ibm-granite/granite-3.1-2b-base',
   # 'ibm-granite/granite-3.1-8b-base',
@@ -46,14 +46,18 @@ env:
   # 'ibm-granite/granite-guardian-3.1-2b',
   # 'ibm-granite/granite-guardian-3.1-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'granite-guardian-3.1-2b',
+    'granite-guardian-3.1-8b'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0'
   ]"
   SOURCE_VISION_REPOS: "[
     'None'

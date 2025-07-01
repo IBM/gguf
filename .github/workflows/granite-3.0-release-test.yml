@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   # 'ibm-granite/granite-3.0-2b-base',
   # 'ibm-granite/granite-3.0-8b-base',
@@ -27,13 +27,13 @@ env:
   # 'ibm-granite/granite-3.0-1b-a400m-instruct',
   # 'ibm-granite/granite-3.0-3b-a800m-instruct',
   SOURCE_LANGUAGE_REPOS: "[
-  'ibm-granite/granite-3.0-2b-base',
-  'ibm-granite/granite-3.0-1b-a400m-base',
-  'ibm-granite/granite-3.0-3b-a800m-base',
-  'ibm-granite/granite-3.0-2b-instruct',
-  'ibm-granite/granite-3.0-8b-instruct',
-  'ibm-granite/granite-3.0-1b-a400m-instruct',
-  'ibm-granite/granite-3.0-3b-a800m-instruct'
+    'ibm-granite/granite-3.0-2b-base',
+    'ibm-granite/granite-3.0-1b-a400m-base',
+    'ibm-granite/granite-3.0-3b-a800m-base',
+    'ibm-granite/granite-3.0-2b-instruct',
+    'ibm-granite/granite-3.0-8b-instruct',
+    'ibm-granite/granite-3.0-1b-a400m-instruct',
+    'ibm-granite/granite-3.0-3b-a800m-instruct'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -49,11 +49,21 @@ env:
     'Q6_K',
     'Q8_0'
   ]"
+  # 'ibm-granite/granite-guardian-3.0-2b',
+  # 'ibm-granite/granite-guardian-3.0-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'granite-guardian-3.0-2b',
+    'granite-guardian-3.0-8b'
   ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0'
   ]"
   SOURCE_VISION_REPOS: "[
     'None'
