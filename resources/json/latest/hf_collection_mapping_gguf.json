@@ -54,6 +54,18 @@
                 },
                 {
                     "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.0-2b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.0-8b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.1-2b-base",
                     "default_quant": "q4_K_M"
@@ -99,6 +111,18 @@
                     "family": "instruct",
                     "repo_name": "granite-3.1-3b-a800m-instruct",
                     "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-2b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-8b",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
