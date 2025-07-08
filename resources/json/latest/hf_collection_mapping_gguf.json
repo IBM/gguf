@@ -8,7 +8,11 @@
                     "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.0-2b-base",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q4_K_M",
+                    "ollama_readme": "",
+                    "ollama_template": "",
+                    "ollama_params": "",
+                    "ollama_system": ""
                 },
                 {
                     "type": "model",
@@ -176,7 +180,12 @@
                     "type": "model",
                     "family": "vision",
                     "repo_name": "granite-vision-3.2-2b",
-                    "default_quant": "q8_0"
+                    "default_quant": "q8_0",
+                    "ollama_readme": "",
+                    "ollama_template": "",
+                    "ollama_params": "",
+                    "ollama_system": "",
+                    "ollama_projector": "mmproj-model-f16.gguf"
                 },
                 {
                     "type": "model",
