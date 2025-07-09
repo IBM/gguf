@@ -54,6 +54,7 @@ jobs:
     runs-on: macos-latest
     if: ${{ inputs.enable_ollama_push == true && ( inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true ) }}
     env:
+      DEFAULT_MODEL_LICENSE: Apache-2.0
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
       F16_MMPROJ_MODEL_FILENAME: mmproj-model-f16.gguf
@@ -223,6 +224,7 @@ jobs:
           python ./scripts/create_ollama_model_file.py \
             -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             -mp ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}} \
+            -l ${{env.DEFAULT_MODEL_LICENSE}} \
             -p ${{env.OLLAMA_MODEL_RESOURCES}} \
             -tf ${{env.OLLAMA_TEMPLATE_FILE}} \
             -sf ${{env.OLLAMA_SYSTEM_FILE}} \

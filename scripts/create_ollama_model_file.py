@@ -35,6 +35,7 @@ if __name__ == "__main__":
         parser.add_argument("--model-file", "-m", type=str, required=True, help="Path to gguf model file (GGUF).")
         parser.add_argument("--model-projector", "-mp", type=str, required=False, help="Optional path to projector model file (GGUF).")
         parser.add_argument("--output-file", "-o", type=str, required=True, help="Path to output file (Ollama 'Modelfile').")
+        parser.add_argument("--license", "-l", type=str, required=True, help="SPDX license identifier.")
         parser.add_argument("--metadata-path", "-p", type=str, required=True, help="Path to model metadata files.")
         parser.add_argument("--template-file", "-tf", type=str, required=False, help="Optional chat template file (Go template).")
         parser.add_argument("--system-file", "-sf", type=str, required=False, help="Optional system message file (text).")
@@ -47,6 +48,7 @@ if __name__ == "__main__":
             print(f"[DEBUG] args.model_file='{args.model_file}'")
             print(f"[DEBUG] args.model_projector='{args.model_projector}'")
             print(f"[DEBUG] args.output_file='{args.output_file}'")
+            print(f"[DEBUG] args.license='{args.license}'")
             print(f"[DEBUG] args.metadata_path='{args.metadata_path}'")
             print(f"[DEBUG] args.template_file='{args.template_file}'")
             print(f"[DEBUG] args.system_file='{args.system_file}'")
@@ -70,6 +72,9 @@ if __name__ == "__main__":
                 if not os.path.isfile(args.model_projector):
                     raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
                 modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
+
+            if args.license is not None:
+                modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} {args.license}\n")
 
             if args.template_file is not None:
                 filename = args.metadata_path + "/" + args.template_file
