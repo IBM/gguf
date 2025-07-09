@@ -73,7 +73,7 @@ jobs:
             scripts/
             bin/ollama
             resources/json/latest
-            resources/go/templates
+            resources/ollama
 
       - name: confirm-environment
         run: |
