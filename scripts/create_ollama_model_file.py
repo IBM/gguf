@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 if args.debug:
                     print(f"args.system_file ({args.system_file}):")
                     print('"""'+system_file_contents+'"""')
-                modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{template_file_contents}\"\"\"\n")
+                modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
 
             if args.params_file is not None:
                 filename = args.metadata_path + "/" + args.params_file
