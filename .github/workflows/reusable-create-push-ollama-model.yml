@@ -56,7 +56,8 @@ jobs:
     env:
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
-      OLLAMA_RESOURCE_DIR: resources/ollama/
+      F16_MMPROJ_MODEL_FILENAME: mmproj-model-f16.gguf
+      OLLAMA_RESOURCE_DIR: resources/ollama
       OLLAMA_MODELFILE: Modelfile
       OLLAMA_TEMPLATE_FILE: template.txt
       OLLAMA_PARAMS_FILE: params.json
@@ -66,6 +67,7 @@ jobs:
       OLLAMA_HOST: http://127.0.0.1:11434
       OLLAMA_MODEL_PRIVATE: true
       IS_DEFAULT_QUANT: false
+      HAS_PROJECTOR_MODEL: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -147,6 +149,15 @@ jobs:
           model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
           echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
 
+      # Primarily, we have a projector model that is needed for "vision" (multi-modal) models
+      - name: test for additional models to add to Modelfile
+        run: |
+          if [[ "${{OLLAMA_MODEL_NAME}}" == *"$vision"* ]]; then
+            echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
+          else
+            echo "NOT a 'vision' model."
+          fi
+
       - name: List all environment variables
         run: env | sort
 
@@ -196,17 +207,6 @@ jobs:
           sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
           cat ./resources/README.md
 
-      # cat <<EOF > Modelfile
-      # FROM ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
-      # EOF
-      #
-      # python ./scripts/create_ollama_model_file.py \
-      #   -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-      #   -p ${{env.OLLAMA_MODEL_RESOURCES}} \
-      #   -tf ${{env.OLLAMA_TEMPLATE_FILE}} \
-      #   -sf ${{env.OLLAMA_SYSTEM_FILE}} \
-      #   -pf ${{env.OLLAMA_PARAMS_FILE}} \
-      #   -o ${{env.OLLAMA_MODELFILE}}
       - name: ollama-create-modelfile
         run: |
           python ./scripts/create_ollama_model_file.py \
