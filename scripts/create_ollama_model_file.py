@@ -69,9 +69,12 @@ if __name__ == "__main__":
                 modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_file}\n")
 
             if args.model_projector is not None:
-                if not os.path.isfile(args.model_projector):
-                    raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
-                modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
+                if os.path.exists(args.model_projector):
+                    if not os.path.isfile(args.model_projector):
+                        raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
+                    modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
+                elif args.debug:
+                    print(f"[WARNING] args.model_projector='{args.model_projector}' does not exist")
 
             if args.license is not None:
                 modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} {args.license}\n")
