@@ -15,3 +15,6 @@
 # Test output
 **/temp/
 **/tmp/
+
+# Misc
+Modelfile

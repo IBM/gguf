@@ -140,7 +140,7 @@ jobs:
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
           model_prefix="${model_name%%:*}"
           echo "OLLAMA_MODEL_PREFIX=$model_prefix" >> $GITHUB_ENV
-          model_resources="${{env.OLLAMA_RESOURCE_DIR}}${model_prefix}"
+          model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
           echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
 
       - name: List all environment variables
