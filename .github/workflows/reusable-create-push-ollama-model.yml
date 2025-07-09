@@ -140,6 +140,7 @@ jobs:
           echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
           echo "================== Derivative Environment Variables 3 =================="
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+          echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF='$LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF }})"
 
       - name: ollama-generate-model-name
         run: |
