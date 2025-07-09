@@ -128,8 +128,6 @@ jobs:
       - name: set-derivative-env-vars-3
         run: |
           echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-          echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.F16_MMPROJ_MODEL_FILENAME}}" >> $GITHUB_ENV
-
 
       - name: verify-github-env
         run: |
@@ -157,6 +155,7 @@ jobs:
         run: |
           if [[ "${{env.OLLAMA_MODEL_NAME}}" == *"vision"* ]]; then
             echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
+            echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.F16_MMPROJ_MODEL_FILENAME}}" >> $GITHUB_ENV
           else
             echo "NOT a 'vision' model."
           fi
