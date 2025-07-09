@@ -13,20 +13,39 @@ class MODELFILE_INSTRUCTIONS(StrEnum):
     LICENSE   = "LICENSE"
     MESSAGE   = "MESSAGE"
 
+class VALID_PARAMS(StrEnum):
+    MICROSTAT       = "microstat"
+    MICROSTAT_ETA   = "microstat_eta"
+    MICROSTAT_TAU   = "microstat_tau"
+    NUM_CTX         = "num_ctx"
+    NUM_PREDICT     = "num_predict"
+    REPEAT_LAST_N   = "repeat_last_n"
+    REPEAT_PENALTY  = "repeat_penalty"
+    TEMPERATURE     = "temperature"
+    SEED            = "seed"
+    STOP            = "stop"
+    TFS_Z           = "tfs_z"
+    TOP_K           = "top_k"
+    TOP_P           = "top_p"
+    MIN_P           = "min_p"
+
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
-        parser.add_argument("--model-file", "-m", type=str, required=True, help="Path to gguf model file.")
-        parser.add_argument("--output-file", "-o", type=str, required=True, help="Path to output (Ollama Modelfile).")
+        parser.add_argument("--model-file", "-m", type=str, required=True, help="Path to gguf model file (GGUF).")
+        parser.add_argument("--model-projector", "-mp", type=str, required=False, help="Optional path to projector model file (GGUF).")
+        parser.add_argument("--output-file", "-o", type=str, required=True, help="Path to output file (Ollama 'Modelfile').")
         parser.add_argument("--metadata-path", "-p", type=str, required=True, help="Path to model metadata files.")
-        parser.add_argument("--template-file", "-tf", type=str, required=False, help="")
-        parser.add_argument("--system-file", "-sf", type=str, required=False, help="")
-        parser.add_argument("--params-file", "-pf", type=str, required=False, help="")
+        parser.add_argument("--template-file", "-tf", type=str, required=False, help="Optional chat template file (Go template).")
+        parser.add_argument("--system-file", "-sf", type=str, required=False, help="Optional system message file (text).")
+        parser.add_argument("--params-file", "-pf", type=str, required=False, help="Optional parameter file (JSON).")
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
 
         if args.debug:
+            print(f"[DEBUG] args.model_file='{args.model_file}'")
+            print(f"[DEBUG] args.model_projector='{args.model_projector}'")
             print(f"[DEBUG] args.output_file='{args.output_file}'")
             print(f"[DEBUG] args.metadata_path='{args.metadata_path}'")
             print(f"[DEBUG] args.template_file='{args.template_file}'")
@@ -46,6 +65,11 @@ if __name__ == "__main__":
                 if not os.path.isfile(args.model_file):
                     raise FileNotFoundError(f"The --model-file '{args.model_file}' does not exist.")
                 modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_file}\n")
+
+            if args.model_projector is not None:
+                if not os.path.isfile(args.model_projector):
+                    raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
+                modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
 
             if args.template_file is not None:
                 filename = args.metadata_path + "/" + args.template_file
@@ -72,6 +96,8 @@ if __name__ == "__main__":
                     for key, value in params_dict.items():
                         if args.debug:
                             print(f"{key}: {value}")
+                        if key not in [param.value for param in VALID_PARAMS]:
+                            print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
                         modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
 
     except IOError as e:

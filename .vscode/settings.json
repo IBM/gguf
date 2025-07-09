@@ -17,6 +17,7 @@
         "Langchain",
         "llamacpp",
         "LLAVA",
+        "MICROSTAT",
         "mmproj",
         "Modelfile",
         "mrutkows",
