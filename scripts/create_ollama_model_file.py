@@ -73,7 +73,7 @@ if __name__ == "__main__":
                     if not os.path.isfile(args.model_projector):
                         raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
-                elif args.debug:
+                elif args.verbose:
                     print(f"[WARNING] args.model_projector='{args.model_projector}' does not exist")
 
             if args.license is not None:
@@ -81,32 +81,41 @@ if __name__ == "__main__":
 
             if args.template_file is not None:
                 filename = args.metadata_path + "/" + args.template_file
-                with open(filename, 'r') as file:
-                    template_file_contents = file.read()
-                if args.debug:
-                    print(f"args.template_file ({args.template_file}):")
-                    print('"""'+template_file_contents+'"""')
-                modelfile.write(f"{MODELFILE_INSTRUCTIONS.TEMPLATE} \"\"\"{template_file_contents}\"\"\"\n")
+                if os.path.exists(filename):
+                    with open(filename, 'r') as file:
+                        template_file_contents = file.read()
+                    if args.debug:
+                        print(f"args.template_file ({args.template_file}):")
+                        print('"""'+template_file_contents+'"""')
+                    modelfile.write(f"{MODELFILE_INSTRUCTIONS.TEMPLATE} \"\"\"{template_file_contents}\"\"\"\n")
+                elif args.verbose:
+                    print(f"[WARNING] args.template_file='{args.template_file}' does not exist")
 
             if args.system_file is not None:
                 filename = args.metadata_path + "/" + args.system_file
-                with open(filename, 'r') as file:
-                    system_file_contents = file.read()
-                if args.debug:
-                    print(f"args.system_file ({args.system_file}):")
-                    print('"""'+system_file_contents+'"""')
-                modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
+                if os.path.exists(filename):
+                    with open(filename, 'r') as file:
+                        system_file_contents = file.read()
+                    if args.debug:
+                        print(f"args.system_file ({args.system_file}):")
+                        print('"""'+system_file_contents+'"""')
+                    modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
+                elif args.verbose:
+                    print(f"[WARNING] args.system_file='{args.system_file}' does not exist")
 
             if args.params_file is not None:
                 filename = args.metadata_path + "/" + args.params_file
-                with open(filename, 'r') as file:
-                    params_dict = json.load(file)
-                    for key, value in params_dict.items():
-                        if args.debug:
-                            print(f"{key}: {value}")
-                        if key not in [param.value for param in VALID_PARAMS]:
-                            print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
-                        modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
+                if os.path.exists(filename):
+                    with open(filename, 'r') as file:
+                        params_dict = json.load(file)
+                        for key, value in params_dict.items():
+                            if args.debug:
+                                print(f"{key}: {value}")
+                            if key not in [param.value for param in VALID_PARAMS]:
+                                print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
+                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
+                elif args.verbose:
+                    print(f"[WARNING] args.params_file='{args.params_file}' does not exist")
 
     except IOError as e:
         print(f"Error: unable to write to file: {e}")
