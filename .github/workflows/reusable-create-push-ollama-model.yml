@@ -155,7 +155,7 @@ jobs:
       # Primarily, we have a projector model that is needed for "vision" (multi-modal) models
       - name: test-for-projector-model
         run: |
-          if [[ "${{env.OLLAMA_MODEL_NAME}}" == *"$vision"* ]]; then
+          if [[ "${{env.OLLAMA_MODEL_NAME}}" == *"vision"* ]]; then
             echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
           else
             echo "NOT a 'vision' model."
