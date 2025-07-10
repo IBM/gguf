@@ -35,7 +35,7 @@ if __name__ == "__main__":
         parser.add_argument("--model-file", "-m", type=str, required=True, help="Path to gguf model file (GGUF).")
         parser.add_argument("--model-projector", "-mp", type=str, required=False, help="Optional path to projector model file (GGUF).")
         parser.add_argument("--output-file", "-o", type=str, required=True, help="Path to output file (Ollama 'Modelfile').")
-        parser.add_argument("--license", "-l", type=str, required=True, help="SPDX license identifier.")
+        parser.add_argument("--license", "-l", type=str, required=True, help="Path to license file.")
         parser.add_argument("--metadata-path", "-p", type=str, required=True, help="Path to model metadata files.")
         parser.add_argument("--template-file", "-tf", type=str, required=False, help="Optional chat template file (Go template).")
         parser.add_argument("--system-file", "-sf", type=str, required=False, help="Optional system message file (text).")
@@ -76,8 +76,21 @@ if __name__ == "__main__":
                 elif args.verbose:
                     print(f"[WARNING] args.model_projector='{args.model_projector}' does not exist")
 
+            # TBD: Would prefer using SPDX License ID
+            # if args.license is not None:
+            #     modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} {args.license}\n")
+            # For fidelity, we upload the entire Apache 2 license text...
             if args.license is not None:
-                modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} {args.license}\n")
+                filename = license
+                if os.path.exists(filename):
+                    with open(filename, 'r') as file:
+                        license_file_contents = file.read()
+                    if args.debug:
+                        print(f"args.license ({args.license}):")
+                        print('"""'+license_file_contents+'"""')
+                    modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} \"\"\"{license_file_contents}\"\"\"\n")
+                elif args.verbose:
+                    print(f"[WARNING] args.license='{args.license}' does not exist")
 
             if args.template_file is not None:
                 filename = args.metadata_path + "/" + args.template_file

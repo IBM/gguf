@@ -60,6 +60,7 @@ jobs:
       F16_MMPROJ_MODEL_FILENAME: mmproj-model-f16.gguf
       OLLAMA_RESOURCE_DIR: resources/ollama
       OLLAMA_MODELFILE: Modelfile
+      OLLAMA_LICENSE_FILE: resources/LICENSE-2.0.txt
       OLLAMA_TEMPLATE_FILE: template.txt
       OLLAMA_PARAMS_FILE: params.json
       OLLAMA_SYSTEM_FILE: system.txt
@@ -224,7 +225,7 @@ jobs:
           python ./scripts/create_ollama_model_file.py \
             -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             -mp ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}} \
-            -l ${{env.DEFAULT_MODEL_LICENSE}} \
+            -l ${{env.OLLAMA_LICENSE_FILE}} \
             -p ${{env.OLLAMA_MODEL_RESOURCES}} \
             -tf ${{env.OLLAMA_TEMPLATE_FILE}} \
             -sf ${{env.OLLAMA_SYSTEM_FILE}} \
