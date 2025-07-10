@@ -9,7 +9,7 @@ Declare the prompt structure variables to be filled in from messages
 {{- $system := "" }}
 {{- $documents := "" }}
 {{- $documentCounter := 0 }}
-{{- $thinking := false }}
+{{- $thinking := (and .IsThinkSet .Think) }}
 {{- $citations := false }}
 {{- $hallucinations := false }}
 {{- $length := "" }}
@@ -142,6 +142,9 @@ If no user message provided, build the default system message
 {{- end }}
 {{- if eq (len (slice $.Messages $index)) 1 }}
 {{- if eq .Role "assistant" }}
+{{- if (and $.IsThinkSet $.Think .Thinking) -}}
+<think>{{ .Thinking }}</think><response>
+{{- end }}
 {{- else }}<|end_of_text|>
 <|start_of_role|>assistant
 {{- if and (ne $length "") (ne $originality "") }} {"length": "{{ $length }}", "originality": "{{ $originality }}"}
