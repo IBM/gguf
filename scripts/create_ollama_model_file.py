@@ -63,10 +63,14 @@ if __name__ == "__main__":
 
         with open(args.output_file, 'w') as modelfile:
 
+
             if args.model_file is not None:
                 if not os.path.isfile(args.model_file):
                     raise FileNotFoundError(f"The --model-file '{args.model_file}' does not exist.")
                 modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_file}\n")
+
+            if args.verbose:
+                print(f"Adding --model-projector='{args.model_projector}' to Modelfile...")
 
             if args.model_projector is not None:
                 if os.path.exists(args.model_projector):
@@ -74,12 +78,15 @@ if __name__ == "__main__":
                         raise FileNotFoundError(f"The --model-projector '{args.model_projector}' does not exist.")
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
                 elif args.verbose:
-                    print(f"[WARNING] args.model_projector='{args.model_projector}' does not exist")
+                    print(f"[WARNING] --model-projector='{args.model_projector}' does not exist")
 
             # TBD: Would prefer using SPDX License ID
             # if args.license is not None:
             #     modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} {args.license}\n")
             # For fidelity, we upload the entire Apache 2 license text...
+            if args.verbose:
+                print(f"Adding --license='{args.license}' to Modelfile...")
+
             if args.license is not None:
                 filename = license
                 if os.path.exists(filename):
@@ -90,7 +97,10 @@ if __name__ == "__main__":
                         print('"""'+license_file_contents+'"""')
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.LICENSE} \"\"\"{license_file_contents}\"\"\"\n")
                 elif args.verbose:
-                    print(f"[WARNING] args.license='{args.license}' does not exist")
+                    print(f"[WARNING] --license='{args.license}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --template-file='{args.template_file}' to Modelfile...")
 
             if args.template_file is not None:
                 filename = args.metadata_path + "/" + args.template_file
@@ -102,7 +112,10 @@ if __name__ == "__main__":
                         print('"""'+template_file_contents+'"""')
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.TEMPLATE} \"\"\"{template_file_contents}\"\"\"\n")
                 elif args.verbose:
-                    print(f"[WARNING] args.template_file='{args.template_file}' does not exist")
+                    print(f"[WARNING] --template-file='{args.template_file}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --system-file='{args.system_file}' to Modelfile...")
 
             if args.system_file is not None:
                 filename = args.metadata_path + "/" + args.system_file
@@ -114,7 +127,10 @@ if __name__ == "__main__":
                         print('"""'+system_file_contents+'"""')
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
                 elif args.verbose:
-                    print(f"[WARNING] args.system_file='{args.system_file}' does not exist")
+                    print(f"[WARNING] --system-file='{args.system_file}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --params-file='{args.params_file}' to Modelfile...")
 
             if args.params_file is not None:
                 filename = args.metadata_path + "/" + args.params_file
@@ -128,7 +144,7 @@ if __name__ == "__main__":
                                 print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
                             modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
                 elif args.verbose:
-                    print(f"[WARNING] args.params_file='{args.params_file}' does not exist")
+                    print(f"[WARNING] --params-file='{args.params_file}' does not exist")
 
     except IOError as e:
         print(f"Error: unable to write to file: {e}")

@@ -78,6 +78,7 @@ jobs:
             bin/ollama
             resources/json/latest
             resources/ollama
+            resources/LICENSE-2.0.txt
 
       - name: confirm-environment
         run: |
