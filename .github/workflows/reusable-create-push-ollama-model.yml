@@ -282,17 +282,6 @@ jobs:
         run: |
           echo "OLLAMA_PUSH_STOP=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
 
-      # python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}}
-      # if [ $? -eq 0 ]; then
-      #   echo "Default model"
-      #   echo "IS_DEFAULT_QUANT=true" >> $GITHUB_ENV
-      #   model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama --default-quant)
-      #   echo "model_name (default): '$model_name'"
-      #   echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
-      # else
-      #   echo "NOT the default model"
-      # fi
-      # exit 0
       - name: ollama-is-model-default-quantization
         continue-on-error: true
         run: |

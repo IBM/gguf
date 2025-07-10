@@ -181,11 +181,7 @@
                     "family": "vision",
                     "repo_name": "granite-vision-3.2-2b",
                     "default_quant": "q8_0",
-                    "ollama_readme": "",
-                    "ollama_template": "",
-                    "ollama_params": "",
-                    "ollama_system": "",
-                    "ollama_projector": "mmproj-model-f16.gguf"
+                    "projector_model": "mmproj-model-f16.gguf"
                 },
                 {
                     "type": "model",
