@@ -15,9 +15,6 @@ if __name__ == "__main__":
         parser.add_argument('--debug', "-d", default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
 
-        if(args.debug):
-            print(f">> collection_config='{args.collection_config}', quantization='{args.quantization}")
-
         # read the HF collection config. file
         with open(args.collection_config, "r") as file:
             json_data = json.load(file)
@@ -31,24 +28,20 @@ if __name__ == "__main__":
 
             # upload all models associated with the collection
             for item_defn in collection_items:
-                if(args.debug):
-                    print(f"item_defn: '{item_defn}'")
-
                 repo_name = item_defn["repo_name"]
                 default_quantization = item_defn["default_quant"]
 
                 if repo_name.lower() == args.model_name.lower():
                     if args.quantization.lower() == default_quantization.lower():
-                        print(f"quantization ('{args.quantization}') is the default: '{default_quantization}'")
-                        sys.exit(0)
+                        print(f"quantization ('{args.quantization}') is the default: '{default_quantization}'", file=sys.stderr)
+                        print('true')
                     else:
-                        print(f"quantization ('{args.quantization}') is NOT the default: '{default_quantization}'")
-                        sys.exit(1)
-
+                        print(f"quantization ('{args.quantization}') is NOT the default: '{default_quantization}'", file=sys.stderr)
+                        print('false')
     except Exception as e:
-        print(f"[ERROR] {e}")
+        print(f"[ERROR] {e}", file=sys.stderr)
         print(f"Usage: {parser.format_usage()}")
         sys.exit(1)
 
-    print(f"[ERROR] Unrecognized --model-name: '{args.model_name}'")
+    print(f"[ERROR] Unrecognized --model-name: '{args.model_name}'", file=sys.stderr)
     sys.exit(1)
