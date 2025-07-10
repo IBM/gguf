@@ -32,7 +32,7 @@ env:
 # 'Q6_K',
 # 'Q8_0'
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q4_K_M'
+    'Q4_K_M', 'Q5_K_M'
   ]"
 # 'ibm-granite/granite-guardian-3.2-3b-a800m',
 # 'ibm-granite/granite-guardian-3.2-5b'
