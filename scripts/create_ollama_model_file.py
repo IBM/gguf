@@ -57,6 +57,7 @@ if __name__ == "__main__":
         template_file_contents = ""
         system_file_contents = ""
         params_file_contents = ""
+        license_file_contents = ""
 
         if args.verbose:
             print(f"Creating output Modelfile ('{args.output_file}')...")
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                 print(f"Adding --license='{args.license}' to Modelfile...")
 
             if args.license is not None:
-                filename = license
+                filename = args.license
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
                         license_file_contents = file.read()
