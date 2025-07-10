@@ -1,6 +1,6 @@
 ### Granite guardian models
 
-The IBM Granite Guardian 3.0 2B and 8B models are designed to detect risks in prompts and/or responses. They can help with risk detection along many key dimensions catalogued in the [IBM AI Risk Atlas](https://www.ibm.com/docs/en/watsonx/saas?topic=ai-risk-atlas). They are trained on unique data comprising human annotations and synthetic data informed by internal red-teaming, and they outperform other open-source models in the same space on standard benchmarks.
+The IBM Granite Guardian 3.1 2B and 8B models are designed to detect risks in prompts and/or responses. They can help with risk detection along many key dimensions catalogued in the [IBM AI Risk Atlas](https://www.ibm.com/docs/en/watsonx/saas?topic=ai-risk-atlas). They are trained on unique data comprising human annotations and synthetic data informed by internal red-teaming, and they outperform other open-source models in the same space on standard benchmarks.
 
 #### Parameter Sizes
 
@@ -9,15 +9,13 @@ The model will produce a single output token, either Yes or No. By default, the 
 ##### 2B:
 
 ```
-ollama run granite3-guardian:2b
->>> /set system profanity
+ollama run granite3.1-guardian:2b >>> /set system profanity
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3-guardian:8b
->>> /set system violence
+ollama run granite3.1-guardian:8b >>> /set system violence
 ```
 
 #### Supported use cases
@@ -35,6 +33,11 @@ ollama run granite3-guardian:8b
   - Context relevance (`relevance`): whether the retrieved context is relevant to the query
   - Groundedness (`groundedness`): whether the response is accurate and faithful to the provided context
   - Answer relevance (`answer_relevance`): whether the response directly addresses the user’s query
+
+- Agentic Workflows to assess:
+
+    - Function Calling Hallucination (`function_calling`) : validates use of function calls for syntactic and semantic hallucination.
+
 
 #### Granite dense models
 
