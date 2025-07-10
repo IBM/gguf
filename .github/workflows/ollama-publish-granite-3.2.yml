@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_OLLAMA_PUSH: false
+  ENABLE_OLLAMA_PUSH: true
 
 # 'mrutkows/granite-3.2-2b-instruct',
 # 'mrutkows/granite-3.2-8b-instruct'
