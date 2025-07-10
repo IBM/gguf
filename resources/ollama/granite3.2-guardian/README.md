@@ -1,6 +1,8 @@
 ### Granite guardian models
 
-The IBM Granite Guardian 3.1 2B and 8B models are designed to detect risks in prompts and/or responses. They can help with risk detection along many key dimensions catalogued in the [IBM AI Risk Atlas](https://www.ibm.com/docs/en/watsonx/saas?topic=ai-risk-atlas). They are trained on unique data comprising human annotations and synthetic data informed by internal red-teaming, and they outperform other open-source models in the same space on standard benchmarks.
+The IBM Granite Guardian 3.2 2B and 8B models are designed to detect risks in prompts and/or responses. They can help with risk detection along many key dimensions catalogued in the [IBM AI Risk Atlas](https://www.ibm.com/docs/en/watsonx/saas?topic=ai-risk-atlas). They are trained on unique data comprising human annotations and synthetic data informed by internal red-teaming, and they outperform other open-source models in the same space on standard benchmarks.
+
+We’re introducing new model sizes for Granite Guardian 3.2, including a variant derived from our 3B-A800M mixture of experts (MoE) language model. The new models offer increased efficiency with minimal loss in performance.
 
 #### Parameter Sizes
 
@@ -9,13 +11,13 @@ The model will produce a single output token, either `Yes` or `No`. By default, 
 ##### 2B:
 
 ```
-ollama run granite3.1-guardian:2b >>> /set system profanity
+ollama run granite3.2-guardian:2b >>> /set system profanity
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3.1-guardian:8b >>> /set system violence
+ollama run granite3.2-guardian:8b >>> /set system violence
 ```
 
 #### Supported use cases
@@ -38,6 +40,7 @@ ollama run granite3.1-guardian:8b >>> /set system violence
 
     - Function Calling Hallucination (`function_calling`) : validates use of function calls for syntactic and semantic hallucination.
 
+
 #### Granite dense models
 
 The Granite dense models are designed to support tool-based use cases and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
@@ -48,6 +51,6 @@ The Granite MoE models are designed for low latency usage and to support deploym
 
 ##### Learn more
 
-- Release Date: 21 January 2025
+- Release Date: 26 February 2025
 - License: Apache 2.0
 - https://www.ibm.com/granite

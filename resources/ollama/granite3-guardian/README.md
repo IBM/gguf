@@ -4,7 +4,7 @@ The IBM Granite Guardian 3.0 2B and 8B models are designed to detect risks in pr
 
 #### Parameter Sizes
 
-The model will produce a single output token, either Yes or No. By default, the general-purpose harm category is used, but other categories can be selected by setting the system prompt.
+The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
 
 ##### 2B:
 
@@ -46,6 +46,6 @@ The Granite MoE models are available in 1B and 3B parameter sizes designed for l
 
 ##### Learn more
 
-- Release Date: October 21st, 2024
+- Release Date: 21 October 2024
 - License: Apache 2.0
 - https://www.ibm.com/granite
