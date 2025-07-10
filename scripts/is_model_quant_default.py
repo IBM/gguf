@@ -35,9 +35,11 @@ if __name__ == "__main__":
                     if args.quantization.lower() == default_quantization.lower():
                         print(f"quantization ('{args.quantization}') is the default: '{default_quantization}'", file=sys.stderr)
                         print('true')
+                        sys.exit(0)
                     else:
                         print(f"quantization ('{args.quantization}') is NOT the default: '{default_quantization}'", file=sys.stderr)
                         print('false')
+                        sys.exit(0)
     except Exception as e:
         print(f"[ERROR] {e}", file=sys.stderr)
         print(f"Usage: {parser.format_usage()}")

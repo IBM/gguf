@@ -92,7 +92,7 @@ jobs:
           echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
-      - name: Echo secret
+      - name: verify-secrets-present
         run: |
           echo "HF_TOKEN: ${{ secrets.HF_TOKEN }}"
           echo "OLLAMA_TOKEN: ${{ secrets.OLLAMA_TOKEN }}"
@@ -293,7 +293,7 @@ jobs:
       #   echo "NOT the default model"
       # fi
       # exit 0
-      - name: ollama-is-default-model
+      - name: ollama-is-model-default-quantization
         continue-on-error: true
         run: |
           result=$(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
@@ -308,7 +308,7 @@ jobs:
             echo "NOT the default model"
           fi
 
-      - name: upload-model-as-default-quant
+      - name: ollama-push-model-default-quantization
         run: |
           if [[ "$REPO_NAME" =~ "base" ]]; then
             echo "Environment variable contains 'base'. Exiting."

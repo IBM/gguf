@@ -18,7 +18,7 @@ env:
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_OLLAMA_PUSH: true
+  ENABLE_OLLAMA_PUSH: false
 
 # 'mrutkows/granite-3.2-2b-instruct',
 # 'mrutkows/granite-3.2-8b-instruct'
@@ -119,6 +119,13 @@ jobs:
       ARRAY_SEP: "','"
       QUANT_F16: "f16"
     steps:
+      # - name: Dump runner context
+      #   env:
+      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
+      #   run: |
+      #     uname -a
+      #     echo "$RUNNER_CONTEXT"
+
       - name: List all environment variables
         id: list-env-vars
         run: env | sort
@@ -223,16 +230,6 @@ jobs:
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
             echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
             echo "target_ollama_vision_quants: '${{ steps.set-vars.outputs.target_ollama_vision_quants }}'"
-
-      # - name: List all environment variables
-      #   run: env | sort
-
-      # - name: Dump runner context
-      #   env:
-      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-      #   run: |
-      #     uname -a
-      #     echo "$RUNNER_CONTEXT"
 
   # ===========================================================================
   # Ollama (llm/instruct)
