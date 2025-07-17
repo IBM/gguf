@@ -10,6 +10,8 @@ on:
         required: true
       ibm_granite_token:
         required: true
+      sigstore_sts_client_secret:
+        required: true
     inputs:
       enable_language_jobs:
         type: boolean
@@ -67,6 +69,7 @@ jobs:
           ./requirements.txt
           scripts/hf_model_upload.py
           scripts/hf_model_download_snapshot.py
+          .github/workflows/reusable-sign-models/action.yml
 
     - name: Dump GitHub inputs
       env:
@@ -200,3 +203,22 @@ jobs:
         echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
         python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+    - name: Debug
+      run: |
+        ls -al
+        pwd
+        find .github
+
+    - name: sign-model
+      uses: ./.github/workflows/reusable-sign-models
+      with:
+        debug: true
+        model_file: ${{ env.FNAME_F16_GGUF }}
+        sigstore_sts_client_secret: ${{secrets.sigstore_sts_client_secret}}
+
+#    - name: upload-model-sig-to-target-repo
+#      run: |
+#        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"
+#        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
+#        python ./scripts/hf_model_upload.py $TARGET_REPO_ID "${{env.MODEL_DOWNLOAD_DIR}}/${{inputs.repo_id}}/model.sig" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}

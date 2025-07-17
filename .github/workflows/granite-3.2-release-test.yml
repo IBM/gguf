@@ -509,10 +509,11 @@ jobs:
 
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    uses: ./.github/workflows/reusable-convert-hf-to-f16-gguf.yml
     permissions:
       contents: write
       packages: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -528,6 +529,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
