@@ -532,8 +532,22 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
+  embedding-sign-model:
+    needs: [ embedding-convert-hf-to-f16-gguf ]
+    uses: ./.github/workflows/reusable-sign-models.yml
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+    with:
+      debug: true
+      model_dir: models
+
   embedding-quantize-upload-gguf:
-    needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
+    needs: [ environment-setup, embedding-sign-model ]
     permissions:
       contents: write
       packages: write
