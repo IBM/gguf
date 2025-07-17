@@ -1,0 +1,144 @@
+name: sign-model-in-hf-repo-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      sigstore_sts_client_secret:
+        required: true
+    inputs:
+      repo_id:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_suffix:
+        type: string
+        required: true
+      do_token_exchange:
+        type: boolean
+        required: false
+        default: false
+      debug:
+        type: boolean
+        required: false
+        default: false
+      free_disk_space:
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  sign-model-in-hf-repo:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          scripts/hf_model_upload.py
+          requirements.txt
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      if: ${{ github.event.inputs.debug }}
+      run: echo "$GITHUB_INPUTS"
+
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    - name: Install dependencies
+      run: |
+        pip install model_signing
+        pip install -r ./requirements.txt
+        sudo apt-get -y update
+        sudo apt-get -y install git git-lfs
+
+    - name: Free disk space
+      if: ${{ inputs.free_disk_space }}
+      run: |
+        df -h
+        # https://dev.to/mathio/squeezing-disk-space-from-github-actions-runners-an-engineers-guide-3pjg
+        sudo rm -rf \
+          /usr/lib/jvm \
+          /usr/share/dotnet \
+          /usr/local/.ghcup \
+          /usr/local/julia* \
+          /usr/local/lib/android \
+          /usr/local/share/chromium \
+          /opt/microsoft \
+          /opt/google \
+          /opt/az \
+          /usr/local/share/powershell \
+          /opt/hostedtoolcache
+        docker system  prune -af || true
+        docker builder prune -af || true
+        df -h
+
+    - name: Get github OIDC token and maybe run token exchange
+      id: get-oidc-token
+      run: |
+        identity_token=$(
+          curl -H \
+            "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sigstore" \
+          | jq -r .value
+        )
+        #echo "Identity token from github"
+        #echo "${identity_token}" | base64
+        if [ ${{ inputs.do_token_exchange }} = true ]; then
+          if ! resjson=$(
+            curl 'https://sigstore.verify.ibm.com/oauth2/token' \
+              --header 'Content-Type: application/x-www-form-urlencoded' \
+              --data-urlencode 'client_id=sigstore' \
+              --data-urlencode "client_secret=${{ secrets.sigstore_sts_client_secret }}" \
+              --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:token-exchange' \
+              --data-urlencode "subject_token=${identity_token}" \
+              --data-urlencode 'subject_token_type=GitHubIdentityToken' -s \
+          ); then
+            echo "Error: ${resjson}"
+            exit 1
+          else
+            identity_token=$(echo ${resjson} | jq -r .access_token)
+            if [ "${identity_token}" = "null" ]; then
+              echo "Error: ${resjson}"
+              exit 1
+            fi
+          fi
+          #echo "Identity token from sigstore.verify.ibm.com"
+          #echo "${identity_token}" | base64
+        fi
+        echo "identity-token=$identity_token" >> $GITHUB_OUTPUT
+
+    - name: Clone huggingface repo and sign
+      run: |
+        repo_id=${{ inputs.repo_id }}
+        repo_id=${repo_id#*/}
+        target_repo_id=${{ inputs.target_repo_owner}}/${repo_id}${{ inputs.target_repo_suffix }}
+        git clone https://huggingface.co/${target_repo_id}
+        cd ${target_repo_id#*/}
+        rm -f *.sig
+
+        for gguffile in *.gguf; do
+          signature=${gguffile}.sig
+
+          mkdir tmp
+          mv "${gguffile}" tmp
+
+          python -m model_signing sign sigstore \
+            --identity_token "${{ steps.get-oidc-token.outputs.identity-token }}" \
+            --signature ${signature} \
+            "${PWD}/tmp"
+
+          rm -rf tmp
+        echo "TARGET_REPO_ID=${target_repo_id}" >> $GITHUB_ENV
+
+    - name: Upload new model signatures
+      run: |
+        for signature  in *.gguf.sig; do
+          python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${signature} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        done
