@@ -17,9 +17,9 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
-  ENABLE_VISION_JOBS: true
+  ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
   # 'ibm-granite/granite-3.2-2b-instruct',
   # 'ibm-granite/granite-3.2-8b-instruct'
   SOURCE_LANGUAGE_REPOS: "[
@@ -73,10 +73,7 @@ env:
   # 'ibm-granite/granite-embedding-107m-multilingual',
   # 'ibm-granite/granite-embedding-278m-multilingual'
   SOURCE_EMBEDDING_REPOS: "[
-    'ibm-granite/granite-embedding-30m-english',
-    'ibm-granite/granite-embedding-125m-english',
-    'ibm-granite/granite-embedding-107m-multilingual',
-    'ibm-granite/granite-embedding-278m-multilingual'
+    'ibm-granite/granite-embedding-30m-english'
   ]"
   # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
