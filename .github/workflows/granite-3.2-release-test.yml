@@ -401,6 +401,31 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  vision-sign-models-in-repos:
+    if: ${{ needs.environment-setup.outputs.target_repo_sign_models == 'true' }}
+    needs: [ environment-setup, bvt-vision-quantized-gguf-models ]
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization:
+          - f16
+          - ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+          - "fullname:mmproj-model-f16.gguf"
+    uses: IBM/gguf/.github/workflows/reusable-sign-model-in-hf-repo.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      do_token_exchange: ${{ needs.environment-setup.outputs.target_repo_do_token_exchange == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
+
   # TODO: change collection from private to public (on success)
   vision-create-hf-collections:
     needs: [
