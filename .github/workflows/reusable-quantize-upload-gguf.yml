@@ -291,6 +291,16 @@ jobs:
         ls -al .
         echo "--------------------"
 
+    - name: delete-previous-signature
+      if: env.F16_OPT_ENABLED == 'true'
+      run: |
+        signature=${{ env.LOCAL_FNAME_QUANTIZED_GGUF }}.sig
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${signature} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "True" ]]; then
+          python ./scripts/hf_file_delete.py ${{ env.TARGET_REPO_ID }} ${signature} ${{secrets.hf_token}}
+        fi
+
     - name: delete-previous-upload
       if: env.F16_OPT_ENABLED == 'true'
       run: |
