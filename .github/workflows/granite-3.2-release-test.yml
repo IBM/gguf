@@ -83,6 +83,7 @@ env:
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: false
+  TARGET_HF_REPO_SIGN_MODELS: true
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
 jobs:
@@ -104,6 +105,7 @@ jobs:
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
+      target_repo_sign_models: ${{ steps.set-vars.outputs.target_repo_sign_models }}
       source_language_repos: "${{ steps.set-vars.outputs.source_language_repos }}"
       target_language_quantizations: "${{ steps.set-vars.outputs.target_language_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
@@ -130,6 +132,7 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "target_repo_sign_models=$TARGET_HF_REPO_SIGN_MODELS" >> "$GITHUB_OUTPUT"
             echo "source_language_repos=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_language_quantizations=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
@@ -151,6 +154,7 @@ jobs:
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
+            echo "target_repo_sign_models: '${{ steps.set-vars.outputs.target_repo_sign_models }}'"
             echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
             echo "source_language_repos: '${{ steps.set-vars.outputs.source_language_repos }}'"
             echo "target_language_quantizations: '${{ steps.set-vars.outputs.target_language_quantizations }}'"
