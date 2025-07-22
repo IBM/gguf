@@ -50,7 +50,7 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
-  VISION_CONFIG: resources/json/granite-3.2/vision_config.json
+  VISION_CONFIG: resources/json/granite-3.3/vision_config.json
   LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
 
 jobs:
