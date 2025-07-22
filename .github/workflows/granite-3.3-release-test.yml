@@ -55,10 +55,9 @@ env:
   # 'Q5_K_M',
   # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-    'Q4_K_M',
-    'Q5_K_M',
     'Q8_0'
   ]"
+  # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
   # 'ibm-granite/granite-vision-3.3-2b-embedding'
   SOURCE_EMBEDDING_REPOS: "[
     'None'

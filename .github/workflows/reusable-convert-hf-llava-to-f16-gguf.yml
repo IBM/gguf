@@ -218,7 +218,7 @@ jobs:
         mkdir ${{ env.ENCODER_PATH }}
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.ENCODER_PATH }}/pytorch_model.bin
-        cp ./resources/json/granite-3.2/vision_config.json ${{ env.ENCODER_PATH }}/config.json
+        cp ./${{env.VISION_CONFIG}} ${{ env.ENCODER_PATH }}/config.json
         python ./llama.cpp/tools/mtmd/legacy-models/convert_image_encoder_to_gguf.py \
           -m ${{ env.ENCODER_PATH }} \
           --llava-projector ${{ env.ENCODER_PATH }}/llava.projector \

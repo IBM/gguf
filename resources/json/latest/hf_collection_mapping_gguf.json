@@ -224,7 +224,15 @@
                     "family": "vision",
                     "repo_name": "granite-vision-3.3-2b",
                     "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf"
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "vision_config": "VISION_CONFIG: resources/json/granite-3.2/vision_config.json"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "version": "3.3",
+                    "repo_name": "ibm-granite/granite-vision-3.3-2b-embedding",
+                    "default_quant": "f16"
                 },
                 {
                     "type": "model",
