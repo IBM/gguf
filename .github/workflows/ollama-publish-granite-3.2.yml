@@ -20,18 +20,18 @@ env:
   ENABLE_EMBEDDING_JOBS: true
   ENABLE_OLLAMA_PUSH: true
 
-# 'mrutkows/granite-3.2-2b-instruct',
-# 'mrutkows/granite-3.2-8b-instruct'
+  # 'mrutkows/granite-3.2-2b-instruct',
+  # 'mrutkows/granite-3.2-8b-instruct'
   SOURCE_INSTRUCT_REPOS: "[
   'mrutkows/granite-3.2-2b-instruct',
   'mrutkows/granite-3.2-8b-instruct'
   ]"
-# 'Q2_K',
-# 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-# 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-# 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-# 'Q6_K',
-# 'Q8_0'
+  # 'Q2_K',
+  # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+  # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+  # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_INSTRUCT_QUANTIZATIONS: "[
   'Q2_K',
   'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -40,23 +40,23 @@ env:
   'Q6_K',
   'Q8_0'
   ]"
-# 'ibm-granite/granite-guardian-3.2-3b-a800m',
-# 'ibm-granite/granite-guardian-3.2-5b'
+  # 'ibm-granite/granite-guardian-3.2-3b-a800m',
+  # 'ibm-granite/granite-guardian-3.2-5b'
   SOURCE_GUARDIAN_REPOS: "[
     'ibm-granite/granite-guardian-3.2-3b-a800m',
     'ibm-granite/granite-guardian-3.2-5b'
   ]"
-# 'Q4_K_M',
-# 'Q5_K_M',
-# 'Q6_K',
-# 'Q8_0'
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
     'Q4_K_M',
     'Q5_K_M',
     'Q6_K',
     'Q8_0'
   ]"
-# 'ibm-granite/granite-vision-3.2-2b'
+  # 'ibm-granite/granite-vision-3.2-2b'
   SOURCE_VISION_REPOS: "[
     'ibm-granite/granite-vision-3.2-2b'
   ]"
@@ -69,10 +69,10 @@ env:
     'Q8_0'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
-# 'ibm-granite/granite-embedding-30m-english',
-# 'ibm-granite/granite-embedding-125m-english',
-# 'ibm-granite/granite-embedding-107m-multilingual',
-# 'ibm-granite/granite-embedding-278m-multilingual'
+  # 'ibm-granite/granite-embedding-30m-english',
+  # 'ibm-granite/granite-embedding-125m-english',
+  # 'ibm-granite/granite-embedding-107m-multilingual',
+  # 'ibm-granite/granite-embedding-278m-multilingual'
   SOURCE_EMBEDDING_REPOS: "[
     'ibm-granite/granite-embedding-30m-english',
     'ibm-granite/granite-embedding-125m-english',

@@ -50,11 +50,17 @@ env:
   TARGET_GUARDIAN_QUANTIZATIONS: "[
     'None'
   ]"
+  # 'ibm-granite/granite-vision-3.3-2b'
   SOURCE_VISION_REPOS: "[
-    'None'
+    'ibm-granite/granite-vision-3.3-2b'
   ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q8_0'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[
