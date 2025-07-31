@@ -19,11 +19,11 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
 
-  SOURCE_INSTRUCT_REPOS: "[
+  SOURCE_LANGUAGE_REPOS: "[
     'ibm-granite/granite-4.0-tiny-preview',
     'ibm-granite/granite-4.0-tiny-base-preview'
   ]"
-  TARGET_INSTRUCT_QUANTIZATIONS: "[
+  TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q2_K',
     'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
     'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
