@@ -63,6 +63,10 @@ jobs:
   quantize:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs ==true }}
+    env:
+      # HF_HUB_DISABLE_XET: 1
+      # HF_HUB_ENABLE_HF_TRANSFER: 0
+      LLAMA_CPP_VERSION: "b6050" # 'b5717'
     steps:
     - uses: actions/checkout@v4
 
@@ -215,7 +219,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'b5717' # default to 'master' branch
+        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
