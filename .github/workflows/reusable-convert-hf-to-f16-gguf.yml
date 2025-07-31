@@ -59,6 +59,8 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
+      HF_TRANSFORMERS_VERSION: "4.52.4"
+      LLAMA_CPP_VERSION: "b6050" # 'b5717'
     steps:
 
     - uses: actions/checkout@v4
@@ -131,7 +133,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'b5717'  # default to 'master' branch
+        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -174,7 +176,7 @@ jobs:
         df -h
         pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         pip uninstall --yes transformers
-        pip install transformers==4.52.4
+        pip install transformers==${{ env.HF_TRANSFORMERS_VERSION }}
         pip list
         df -h
 
