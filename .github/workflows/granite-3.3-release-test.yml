@@ -59,6 +59,7 @@ env:
   TARGET_VISION_QUANTIZATIONS: "[
     'Q8_0'
   ]"
+  # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
   # 'ibm-granite/granite-vision-3.3-2b-embedding'
   SOURCE_EMBEDDING_REPOS: "[

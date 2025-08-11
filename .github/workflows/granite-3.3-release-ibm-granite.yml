@@ -19,13 +19,13 @@ env:
   ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
 
-  SOURCE_INSTRUCT_REPOS: "[
+  SOURCE_LANGUAGE_REPOS: "[
     'ibm-granite/granite-3.3-2b-base',
     'ibm-granite/granite-3.3-8b-base',
     'ibm-granite/granite-3.3-2b-instruct',
     'ibm-granite/granite-3.3-8b-instruct'
   ]"
-  TARGET_INSTRUCT_QUANTIZATIONS: "[
+  TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q2_K',
     'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
     'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
@@ -58,9 +58,14 @@ env:
     'Q8_0'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
+  # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
+  # 'ibm-granite/granite-vision-3.3-2b-embedding'
   SOURCE_EMBEDDING_REPOS: "[
+    'None'
   ]"
+  # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
+    'None'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: ibm-granite
@@ -90,8 +95,8 @@ jobs:
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
-      source_instruct_repos: "${{ steps.set-vars.outputs.source_instruct_repos }}"
-      target_instruct_quantizations: "${{ steps.set-vars.outputs.target_instruct_quantizations }}"
+      source_language_repos: "${{ steps.set-vars.outputs.source_language_repos }}"
+      target_language_quantizations: "${{ steps.set-vars.outputs.target_language_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
@@ -116,8 +121,8 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
-            echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
-            echo "target_instruct_quantizations=$TARGET_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_language_repos=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_language_quantizations=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
@@ -138,8 +143,8 @@ jobs:
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
             echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
-            echo "source_instruct_repos: '${{ steps.set-vars.outputs.source_instruct_repos }}'"
-            echo "target_instruct_quantizations: '${{ steps.set-vars.outputs.target_instruct_quantizations }}'"
+            echo "source_language_repos: '${{ steps.set-vars.outputs.source_language_repos }}'"
+            echo "target_language_quantizations: '${{ steps.set-vars.outputs.target_language_quantizations }}'"
             echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
             echo "target_vision_quantizations: '${{ steps.set-vars.outputs.target_vision_quantizations }}'"
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
@@ -168,9 +173,9 @@ jobs:
       #   run: echo "$GH_QUIET"
 
   # ===========================================================================
-  # Granite Instruct
+  # Granite LLMs
   # ===========================================================================
-  instruct-create-hf-repos:
+  language-create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -178,6 +183,7 @@ jobs:
       granite_family: "instruct"
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_language_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -185,7 +191,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   convert-hf-to-f16-gguf:
-    needs: [ environment-setup, instruct-create-hf-repos ]
+    needs: [ environment-setup, language-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -193,7 +199,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -214,8 +220,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
@@ -229,7 +235,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  bvt-instruct-quantized-gguf-models:
+  bvt-language-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
@@ -238,8 +244,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_instruct_quantizations) }}
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -255,7 +261,7 @@ jobs:
   create-hf-collections:
     needs: [
       environment-setup,
-      bvt-instruct-quantized-gguf-models,
+      bvt-language-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:

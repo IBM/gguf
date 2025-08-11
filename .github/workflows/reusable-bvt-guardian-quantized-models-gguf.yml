@@ -68,6 +68,10 @@ jobs:
 
   test-quantized-model:
     runs-on: macos-latest
+    timeout-minutes: 20
+    env:
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
     if: ${{ inputs.enable_guardian_jobs == true }}
     steps:
     - uses: actions/checkout@v4
