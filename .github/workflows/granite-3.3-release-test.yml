@@ -16,7 +16,7 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: true
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
 
   # 'ibm-granite/granite-3.3-2b-base',
@@ -35,17 +35,19 @@ env:
   TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q4_K_M'
   ]"
-  # 'ibm-granite/granite-guardian-3.2-3b-a800m',
-  # 'ibm-granite/granite-guardian-3.2-5b'
+  # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'ibm-granite/granite-guardian-3.3-8b'
   ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0'
   ]"
   # 'ibm-granite/granite-vision-3.3-2b'
   SOURCE_VISION_REPOS: "[
