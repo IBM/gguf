@@ -54,18 +54,6 @@
                 },
                 {
                     "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.0-2b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.0-8b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.1-2b-base",
                     "default_quant": "q4_K_M"
@@ -114,30 +102,6 @@
                 },
                 {
                     "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-2b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-8b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-2b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
-                    "family": "guardian",
-                    "repo_name": "granite-guardian-3.1-8b",
-                    "default_quant": "q6_K"
-                },
-                {
-                    "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.2-2b-instruct",
                     "default_quant": "q4_K_M"
@@ -174,10 +138,51 @@
                 },
                 {
                     "type": "model",
-                    "family": "vision",
-                    "repo_name": "granite-vision-3.2-2b",
-                    "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf"
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-tiny-preview",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-tiny-base-preview",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.0-2b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.0-8b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-2b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-8b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-2b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.1-8b",
+                    "default_quant": "q6_K"
                 },
                 {
                     "type": "model",
@@ -190,6 +195,27 @@
                     "family": "guardian",
                     "repo_name": "granite-guardian-3.2-5b",
                     "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-3.3-8b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "vision",
+                    "repo_name": "granite-vision-3.2-2b",
+                    "default_quant": "q8_0",
+                    "projector_model": "mmproj-model-f16.gguf"
+                },
+                {
+                    "type": "model",
+                    "family": "vision",
+                    "repo_name": "granite-vision-3.3-2b",
+                    "default_quant": "q8_0",
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "vision_config": "VISION_CONFIG: resources/json/granite-3.2/vision_config.json"
                 },
                 {
                     "type": "model",
@@ -221,30 +247,10 @@
                 },
                 {
                     "type": "model",
-                    "family": "vision",
-                    "repo_name": "granite-vision-3.3-2b",
-                    "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf",
-                    "vision_config": "VISION_CONFIG: resources/json/granite-3.2/vision_config.json"
-                },
-                {
-                    "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "ibm-granite/granite-vision-3.3-2b-embedding",
                     "default_quant": "f16"
-                },
-                {
-                    "type": "model",
-                    "family": "instruct",
-                    "repo_name": "granite-4.0-tiny-preview",
-                    "default_quant": "q4_K_M"
-                },
-                {
-                    "type": "model",
-                    "family": "instruct",
-                    "repo_name": "granite-4.0-tiny-base-preview",
-                    "default_quant": "q4_K_M"
                 }
             ]
         }
