@@ -23,6 +23,12 @@ env:
     'ibm-granite/granite-4.0-tiny-preview',
     'ibm-granite/granite-4.0-tiny-base-preview'
   ]"
+  # 'Q2_K',
+  # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+  # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+  # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q2_K',
     'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -32,31 +38,35 @@ env:
     'Q8_0'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
+    'None'
   ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
+    'None'
   ]"
   SOURCE_VISION_REPOS: "[
+    'None'
   ]"
   TARGET_VISION_QUANTIZATIONS: "[
+    'None'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[
+    'None'
   ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
+    'None'
   ]"
   TARGET_REPO_NAME_EXT: -GGUF
   TARGET_REPO_OWNER: ibm-granite
   TARGET_REPO_PRIVATE: true
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
+
 jobs:
   # ===========================================================================
   # Environment setup
   # ===========================================================================
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
-  #  api_token: "${{ steps.set-vars.outputs.api_token }}"
-  #  echo "api_token=${{ secrets.HF_TOKEN_IBM_GRANITE }}" >> $GITHUB_OUTPUT
-  #  echo "api_token: ${{ steps.set-vars.outputs.api_token }}"
   environment-setup:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
@@ -86,8 +96,8 @@ jobs:
             echo "DEBUG: $DEBUG"
             echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
-            echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
-            echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
+            echo "TARGET_HF_REPO_OWNER: $TARGET_HF_REPO_OWNER"
+            echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
@@ -95,11 +105,11 @@ jobs:
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
-            echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
-            echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_language_repos=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_language_quantizations=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_repo_private=$TARGET_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
@@ -149,9 +159,9 @@ jobs:
       #   run: echo "$GH_QUIET"
 
   # ===========================================================================
-  # Granite Instruct
+  # Granite LLMs
   # ===========================================================================
-  instruct-create-hf-repos:
+  language-create-hf-repos:
     needs: [ environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
@@ -159,6 +169,7 @@ jobs:
       granite_family: "instruct"
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_language_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -166,7 +177,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   convert-hf-to-f16-gguf:
-    needs: [ environment-setup, instruct-create-hf-repos ]
+    needs: [ environment-setup, language-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
       contents: write
@@ -210,7 +221,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  bvt-instruct-quantized-gguf-models:
+  bvt-language-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
@@ -236,7 +247,7 @@ jobs:
   create-hf-collections:
     needs: [
       environment-setup,
-      bvt-instruct-quantized-gguf-models,
+      bvt-language-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -261,6 +272,7 @@ jobs:
       granite_family: "vision"
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_vision_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -363,6 +375,7 @@ jobs:
       granite_family: "guardian"
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_guardian_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -465,6 +478,7 @@ jobs:
       granite_family: "embedding"
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_embedding_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
