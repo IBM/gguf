@@ -249,7 +249,7 @@
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
-                    "repo_name": "ibm-granite/granite-vision-3.3-2b-embedding",
+                    "repo_name": "granite-vision-3.3-2b-embedding",
                     "default_quant": "f16"
                 }
             ]

@@ -56,9 +56,9 @@ env:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
     'None'
   ]"
-  TARGET_REPO_NAME_EXT: -GGUF
-  TARGET_REPO_OWNER: ibm-granite
-  TARGET_REPO_PRIVATE: false
+  TARGET_HF_REPO_NAME_EXT: -GGUF
+  TARGET_HF_REPO_OWNER: ibm-granite
+  TARGET_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
 jobs:
