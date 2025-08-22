@@ -5,7 +5,7 @@ Granite-4-Tiny-Preview is a 7B parameter fine-grained hybrid mixture-of-experts 
 ##### running tiny-preview
 
 ```
-ollama run granite4.0:7b
+ollama run granite4.0:tiny
 ```
 
 #### Supported Languages
