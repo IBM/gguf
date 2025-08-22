@@ -9,13 +9,13 @@ The models are trained on over 10 trillion tokens of data, the Granite MoE model
 ##### 1B:
 
 ```
-ollama run granite3.1-moe:1b
+ollama run ibm/granite3.1-moe:1b
 ```
 
 ##### 3B:
 
 ```
-ollama run granite3.1-moe:3b
+ollama run ibm/granite3.1-moe:3b
 ```
 
 #### Supported Languages

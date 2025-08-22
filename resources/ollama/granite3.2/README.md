@@ -9,13 +9,13 @@ Granite-3.2 is a family of long-context AI models fine-tuned for thinking capabi
 ##### 2B:
 
 ```
-ollama run granite3.2:2b
+ollama run ibm/granite3.2:2b
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3.2:8b
+ollama run ibm/granite3.2:8b
 ```
 
 #### Supported Languages

@@ -9,13 +9,13 @@ The IBM Granite 2B and 8B models are 128K context length language models that ha
 ##### 2B:
 
 ```
-ollama run granite3.3:2b
+ollama run ibm/granite3.3:2b
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3.3:8b
+ollama run ibm/granite3.3:8b
 ```
 
 #### Supported Languages

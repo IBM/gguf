@@ -9,14 +9,14 @@ The model will produce a single output token, either `Yes` or `No`. By default, 
 ##### 2B:
 
 ```
-ollama run granite3-guardian:2b
+ollama run ibm/granite3-guardian:2b
 >>> /set system profanity
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3-guardian:8b
+ollama run ibm/granite3-guardian:8b
 >>> /set system violence
 ```
 

@@ -9,13 +9,13 @@ The IBM Granite 2B and 8B models are text-only dense LLMs trained on over 12 tri
 ##### 2B:
 
 ```
-ollama run granite3-dense:2b
+ollama run ibm/granite3-dense:2b
 ```
 
 ##### 8B:
 
 ```
-ollama run granite3-dense:8b
+ollama run ibm/granite3-dense:8b
 ```
 
 #### Supported Languages

@@ -4,8 +4,16 @@ Granite-4-Tiny-Preview is a 7B parameter fine-grained hybrid mixture-of-experts 
 
 ##### running tiny-preview
 
+Running the default model (i.e., with quantization of Q4_K_M):
+
 ```
-ollama run granite4.0:tiny
+ollama run ibm/granite4.0:tiny
+```
+
+To run other quantizations (e.g., F16):
+
+```
+ollama run ibm/granite4.0:tiny-instruct-f16
 ```
 
 #### Supported Languages

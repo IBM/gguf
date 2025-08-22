@@ -7,13 +7,13 @@ The IBM Granite Embedding 30M and 278M models are text-only dense bi-encoder emb
 ##### 30M:
 
 ```
-ollama run granite-embedding:30m
+ollama run ibm/granite-embedding:30m
 ```
 
 ##### 278M:
 
 ```
-ollama run granite-embedding:278m
+ollama run ibm/granite-embedding:278m
 ```
 
 #### Supported Languages

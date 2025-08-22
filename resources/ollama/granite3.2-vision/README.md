@@ -9,7 +9,7 @@ A compact and efficient vision-language model, specifically designed for visual 
 ##### 2B:
 
 ```
-ollama run granite3.2-vision
+ollama run ibm/granite3.2-vision
 ```
 
 ##### Learn more

@@ -219,6 +219,7 @@ if __name__ == "__main__":
                 model_active_parameter_count='{model_active_parameter_count}'\n \
                 model_quantization='{model_quantization}'\n \
                 model_language='{model_language}' \
+                model_release_stage='{model_release_stage}' \
                 ")
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
@@ -257,7 +258,11 @@ if __name__ == "__main__":
             # where we leave off the modality classifier (i.e., "language" is implied)
             if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
                 model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
-                partner_model_base = f"{partner_model_base}-1{model_modality}"
+                partner_model_base = f"{partner_model_base}-{model_modality}"
+
+            # Append build/release stage
+            if model_release_stage != "":
+                partner_model_base = f"{partner_model_base}-{model_release_stage}"
 
             # TODO: determine if we need to append this for partner models:
             # if model_active_parameter_count is not None:
