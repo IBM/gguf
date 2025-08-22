@@ -44,11 +44,19 @@ env:
     'Q6_K',
     'Q8_0'
   ]"
+  # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'ibm-granite/granite-guardian-3.3-8b'
   ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q6_K',
+    'Q8_0'
   ]"
   # 'ibm-granite/granite-vision-3.3-2b'
   SOURCE_VISION_REPOS: "[
