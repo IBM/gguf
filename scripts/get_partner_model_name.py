@@ -44,7 +44,7 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     B20  = "20b"  # "function-calling"
     B30  = "30b"
     T1   = "1t"
-    TINY    = "tiny"  # NOTE: for v4.0 models we declare relative sizes using names
+    TINY    = "tiny"  # NOTE: for v4.0 models we declare relative sizes using names (e.g., tiny ~= 7B)
     SMALL   = "small"
     MEDIUM  = "medium"
     LARGE   = "large"
@@ -83,6 +83,9 @@ class SUPPORTED_MODEL_LANGUAGES(StrEnum):
     ENGLISH = "english"
     CHINESE = "chinese"
     MULTILINGUAL = "multilingual"
+
+class SUPPORTED_RELEASE_STAGES(StrEnum):
+    PREVIEW = "preview"
 
 def enum_contains(enum_type, value):
     try:
@@ -143,7 +146,7 @@ if __name__ == "__main__":
         model_parameter_size = "" # e.g., 2B, 8B, 1T
         model_quantization = ""  # e.g., q8_0, q4_K_M
         model_active_parameter_count = "" # e.g., a800m, a400m
-
+        model_release_stage = "" # Not used in name for now... e.g., preview
 
         for modality in SUPPORTED_MODEL_MODALITIES:
            if modality in normalized_model_name:
@@ -175,19 +178,48 @@ if __name__ == "__main__":
                model_language = language
                break
 
+        # Not used currently
+        for stage in SUPPORTED_RELEASE_STAGES:
+           if stage.lower() in normalized_model_name:
+               model_release_stage = stage
+               break
+
+        # Granite 4.0 fixup: as the HF model names dot not include "instruct"
+        # for now, we also check for the "size" as a secondary indicator of this case;
+        # however, defaulting to "instruct" could be explored...
+        if model_modality == "" and (
+            model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.TINY or
+            model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.SMALL or
+            model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MEDIUM or
+            model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.LARGE):
+            model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
+
+        if model_modality == "":
+            raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
+
+        if model_version == "":
+            raise ValueError(f"Version not found in model name: `{normalized_model_name}`")
+
         if model_parameter_size == "":
             raise ValueError(f"Parameter size not found in model name: `{normalized_model_name}`")
 
         if model_quantization == "":
             raise ValueError(f"Quantization not found in model name: `{normalized_model_name}`")
 
-        # print(f"model_family='{model_family}'\n \
-        #     model_version='{model_version}'\n \
-        #     model_parameter_size='{model_parameter_size}'\n \
-        #     model_active_parameter_count='{model_active_parameter_count}'\n \
-        #     model_quantization='{model_quantization}'\n \
-        #     model_language='{model_language}' \
-        #     ")
+        if model_release_stage != "":
+            if args.debug:
+                print(f"DEBUG: Model stage found in model name: `{normalized_model_name}`")
+
+        if args.debug:
+            print(f"model_family='{model_family}'\n \
+                model_arch='{model_arch}'\n \
+                model_modality='{model_modality}'\n \
+                model_version='{model_version}'\n \
+                model_parameter_size='{model_parameter_size}'\n \
+                model_active_parameter_count='{model_active_parameter_count}'\n \
+                model_quantization='{model_quantization}'\n \
+                model_language='{model_language}' \
+                ")
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
@@ -225,7 +257,7 @@ if __name__ == "__main__":
             # where we leave off the modality classifier (i.e., "language" is implied)
             if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
                 model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
-                partner_model_base = f"{partner_model_base}-{model_modality}"
+                partner_model_base = f"{partner_model_base}-1{model_modality}"
 
             # TODO: determine if we need to append this for partner models:
             # if model_active_parameter_count is not None:
