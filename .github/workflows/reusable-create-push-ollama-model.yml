@@ -64,7 +64,7 @@ jobs:
       OLLAMA_TEMPLATE_FILE: template.txt
       OLLAMA_PARAMS_FILE: params.json
       OLLAMA_SYSTEM_FILE: system.txt
-      OLLAMA_DEBUG: 1
+      OLLAMA_DEBUG: 0 # TODO: allow setting at workflow level...
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
       OLLAMA_MODEL_PRIVATE: true
