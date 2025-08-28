@@ -1,4 +1,4 @@
-### Granite 3.2 Vision models
+### Granite 3.3 Vision models
 
 Granite-vision-3.3-2b is a compact and efficient vision-language model, specifically designed for visual document understanding, enabling automated content extraction from tables, charts, infographics, plots, diagrams, and more. Granite-vision-3.3-2b introduces several novel experimental features such as image segmentation, doctags generation, and multi-page support (see [Experimental Capabilities](#experimental-capabilities) for more details) and offers enhanced safety when compared to earlier Granite vision models.
 
