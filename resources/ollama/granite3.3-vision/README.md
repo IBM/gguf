@@ -34,5 +34,6 @@ Granite-vision-3.3-2b introduces three new experimental capabilities:
 
 ##### Learn more
 
-- License: Apache 2.0
+- Release Date: June 11th, 2025
+- License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - https://www.ibm.com/granite

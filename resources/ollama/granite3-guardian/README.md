@@ -46,6 +46,6 @@ The Granite MoE models are available in 1B and 3B parameter sizes designed for l
 
 ##### Learn more
 
-- Release Date: 21 October 2024
-- License: Apache 2.0
+- Release Date: October 21st, 2024
+- License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - https://www.ibm.com/granite

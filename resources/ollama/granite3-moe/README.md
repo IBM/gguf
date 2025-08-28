@@ -40,5 +40,5 @@ The Granite dense models are available in 2B and 8B parameter sizes designed to 
 ##### Learn more
 
 - Release Date: October 21st, 2024
-- License: Apache 2.0
+- License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - https://www.ibm.com/granite

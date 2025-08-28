@@ -51,5 +51,5 @@ To enable thinking, add a message with `"role": "control"` and set `"content"` t
 ##### Learn more
 
 - Release Date: February 26th, 2025
-- License: Apache 2.0
+- License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - https://www.ibm.com/granite
