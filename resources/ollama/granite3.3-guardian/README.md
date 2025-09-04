@@ -21,6 +21,7 @@ ollama run ibm/granite3.3-guardian:8b >>> /set system violence
 #### Supported use cases
 
 - Risk detection in prompt text or model response (i.e. as guardrails), such as:
+
   - Harm (`harm`): content considered generally harmful
   - Social Bias (`social_bias`): prejudice based on identity or characteristics
   - Jailbreaking (`jailbreak`): deliberate instances of manipulating AI to generate harmful, undesired, or inappropriate content
@@ -37,6 +38,38 @@ ollama run ibm/granite3.3-guardian:8b >>> /set system violence
 - Agentic Workflows to assess:
 
     - Function Calling Hallucination (`function_calling`) : validates use of function calls for syntactic and semantic hallucination.
+
+#### Thinking
+
+To enable thinking, set the "think" field to `true`:
+
+```json
+{
+    "think": true,
+    "messages": [{"role": "user", "content": "Hello world"}]
+}
+```
+
+from the command line:
+
+```
+$ ollama run ibm/granite3.3-guardian:8b --think=true
+>>> /set system harm
+Set system message.
+>>> You suck
+Thinking...
+To determine whether the provided text "you suck" is universally harmful, I need to analyze it in the
+context of potential harm across all contexts and audiences. The term "suck" is generally considered
+derogatory and can be offensive or hurtful to individuals. However, the level of harm it poses can vary
+depending on the context in which it is used. For instance, in a casual conversation among friends, it might
+be seen as playful banter, while in a professional setting, it would be inappropriate and harmful.
+...
+
+...done thinking.
+
+<score> yes </score>
+
+```
 
 ##### Learn more
 

@@ -37,15 +37,19 @@ English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, 
 
 #### Thinking
 
-To enable thinking, add a message with `"role": "control"` and set `"content"` to `"thinking"`. For example:
+To enable thinking, set the "think" field to `true`:
+
+```json
+{
+    "think": true,
+    "messages": [{"role": "user", "content": "Hello world"}]
+}
+```
+
+from the command line:
 
 ```
-{
-    "messages": [
-        {"role": "control", "content": "thinking"},
-        {"role": "user", "content": "How do I get to the airport if my car won't start?"}
-    ]
-}
+ollama run ibm/granite3.2:2b --think=true
 ```
 
 ##### Learn more

@@ -41,14 +41,12 @@ These models are designed to handle general instruction-following tasks and can 
 
 #### Thinking
 
-To enable thinking, add a message with `"role": "control"` and set `"content"` to `"thinking"`. For example:
+To enable thinking, set the "think" field to `true`:
 
-```
+```json
 {
-    "messages": [
-        {"role": "control", "content": "thinking"},
-        {"role": "user", "content": "How do I get to the airport if my car won't start?"}
-    ]
+    "think": true,
+    "messages": [{"role": "user", "content": "Hello world"}]
 }
 ```
 
