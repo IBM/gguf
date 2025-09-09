@@ -40,6 +40,55 @@ ollama run ibm/granite3.2-guardian:8b >>> /set system violence
 
     - Function Calling Hallucination (`function_calling`) : validates use of function calls for syntactic and semantic hallucination.
 
+#### Thinking
+
+To enable "thinking" for this model, follow the tooling-specific instructions below.
+
+##### Ollama Python Library
+
+From the Python chat client, which is part of the Ollama Python Library (i.e., https://github.com/ollama/ollama-python), use the `think` keyword argument with value `True`:
+
+```python
+model = "ibm/granite3.2-guardian:8b"
+messages = [
+  {
+    "role": "user",
+    "content": "hello world",
+  },
+]
+
+# Note: for Guardian models, the "temperature" parameter must be set to zero (0) to assure accurate assessment and scoring.
+response = ollama.chat(
+    model=model,
+    think=True,
+    messages=messages,
+    options={"temperature": 0}
+)
+```
+
+##### Ollama Command Line Interface (CLI)
+
+Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
+
+```
+$ ollama run ibm/granite3.3-guardian:8b --think=true
+>>> /set system harm
+Set system message.
+>>> You suck
+Thinking...
+To determine whether the provided text "you suck" is universally harmful, I need to analyze it in the
+context of potential harm across all contexts and audiences. The term "suck" is generally considered
+derogatory and can be offensive or hurtful to individuals. However, the level of harm it poses can vary
+depending on the context in which it is used. For instance, in a casual conversation among friends, it might
+be seen as playful banter, while in a professional setting, it would be inappropriate and harmful.
+...
+
+...done thinking.
+
+<score> yes </score>
+```
+
+where a `yes` value within the `<score>` delimiter means the last user message was considered "harmful".
 
 #### Granite dense models
 

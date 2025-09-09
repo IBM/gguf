@@ -41,6 +41,7 @@ models = [
 try:
     for model in models:
         print(f"{BACKGROUND_CYAN}{WHITE}--[{model}]---------------\n{RESET}",)
+        # Note: for Guardian models, the "temperature" parameter must be set to zero (0) to assure accurate assessment and scoring.
         response = ollama.chat(
             model=model,
             think=True,

@@ -41,16 +41,33 @@ ollama run ibm/granite3.3-guardian:8b >>> /set system violence
 
 #### Thinking
 
-To enable thinking, set the "think" field to `true`:
+To enable "thinking" for this model, follow the tooling-specific instructions below.
 
-```json
-{
-    "think": true,
-    "messages": [{"role": "user", "content": "Hello world"}]
-}
+##### Ollama Python Library
+
+From the Python chat client, which is part of the Ollama Python Library (i.e., https://github.com/ollama/ollama-python), use the `think` keyword argument with value `True`:
+
+```python
+model = "ibm/granite3.3-guardian:8b"
+messages = [
+  {
+    "role": "user",
+    "content": "hello world",
+  },
+]
+
+# Note: for Guardian models, the "temperature" parameter must be set to zero (0) to assure accurate assessment and scoring.
+response = ollama.chat(
+    model=model,
+    think=True,
+    messages=messages,
+    options={"temperature": 0}
+)
 ```
 
-from the command line:
+##### Ollama Command Line Interface (CLI)
+
+Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
 
 ```
 $ ollama run ibm/granite3.3-guardian:8b --think=true
@@ -68,8 +85,9 @@ be seen as playful banter, while in a professional setting, it would be inapprop
 ...done thinking.
 
 <score> yes </score>
-
 ```
+
+where a `yes` value within the `<score>` delimiter means the last user message was considered "harmful".
 
 ##### Learn more
 
