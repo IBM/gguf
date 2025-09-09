@@ -53,7 +53,7 @@ try:
         )
         msg_thinking = response["message"]["thinking"]
         msg_content = response["message"]["content"]
-        print(f"{GRAY}Thinking:\n\t\"{msg_thinking}\"\n{RESET}")
-        print(f"{CYAN}Content:\n\t{msg_content}{RESET}")
+        print(f"{GRAY}Thinking...\n\t\"{msg_thinking}\"\n...done Thinking.{RESET}")
+        print(f"{CYAN}Content:\n\t{msg_content}...end Content\n{RESET}")
 except Exception as exc:
     print(f"exception: {exc}")
