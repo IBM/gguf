@@ -8,16 +8,16 @@ We’re introducing new model sizes for Granite Guardian 3.2, including a varian
 
 The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
 
-##### 2B:
+##### 3B:
 
 ```
-ollama run ibm/granite3.2-guardian:2b >>> /set system profanity
+ollama run ibm/granite3.2-guardian:3b>>> /set system profanity
 ```
 
 ##### 8B:
 
 ```
-ollama run ibm/granite3.2-guardian:8b >>> /set system violence
+ollama run ibm/granite3.2-guardian:5b >>> /set system violence
 ```
 
 #### Supported use cases
@@ -40,7 +40,7 @@ ollama run ibm/granite3.2-guardian:8b >>> /set system violence
 
     - Function Calling Hallucination (`function_calling`) : validates use of function calls for syntactic and semantic hallucination.
 
-#### Thinking
+<!-- #### Thinking
 
 To enable "thinking" for this model, follow the tooling-specific instructions below.
 
@@ -71,24 +71,15 @@ response = ollama.chat(
 Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
 
 ```
-$ ollama run ibm/granite3.3-guardian:8b --think=true
->>> /set system harm
+$ ollama run ibm/granite3.2-guardian:5b --think=true
+>>> /set system profanity
 Set system message.
->>> You suck
-Thinking...
-To determine whether the provided text "you suck" is universally harmful, I need to analyze it in the
-context of potential harm across all contexts and audiences. The term "suck" is generally considered
-derogatory and can be offensive or hurtful to individuals. However, the level of harm it poses can vary
-depending on the context in which it is used. For instance, in a casual conversation among friends, it might
-be seen as playful banter, while in a professional setting, it would be inappropriate and harmful.
-...
-
-...done thinking.
-
-<score> yes </score>
+>>> have a nice day
+No
+<confidence> High </confidence>
 ```
 
-where a `yes` value within the `<score>` delimiter means the last user message was considered "harmful".
+where a `yes` value within the `<score>` delimiter means the last user message was considered "harmful". -->
 
 #### Granite dense models
 
