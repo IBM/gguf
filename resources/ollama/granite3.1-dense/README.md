@@ -4,7 +4,7 @@ The IBM Granite 2B and 8B models are text-only dense LLMs trained on over 12 tri
 
 **They are designed to support tool-based use cases** and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
 
-#### Parameter Sizes
+#### Running the model
 
 ##### 2B:
 

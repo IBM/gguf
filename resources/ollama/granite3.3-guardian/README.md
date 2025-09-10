@@ -10,9 +10,7 @@ This version of Granite Guardian is a hybrid thinking model that allows the user
 
 It is trained on unique data comprising human annotations and synthetic data informed by internal red-teaming. It outperforms other open-source models in the same space on standard benchmarks.
 
-#### Parameter Sizes
-
-##### 8B:
+#### Running the model
 
 ```
 ollama run ibm/granite3.3-guardian:8b >>> /set system violence

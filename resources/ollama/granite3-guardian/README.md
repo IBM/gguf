@@ -2,9 +2,7 @@
 
 The IBM Granite Guardian 3.0 2B and 8B models are designed to detect risks in prompts and/or responses. They can help with risk detection along many key dimensions catalogued in the [IBM AI Risk Atlas](https://www.ibm.com/docs/en/watsonx/saas?topic=ai-risk-atlas). They are trained on unique data comprising human annotations and synthetic data informed by internal red-teaming, and they outperform other open-source models in the same space on standard benchmarks.
 
-#### Parameter Sizes
-
-The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
+#### Running the model
 
 ##### 2B:
 
@@ -19,6 +17,8 @@ ollama run ibm/granite3-guardian:2b
 ollama run ibm/granite3-guardian:8b
 >>> /set system violence
 ```
+
+The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
 
 #### Supported use cases
 

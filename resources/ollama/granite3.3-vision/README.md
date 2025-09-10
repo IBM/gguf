@@ -4,7 +4,7 @@ Granite-vision-3.3-2b is a compact and efficient vision-language model, specific
 
 The model was trained on a meticulously curated instruction-following data, comprising diverse public and synthetic datasets tailored to support a wide range of document understanding and general image tasks. Granite-vision-3.3-2b was trained by fine-tuning a Granite large language model with both image and text modalities.
 
-##### running granite3.3 vision
+#### Running the model
 
 ```
 ollama run ibm/granite3.3-vision:2b

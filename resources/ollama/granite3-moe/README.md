@@ -4,7 +4,7 @@ The IBM Granite 1B and 3B models are the first mixture of experts (MoE) Granite 
 
 The models are trained on over 10 trillion tokens of data, the Granite MoE models are ideal for deployment in on-device applications or situations requiring instantaneous inference.
 
-#### Parameter Sizes
+#### Running the model
 
 ##### 1B:
 

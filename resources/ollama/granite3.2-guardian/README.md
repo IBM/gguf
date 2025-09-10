@@ -4,9 +4,7 @@ The IBM Granite Guardian 3.2 models are designed to detect risks in prompts and/
 
 We’re introducing new model sizes for Granite Guardian 3.2, including a variant derived from our 3B-A800M mixture of experts (MoE) language model. The new models offer increased efficiency with minimal loss in performance.
 
-#### Parameter Sizes
-
-The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
+#### Running the model
 
 ##### 3B:
 
@@ -19,6 +17,8 @@ ollama run ibm/granite3.2-guardian:3b>>> /set system profanity
 ```
 ollama run ibm/granite3.2-guardian:5b >>> /set system violence
 ```
+
+The model will produce a single output token, either `Yes` or `No`. By default, the general-purpose `harm` category is used, but other categories can be selected by setting the system prompt.
 
 #### Supported use cases
 

@@ -4,7 +4,7 @@ Granite-3.2 is a family of long-context AI models fine-tuned for thinking capabi
 
 **They are designed to support tool-based use cases** and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
 
-#### Parameter Sizes
+#### Running the model
 
 ##### 2B:
 

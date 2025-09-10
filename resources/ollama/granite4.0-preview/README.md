@@ -2,7 +2,7 @@
 
 Granite-4-Tiny-Preview is a 7B parameter fine-grained hybrid mixture-of-experts (MoE) instruct model fine-tuned from Granite-4.0-Tiny-Base-Preview using a combination of open source instruction datasets with permissive license and internally collected synthetic datasets tailored for solving long context problems. This model is developed using a diverse set of techniques with a structured chat format, including supervised fine-tuning, and model alignment using reinforcement learning.
 
-##### running tiny-preview
+#### Running the model
 
 Running the default model (i.e., with quantization of Q4_K_M):
 
