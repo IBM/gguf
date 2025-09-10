@@ -16,23 +16,23 @@ ollama run ibm/granite3.3-vision:2b
 
 The architecture of granite-vision-3.3-2b consists of the following components:
 
-1. **Vision encoder**: SigLIP2 (https://huggingface.co/google/siglip2-so400m-patch14-384).
+1. **Vision encoder**: [SigLIP2](https://huggingface.co/google/siglip2-so400m-patch14-384)
 
 2. **Vision-language connector**: two-layer MLP with gelu activation function.
 
-3. **Large language model**: granite-3.1-2b-instruct with 128k context length (https://huggingface.co/ibm-granite/granite-3.1-2b-instruct).
+3. **Large language model**: [granite-3.1-2b-instruct with 128k context length](https://huggingface.co/ibm-granite/granite-3.1-2b-instruct).
 
-We built upon LLaVA (https://llava-vl.github.io) to train our model. We use multi-layer encoder features and a denser grid resolution in AnyRes to enhance the model's ability to understand nuanced visual content, which is essential for accurately interpreting document images.
+We built upon [LLaVA](https://llava-vl.github.io) to train our model. We use multi-layer encoder features and a denser grid resolution in AnyRes to enhance the model's ability to understand nuanced visual content, which is essential for accurately interpreting document images.
 
 #### Experimental Capabilities
 
 Granite-vision-3.3-2b introduces three new experimental capabilities:
 
-1. Image segmentation: A notebook showing a segmentation example
+1. **Image segmentation**: A notebook showing a segmentation example
 
-2. Doctags generation: Parse document images to structured text in doctags format. Please see Docling project for more details on doctags.
+2. **Doctags generation**: Parse document images to structured text in doctags format. Please see Docling project for more details on doctags.
 
-3. Multipage support: The model was trained to handle question answering (QA) tasks using multiple consecutive pages from a document—up to 8 pages—given the demands of long-context processing. To support such long sequences without exceeding GPU memory limits, we recommend resizing images so that their longer dimension is 768 pixels.
+3. **Multipage support**: The model was trained to handle question answering (QA) tasks using multiple consecutive pages from a document—up to 8 pages—given the demands of long-context processing. To support such long sequences without exceeding GPU memory limits, we recommend resizing images so that their longer dimension is 768 pixels.
 
 ---
 
