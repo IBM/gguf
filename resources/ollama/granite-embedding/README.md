@@ -28,7 +28,9 @@ The Granite dense models are available in 2B and 8B parameter sizes designed to 
 
 The Granite mixture of experts models are available in 1B and 3B parameter sizes designed for low latency usage.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: December 18th, 2024
 - License: Apache 2.0

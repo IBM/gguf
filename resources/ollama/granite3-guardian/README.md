@@ -44,7 +44,9 @@ The Granite dense models are available in 2B and 8B parameter sizes designed to 
 
 The Granite MoE models are available in 1B and 3B parameter sizes designed for low latency usage and to support deployment in on-device applications or situations requiring instantaneous inference.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: October 21st, 2024
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

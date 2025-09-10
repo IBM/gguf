@@ -46,7 +46,9 @@ The Granite dense models are designed to support tool-based use cases and for re
 
 The Granite MoE models are designed for low latency usage and to support deployment in on-device applications or situations requiring instantaneous inference.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: 21 January 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

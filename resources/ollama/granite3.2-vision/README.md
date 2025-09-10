@@ -10,7 +10,9 @@ A compact and efficient vision-language model, specifically designed for visual 
 ollama run ibm/granite3.2-vision
 ```
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: February 26th, 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

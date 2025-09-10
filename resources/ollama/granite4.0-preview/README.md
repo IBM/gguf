@@ -114,7 +114,7 @@ our perception of the sky's hue.</response>
 
 ---
 
-##### Learn more
+#### Learn more
 
 - Release Date: May 2nd, 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

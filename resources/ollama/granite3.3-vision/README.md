@@ -32,7 +32,9 @@ Granite-vision-3.3-2b introduces three new experimental capabilities:
 
 3. Multipage support: The model was trained to handle question answering (QA) tasks using multiple consecutive pages from a document—up to 8 pages—given the demands of long-context processing. To support such long sequences without exceeding GPU memory limits, we recommend resizing images so that their longer dimension is 768 pixels.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: June 11th, 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

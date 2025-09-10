@@ -37,7 +37,9 @@ English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, 
 
 The Granite Mixture of Experts (MoE) models are available in 1B and 3B parameter sizes designed for low latency usage.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: October 21st, 2024
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

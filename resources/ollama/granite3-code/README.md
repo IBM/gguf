@@ -9,7 +9,9 @@ Granite Code is a family of decoder-only code model designed for code generative
 - 8B Parameters (with 128K context window) `ollama run granite-code:8b`
 - 3B Parameters (with 128K context window) `ollama run granite-code:3b`
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: TBD
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

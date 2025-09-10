@@ -109,7 +109,7 @@ more than long wavelengths (red and orange), and our eyes are more sensitive to 
 
 ---
 
-##### Learn more
+#### Learn more
 
 - Release Date: April 16th, 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

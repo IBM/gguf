@@ -92,7 +92,7 @@ where a `yes` value within the `<score>` delimiter means the last user message w
 
 ---
 
-##### Learn more
+#### Learn more
 
 - Release Date: 01 August 2025
 - License: Apache 2.0

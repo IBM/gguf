@@ -38,7 +38,9 @@ English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, 
 
 The Granite dense models are available in 2B and 8B parameter sizes designed to support tool-based use cases and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
 
-##### Learn more
+---
+
+#### Learn more
 
 - Release Date: December 18th, 2024
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

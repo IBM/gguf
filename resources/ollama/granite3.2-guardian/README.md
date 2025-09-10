@@ -92,7 +92,7 @@ The Granite MoE models are designed for low latency usage and to support deploym
 
 ---
 
-##### Learn more
+#### Learn more
 
 - Release Date: February 26th, 2025
 - License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
