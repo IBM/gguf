@@ -30,15 +30,16 @@ messages = [
 models = [
     # "ibm/granite3.2-guardian:3b",
     # "ibm/granite3.2-guardian:5b",
-    # "ibm/granite3.2:2b",
     # "ibm/granite4.0-preview:tiny-instruct-q5_K_M"
 ]
 
 models = [
+    "ibm/granite3.2:2b",
     "ibm/granite3.2:8b",
     "ibm/granite3.3-guardian:8b",
     "ibm/granite3.3:2b",
-    "ibm/granite3.3:8b"
+    "ibm/granite3.3:8b",
+    "bm/granite4.0-preview:tiny"
 ]
 
 try:
