@@ -1,3 +1,5 @@
+<center><img src="https://ollama.com/assets/library/granite3.2/90c5e567-0004-425c-a17a-1b846c2b5d3d" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="200" /></center>
+
 ### Granite embedding models
 
 The IBM Granite Embedding 30M and 278M models are text-only dense bi-encoder embedding models, with 30M available in English only and 278M serving multilingual use cases. These models are designed to produce fixed length vector representations for a given text chunk, which can be used for text similarity, retrieval, and search applications.

@@ -1,3 +1,5 @@
+<center><img src="https://ollama.com/assets/library/granite3.2/90c5e567-0004-425c-a17a-1b846c2b5d3d" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="200" /></center>
+
 ### Granite 3.3 Vision models
 
 Granite-vision-3.3-2b is a compact and efficient vision-language model, specifically designed for visual document understanding, enabling automated content extraction from tables, charts, infographics, plots, diagrams, and more. Granite-vision-3.3-2b introduces several novel experimental features such as image segmentation, doctags generation, and multi-page support (see [Experimental Capabilities](#experimental-capabilities) for more details) and offers enhanced safety when compared to earlier Granite vision models.
