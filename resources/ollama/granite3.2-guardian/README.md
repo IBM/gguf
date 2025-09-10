@@ -24,6 +24,7 @@ ollama run ibm/granite3.2-guardian:5b >>> /set system violence
 
 - Risk detection in prompt text or model response (i.e. as guardrails), such as:
   - Harm (`harm`): content considered generally harmful
+    - *Note: this is the default setting for the model's chat template.*
   - Social Bias (`social_bias`): prejudice based on identity or characteristics
   - Jailbreaking (`jailbreak`): deliberate instances of manipulating AI to generate harmful, undesired, or inappropriate content
   - Violence (`violence`): content promoting physical, mental, or sexual harm
@@ -70,7 +71,7 @@ response = ollama.chat(
 
 Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
 
-```
+```bash
 $ ollama run ibm/granite3.2-guardian:5b --think=true
 >>> /set system profanity
 Set system message.
@@ -88,6 +89,8 @@ The Granite dense models are designed to support tool-based use cases and for re
 #### Granite mixture of experts models
 
 The Granite MoE models are designed for low latency usage and to support deployment in on-device applications or situations requiring instantaneous inference.
+
+---
 
 ##### Learn more
 

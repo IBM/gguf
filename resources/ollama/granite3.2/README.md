@@ -61,32 +61,41 @@ response = ollama.chat(
 
 ##### Ollama Command Line Interface (CLI)
 
-Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
+Use the flag optional boolean flag `--think` with value set to `true`.
 
-```
-$ ollama run ibm/granite3.3-guardian:8b --think=true
->>> /set system harm
-Set system message.
+```bash
+$ ollama run ibm/granite3.2:8b --think=true
 >>> Why is the sky blue?
 Thinking...
-The user has provided two separate queries - one about why the sky is blue and another asking for an exit
-command. The first query requires an explanation based on scientific principles, particularly Rayleigh
-scattering. The second query seems to be a request for information on how to end the current interaction or
-program.
+The user is asking about a fundamental scientific phenomenon - why the sky appears blue. This question
+involves understanding of physics and optics, particularly the behavior of light in relation to Earth's
+atmosphere.
+
 ...done thinking.
 
-1. **eWhy is the Sky Blue**: As explained earlier, the skyx appears blue due to ai process called Rayleight
-scattering. Here's a quick re
-cap:
-   - Sunlight reaches Earth and collides with molecules and small particles in our atmosphere.
-   - Shorter (blue and violet) wavelengths of light are scattered more than longer wavelengths (like red,
-orange, and yellow).
-   - Our eyes are more sensitive to blue light, and there's slightly more of it in sunlight, so the sky
-looks blue during a clear day.
+The sky appears blue due to a specific type of light scattering known as Rayleigh scattering. Let's break it
+down step by step:
 
-   This phenomenon was first scientifically explained by Lord Rayleigh in 1871.
-   ...
+1. **Composition of Sunlight**: Sunlight is not just white light; it's composed of different colors, each
+with its unique wavelength. These include red, orange, yellow, green, blue, indigo, and violet – the
+familiar acronym ROYGBIV.
+
+2. **Interaction with Atmosphere**: When sunlight reaches Earth’s atmosphere, it interacts not just with air
+molecules (mainly nitrogen and oxygen), but also with tiny particles like dust and water droplets suspended
+in the air.
+
+3. **Scattering of Light**: These interactions cause the light to scatter in different directions. There are
+two main types of scattering at play here: Mie scattering (for longer wavelengths, like violet and red) and
+Rayleigh scattering (for shorter wavelengths).
+
+...
+
+So, essentially, all this scattered blue light entering our atmosphere from various directions makes the sky
+appear blue to us. This fascinating phenomenon is a practical demonstration of physics at work in our
+everyday lives!
 ```
+
+---
 
 ##### Learn more
 

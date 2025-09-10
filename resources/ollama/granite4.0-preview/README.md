@@ -37,7 +37,7 @@ This model is designed to handle general instruction-following tasks and can be 
 - Multilingual dialog use cases
 - Long-context tasks including long document/meeting summarization, long document QA, etc.
 
-#### Thinking
+<!-- #### Thinking
 
 To enable thinking, add a message with `"role": "control"` and set `"content"` to `"thinking"`. For example:
 
@@ -48,7 +48,9 @@ To enable thinking, add a message with `"role": "control"` and set `"content"` t
         {"role": "user", "content": "How do I get to the airport if my car won't start?"}
     ]
 }
-```
+``` -->
+
+---
 
 ##### Learn more
 

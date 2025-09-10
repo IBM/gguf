@@ -69,7 +69,7 @@ response = ollama.chat(
 
 Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
 
-```
+```bash
 $ ollama run ibm/granite3.3:8b --think=true
 >>> Why is the sky blue?
 Thinking...
@@ -82,7 +82,10 @@ spectrum ranging from violet to red).
 oxygen.
 3. According to Rayleigh scattering, shorter wavelength light (such as blue and violet) is scattered in all
 directions more than longer wavelengths (like red and orange).
+
 ...
+
+This explanation aligns with fundamental principles in physics and atmospheric science.
 ...done thinking.
 
 ### Why is the Sky Blue?
@@ -98,9 +101,15 @@ nitrogen and oxygen) and tiny particles.
 3. **Rayleigh Scattering**: This scattering effect is influenced by the wavelength of light. Shorter
 wavelengths, like those in the blue portion of the spectrum (approximately 450-495 nm), are scattered about
 ten times more than longer wavelengths such as red light.
+
 ...
 
+In summary, the sky appears blue because Earth’s atmosphere scatters short wavelengths (blue and violet)
+more than long wavelengths (red and orange), and our eyes are more sensitive to blue light.</response>
+
 ```
+
+---
 
 ##### Learn more
 

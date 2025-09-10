@@ -22,7 +22,8 @@ ollama run ibm/granite3.3-guardian:8b >>> /set system violence
 
 - Risk detection in prompt text or model response (i.e. as guardrails), such as:
 
-  - Harm (`harm`): content considered generally harmful
+  - Harm (`harm`): content considered generally harmful.
+    - *Note: this is the default setting for the model's chat template.*
   - Social Bias (`social_bias`): prejudice based on identity or characteristics
   - Jailbreaking (`jailbreak`): deliberate instances of manipulating AI to generate harmful, undesired, or inappropriate content
   - Violence (`violence`): content promoting physical, mental, or sexual harm
@@ -67,9 +68,9 @@ response = ollama.chat(
 
 ##### Ollama Command Line Interface (CLI)
 
-Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific
+Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific `system` type can be used with the `/set` command once the client is started with the supported values listed above (e.g.,  `harm` `violence`, )
 
-```
+```bash
 $ ollama run ibm/granite3.3-guardian:8b --think=true
 >>> /set system harm
 Set system message.
