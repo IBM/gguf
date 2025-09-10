@@ -68,7 +68,7 @@ response = ollama.chat(
 
 ##### Ollama Command Line Interface (CLI)
 
-Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific `system` type can be used with the `/set` command once the client is started with the supported values listed above (e.g.,  `harm` `violence`, )
+Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific `system` type can be used with the `/set` command once the client is started with the supported values listed above (e.g.,  `harm` `violence`, etc.)
 
 ```bash
 $ ollama run ibm/granite3.3-guardian:8b --think=true
@@ -89,6 +89,8 @@ be seen as playful banter, while in a professional setting, it would be inapprop
 ```
 
 where a `yes` value within the `<score>` delimiter means the last user message was considered "harmful".
+
+---
 
 ##### Learn more
 
