@@ -41,8 +41,6 @@ These models are designed to handle general instruction-following tasks and can 
 
 #### Thinking
 
-#### Thinking
-
 To enable "thinking" for this model, follow the tooling-specific instructions below.
 
 ##### Ollama Python Library
