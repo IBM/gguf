@@ -39,6 +39,8 @@ English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, 
 
 To enable "thinking" for this model, follow the tooling-specific instructions below.
 
+Please note that the `8b` model and its quantizations support thinking, but the `2b` versions do not.
+
 ##### Ollama Python Library
 
 From the Python chat client, which is part of the Ollama Python Library (i.e., https://github.com/ollama/ollama-python), use the `think` keyword argument with value `True`:
