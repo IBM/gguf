@@ -5,7 +5,7 @@
 
 Granite Code is a family of decoder-only code model designed for code generative tasks (e.g. code generation, code explanation, code fixing, etc.).
 
-#### Running the model
+#### Running
 
 - 34B Parameters `ollama run granite-code:34b`
 - 20B Parameters `ollama run granite-code:20b`
