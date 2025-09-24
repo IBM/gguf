@@ -4,7 +4,7 @@
             "title": "Granite GGUF Models",
             "description": "GGUF-formatted versions of IBM Granite models. Licensed under the Apache 2.0 license.",
             "items": [
-             {
+                {
                     "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-3.0-2b-base",
@@ -251,6 +251,18 @@
                     "version": "3.3",
                     "repo_name": "granite-vision-3.3-2b-embedding",
                     "default_quant": "f16"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-micro",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-micro-base",
+                    "default_quant": "q4_K_M"
                 }
             ]
         }
