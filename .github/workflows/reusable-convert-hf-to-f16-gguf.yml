@@ -60,7 +60,7 @@ jobs:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
       HF_TRANSFORMERS_VERSION: "4.52.4"
-      LLAMA_CPP_VERSION: "b6050" # 'b5717'
+      LLAMA_CPP_VERSION: "b5662" # 'b5717', # 'b6050'
     steps:
 
     - uses: actions/checkout@v4
