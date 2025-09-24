@@ -263,6 +263,30 @@
                     "family": "instruct",
                     "repo_name": "granite-4.0-micro-base",
                     "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-h-micro",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-h-micro-base",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "ibm-granite/granite-4.0-h-tiny",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "ibm-granite/granite-4.0-h-tiny-base",
+                    "default_quant": "q4_K_M"
                 }
             ]
         }
