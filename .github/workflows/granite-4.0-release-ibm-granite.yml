@@ -26,7 +26,9 @@ env:
   # 'ibm-granite/granite-4.0-h-micro',
   # 'ibm-granite/granite-4.0-h-micro-base'
   # 'ibm-granite/granite-4.0-h-tiny',
-  # 'ibm-granite/granite-4.0-h-tiny-base'
+  # 'ibm-granite/granite-4.0-h-tiny-base',
+  # 'ibm-granite/granite-4.0-h-small',
+  # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
     'ibm-granite/granite-4.0-micro',
     'ibm-granite/granite-4.0-micro-base',
