@@ -98,7 +98,7 @@ jobs:
       - name: verify-secrets-present
         run: |
           echo "HF_TOKEN: ${{ secrets.HF_TOKEN }}"
-          echo "OLLAMA_TOKEN: ${{ secrets.OLLAMA_TOKEN }}"
+          echo "OLLAMA_TOKEN_IBM: ${{ secrets.OLLAMA_TOKEN_IBM }}"
 
       - uses: actions/setup-python@v5
         with:
@@ -173,7 +173,7 @@ jobs:
       - name: decode-ollama-data
         run: |
           mkdir $HOME/.ollama
-          python ./scripts/decode_ollama_data.py -v ${{secrets.OLLAMA_TOKEN}} -f $HOME/.ollama/id_ed25519 --debug
+          python ./scripts/decode_ollama_data.py -v ${{secrets.OLLAMA_TOKEN_IBM}} -f $HOME/.ollama/id_ed25519 --debug
           ls -al $HOME/.ollama
 
       - name: verify-quantized-model-exists
