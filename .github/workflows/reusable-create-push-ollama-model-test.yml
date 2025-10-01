@@ -73,6 +73,7 @@ jobs:
       HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
       HF_HUB_DISABLE_XET: 1
       # HF_HUB_ENABLE_HF_TRANSFER: 0
+      HF_HUB_ENABLE_HF_TRANSFER: 1
     steps:
       - uses: actions/checkout@v4
         with:
