@@ -1,0 +1,155 @@
+{{- /*
+
+------ MESSAGE PARSING ------
+
+*/}}
+{{- /*
+Declare the system prompt chunks used for different features
+*/}}
+{{- $tools_system_message_prefix := "You are a helpful assistant with access to the following tools. You may call one or more tools to assist with the user query.\n\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>" }}
+{{- $tools_system_message_suffix := "\n</tools>\n\nFor each tool call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n</tool_call>. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request." }}
+{{- $documents_system_message_prefix := "You are a helpful assistant with access to the following documents. You may use one or more documents to assist with the user query.\n\nYou are given a list of documents within <documents></documents> XML tags:\n<documents>" }}
+{{- $documents_system_message_suffix := "\n</documents>\n\nWrite the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." }}
+
+{{- /*
+Declare the prompt structure variables to be filled in from messages
+*/}}
+{{- $tools_system_message := "" }}
+{{- $documents_system_message := "" }}
+{{- $system_message := "" }}
+{{- $document_counter := 0 }}
+{{- $last_query_index := 0 }}
+
+{{- /*
+Output parsing heuristic
+
+Ollama has very specific heuristics for parsing the tags for thinking and tool
+calling. Rather than contorting the actual message expansion to match the
+expectations, we explicitly put them here behind an unreachable condition.
+*/}}
+{{- if false }}
+    {{- /* tool calls: https://github.com/ollama/ollama/blob/main/tools/template.go#L17 */}}
+    {{- if .ToolCalls }}<tool_call>{{- end }}
+{{- end }}
+
+{{- /*
+Create tools system message chunk
+*/}}
+{{- if .Tools }}
+    {{- $tools_system_message = print $tools_system_message_prefix }}
+    {{- range $_, $tool_body := .Tools }}
+        {{- $tools_system_message = print $tools_system_message "\n" (json $tool_body) }}
+    {{- end }}
+    {{- $tools_system_message = print $tools_system_message $tools_system_message_suffix }}
+{{- end }}
+
+
+{{- /*
+Loop over messages to parse variables:
+
+- User provided documents in the "document" role
+- Last user query index
+- Initial system message
+
+NOTE: Since Ollama collates consecutive roles, for documents, we work around
+    this by allowing the role to contain a qualifier after the role string. This
+    is also then used as the title of the document.
+*/ -}}
+{{- range $index, $_ := .Messages }}
+    {{- if (and (eq .Role "system") (eq $index 0)) }}
+        {{- if ne $system_message "" }}
+            {{- $system_message = print $system_message "\n" }}
+        {{- end }}
+        {{- $system_message = print $system_message .Content }}
+    {{- else if eq .Role "user" }}
+        {{- /*
+        NOTE: 31 == len '<tool_response></tool_response>'. We only check the
+            prefix match since go template doesn't support negative indexing.
+        */}}
+        {{- if or (lt (len .Content) 31) (ne (slice .Content 0 15) "<tool_response>") }}
+            {{- $last_query_index = $index }}
+        {{- end }}
+    {{- else if (and (ge (len .Role) 8) (eq (slice .Role 0 8) "document")) }}
+        {{- if (eq $document_counter 0)}}
+            {{- $documents_system_message = print $documents_system_message_prefix}}
+        {{- end }}
+        {{- $identifier := ""}}
+        {{- if (ge (len .Role) 9) }}
+            {{- $identifier = slice .Role 9}}
+        {{- end }}
+        {{- if (eq $identifier "") }}
+            {{- $identifier := print $document_counter}}
+        {{- end }}
+        {{- $documents_system_message = print $documents_system_message "\n{\"doc_id\": " $document_counter ", \"title\": \"" $identifier "\", \"text\": \"" .Content "\"}"}}
+        {{- $document_counter = len (printf "a%*s" $document_counter "")}}
+    {{- end }}
+{{- end }}
+{{- if (ne $document_counter 0) }}
+{{- $documents_system_message = print $documents_system_message $documents_system_message_suffix}}
+{{- end }}
+
+{{- /*
+Construct the full system message
+*/}}
+{{- if ne $tools_system_message "" }}
+    {{- if ne $system_message "" }}
+        {{- $system_message = print $system_message "\n\n" }}
+    {{- end }}
+    {{- $system_message = print $system_message $tools_system_message }}
+{{- end }}
+{{- if ne $documents_system_message "" }}
+    {{- if ne $system_message "" }}
+        {{- $system_message = print $system_message "\n\n" }}
+    {{- end }}
+    {{- $system_message = print $system_message $documents_system_message }}
+{{- end }}
+
+{{- /*
+
+------ TEMPLATE EXPANSION ------
+
+*/}}
+{{- if ne $system_message "" -}}
+<|start_of_role|>system<|end_of_role|>{{ $system_message }}<|end_of_text|>{{ "\n" }}
+{{- end }}
+{{- $prev_role := "" }}
+{{- range $message_index, $_ := .Messages }}
+    {{- $next_message_index := len (printf "a%*s" $message_index "") }}
+    {{- if or (eq .Role "user") (and (eq .Role "system") (ne $message_index 0)) }}
+        {{- "" }}<|start_of_role|>{{- .Role }}<|end_of_role|>{{- .Content }}<|end_of_text|>{{ "\n" }}
+    {{- else if eq .Role "assistant" -}}
+        {{- "" }}<|start_of_role|>{{ .Role }}<|end_of_role|>{{ .Content }}
+
+        {{- /* Expand tool calls */}}
+        {{- $content := .Content }}
+        {{- if .ToolCalls }}
+            {{- range $tool_idx, $tool_call := .ToolCalls }}
+                {{- if or (ne $content "") (ne $tool_idx 0) }}
+                   {{- "\n" }}
+                {{- end }}
+                {{- print "<tool_call>\n{\"name\": \"" $tool_call.Function.Name "\", \"arguments\": " (json $tool_call.Function.Arguments) "}\n</tool_call>" }}
+            {{- end }}
+        {{- end }}
+
+        {{- /* End assistant block */}}<|end_of_text|>{{ "\n" }}
+
+    {{- else if eq .Role "tool" }}
+        {{- if (ne $prev_role "tool") -}}
+            <|start_of_role>user<|end_of_role|>
+        {{- end }}
+        {{- "\n" }}<tool_response>{{ print "\n" .Content "\n" }}</tool_response>
+        {{- if ne $next_message_index (len $.Messages) }}
+            {{- $next_element := index $.Messages $next_message_index }}
+            {{- if ne $next_element.Role "tool" -}}
+                <|end_of_text|>{{ "\n" }}
+            {{- end }}
+        {{- else -}}
+            <|end_of_text|>{{ "\n" }}
+        {{- end }}
+    {{- end }}
+
+    {{- /* If not an assistant message at the end, add generation prompt */}}
+    {{- if and (eq $next_message_index (len $.Messages)) (ne .Role "assistant") }}
+        {{- "<|start_of_role|>assistant<|end_of_role|>" }}
+    {{- end }}
+{{- end }}

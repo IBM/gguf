@@ -266,18 +266,12 @@ if __name__ == "__main__":
 
             # Append model layer description if it exists
             if model_layer_desc != "":
+                # TODO: try ollama_append_attribute(partner_model_name, model_layer_desc)
                 partner_model_base = f"{partner_model_base}-{model_layer_desc}"
-
-            # Append modality
-            # Note: Special case for models that are "instruct" or "base" language models
-            # where we leave off the modality classifier (i.e., "language" is implied)
-            # if model_modality and (
-            #     (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
-            #      model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT)):
-            #     partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # Append build/release stage
             if model_release_stage != "":
+                # TODO: try ollama_append_attribute(partner_model_name, model_release_stage)
                 partner_model_base = f"{partner_model_base}-{model_release_stage}"
 
             # TODO: determine if we need to append this for partner models:
@@ -290,11 +284,11 @@ if __name__ == "__main__":
             # everything that follows are model attributes that appear after a colon ":"
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
 
-            if model_arch_desc:
-                partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
-
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
+
+            if model_arch_desc:
+                partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
 
             # for "instruct" and "base" language models, we add the modality classifier after the
             # parameter size to follow established conventions (if not the default quant.).

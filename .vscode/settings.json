@@ -8,6 +8,8 @@
         "elif",
         "endfor",
         "finetune",
+        "finetuned",
+        "finetuning",
         "FNAME",
         "ggerganov",
         "ggml",
