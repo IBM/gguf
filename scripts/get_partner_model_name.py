@@ -203,6 +203,7 @@ if __name__ == "__main__":
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MEDIUM or
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.LARGE):
             if model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW:
+                # HACK: for "tiny-preview"
                 model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
             else:
                 model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
@@ -270,10 +271,10 @@ if __name__ == "__main__":
             # Append modality
             # Note: Special case for models that are "instruct" or "base" language models
             # where we leave off the modality classifier (i.e., "language" is implied)
-            if model_modality and (
-                (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
-                 model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT)):
-                partner_model_base = f"{partner_model_base}-{model_modality}"
+            # if model_modality and (
+            #     (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
+            #      model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT)):
+            #     partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # Append build/release stage
             if model_release_stage != "":
@@ -283,13 +284,14 @@ if __name__ == "__main__":
             # if model_active_parameter_count is not None:
             #     partner_model_base += f"-{model_active_parameter_count}"
 
+            # ==========================POST MODEL_NAME_SEP==============================
+
             # For Ollama the model name-modality/version defines the model
             # everything that follows are model attributes that appear after a colon ":"
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
 
             if model_arch_desc:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
-
 
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
