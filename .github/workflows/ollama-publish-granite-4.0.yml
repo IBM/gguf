@@ -33,7 +33,7 @@ env:
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-4.0-micro',
     'ibm-granite/granite-4.0-h-micro',
-    'ibm-granite/granite-4.0-h-tiny'
+    'ibm-granite/granite-4.0-h-tiny',
     'ibm-granite/granite-4.0-h-tiny-base'
   ]"
   # 'Q2_K',
