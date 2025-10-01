@@ -17,9 +17,8 @@ class SUPPORTED_MODEL_MODALITIES(StrEnum):
     VISION = "vision"
     SPEECH = "speech"
     EMBEDDING = "embedding"
-    LEGACY_DENSE = "dense"
-    LEGACY_MOE = "moe"
 
+MINOR_VERSION_POINT_ZERO = ".0"
 class SUPPORTER_MODEL_VERSIONS(StrEnum):
     GRANITE_3_0  = "3.0"
     GRANITE_3_1  = "3.1"
@@ -44,11 +43,11 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     B20  = "20b"  # "function-calling"
     B30  = "30b"
     T1   = "1t"
+    MICRO   = "micro"
     TINY    = "tiny"  # NOTE: for v4.0 models we declare relative sizes using names (e.g., tiny ~= 7B)
     SMALL   = "small"
     MEDIUM  = "medium"
     LARGE   = "large"
-    LIGHT   = "light" # NOTE: this may be a temp. named used for Think conf. May, 2025
 
 class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
     F32     = "f32"
@@ -75,9 +74,13 @@ class SUPPORTED_MODEL_ACTIVE_PARAMETER_COUNTS(StrEnum):
     A400M = "a400m"
     A800M = "a800m"
 
-class MODEL_LAYER_CONNECTION_TYPES(StrEnum):
+class MODEL_LAYER_DESCRIPTIVE_TYPES(StrEnum):
     DENSE = "dense"
     SPARSE = "sparse"
+    MOE = "moe"
+
+class MODEL_ARCH_DESCRIPTIVE_TYPES(StrEnum):
+    HYBRID = "h" # IBM Granite 4.0 chose to use simply "h" for hybrid (mamba2)
 
 class SUPPORTED_MODEL_LANGUAGES(StrEnum):
     ENGLISH = "english"
@@ -140,7 +143,8 @@ if __name__ == "__main__":
 
         model_family = MODEL_FAMILY.lower()
         model_version = ""
-        model_arch = "" # e.g., "dense", "moe" (only used for 3.0, 3.1 legacy)
+        model_layer_desc = "" # e.g., "dense", "moe" (only used for 3.0, 3.1 legacy)
+        model_arch_desc = "" # e.g., "hybrid" or "h"
         model_modality = "" # e.g., "instruct", "vision"
         model_language = "" # e.g., "english", "multilingual"
         model_parameter_size = "" # e.g., 2B, 8B, 1T
@@ -156,6 +160,11 @@ if __name__ == "__main__":
         for version in SUPPORTER_MODEL_VERSIONS:
            if version in normalized_model_name:
                model_version = version
+               break
+
+        for arch_desc in MODEL_ARCH_DESCRIPTIVE_TYPES:
+           if arch_desc in normalized_model_name:
+               model_arch_desc = arch_desc
                break
 
         for param_size in SUPPORTED_MODEL_PARAMETER_SIZES:
@@ -188,14 +197,18 @@ if __name__ == "__main__":
         # for now, we also check for the "size" as a secondary indicator of this case;
         # however, defaulting to "instruct" could be explored...
         if model_modality == "" and (
+            model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MICRO or
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.TINY or
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.SMALL or
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MEDIUM or
             model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.LARGE):
-            model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
+            if model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW:
+                model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
+            else:
+                model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
 
-        if model_modality == "":
-            raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
+        # if model_modality == "":
+        #     raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
 
         if model_version == "":
             raise ValueError(f"Version not found in model name: `{normalized_model_name}`")
@@ -212,15 +225,15 @@ if __name__ == "__main__":
 
         if args.debug:
             print(f"model_family='{model_family}'\n \
-                model_arch='{model_arch}'\n \
+                model_layer_desc='{model_layer_desc}'\n \
+                model_arch_desc='{model_arch_desc}'\n \
                 model_modality='{model_modality}'\n \
                 model_version='{model_version}'\n \
                 model_parameter_size='{model_parameter_size}'\n \
                 model_active_parameter_count='{model_active_parameter_count}'\n \
                 model_quantization='{model_quantization}'\n \
-                model_language='{model_language}' \
-                model_release_stage='{model_release_stage}' \
-                ")
+                model_language='{model_language}'\n \
+                model_release_stage='{model_release_stage}'")
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
@@ -237,27 +250,29 @@ if __name__ == "__main__":
                     model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_3_1):
                     if (model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B1 or
                         model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B3):
-                        model_arch = SUPPORTED_MODEL_MODALITIES.LEGACY_MOE
+                        model_layer_desc = MODEL_LAYER_DESCRIPTIVE_TYPES.MOE
                     elif (model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B2 or
                         model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.B8):
-                        model_arch = SUPPORTED_MODEL_MODALITIES.LEGACY_DENSE
+                        model_layer_desc = MODEL_LAYER_DESCRIPTIVE_TYPES.DENSE
 
             # Note: Special casing legacy names for Ollama ONLY
-            if model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_3_0:
-                model_version = model_version.replace(SUPPORTER_MODEL_VERSIONS.GRANITE_3_0, "3")
+            # For "x.0" versions it was decided to leave off the minor version (i.e., ".0")
+            if model_version.endswith(MINOR_VERSION_POINT_ZERO):
+                model_version = model_version.removesuffix(MINOR_VERSION_POINT_ZERO)
 
             # establish "base" model name with version:
             partner_model_base = f"{model_family}{model_version}"
 
-            # Append model arch if it exists
-            if model_arch:
-                partner_model_base = f"{partner_model_base}-{model_arch}"
+            # Append model layer description if it exists
+            if model_layer_desc != "":
+                partner_model_base = f"{partner_model_base}-{model_layer_desc}"
 
             # Append modality
             # Note: Special case for models that are "instruct" or "base" language models
             # where we leave off the modality classifier (i.e., "language" is implied)
-            if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
-                model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
+            if model_modality and (
+                (model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
+                 model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT)):
                 partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # Append build/release stage
@@ -271,6 +286,10 @@ if __name__ == "__main__":
             # For Ollama the model name-modality/version defines the model
             # everything that follows are model attributes that appear after a colon ":"
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
+
+            if model_arch_desc:
+                partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
+
 
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
