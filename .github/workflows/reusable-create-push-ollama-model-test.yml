@@ -71,9 +71,11 @@ jobs:
       IS_DEFAULT_QUANT: false
       HAS_PROJECTOR_MODEL: false
       HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
-      HF_HUB_DISABLE_XET: 1
+      # NOTE: hf_xet and hf_transfer are mutually exclusive:
+      # hf_xet is for Xet-enabled repos, while hf_transfer handles LFS files in regular repos.
+      HF_HUB_DISABLE_XET: 0
       # HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_HUB_ENABLE_HF_TRANSFER: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
     steps:
       - uses: actions/checkout@v4
         with:
