@@ -287,6 +287,18 @@
                     "family": "instruct",
                     "repo_name": "granite-4.0-h-tiny-base",
                     "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-h-small",
+                    "default_quant": "q4_K_M"
+                },
+                {
+                    "type": "model",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-h-small-base",
+                    "default_quant": "q4_K_M"
                 }
             ]
         }
