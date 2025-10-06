@@ -162,8 +162,9 @@ if __name__ == "__main__":
                model_version = version
                break
 
+        # NOTE: Have to test strictly for "-h" as ANY "h" occurrence will be found in model name
         for arch_desc in MODEL_ARCH_DESCRIPTIVE_TYPES:
-           if arch_desc in normalized_model_name:
+           if MODEL_ATTRIBUTE_SEP+arch_desc in normalized_model_name:
                model_arch_desc = arch_desc
                break
 
@@ -208,11 +209,11 @@ if __name__ == "__main__":
             else:
                 model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
 
-        # if model_modality == "":
-        #     raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
+        if model_modality == "":
+            raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
 
-        if model_version == "":
-            raise ValueError(f"Version not found in model name: `{normalized_model_name}`")
+        # if model_version == "":
+        #     raise ValueError(f"Version not found in model name: `{normalized_model_name}`")
 
         if model_parameter_size == "":
             raise ValueError(f"Parameter size not found in model name: `{normalized_model_name}`")
@@ -268,6 +269,13 @@ if __name__ == "__main__":
             if model_layer_desc != "":
                 # TODO: try ollama_append_attribute(partner_model_name, model_layer_desc)
                 partner_model_base = f"{partner_model_base}-{model_layer_desc}"
+
+            # Append modality
+            # Note: Special case for models that are "instruct" or "base" language models
+            # where we leave off the modality classifier (i.e., "language" is implied)
+            if (model_modality != SUPPORTED_MODEL_MODALITIES.BASE and
+                model_modality != SUPPORTED_MODEL_MODALITIES.INSTRUCT):
+                partner_model_base = f"{partner_model_base}-{model_modality}"
 
             # Append build/release stage
             if model_release_stage != "":
