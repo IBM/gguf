@@ -65,7 +65,7 @@ env:
   SOURCE_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
   # mrutkows | ibm
-  TARGET_OLLAMA_ORG: mrutkows
+  TARGET_OLLAMA_ORG: ibm
 
 jobs:
   # ===========================================================================
@@ -243,8 +243,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (guardian)
@@ -271,8 +271,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (embedding)
@@ -299,8 +299,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (vision)
@@ -327,5 +327,5 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
