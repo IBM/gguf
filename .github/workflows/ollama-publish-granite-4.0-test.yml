@@ -43,22 +43,22 @@ env:
     'Q4_K_M'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
+    'ibm-granite/granite-guardian-3.3-8b'
   ]"
   SOURCE_GUARDIAN_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M'
   ]"
   SOURCE_VISION_REPOS: "[
-    'None'
+    'ibm-granite/granite-vision-3.3-2b'
   ]"
   SOURCE_VISION_QUANTIZATIONS: "[
-    'None'
+    'Q8_0'
   ]"
   SOURCE_EMBEDDING_REPOS: "[
-    'None'
+    'ibm-granite/granite-embedding-30m-english'
   ]"
   SOURCE_EMBEDDING_QUANTIZATIONS: "[
-    'None'
+    'Q8_0'
   ]"
   SOURCE_HF_REPO_NAME_EXT: -GGUF
   SOURCE_HF_REPO_OWNER: ibm-granite
