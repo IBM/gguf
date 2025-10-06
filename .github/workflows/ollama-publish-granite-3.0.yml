@@ -263,8 +263,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (guardian)
@@ -291,8 +291,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (embedding)
@@ -319,8 +319,8 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
 
   # ===========================================================================
   # Ollama (vision)
@@ -347,5 +347,5 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
