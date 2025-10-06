@@ -55,7 +55,7 @@ env:
     'Q8_0'
   ]"
   SOURCE_EMBEDDING_REPOS: "[
-    'ibm-granite/granite-embedding-30m-english'
+    'mrutkows/granite-embedding-30m-english'
   ]"
   SOURCE_EMBEDDING_QUANTIZATIONS: "[
     'Q8_0'
