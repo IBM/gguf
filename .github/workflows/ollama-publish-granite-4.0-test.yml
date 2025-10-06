@@ -234,7 +234,6 @@ jobs:
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_llm_quants) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      # granite_family: "instruct"
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
@@ -243,88 +242,90 @@ jobs:
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
-    # secrets: inherit
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ollama_token: ${{ secrets.OLLAMA_TOKEN }}
 
-  # # ===========================================================================
-  # # Ollama (guardian)
-  # # ===========================================================================
-  # ollama-release-guardian-models:
-  #   needs: [ environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_guardian_quants) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     granite_family: "guardian"
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-  #     enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
-  #     source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
-  #     source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
-  #     target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-  #     repo_id: ${{ matrix.repo_id }}
-  #     quantization: ${{ matrix.quantization }}
-  #   secrets: inherit
+  # ===========================================================================
+  # Ollama (guardian)
+  # ===========================================================================
+  ollama-release-guardian-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_guardian_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
 
-  # # ===========================================================================
-  # # Ollama (embedding)
-  # # ===========================================================================
-  # ollama-release-embedding-models:
-  #   needs: [ environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_embedding_quants) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     granite_family: "embedding"
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-  #     enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
-  #     source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
-  #     source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
-  #     target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-  #     repo_id: ${{ matrix.repo_id }}
-  #     quantization: ${{ matrix.quantization }}
-  #   secrets: inherit
+  # ===========================================================================
+  # Ollama (embedding)
+  # ===========================================================================
+  ollama-release-embedding-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_embedding_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
 
-  # # ===========================================================================
-  # # Ollama (vision)
-  # # ===========================================================================
-  # ollama-release-vision-models:
-  #   needs: [ environment-setup ]
-  #   uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_vision_quants) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     granite_family: "vision"
-  #     hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-  #     enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-  #     enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
-  #     source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
-  #     source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
-  #     target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
-  #     repo_id: ${{ matrix.repo_id }}
-  #     quantization: ${{ matrix.quantization }}
-  #   secrets: inherit
+  # ===========================================================================
+  # Ollama (vision)
+  # ===========================================================================
+  ollama-release-vision-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_vision_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN }}

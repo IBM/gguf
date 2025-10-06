@@ -2,14 +2,16 @@ name: create-ollama-model-reusable
 
 on:
   workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      ollama_token:
+        required: true
     inputs:
       debug:
         type: boolean
         required: true
         default: false
-      granite_family:
-        type: string
-        required: true
       enable_ollama_push:
         type: boolean
         required: false
@@ -30,13 +32,10 @@ on:
         type: boolean
         required: false
         default: false
-      target_repo_owner:
+      source_repo_owner:
         type: string
         required: true
-      target_repo_name_ext:
-        type: string
-        required: true
-      target_ollama_org:
+      source_repo_name_ext:
         type: string
         required: true
       repo_id:
@@ -46,6 +45,9 @@ on:
         type: string
         required: true
       hf_collection_config:
+        type: string
+        required: true
+      target_ollama_org:
         type: string
         required: true
 
@@ -99,10 +101,10 @@ jobs:
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
       - name: verify-secrets-present
+        if: ${{ github.event.inputs.debug }}
         run: |
-          echo "HF_TOKEN: ${{ secrets.HF_TOKEN }}"
-          echo "HF_TOKEN_IBM_GRANITE: ${{ secrets.HF_TOKEN_IBM_GRANITE }}"
-          echo "OLLAMA_TOKEN_IBM: ${{ secrets.OLLAMA_TOKEN_IBM }}"
+          echo "HF_TOKEN_IBM_GRANITE: ${{ secrets.hf_token }}"
+          echo "OLLAMA_TOKEN: ${{ secrets.ollama_token }}"
 
       - uses: actions/setup-python@v5
         with:
@@ -125,7 +127,7 @@ jobs:
 
       - name: set-derivative-env-vars-1
         run: |
-          echo "TARGET_HF_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+          echo "TARGET_HF_REPO_ID=${{inputs.source_repo_owner}}/${{env.REPO_NAME}}${{inputs.source_repo_name_ext}}" >> $GITHUB_ENV
           echo "TARGET_OLLAMA_ORG=${{ inputs.target_ollama_org }}" >> $GITHUB_ENV
           echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
 
@@ -171,18 +173,19 @@ jobs:
           fi
 
       - name: list-env-vars
+        if: ${{ github.event.inputs.debug }}
         run: env | sort
 
       # Verify we have Ollama credentials before starting costly downloads
       - name: decode-ollama-data
         run: |
           mkdir $HOME/.ollama
-          python ./scripts/decode_ollama_data.py -v ${{secrets.OLLAMA_TOKEN_IBM}} -f $HOME/.ollama/id_ed25519 --debug
+          python ./scripts/decode_ollama_data.py -v ${{secrets.ollama_token}} -f $HOME/.ollama/id_ed25519 --debug
           ls -al $HOME/.ollama
 
       - name: verify-quantized-model-exists
         run: |
-          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}})
+          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
           echo "exists: '$exists'"
           if [[ "$exists" == "False" ]]; then
             echo "FAILURE: model file: '${{env.TARGET_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
@@ -198,7 +201,7 @@ jobs:
         run: |
           echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
           echo "--------------------"
-          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
           ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
 
       - name: hf-download-quantized-projector-gguf
@@ -206,7 +209,7 @@ jobs:
         run: |
           echo "Downloading projector model to: ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}}..."
           echo "--------------------"
-          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.F16_MMPROJ_MODEL_FILENAME }} ${{secrets.secrets.HF_TOKEN_IBM_GRANITE}}
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.F16_MMPROJ_MODEL_FILENAME }} ${{secrets.hf_token}}
           ls -al ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}}
 
       - name: verify-downloaded-files
