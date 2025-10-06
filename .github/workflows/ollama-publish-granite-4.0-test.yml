@@ -137,7 +137,7 @@ jobs:
       - name: Append f16 to Ollama vision quants
         id: ollama-append-vision-quants
         run: |
-          echo "Appending toSOURCE_VISION_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_VISION_QUANTIZATIONS) }}'"
+          echo "Appending to SOURCE_VISION_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_VISION_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_VISION_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
           TARGET_OLLAMA_VISION_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
@@ -223,7 +223,7 @@ jobs:
   # ===========================================================================
   ollama-release-llm-models:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
       contents: write
       packages: write
@@ -251,7 +251,7 @@ jobs:
   # ===========================================================================
   ollama-release-guardian-models:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
       contents: write
       packages: write
@@ -279,7 +279,7 @@ jobs:
   # ===========================================================================
   ollama-release-embedding-models:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
       contents: write
       packages: write
@@ -307,7 +307,7 @@ jobs:
   # ===========================================================================
   ollama-release-vision-models:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model-test.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
     permissions:
       contents: write
       packages: write
