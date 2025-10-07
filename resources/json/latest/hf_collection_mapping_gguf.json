@@ -1,8 +1,8 @@
 {
     "collections": [
         {
-            "title": "Granite GGUF Models",
-            "description": "GGUF-formatted versions of IBM Granite models. Licensed under the Apache 2.0 license.",
+            "title": "Granite Quantized Models",
+            "description": "Quantized versions of IBM Granite models primarily in GGUF-format. Licensed under the Apache 2.0 license.",
             "items": [
                 {
                     "type": "model",

@@ -30,7 +30,9 @@ env:
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-4.0-micro'
+    'ibm-granite/granite-4.0-micro',
+    'ibm-granite/granite-4.0-h-micro',
+    'ibm-granite/granite-4.0-h-tiny'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -67,7 +69,7 @@ env:
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: ibm-granite
-  TARGET_HF_REPO_PRIVATE: true
+  TARGET_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
 jobs:
