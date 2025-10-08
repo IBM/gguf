@@ -10,6 +10,7 @@ Declare the system prompt chunks used for different features
 {{- $tools_system_message_suffix := "\n</tools>\n\nFor each tool call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n</tool_call>. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request." }}
 {{- $documents_system_message_prefix := "You are a helpful assistant with access to the following documents. You may use one or more documents to assist with the user query.\n\nYou are given a list of documents within <documents></documents> XML tags:\n<documents>" }}
 {{- $documents_system_message_suffix := "\n</documents>\n\nWrite the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." }}
+{{- $g4_default_system_message := "You are a helpful assistant. Please ensure responses are professional, accurate, and safe." }}
 
 {{- /*
 Declare the prompt structure variables to be filled in from messages
@@ -111,6 +112,8 @@ Construct the full system message
 */}}
 {{- if ne $system_message "" -}}
 <|start_of_role|>system<|end_of_role|>{{ $system_message }}<|end_of_text|>{{ "\n" }}
+{{- else -}}
+<|start_of_role|>system<|end_of_role|>{{ $g4_default_system_message }}<|end_of_text|>{{ "\n" }}
 {{- end }}
 {{- $prev_role := "" }}
 {{- range $message_index, $_ := .Messages }}
@@ -135,7 +138,7 @@ Construct the full system message
 
     {{- else if eq .Role "tool" }}
         {{- if (ne $prev_role "tool") -}}
-            <|start_of_role>user<|end_of_role|>
+            <|start_of_role|>user<|end_of_role|>
         {{- end }}
         {{- "\n" }}<tool_response>{{ print "\n" .Content "\n" }}</tool_response>
         {{- if ne $next_message_index (len $.Messages) }}
