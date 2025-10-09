@@ -203,21 +203,15 @@ if __name__ == "__main__":
                model_release_stage = stage
                break
 
-        # Granite 4.0 fixup: as the HF model names dot not include "instruct"
-        # for now, we also check for the "size" as a secondary indicator of this case;
-        # however, defaulting to "instruct" could be explored...
+        # Granite 4.0 fixup: as this version's HF model names do not include "instruct" (i.e., assumed default)
+        # For now, we use the presence of an abstract "size" as an indicator of this case (assuming
+        # this abstract naming will continue post v4).
         if model_modality == "" and (model_parameter_size in ABSTRACT_MODEL_PARAMETER_SIZES):
-            # ( model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.NANO or
-            # model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MICRO or
-            # model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.TINY or
-            # model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.SMALL or
-            # model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.MEDIUM or
-            # model_parameter_size == SUPPORTED_MODEL_PARAMETER_SIZES.LARGE):
             if model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW:
                 # HACK: for "tiny-preview"
                 model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
-            else:
-                model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
+            # else:
+            #     model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
 
         # if model_modality == "":
         #     raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
@@ -257,7 +251,9 @@ if __name__ == "__main__":
             # Note: Special casing legacy names for Ollama ONLY
             # For "x.0" versions it was decided to leave off the minor version (i.e., ".0")
             if model_version.endswith(MINOR_VERSION_POINT_ZERO):
-                model_version = model_version.removesuffix(MINOR_VERSION_POINT_ZERO)
+                # HACK: for original g4.0 preview we used the ".0"
+                if model_release_stage != SUPPORTED_RELEASE_STAGES.PREVIEW:
+                    model_version = model_version.removesuffix(MINOR_VERSION_POINT_ZERO)
 
             # establish "base" model name with version:
             partner_model_base = f"{model_family}{model_version}"
