@@ -213,12 +213,6 @@ if __name__ == "__main__":
             # else:
             #     model_modality = "" # Assure we map to empty (i.e., Granite 4.0 names are "instruct" as default)
 
-        # if model_modality == "":
-        #     raise ValueError(f"Modality not found in model name: `{normalized_model_name}`")
-
-        # if model_version == "":
-        #     raise ValueError(f"Version not found in model name: `{normalized_model_name}`")
-
         if model_parameter_size == "":
             raise ValueError(f"Parameter size not found in model name: `{normalized_model_name}`")
 
@@ -303,6 +297,11 @@ if __name__ == "__main__":
 
             if model_arch_desc:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
+
+            # HACK: for one-time exception to g4.0 "preview" model names which used instruct
+            if model_modality == "" and (model_version == SUPPORTER_MODEL_VERSIONS.GRANITE_4_0 and
+                model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW):
+                    model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
 
             # for "instruct" and "base" language models, we add the modality classifier after the
             # parameter size to follow established conventions (if not the default quant.).

@@ -15,10 +15,10 @@ DEFAULT='\033[0;39m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=0
+RUN_G4_TESTS=1
 RUN_G4_PREVIEW_TESTS=1
-RUN_G3_3_TESTS=0
-RUN_G3_2_TESTS=0
+RUN_G3_3_TESTS=1
+RUN_G3_2_TESTS=1
 
 # Activate the desired Conda environment
 readonly PARTNER="ollama"
@@ -39,9 +39,11 @@ error() {
 }
 
 test() {
-  output=$($CONDA_RUN python $PYTHON_SCRIPT $input)
+  output=$($CONDA_RUN python $PYTHON_SCRIPT $1)
   if ! [[ $output == $2 ]]; then
     error $1 $output $2
+    python $PYTHON_SCRIPT_DEBUG $1
+    return 1
   else
     success $1 $output
   fi
@@ -61,14 +63,7 @@ echo -e "${YELLOW}Running Granite 4 tests..."
 # h-nano-1b
 # input="granite-4.0-h-nano-1b-Q4_K_M.gguf"
 # expected="granite4:1b-nano-h-q4_K_M"
-# output=$($CONDA_RUN python $PYTHON_SCRIPT $input)
-# if ! [[ "$output" == $expected ]]; then
-#     error "$input" "$output" "$expected"
-#     # Re-run script with --debug (do not need to activate conda env. again)
-#     python $PYTHON_SCRIPT_DEBUG $input
-# else
-#     success "$input" "$output"
-# fi
+# test "$input" "$expected"
 
 # micro
 input="granite-4.0-micro-Q8_0.gguf"
