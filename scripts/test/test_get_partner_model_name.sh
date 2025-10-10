@@ -15,12 +15,12 @@ DEFAULT='\033[0;39m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=0
-RUN_G4_PREVIEW_TESTS=0
-RUN_G3_3_TESTS=0
-RUN_G3_2_TESTS=0
+RUN_G4_TESTS=1
+RUN_G4_PREVIEW_TESTS=1
+RUN_G3_3_TESTS=1
+RUN_G3_2_TESTS=1
 RUN_G3_1_TESTS=1
-RUN_G3_0_TESTS=0
+RUN_G3_0_TESTS=1
 
 # Activate the desired Conda environment
 readonly PARTNER="ollama"
@@ -45,7 +45,7 @@ test() {
   if ! [[ $output == $2 ]]; then
     error $1 $output $2
     python $PYTHON_SCRIPT_DEBUG $1
-    return 1
+    exit 1
   else
     success $1 $output
   fi

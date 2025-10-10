@@ -267,8 +267,7 @@ if __name__ == "__main__":
 
             # Append model layer description if it exists
             if model_layer_desc != "":
-                # TODO: try ollama_append_attribute(partner_model_name, model_layer_desc)
-                partner_model_base = f"{partner_model_base}-{model_layer_desc}"
+                partner_model_base = ollama_append_attribute(partner_model_base, model_layer_desc)
 
             # Append modality
             # Note: Special case for models that are "instruct" or "base" language models
@@ -279,8 +278,7 @@ if __name__ == "__main__":
 
             # Append build/release stage
             if model_release_stage != "":
-                # TODO: try ollama_append_attribute(partner_model_name, model_release_stage)
-                partner_model_base = f"{partner_model_base}-{model_release_stage}"
+                partner_model_base = ollama_append_attribute(partner_model_base, model_release_stage)
 
             # TODO: determine if we need to append this for partner models:
             # if model_active_parameter_count is not None:
@@ -311,7 +309,7 @@ if __name__ == "__main__":
             if ((model_modality == SUPPORTED_MODEL_MODALITIES.BASE or
                 model_modality == SUPPORTED_MODEL_MODALITIES.INSTRUCT) and
                 not args.default_quant):
-                partner_model_name = f"{partner_model_name}-{model_modality}"
+                partner_model_name = ollama_append_attribute(partner_model_name, model_modality)
 
             # Note: used to trick registry into applying parameter size tag
             if not args.default_quant:
