@@ -14,11 +14,11 @@ LIGHT_GRAY='\033[0;90m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=0
-RUN_G4_PREVIEW_TESTS=0
+RUN_G4_TESTS=1
+RUN_G4_PREVIEW_TESTS=1
 RUN_G3_3_TESTS=1
-RUN_G3_2_TESTS=0
-RUN_G3_1_TESTS=0
+RUN_G3_2_TESTS=1
+RUN_G3_1_TESTS=1
 RUN_G3_0_TESTS=0
 
 # Activate the desired Conda environment
@@ -209,6 +209,18 @@ expected="granite3.2-guardian:5b-q6_K"
 # Embedding models
 input="granite-embedding-30m-english-q8_0.gguf"
 expected="granite-embedding:30m-english-q8_0"
+test "$input" "$expected"
+
+input="granite-embedding-125m-english-q8_0.gguf"
+expected="granite-embedding:125m-english-q8_0"
+test "$input" "$expected"
+
+input="granite-embedding-278m-english-q8_0.gguf"
+expected="granite-embedding:278m-english-q8_0"
+test "$input" "$expected"
+
+input="granite-embedding-107m-multilingual-q8_0.gguf"
+expected="granite-embedding:107m-multilingual-q8_0"
 test "$input" "$expected"
 
 input="granite-embedding-278m-multilingual-q8_0.gguf"
