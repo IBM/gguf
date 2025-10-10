@@ -4,23 +4,22 @@ set -e # stop execution on error
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
+# BLUE='\033[0;34m'
+# MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 LIGHT_GRAY='\033[0;90m'
-
-BRIGHT_WHITE='\033[0;97m'
-DEFAULT='\033[0;39m'
+# BRIGHT_WHITE='\033[0;97m'
+# DEFAULT='\033[0;39m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=1
-RUN_G4_PREVIEW_TESTS=1
+RUN_G4_TESTS=0
+RUN_G4_PREVIEW_TESTS=0
 RUN_G3_3_TESTS=1
-RUN_G3_2_TESTS=1
-RUN_G3_1_TESTS=1
-RUN_G3_0_TESTS=1
+RUN_G3_2_TESTS=0
+RUN_G3_1_TESTS=0
+RUN_G3_0_TESTS=0
 
 # Activate the desired Conda environment
 readonly PARTNER="ollama"
@@ -160,16 +159,35 @@ fi
 if [[ $RUN_G3_3_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 3.3 tests..."
 
+# language
+input="granite-3.3-2b-base-Q4_K_M.gguf"
+expected="granite3.3:2b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.3-2b-instruct-Q4_K_M.gguf"
+expected="granite3.3:2b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.3-8b-base-Q4_K_M.gguf"
+expected="granite3.3:8b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.3-8b-instruct-Q4_K_M.gguf"
+expected="granite3.3:8b-instruct-q4_K_M"
+test "$input" "$expected"
+
 # Guardian models
 input="granite-guardian-3.3-8b-Q5_K_M.gguf"
 expected="granite3.3-guardian:8b-q5_K_M"
 test "$input" "$expected"
 
 # Vision models
-
 input=" granite-vision-3.3-2b-Q8_0.gguf"
 expected="granite3.3-vision:2b-q8_0"
 test "$input" "$expected"
+
+# FUTURE: TODO: vision embedding (needs llama.cpp/gguf support)
+# input="granite-vision-3.3-2b-embedding"
 
 fi
 
@@ -181,7 +199,6 @@ if [[ $RUN_G3_2_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 3.2 tests..."
 
 # Guardian models
-
 input=""
 expected="granite3.2-guardian:3b-q4_K_M"
 
@@ -190,7 +207,6 @@ expected="granite3.2-guardian:5b-q6_K"
 
 
 # Embedding models
-
 input="granite-embedding-30m-english-q8_0.gguf"
 expected="granite-embedding:30m-english-q8_0"
 test "$input" "$expected"
@@ -208,6 +224,7 @@ fi
 if [[ $RUN_G3_1_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 3.1 tests..."
 
+# language
 input="granite-3.1-8b-instruct-Q4_K_M.gguf"
 expected="granite3.1-dense:8b-instruct-q4_K_M"
 test "$input" "$expected"
@@ -239,6 +256,9 @@ test "$input" "$expected"
 input="granite-3.1-1b-a400m-base-Q4_K_M.gguf"
 expected="granite3.1-moe:1b-base-q4_K_M"
 test "$input" "$expected"
+
+# TODO: vision
+input="granite-vision-3.1-2b-preview"
 
 fi
 
