@@ -56,14 +56,41 @@ test() {
 if [[ $RUN_G4_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 4 tests..."
 
-# TODO: nano-1b, nano-1b-base
-# TODO: nano-300m, nano-300m-base
-# TODO: h-nano-300m, h-nano-300m-base
+# nano-300m, nano-300m-base
+input="granite-4.0-nano-300m-Q4_K_M.gguf"
+expected="granite4:300m-nano-q4_K_M"
+test "$input" "$expected"
 
-# h-nano-1b
-# input="granite-4.0-h-nano-1b-Q4_K_M.gguf"
-# expected="granite4:1b-nano-h-q4_K_M"
-# test "$input" "$expected"
+input="granite-4.0-nano-300m-base-Q4_K_M.gguf"
+expected="granite4:300m-nano-base-q4_K_M"
+test "$input" "$expected"
+
+# h-nano-300m, h-nano-300m-base
+input="granite-4.0-h-nano-300m-Q4_K_M.gguf"
+expected="granite4:300m-nano-h-q4_K_M"
+test "$input" "$expected"
+
+input="granite-4.0-h-nano-300m-base-Q4_K_M.gguf"
+expected="granite4:300m-nano-h-base-q4_K_M"
+test "$input" "$expected"
+
+# nano-1b, nano-1b-base
+input="granite-4.0-nano-1b-Q4_K_M.gguf"
+expected="granite4:1b-nano-q4_K_M"
+test "$input" "$expected"
+
+input="granite-4.0-nano-1b-base-Q4_K_M.gguf"
+expected="granite4:1b-nano-base-q4_K_M"
+test "$input" "$expected"
+
+# h-nano-1b, h-nano-1b-base
+input="granite-4.0-h-nano-1b-Q4_K_M.gguf"
+expected="granite4:1b-nano-h-q4_K_M"
+test "$input" "$expected"
+
+input="granite-4.0-h-nano-1b-base-Q5_0.gguf"
+expected="granite4:1b-nano-h-base-q5_0"
+test "$input" "$expected"
 
 # micro
 input="granite-4.0-micro-Q8_0.gguf"

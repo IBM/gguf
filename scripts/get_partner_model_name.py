@@ -34,6 +34,7 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     M107 = "107m"
     M125 = "125m"
     M278 = "278m"
+    M300 = "300m"
     B1   = "1b"
     B2   = "2b"
     B3   = "3b"
@@ -291,11 +292,11 @@ if __name__ == "__main__":
             # everything that follows are model attributes that appear after a colon ":"
             partner_model_name = f"{partner_model_base}{MODEL_NAME_SEP}"
 
-            if model_abstract_size:
-                partner_model_name = ollama_append_attribute(partner_model_name, model_abstract_size)
-
             if model_parameter_size:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_parameter_size)
+
+            if model_abstract_size:
+                partner_model_name = ollama_append_attribute(partner_model_name, model_abstract_size)
 
             if model_arch_desc:
                 partner_model_name = ollama_append_attribute(partner_model_name, model_arch_desc)
