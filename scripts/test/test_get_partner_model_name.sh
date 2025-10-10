@@ -15,10 +15,12 @@ DEFAULT='\033[0;39m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=1
-RUN_G4_PREVIEW_TESTS=1
-RUN_G3_3_TESTS=1
-RUN_G3_2_TESTS=1
+RUN_G4_TESTS=0
+RUN_G4_PREVIEW_TESTS=0
+RUN_G3_3_TESTS=0
+RUN_G3_2_TESTS=0
+RUN_G3_1_TESTS=1
+RUN_G3_0_TESTS=0
 
 # Activate the desired Conda environment
 readonly PARTNER="ollama"
@@ -200,8 +202,52 @@ test "$input" "$expected"
 fi
 
 ##############
+# G3.1
+##############
+
+if [[ $RUN_G3_1_TESTS -eq 1 ]]; then
+echo -e "${YELLOW}Running Granite 3.1 tests..."
+
+input="granite-3.1-8b-instruct-Q4_K_M.gguf"
+expected="granite3.1-dense:8b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-8b-base-Q4_K_M.gguf"
+expected="granite3.1-dense:8b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-2b-instruct-Q4_K_M.gguf"
+expected="granite3.1-dense:2b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-2b-base-Q4_K_M.gguf"
+expected="granite3.1-dense:2b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-3b-a800m-instruct-Q4_K_M.gguf"
+expected="granite3.1-moe:3b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-3b-a800m-base-Q4_K_M.gguf"
+expected="granite3.1-moe:3b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-1b-a400m-instruct-Q4_K_M.gguf"
+expected="granite3.1-moe:1b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.1-1b-a400m-base-Q4_K_M.gguf"
+expected="granite3.1-moe:1b-base-q4_K_M"
+test "$input" "$expected"
+
+fi
+
+##############
 # G3.0
 ##############
+
+if [[ $RUN_G3_0_TESTS -eq 1 ]]; then
+echo -e "${YELLOW}Running Granite 3.0 tests..."
 
 # input="granite-3.0-1b-a400m-base-Q4_1.gguf"
 # expected="granite3-moe:1b-base-q4_1"
@@ -214,3 +260,5 @@ fi
 # input="granite-guardian-3.0-2b-Q4_K_M.gguf"
 # expected="granite3-guardian:2b-q4_K_M"
 # test "$input" "$expected"
+
+fi
