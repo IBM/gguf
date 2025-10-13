@@ -19,7 +19,7 @@ RUN_G4_PREVIEW_TESTS=1
 RUN_G3_3_TESTS=1
 RUN_G3_2_TESTS=1
 RUN_G3_1_TESTS=1
-RUN_G3_0_TESTS=0
+RUN_G3_0_TESTS=1
 
 # Activate the desired Conda environment
 readonly PARTNER="ollama"
@@ -269,8 +269,17 @@ input="granite-3.1-1b-a400m-base-Q4_K_M.gguf"
 expected="granite3.1-moe:1b-base-q4_K_M"
 test "$input" "$expected"
 
+# Guardian
+input="granite-guardian-3.1-8b-Q4_K_M.gguf"
+expected="granite3.1-guardian:8b-q4_K_M"
+test "$input" "$expected"
+
+input="granite-guardian-3.1-2b-Q5_K_M.gguf"
+expected="granite3.1-guardian:2b-q5_K_M"
+test "$input" "$expected"
+
 # TODO: vision
-input="granite-vision-3.1-2b-preview"
+# input="granite-vision-3.1-2b-preview"
 
 fi
 
@@ -281,16 +290,49 @@ fi
 if [[ $RUN_G3_0_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 3.0 tests..."
 
-# input="granite-3.0-1b-a400m-base-Q4_1.gguf"
-# expected="granite3-moe:1b-base-q4_1"
-# test "$input" "$expected"
+# language
+input="granite-3.0-8b-instruct-Q4_K_M.gguf"
+expected="granite3-dense:8b-instruct-q4_K_M"
+test "$input" "$expected"
 
-# input="granite-3.0-1b-a400m-base-Q2_K.gguf"
-# expected="granite3-moe:1b-base-q2_K"
-# test "$input" "$expected"
+input="granite-3.0-8b-base-Q4_K_M.gguf"
+expected="granite3-dense:8b-base-q4_K_M"
+test "$input" "$expected"
 
-# input="granite-guardian-3.0-2b-Q4_K_M.gguf"
-# expected="granite3-guardian:2b-q4_K_M"
-# test "$input" "$expected"
+input="granite-3.0-2b-instruct-Q4_K_M.gguf"
+expected="granite3-dense:2b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.0-2b-base-Q4_K_M.gguf"
+expected="granite3-dense:2b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.0-3b-a800m-instruct-Q4_K_M.gguf"
+expected="granite3-moe:3b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.0-3b-a800m-base-Q4_K_M.gguf"
+expected="granite3-moe:3b-base-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.0-1b-a400m-instruct-Q4_K_M.gguf"
+expected="granite3-moe:1b-instruct-q4_K_M"
+test "$input" "$expected"
+
+input="granite-3.0-1b-a400m-base-Q4_K_M.gguf"
+expected="granite3-moe:1b-base-q4_K_M"
+test "$input" "$expected"
+
+# Guardian
+ibm-granite/granite-guardian-3.0-8b
+ibm-granite/granite-guardian-3.0-2b
+
+input="granite-guardian-3.0-8b-Q4_K_M.gguf"
+expected="granite3-guardian:8b-q4_K_M"
+test "$input" "$expected"
+
+input="granite-guardian-3.0-2b-Q5_K_M.gguf"
+expected="granite3-guardian:2b-q5_K_M"
+test "$input" "$expected"
 
 fi

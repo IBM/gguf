@@ -239,6 +239,10 @@ if __name__ == "__main__":
         # NOTE: "dense" is default and is not currently included in the model name
         if args.partner == SUPPORTED_PARTNERS.OLLAMA:
 
+            partner_model_base = ""
+
+            # Establish Granite version for Ollama:
+
             # Strip "v" from semver.
             model_version = model_version.replace("v", "")
 
@@ -247,10 +251,11 @@ if __name__ == "__main__":
             if model_version.endswith(MINOR_VERSION_POINT_ZERO):
                 # HACK: for original g4.0 preview we used the ".0"
                 if model_release_stage != SUPPORTED_RELEASE_STAGES.PREVIEW:
-                    model_version = model_version.removesuffix(MINOR_VERSION_POINT_ZERO)
+                    model_major_version = model_version.removesuffix(MINOR_VERSION_POINT_ZERO)
+                    partner_model_base = f"{model_family}{model_major_version}"
 
-            # establish "base" model name with version:
-            partner_model_base = f"{model_family}{model_version}"
+            if partner_model_base == "":
+                partner_model_base = f"{model_family}{model_version}"
 
             # Note: Special casing legacy names for Ollama ONLY
             # "instruct" => "dense" or "moe" depending on parameter size (implies underlying arch.)
