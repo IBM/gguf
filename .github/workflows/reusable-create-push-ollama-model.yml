@@ -54,7 +54,7 @@ on:
 jobs:
   ollama-continuous-delivery:
     runs-on: macos-latest
-    if: ${{ inputs.enable_ollama_push == true && ( inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true ) }}
+    if: ${{ inputs.enable_ollama_push == true && ( inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true ) }}
     env:
       DEFAULT_MODEL_LICENSE: Apache-2.0
       MODEL_DOWNLOAD_DIR: models

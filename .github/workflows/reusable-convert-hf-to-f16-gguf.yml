@@ -58,7 +58,7 @@ env:
 jobs:
   convert-f16:
     runs-on: macos-latest
-    if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+    if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     timeout-minutes: 30
     env:
       HF_HUB_DISABLE_XET: 1

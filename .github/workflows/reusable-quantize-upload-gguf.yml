@@ -62,7 +62,7 @@ env:
 jobs:
   quantize:
     runs-on: macos-latest
-    if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs ==true }}
+    if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0

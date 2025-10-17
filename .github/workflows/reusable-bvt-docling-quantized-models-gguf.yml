@@ -59,7 +59,7 @@ env:
 jobs:
   build:
     runs-on: macos-latest
-    if: ${{ inputs.enable_vision_jobs == true }}
+    if: ${{ inputs.enable_docling_jobs == true }}
     steps:
     - uses: actions/checkout@v4
     - name: confirm-environment

@@ -54,7 +54,7 @@ jobs:
   verify-target-repos-exist:
     runs-on: macos-latest
     if: |
-      ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+      ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     outputs:
       repos_exist: ${{ steps.set-job-outputs.outputs.repos_exist }}
       target_repos: ${{ steps.set-job-outputs.outputs.target_repos }}

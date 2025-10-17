@@ -56,7 +56,7 @@ on:
 jobs:
   reusable_workflow_job:
     runs-on: macos-latest
-    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true }}
+    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     steps:
     - uses: actions/checkout@v4
     - run: |

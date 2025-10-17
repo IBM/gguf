@@ -197,7 +197,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "docling"
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repos: ${{ needs.environment-setup.outputs.source_docling_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
@@ -219,7 +219,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -242,7 +242,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
@@ -266,7 +266,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
