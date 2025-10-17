@@ -22,6 +22,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_docling_jobs:
+        type: boolean
+        required: false
+        default: false
       granite_family:
         type: string
         required: true

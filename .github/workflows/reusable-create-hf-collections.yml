@@ -31,6 +31,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_docling_jobs:
+        type: boolean
+        required: false
+        default: false
       hf_collection_config:
         type: string
         required: true

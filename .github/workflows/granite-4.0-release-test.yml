@@ -14,10 +14,11 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview',
@@ -67,6 +68,19 @@ env:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
     'None'
   ]"
+  # 'ibm-granite/granite-docling-258M'
+  SOURCE_DOCLING_REPOS: "[
+    'ibm-granite/granite-docling-258M'
+  ]"
+  # 'Q2_K',
+  # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+  # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+  # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+  # 'Q6_K',
+  # 'Q8_0'
+  TARGET_DOCLING_QUANTIZATIONS: "[
+    'Q4_K_M'
+  ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: true
@@ -99,6 +113,8 @@ jobs:
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
+      source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
+      target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -126,6 +142,8 @@ jobs:
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_embedding_quantizations=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_docling_repos=$SOURCE_DOCLING_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_docling_quantizations=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -147,6 +165,8 @@ jobs:
             echo "target_guardian_quantizations: '${{ steps.set-vars.outputs.target_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
+            echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
+            echo "target_docling_quantizations: '${{ steps.set-vars.outputs.target_docling_quantizations }}'"
 
       # - name: List all environment variables
       #   run: env | sort
@@ -167,6 +187,110 @@ jobs:
       #   env:
       #     GH_QUIET: ${{ toJson(secrets) }}
       #   run: echo "$GH_QUIET"
+
+  # ===========================================================================
+  # Granite Docling
+  # ===========================================================================
+  docling-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "docling"
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_docling_repos }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  convert-hf-to-f16-gguf:
+    needs: [ environment-setup, docling-create-hf-repos ]
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_docling_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  quantize-upload-gguf:
+    needs: [ environment-setup, convert-hf-to-f16-gguf ]
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_docling_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_docling_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: no idea how to test...
+  bvt-docling-quantized-gguf-models:
+    needs: [ environment-setup, quantize-upload-gguf ]
+    uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_docling_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_docling_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  create-hf-collections:
+    needs: [
+      environment-setup,
+      bvt-docling-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "instruct"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # ===========================================================================
   # Granite LLMs
