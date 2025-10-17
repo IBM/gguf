@@ -19,6 +19,9 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
 
+  # 'ibm-granite/granite-4.0-tiny-preview',
+  # 'ibm-granite/granite-4.0-tiny-base-preview'
+
   # 'ibm-granite/granite-4.0-nano-300m',
   # 'ibm-granite/granite-4.0-nano-300m-base',
   # 'ibm-granite/granite-4.0-h-nano-300m',
@@ -27,9 +30,6 @@ env:
   # 'ibm-granite/granite-4.0-nano-1b-base',
   # 'ibm-granite/granite-4.0-h-nano-1b',
   # 'ibm-granite/granite-4.0-h-nano-1b-base'
-
-  # 'ibm-granite/granite-4.0-tiny-preview',
-  # 'ibm-granite/granite-4.0-tiny-base-preview'
   # 'ibm-granite/granite-4.0-micro',
   # 'ibm-granite/granite-4.0-micro-base'
   # 'ibm-granite/granite-4.0-h-micro',
