@@ -11,12 +11,13 @@ class SUPPORTED_PARTNERS(StrEnum):
     OLLAMA = "ollama"
 
 class SUPPORTED_MODEL_MODALITIES(StrEnum):
-    BASE = "base"
-    INSTRUCT = "instruct"
-    GUARDIAN = "guardian"
-    VISION = "vision"
-    SPEECH = "speech"
+    BASE      = "base"
+    INSTRUCT  = "instruct"
+    GUARDIAN  = "guardian"
+    VISION    = "vision"
+    SPEECH    = "speech"
     EMBEDDING = "embedding"
+    DOCLING   = "docling"
 
 MINOR_VERSION_POINT_ZERO = ".0"
 class SUPPORTER_MODEL_VERSIONS(StrEnum):
@@ -34,6 +35,7 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     M107 = "107m"
     M125 = "125m"
     M278 = "278m"
+    M258 = "258m" # docling
     M300 = "300m"
     B1   = "1b"
     B2   = "2b"
