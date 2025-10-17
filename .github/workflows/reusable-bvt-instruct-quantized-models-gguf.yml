@@ -45,8 +45,8 @@ env:
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RUN_BIN: ./bin/llama-run # ./bin/llama-run
   LLAMA_RUN_FLAGS: "-v -n 9"
-  LLAMA_RESPONSE_REGEX: "(Rayleigh|scatter)+" # "(Rayleigh|scatter)\s*(Rayleigh|scatter)" allows spaces between
-  LLAMA_RESPONSE_REGEX_2: "(Rayleigh|scatter)\s*(Rayleigh|scatter)"
+  LLAMA_RESPONSE_REGEX: "(Rayleigh|scatter)+"
+  # LLAMA_RESPONSE_REGEX_2: "(Rayleigh|scatter)\s*(Rayleigh|scatter)" # allows spaces between
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
   LLAMACPP_DIR: llama.cpp
