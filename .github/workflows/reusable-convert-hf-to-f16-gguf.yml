@@ -229,9 +229,14 @@ jobs:
               --mmproj \
               --verbose
           ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
-          echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
           echo "FNAME_F16_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
-          python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_MMPROJ_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
         else
           echo "NOT a 'docling' model."
         fi
+
+    - name: upload-f16-mmproj-model-to-target-repo
+      run: |
+        printenv | sort
+        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+        echo "FNAME_F16_MMPROJ_GGUF='$FNAME_F16_MMPROJ_GGUF' (${{ env.FNAME_F16_MMPROJ_GGUF}})"
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID ${{env.FNAME_F16_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
