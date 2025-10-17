@@ -206,7 +206,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  docling-convert-docling-hf-to-f16-gguf:
+  docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
