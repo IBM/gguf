@@ -1,0 +1,6 @@
+{{- range $message := .Messages -}}
+    {{- "<|start_of_role|>" }}{{ $message.Role }}{{ "<|end_of_role|>" -}}
+    {{- $message.Content -}}
+    {{- "<|end_of_text|>\n" -}}
+{{- end -}}
+{{- "<|start_of_role|>assistant<|end_of_role|>" -}}
