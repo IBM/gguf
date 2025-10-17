@@ -244,7 +244,7 @@ jobs:
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   docling-quantize-upload-gguf:
-    needs: [ environment-setup, convert-hf-to-f16-gguf ]
+    needs: [ environment-setup, docling-convert-hf-to-f16-gguf ]
     permissions:
       contents: write
       packages: write
@@ -268,7 +268,7 @@ jobs:
 
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
-    needs: [ environment-setup, quantize-upload-gguf ]
+    needs: [ environment-setup, docling-quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -293,7 +293,7 @@ jobs:
   docling-create-hf-collections:
     needs: [
       environment-setup,
-      bvt-docling-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
