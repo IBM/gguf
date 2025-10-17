@@ -352,7 +352,8 @@
                     "type": "model",
                     "family": "docling",
                     "repo_name":"granite-docling-258M",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q4_K_M",
+                    "projector_model": "mmproj-model-f16.gguf"
                 }
             ]
         }

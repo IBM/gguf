@@ -51,6 +51,7 @@ on:
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -125,6 +126,7 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -189,6 +191,7 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
+        echo "BASE_FNAME_MMPROJ_F16_GGUF (env)=$BASE_FNAME_MMPROJ_F16_GGUF (${{env.BASE_FNAME_MMPROJ_F16_GGUF}})"
         ls -al $MODEL_DOWNLOAD_DIR
 
     - name: check-disk-space-3
@@ -204,7 +207,6 @@ jobs:
         fi
         python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
             --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} \
-            --mmproj \
             --verbose
         ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
@@ -215,3 +217,21 @@ jobs:
         echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
         python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+    - name: convert-and-extract-f16-mmproj-model
+      run: |
+        if [[ "${{env.REPO_NAME}}" == *"docling"* ]]; then
+          echo "'docling' model."
+          echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
+          echo "HAS_PROJECTOR_MODEL: '${{}}' ('$HAS_PROJECTOR_MODEL')"
+          python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
+              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} \
+              --mmproj \
+              --verbose
+          ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+          echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+          echo "FNAME_F16_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+          python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_MMPROJ_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        else
+          echo "NOT a 'docling' model."
+        fi
