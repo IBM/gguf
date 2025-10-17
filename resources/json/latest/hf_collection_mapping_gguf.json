@@ -348,7 +348,7 @@
                     "repo_name":"granite-4.0-h-nano-1b-base",
                     "default_quant": "q4_K_M"
                 },
-                                {
+                {
                     "type": "model",
                     "family": "docling",
                     "repo_name":"granite-docling-258M",

@@ -282,7 +282,7 @@ jobs:
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
-      granite_family: "instruct"
+      granite_family: "docling"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
