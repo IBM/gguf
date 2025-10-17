@@ -225,7 +225,7 @@ jobs:
           echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
           echo "HAS_PROJECTOR_MODEL: '${{env.HAS_PROJECTOR_MODEL}}' ('$HAS_PROJECTOR_MODEL')"
           python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
-              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} \
+              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF}} \
               --mmproj \
               --verbose
           ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
