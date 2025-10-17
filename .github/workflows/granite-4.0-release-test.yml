@@ -206,7 +206,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  convert-hf-to-f16-gguf:
+  docling-convert-docling-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
@@ -228,7 +228,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  quantize-upload-gguf:
+  docling-quantize-upload-gguf:
     needs: [ environment-setup, convert-hf-to-f16-gguf ]
     permissions:
       contents: write
@@ -252,7 +252,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # TODO: no idea how to test...
-  bvt-docling-quantized-gguf-models:
+  docling-bvt-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
     permissions:
@@ -275,7 +275,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # TODO: change collection from private to public (on success)
-  create-hf-collections:
+  docling-create-hf-collections:
     needs: [
       environment-setup,
       bvt-docling-quantized-gguf-models,
