@@ -41,6 +41,8 @@ env:
   EXT_NAME_F16: "-f16.gguf"
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
+  LLAMA_CLI_STDOUT_FILE: output.txt
+  LLAMA_CLI_STDERR_FILE: error.txt
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
   LLAMA_REQUEST_N_PREDICT: 128
@@ -183,7 +185,7 @@ jobs:
       timeout-minutes: 10
       continue-on-error: true
       run: |
-        echo "invoking llama-llava-cli to test inference..."
+        echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
@@ -207,8 +209,8 @@ jobs:
     #     matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_STDOUT_FILE}})
     #     echo "matched: '$matched'"
     #     if [[ "$exists" == "False" ]]; then
-    #       echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response."
+    #       echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-mtmd-cli response."
     #       exit 1
     #     else
-    #       echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-llava-cli response."
+    #       echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-mtmd-cli response."
     #     fi
