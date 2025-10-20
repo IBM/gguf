@@ -183,7 +183,7 @@ jobs:
     # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
     - name: test-llama-mtmd-cli
       timeout-minutes: 10
-      continue-on-error: true
+      continue-on-error: false
       run: |
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
