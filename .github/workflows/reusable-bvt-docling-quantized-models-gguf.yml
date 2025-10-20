@@ -38,6 +38,7 @@ on:
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
+  EXT_NAME_F16: "-f16.gguf"
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_REQUEST_SEED: 647063347
@@ -57,6 +58,8 @@ env:
   TEST_LLAMA_RUN: false
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   LLAMA_REQUEST_TEST_IMAGE: "test/images/sample-text-screenshot.png"
+  LLAMA_REQUEST_TEMP: 0
+  LLAMA_REQUEST_CONTEXT_SIZE: 16384
 
 jobs:
   build:
