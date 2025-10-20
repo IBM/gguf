@@ -184,6 +184,7 @@ jobs:
 
     # -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
     # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+    # --temp ${{env.LLAMA_REQUEST_TEMP}}
     - name: test-llama-mtmd-cli
       timeout-minutes: 10
       continue-on-error: false
@@ -194,10 +195,9 @@ jobs:
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-            -p "<__media__>Convert this page to markdown." \
+            -p "<__media__>Convert this image to markdown." \
             --verbose \
-            -ngl 0 \
-           --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
+            -ngl 99 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-mtmd-cli failed. Output (stderr):"
           ls -al

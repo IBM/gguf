@@ -81,7 +81,7 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'Q4_K_M', 'BF16'
+    'F32', 'BF16'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
