@@ -178,6 +178,9 @@ jobs:
     #    -p "<__media__>Convert this page to markdown."
     #    --verbose
     #.   -ngl 99
+    - name: test-llama-mtmd-cli-help
+      run: |
+        ./bin/llama-mtmd-cli --help
 
     # -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
     # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
