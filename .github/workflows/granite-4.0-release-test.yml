@@ -21,7 +21,7 @@ env:
   ENABLE_DOCLING_JOBS: true
 
   # 'ibm-granite/granite-4.0-tiny-preview',
-  # 'ibm-granite/granite-4.0-tiny-base-preview',
+  # 'ibm-granite/granite-4.0-tiny-base-preview'
 
   # 'ibm-granite/granite-4.0-nano-300m',
   # 'ibm-granite/granite-4.0-nano-300m-base',
@@ -37,6 +37,8 @@ env:
   # 'ibm-granite/granite-4.0-h-micro-base'
   # 'ibm-granite/granite-4.0-h-tiny',
   # 'ibm-granite/granite-4.0-h-tiny-base'
+  # 'ibm-granite/granite-4.0-h-small',
+  # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
     'None'
   ]"

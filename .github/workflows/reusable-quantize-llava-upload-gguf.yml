@@ -58,6 +58,7 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
+      LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v4
 
@@ -183,12 +184,13 @@ jobs:
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
+    # OLD: ref: 'master'  # default to master branch
     - name: shallow-clone-llamacpp
       uses: actions/checkout@v4
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'master'  # default to master branch
+        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |

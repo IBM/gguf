@@ -165,26 +165,37 @@ jobs:
         find . -name \*.gguf -type f
         find . -name \*.jpg -type f
 
-    # - name: test-llama-llava-cli
-    #   timeout-minutes: 10
-    #   continue-on-error: true
-    #   run: |
-    #     echo "invoking llama-llava-cli to test inference..."
-    #     echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
-    #     echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-    #     ./bin/llama-llava-cli -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-    #         --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
-    #         --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-    #         -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
-    #         -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-    #         --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
-    #     if [ $? -eq 1 ]; then
-    #       echo "[ERROR] llama-llava-cli failed. Output (stderr):"
-    #       cat ${{env.LLAMA_CLI_STDERR_FILE}}
-    #       exit 1
-    #     fi
-    #     echo "[SUCCESS] llama-llava-cli succeeded. Output (stdout):"
-    #     cat ${{env.LLAMA_CLI_STDOUT_FILE}}
+    # Run a sample
+    # ./bin/llama-mtmd-cli -m ~/models/ibm-granite/granite-docling-258M/granite-docling-258M-F16.gguf \
+    #    --image ~/Pictures/sample-doc.png \
+    #    --mmproj ~/models/ibm-granite/mmproj-granite-docling-258M
+    #    -p "<__media__>Convert this page to markdown."
+    #    --verbose
+    #.   -ngl 99
+
+    # -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+    # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+    - name: test-llama-mtmd-cli
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |
+        echo "invoking llama-llava-cli to test inference..."
+        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
+            -p "<__media__>Convert this page to markdown." \
+            --verbose \
+            -ngl 99 \
+           --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
+        if [ $? -eq 1 ]; then
+          echo "[ERROR] llama-mtmd-cli failed. Output (stderr):"
+          cat ${{env.LLAMA_CLI_STDERR_FILE}}
+          exit 1
+        fi
+        echo "[SUCCESS] llama-mtmd-cli succeeded. Output (stdout):"
+        cat ${{env.LLAMA_CLI_STDOUT_FILE}}
 
     # - name: test-llama-cli-response-with-regex
     #   if: env.TEST_LLAMA_CLI == 'true'

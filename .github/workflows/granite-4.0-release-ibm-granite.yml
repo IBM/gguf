@@ -116,6 +116,7 @@ jobs:
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
+      enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
@@ -145,6 +146,7 @@ jobs:
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -168,6 +170,7 @@ jobs:
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
+            echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
@@ -212,14 +215,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "docling"
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repos: ${{ needs.environment-setup.outputs.source_docling_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
@@ -234,13 +237,13 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   docling-quantize-upload-gguf:
@@ -257,14 +260,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
@@ -281,13 +284,13 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   docling-create-hf-collections:
@@ -297,15 +300,15 @@ jobs:
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
-      granite_family: "instruct"
+      granite_family: "docling"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # ===========================================================================
   # Granite LLMs
