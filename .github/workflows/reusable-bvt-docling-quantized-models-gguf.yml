@@ -56,6 +56,7 @@ env:
   TEST_LLAMA_CLI: true
   TEST_LLAMA_RUN: false
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
+  LLAMA_REQUEST_TEST_IMAGE: "test/images/sample-text-screenshot.png"
 
 jobs:
   build:
