@@ -94,6 +94,9 @@ def test_empty_string(value:str):
 
 if __name__ == "__main__":
     try:
+        for arg in sys.argv:
+            print(arg)
+
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("models_dir", type=test_empty_string, help="The directory where the model file will be downloaded to.")
