@@ -304,25 +304,25 @@
                     "type": "model",
                     "family": "instruct",
                     "repo_name":    "granite-4.0-nano-300m",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
                     "repo_name":"granite-4.0-nano-300m-base",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
                     "repo_name":"granite-4.0-h-nano-300m",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
                     "family": "instruct",
                     "repo_name":"granite-4.0-h-nano-300m-base",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
@@ -352,7 +352,7 @@
                     "type": "model",
                     "family": "docling",
                     "repo_name":"granite-docling-258M",
-                    "default_quant": "q4_K_M",
+                    "default_quant": "bf16",
                     "projector_model": "mmproj-model-f16.gguf"
                 }
             ]
