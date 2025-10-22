@@ -1,7 +1,7 @@
 # This workflow converts an original model from HF (in safetensors format) to an f16 GGUF format model.
 # it then uploads the f16 model to Hugging Face Hub for the 'repo_id' (from the build matrix).
 
-name: convert-hf-safetensors-to-f16-gguf-reusable
+name: convert-hf-safetensors-to-gguf-reusable
 
 on:
   workflow_call:
@@ -49,16 +49,16 @@ on:
         default: false
 
 env:
+  DEF_SEP: "-"
+  DEF_PRECISION: "f16" # "bf16"
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"
-  EXT_NAME_BF16: "-bf16.gguf"
   MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
 jobs:
-  convert-f16:
+  convert-safetensor-to-gguf:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     timeout-minutes: 30
@@ -66,7 +66,7 @@ jobs:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
       HF_TRANSFORMERS_VERSION: "4.52.4" # "4.52.4"
-      LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
+      LLAMA_CPP_VERSION: b6808 # b6791,"b6569", 'b5717', 'b6050'
     steps:
 
     - uses: actions/checkout@v4
@@ -105,11 +105,12 @@ jobs:
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
         echo "inputs.repo_id: ${{ inputs.repo_id }}"
-        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
-        echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+        echo "env.DEF_SEP: ${{ env.DEF_SEP }}"
+        echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{env.DEF_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -128,8 +129,7 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_BF16_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -194,13 +194,14 @@ jobs:
         echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
-        echo "BASE_FNAME_MMPROJ_F16_GGUF (env)=$BASE_FNAME_MMPROJ_F16_GGUF (${{env.BASE_FNAME_MMPROJ_F16_GGUF}})"
+        echo "EXT_PRECISION_GGUF (env)=$EXT_PRECISION_GGUF (${{ env.EXT_PRECISION_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_GGUF (env)=$BASE_FNAME_MMPROJ_GGUF (${{env.BASE_FNAME_MMPROJ_GGUF}})"
         ls -al $MODEL_DOWNLOAD_DIR
 
     - name: check-disk-space-3
       run: df -h
 
-    - name: download-safetensors-convert-to-f16-gguf
+    - name: download-safetensors-convert-to-gguf
       run: |
         if [[ "${{env.REPO_NAME}}" == *"docling"* ]]; then
           echo "'docling' model."
@@ -209,37 +210,43 @@ jobs:
           echo "NOT a 'docling' model."
         fi
         python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
-            --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}} \
+            --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}} \
             --verbose
         ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-        echo "FNAME_F16_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "FNAME_CONVERTED_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
 
-    - name: upload-f16-gguf-to-target-repo
+    - name: upload-converted-gguf-to-target-repo
       run: |
-        echo "FNAME_F16_GGUF='$FNAME_F16_GGUF' (${{ env.FNAME_F16_GGUF}})"
+        echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_F16_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_CONVERTED_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
-    - name: convert-and-extract-f16-mmproj-model
+    # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
+    - name: convert-and-extract-mmproj-model
       run: |
         if [[ "${{env.REPO_NAME}}" == *"docling"* ]]; then
           echo "'docling' model."
           echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
           echo "HAS_PROJECTOR_MODEL: '${{env.HAS_PROJECTOR_MODEL}}' ('$HAS_PROJECTOR_MODEL')"
           python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
-              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF}} \
+              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}} \
               --mmproj \
               --verbose
           ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
-          echo "FNAME_F16_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+          echo "FNAME_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}}" >> $GITHUB_ENV
         else
           echo "NOT a 'docling' model."
         fi
 
-    - name: upload-f16-mmproj-model-to-target-repo
+    # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
+    - name: upload-mmproj-model-to-target-repo
       run: |
-        printenv | sort
-        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
-        echo "FNAME_F16_MMPROJ_GGUF='$FNAME_F16_MMPROJ_GGUF' (${{ env.FNAME_F16_MMPROJ_GGUF}})"
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID ${{env.FNAME_F16_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        if [[ "${{env.REPO_NAME}}" == *"docling"* ]]; then
+          printenv | sort
+          ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+          echo "FNAME_MMPROJ_GGUF='$FNAME_MMPROJ_GGUF' (${{ env.FNAME_MMPROJ_GGUF}})"
+          python ./scripts/hf_model_upload.py $TARGET_REPO_ID ${{env.FNAME_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        else
+          echo "NOT a 'docling' model."
+        fi

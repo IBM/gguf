@@ -53,12 +53,12 @@ on:
         required: false
         default: false
 
-# TODO: F16_OPT_ENABLED
 env:
+  DEF_SEP: "-"
+  DEF_PRECISION: "f16" # "bf16"
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"
-  F16_FILE_EXISTS: "0"
-  F16_OPT_ENABLED: true
+  CONVERTED_FILE_EXISTS: "0"
+  UPLOAD_CONVERTED_ENABLED: true
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -92,12 +92,13 @@ jobs:
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
-        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
-        echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"
+        echo "env.UPLOAD_CONVERTED_ENABLED: ${{ env.UPLOAD_CONVERTED_ENABLED }}"
         echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+        echo "env.DEF_SEP: ${{ env.DEF_SEP }}"
+        echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
 
     # - name: Dump runner context
     #   env:
@@ -140,10 +141,11 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{env.DEF_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-1
       run: |
-        echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_CONVERTED_GGUF=${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
@@ -151,7 +153,7 @@ jobs:
     # or streaming will cause a SIGSEV error
     - name: set-derivative-env-vars-2
       run: |
-        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_CONVERTED_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_CONVERTED_GGUF" >> $GITHUB_ENV
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
 
@@ -160,61 +162,62 @@ jobs:
         echo "================== GITHUB_ENV ====================="
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"
+        echo "EXT_PRECISION_GGUF=$EXT_PRECISION_GGUF"
         echo "================== Derivative Environment Variables 1 =================="
-        echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"
+        echo "BASE_FNAME_CONVERTED_GGUF='$BASE_FNAME_CONVERTED_GGUF' (${{ env.BASE_FNAME_CONVERTED_GGUF }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 2 =================="
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"
+        echo "LOCAL_FNAME_CONVERTED_GGUF='$LOCAL_FNAME_CONVERTED_GGUF' (${{ env.LOCAL_FNAME_CONVERTED_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
 
-    - name: test-f16-exists
-      if: env.F16_OPT_ENABLED == 'true'
+    - name: test-gguf-converted-file-exists-in-hf
+      if: env.UPLOAD_CONVERTED_ENABLED == 'true'
       run: |
-        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
+        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_CONVERTED_GGUF }} ${{secrets.hf_token}})
         echo "output: '$output'"
         if [[ "$output" == "True" ]]; then
-          echo "F16_FILE_EXISTS=1" >> $GITHUB_ENV
+          echo "CONVERTED_FILE_EXISTS=1" >> $GITHUB_ENV
         elif [[ "$output" == "False" ]]; then
-          echo "F16_FILE_EXISTS=0" >> $GITHUB_ENV
+          echo "CONVERTED_FILE_EXISTS=0" >> $GITHUB_ENV
         else
           echo "Unexpected output from Python script: $output"
           exit 2
         fi
 
-    - name: download-f16-gguf-hf-hub-download
-      if: env.F16_FILE_EXISTS == '1'
+    - name: download-converted-gguf-using-hf-download
+      if: env.CONVERTED_FILE_EXISTS == '1'
       run: |
         echo "Downloading f16 GGUF using hf_file_download..."
-        echo "Repo ID: ${{ env.TARGET_REPO_ID }}, Model Name: ${{ env.BASE_FNAME_F16_GGUF }}"
+        echo "Repo ID: ${{ env.TARGET_REPO_ID }}, Model Name: ${{ env.BASE_FNAME_CONVERTED_GGUF }}"
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_CONVERTED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_CONVERTED_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_CONVERTED_GGUF }}" >> $GITHUB_ENV
 
-    # - name: download-f16-curl
-    #   if: env.F16_FILE_EXISTS == '1'
+    # - name: download-converted-gguf-curl
+    #   if: env.CONVERTED_FILE_EXISTS == '1'
     #   run: |
     #     echo "Downloading using curl..."
     #     echo "--------------------"
-    #     curl -C - -f --create-dirs -H "Authorization: Bearer ${{secrets.hf_token}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_F16_GGUF }}
+    #     curl -C - -f --create-dirs -H "Authorization: Bearer ${{secrets.hf_token}}" -o ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_CONVERTED_GGUF }} -L https://huggingface.co/${{ env.TARGET_REPO_ID }}/resolve/main/${{ env.BASE_FNAME_CONVERTED_GGUF }}
     #     chmod -R +rwx ${{env.MODEL_DOWNLOAD_DIR}}
     #     echo "--------------------"
-    #     echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+    #     echo "LOCAL_FNAME_CONVERTED_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_CONVERTED_GGUF }}" >> $GITHUB_ENV
 
-    # - name: download-f16-gguf-curl
-    #   if: env.F16_FILE_EXISTS == '1'
+    # - name: download-converted-gguf-curl
+    #   if: env.CONVERTED_FILE_EXISTS == '1'
     #   run: |
-    #     echo "F16_FILE_EXISTS='$F16_FILE_EXISTS' (${{ env.F16_FILE_EXISTS }})"
+    #     echo "CONVERTED_FILE_EXISTS='$CONVERTED_FILE_EXISTS' (${{ env.CONVERTED_FILE_EXISTS }})"
     #     echo "--------------------"
     #     mkdir -p ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
     #     chmod -R +rw ${{env.MODEL_DOWNLOAD_DIR}}
     #     find ${{env.MODEL_DOWNLOAD_DIR}} ${{env.FIND_ARGS}}
     #     echo "--------------------"
-    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_F16_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
+    #     ./llama.cpp/scripts/hf.sh --repo ${{ env.TARGET_REPO_ID }} --file ${{ env.BASE_FNAME_CONVERTED_GGUF }} --outdir ${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}
     #     echo "--------------------"
-    #     echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+    #     echo "LOCAL_FNAME_CONVERTED_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_CONVERTED_GGUF }}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -253,15 +256,15 @@ jobs:
         pip list
 
     - name: download-model-snapshot
-      if: env.F16_FILE_EXISTS == '0'
+      if: env.CONVERTED_FILE_EXISTS == '0'
       run: |
         python ./scripts/hf_model_download_snapshot.py ${{env.MODEL_DOWNLOAD_DIR}} $REPO_ORG $REPO_NAME
         find models ${{env.FIND_ARGS}}
 
     - name: convert-hf-to-gguf
-      if: env.F16_FILE_EXISTS == '0'
+      if: env.CONVERTED_FILE_EXISTS == '0'
       run: |
-        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_F16_GGUF }} --verbose
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} --verbose
         ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     - name: print-storage-memory-info
@@ -288,10 +291,10 @@ jobs:
     - name: quantize-gguf
       run: |
         echo "--------------------"
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"
+        echo "LOCAL_FNAME_CONVERTED_GGUF='$LOCAL_FNAME_CONVERTED_GGUF' (${{ env.LOCAL_FNAME_CONVERTED_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
 
     - name: find-gguf-files
       if: inputs.debug == true
@@ -301,7 +304,7 @@ jobs:
         echo "--------------------"
 
     - name: delete-previous-upload
-      if: env.F16_OPT_ENABLED == 'true'
+      if: env.UPLOAD_CONVERTED_ENABLED == 'true'
       run: |
         exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
         echo "exists: '$exists'"
