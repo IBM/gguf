@@ -50,7 +50,7 @@ on:
 
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # "bf16"
+  DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
   MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
