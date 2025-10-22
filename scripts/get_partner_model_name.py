@@ -56,6 +56,7 @@ class ABSTRACT_MODEL_PARAMETER_SIZES(StrEnum):
     LARGE   = "large"
 
 class SUPPORTED_MODEL_QUANTIZATIONS(StrEnum):
+    BF16    = "bf16"
     F32     = "f32"
     F16     = "f16"
     FP16    = "fp16"
