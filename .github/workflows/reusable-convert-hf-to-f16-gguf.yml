@@ -50,7 +50,7 @@ on:
 
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "f16" # "bf16"
+  DEF_PRECISION: "bf16" # "bf16"
   EXT_GGUF: .gguf
   MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
@@ -211,6 +211,7 @@ jobs:
         fi
         python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
             --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}} \
+            --outtype ${{env.DEF_PRECISION}}
             --verbose
         ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
