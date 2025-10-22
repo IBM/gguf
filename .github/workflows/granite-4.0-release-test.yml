@@ -14,11 +14,11 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: false
+  ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_DOCLING_JOBS: true
+  ENABLE_DOCLING_JOBS: false
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
