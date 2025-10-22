@@ -23,10 +23,10 @@ env:
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
 
-  # 'ibm-granite/granite-4.0-300m',
-  # 'ibm-granite/granite-4.0-300m-base',
-  # 'ibm-granite/granite-4.0-h-300m',
-  # 'ibm-granite/granite-4.0-h-300m-base',
+  # 'ibm-granite/granite-4.0-350m',
+  # 'ibm-granite/granite-4.0-350m-base',
+  # 'ibm-granite/granite-4.0-h-350m',
+  # 'ibm-granite/granite-4.0-h-350m-base',
   # 'ibm-granite/granite-4.0-1b',
   # 'ibm-granite/granite-4.0-1b-base',
   # 'ibm-granite/granite-4.0-h-1b',
@@ -40,10 +40,10 @@ env:
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-4.0-300m',
-    'ibm-granite/granite-4.0-300m-base',
-    'ibm-granite/granite-4.0-h-300m',
-    'ibm-granite/granite-4.0-h-300m-base',
+    'ibm-granite/granite-4.0-350m',
+    'ibm-granite/granite-4.0-350m-base',
+    'ibm-granite/granite-4.0-h-350m',
+    'ibm-granite/granite-4.0-h-350m-base',
     'ibm-granite/granite-4.0-1b',
     'ibm-granite/granite-4.0-1b-base',
     'ibm-granite/granite-4.0-h-1b',

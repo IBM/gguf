@@ -304,28 +304,28 @@
                     "type": "model",
                     "size": "nano",
                     "family": "instruct",
-                    "repo_name": "granite-4.0-300m",
+                    "repo_name": "granite-4.0-350m",
                     "default_quant": "bf16"
                 },
                 {
                     "type": "model",
                     "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-300m-base",
+                    "repo_name":"granite-4.0-350m-base",
                     "default_quant": "bf16"
                 },
                 {
                     "type": "model",
                     "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-300m",
+                    "repo_name":"granite-4.0-h-350m",
                     "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
                     "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-300m-base",
+                    "repo_name":"granite-4.0-h-350m-base",
                     "default_quant": "q8_0"
                 },
                 {

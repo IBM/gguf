@@ -37,6 +37,7 @@ class SUPPORTED_MODEL_PARAMETER_SIZES(StrEnum):
     M278 = "278m"
     M258 = "258m" # docling
     M300 = "300m"
+    M350 = "350m"
     B1   = "1b"
     B2   = "2b"
     B3   = "3b"

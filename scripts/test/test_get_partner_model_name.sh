@@ -57,21 +57,21 @@ test() {
 if [[ $RUN_G4_TESTS -eq 1 ]]; then
 echo -e "${YELLOW}Running Granite 4 tests..."
 
-# nano-300m, nano-300m-base
-input="granite-4.0-300m-Q4_K_M.gguf"
+# nano-350m, nano-350m-base
+input="granite-4.0-350m-Q4_K_M.gguf"
 expected="granite4:300m-q4_K_M"
 test "$input" "$expected"
 
-input="granite-4.0-300m-base-Q4_K_M.gguf"
+input="granite-4.0-350m-base-Q4_K_M.gguf"
 expected="granite4:300m-base-q4_K_M"
 test "$input" "$expected"
 
-# h-300m, h-300m-base
-input="granite-4.0-h-300m-Q4_K_M.gguf"
+# h-350m, h-350m-base
+input="granite-4.0-h-350m-Q4_K_M.gguf"
 expected="granite4:300m-h-q4_K_M"
 test "$input" "$expected"
 
-input="granite-4.0-h-300m-base-Q4_K_M.gguf"
+input="granite-4.0-h-350m-base-Q4_K_M.gguf"
 expected="granite4:300m-h-base-q4_K_M"
 test "$input" "$expected"
 
