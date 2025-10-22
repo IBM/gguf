@@ -59,20 +59,20 @@ echo -e "${YELLOW}Running Granite 4 tests..."
 
 # nano-350m, nano-350m-base
 input="granite-4.0-350m-Q4_K_M.gguf"
-expected="granite4:300m-q4_K_M"
+expected="granite4:350m-q4_K_M"
 test "$input" "$expected"
 
 input="granite-4.0-350m-base-Q4_K_M.gguf"
-expected="granite4:300m-base-q4_K_M"
+expected="granite4:350m-base-q4_K_M"
 test "$input" "$expected"
 
 # h-350m, h-350m-base
 input="granite-4.0-h-350m-Q4_K_M.gguf"
-expected="granite4:300m-h-q4_K_M"
+expected="granite4:350m-h-q4_K_M"
 test "$input" "$expected"
 
 input="granite-4.0-h-350m-base-Q4_K_M.gguf"
-expected="granite4:300m-h-base-q4_K_M"
+expected="granite4:350m-h-base-q4_K_M"
 test "$input" "$expected"
 
 # nano-1b, nano-1b-base
