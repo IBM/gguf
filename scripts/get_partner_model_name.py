@@ -206,13 +206,27 @@ if __name__ == "__main__":
                model_release_stage = stage
                break
 
+        # print(f"model_family='{model_family}'\n \
+        #     model_layer_desc='{model_layer_desc}'\n \
+        #     model_arch_desc='{model_arch_desc}'\n \
+        #     model_modality='{model_modality}'\n \
+        #     model_version='{model_version}'\n \
+        #     model_parameter_size='{model_parameter_size}'\n \
+        #     model_abstract_size='{model_abstract_size}'\n \
+        #     model_active_parameter_count='{model_active_parameter_count}'\n \
+        #     model_quantization='{model_quantization}'\n \
+        #     model_language='{model_language}'\n \
+        #     model_release_stage='{model_release_stage}'")
+
         # Granite 4.0 fixup: as this version's HF model names do not include "instruct" (i.e., assumed default)
         # For now, we use the presence of an abstract "size" as an indicator of this case (assuming
         # this abstract naming will continue post v4).
-        if model_modality == "" and (model_abstract_size in ABSTRACT_MODEL_PARAMETER_SIZES):
-            if model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW:
-                # HACK: for "tiny-preview"
-                model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
+        # if (model_abstract_size in ABSTRACT_MODEL_PARAMETER_SIZES):
+        if model_modality == "":
+            if model_abstract_size in [member.value for member in ABSTRACT_MODEL_PARAMETER_SIZES]:
+                if model_release_stage == SUPPORTED_RELEASE_STAGES.PREVIEW:
+                    # HACK: for "tiny-preview"
+                    model_modality = SUPPORTED_MODEL_MODALITIES.INSTRUCT
 
         # if model_parameter_size == "":
         #     raise ValueError(f"Parameter size not found in model name: `{normalized_model_name}`")

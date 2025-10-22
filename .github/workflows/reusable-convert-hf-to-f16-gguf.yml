@@ -51,6 +51,7 @@ on:
 env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_BF16: "-bf16.gguf"
   MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
@@ -64,7 +65,7 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_TRANSFORMERS_VERSION: "4.52.4"
+      HF_TRANSFORMERS_VERSION: "4.52.4" # "4.52.4"
       LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
     steps:
 
@@ -106,6 +107,7 @@ jobs:
         echo "inputs.repo_id: ${{ inputs.repo_id }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
         echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
+        echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
@@ -127,6 +129,7 @@ jobs:
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_BF16_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).

@@ -303,49 +303,56 @@
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name":    "granite-4.0-nano-300m",
+                    "repo_name":    "granite-4.0-300m",
                     "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-nano-300m-base",
+                    "repo_name":"granite-4.0-300m-base",
                     "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-nano-300m",
+                    "repo_name":"granite-4.0-h-300m",
                     "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-nano-300m-base",
+                    "repo_name":"granite-4.0-h-300m-base",
                     "default_quant": "q8_0"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-nano-1b",
+                    "repo_name":"granite-4.0-1b",
                     "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-nano-1b-base",
+                    "repo_name":"granite-4.0-1b-base",
                     "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-nano-1b",
+                    "repo_name":"granite-4.0-h-1b",
                     "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
+                    "size": "nano",
                     "family": "instruct",
-                    "repo_name":"granite-4.0-h-nano-1b-base",
+                    "repo_name":"granite-4.0-h-1b-base",
                     "default_quant": "q4_K_M"
                 },
                 {
