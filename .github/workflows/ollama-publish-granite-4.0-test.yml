@@ -42,7 +42,6 @@ env:
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_INSTRUCT_REPOS: "[
     'ibm-granite/granite-4.0-h-1b',
-    'ibm-granite/granite-4.0-h-1b-base'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -285,7 +284,7 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ollama_token: ${{ secrets.OLLAMA_TOKEN }}
 
   # ===========================================================================
