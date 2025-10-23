@@ -30,13 +30,13 @@ env:
   # 'ibm-granite/granite-4.0-1b',
   # 'ibm-granite/granite-4.0-1b-base',
   # 'ibm-granite/granite-4.0-h-1b',
-  # 'ibm-granite/granite-4.0-h-1b-base'
+  # 'ibm-granite/granite-4.0-h-1b-base',
   # 'ibm-granite/granite-4.0-micro',
-  # 'ibm-granite/granite-4.0-micro-base'
+  # 'ibm-granite/granite-4.0-micro-base',
   # 'ibm-granite/granite-4.0-h-micro',
-  # 'ibm-granite/granite-4.0-h-micro-base'
+  # 'ibm-granite/granite-4.0-h-micro-base',
   # 'ibm-granite/granite-4.0-h-tiny',
-  # 'ibm-granite/granite-4.0-h-tiny-base'
+  # 'ibm-granite/granite-4.0-h-tiny-base',
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
@@ -107,6 +107,7 @@ jobs:
   # Environment setup
   # ===========================================================================
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
+  # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
   environment-setup:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
@@ -303,7 +304,7 @@ jobs:
     with:
       granite_family: "docling"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}

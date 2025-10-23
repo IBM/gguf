@@ -14,11 +14,11 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: false
+  ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_DOCLING_JOBS: true
+  ENABLE_DOCLING_JOBS: false
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -30,11 +30,11 @@ env:
   # 'ibm-granite/granite-4.0-1b',
   # 'ibm-granite/granite-4.0-1b-base',
   # 'ibm-granite/granite-4.0-h-1b',
-  # 'ibm-granite/granite-4.0-h-1b-base'
+  # 'ibm-granite/granite-4.0-h-1b-base',
   # 'ibm-granite/granite-4.0-micro',
-  # 'ibm-granite/granite-4.0-micro-base'
+  # 'ibm-granite/granite-4.0-micro-base',
   # 'ibm-granite/granite-4.0-h-micro',
-  # 'ibm-granite/granite-4.0-h-micro-base'
+  # 'ibm-granite/granite-4.0-h-micro-base',
   # 'ibm-granite/granite-4.0-h-tiny',
   # 'ibm-granite/granite-4.0-h-tiny-base',
   # 'ibm-granite/granite-4.0-h-small',
@@ -54,14 +54,16 @@ env:
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
   # 'Q6_K',
-  # 'Q8_0'
+  # 'Q8_0',
+  # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q2_K',
     'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
     'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
     'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
     'Q6_K',
-    'Q8_0'
+    'Q8_0',
+    'F16'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'None'
