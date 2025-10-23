@@ -32,6 +32,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_docling_jobs:
+        type: boolean
+        required: false
+        default: false
       source_repo_owner:
         type: string
         required: true

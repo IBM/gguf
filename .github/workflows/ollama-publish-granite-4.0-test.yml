@@ -14,11 +14,12 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
+  ENABLE_OLLAMA_PUSH: true
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_OLLAMA_PUSH: true
+  ENABLE_DOCLING_JOBS: false
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -30,34 +31,30 @@ env:
   # 'ibm-granite/granite-4.0-1b',
   # 'ibm-granite/granite-4.0-1b-base',
   # 'ibm-granite/granite-4.0-h-1b',
-  # 'ibm-granite/granite-4.0-h-1b-base'
+  # 'ibm-granite/granite-4.0-h-1b-base',
   # 'ibm-granite/granite-4.0-micro',
-  # 'ibm-granite/granite-4.0-micro-base'
+  # 'ibm-granite/granite-4.0-micro-base',
   # 'ibm-granite/granite-4.0-h-micro',
-  # 'ibm-granite/granite-4.0-h-micro-base'
+  # 'ibm-granite/granite-4.0-h-micro-base',
   # 'ibm-granite/granite-4.0-h-tiny',
   # 'ibm-granite/granite-4.0-h-tiny-base',
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_INSTRUCT_REPOS: "[
-    'ibm-granite/granite-4.0-micro',
-    'ibm-granite/granite-4.0-h-micro',
-    'ibm-granite/granite-4.0-h-tiny',
-    'ibm-granite/granite-4.0-h-small'
+    'ibm-granite/granite-4.0-h-1b',
+    'ibm-granite/granite-4.0-h-1b-base'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
   # 'Q6_K',
-  # 'Q8_0'
+  # 'Q8_0',
+  # 'F16'
   SOURCE_INSTRUCT_QUANTIZATIONS: "[
-    'Q2_K',
-    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-    'Q6_K',
-    'Q8_0'
+    'Q4_K_M',
+    'Q8_0',
+    'F16'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'ibm-granite/granite-guardian-3.3-8b'
@@ -76,6 +73,12 @@ env:
   ]"
   SOURCE_EMBEDDING_QUANTIZATIONS: "[
     'Q8_0'
+  ]"
+  SOURCE_DOCLING_REPOS: "[
+    'None'
+  ]"
+  SOURCE_DOCLING_QUANTIZATIONS: "[
+    'None'
   ]"
   SOURCE_HF_REPO_NAME_EXT: -GGUF
   SOURCE_HF_REPO_OWNER: ibm-granite
@@ -98,6 +101,7 @@ jobs:
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
+      enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       source_repo_private: ${{ steps.set-vars.outputs.source_repo_private }}
       source_repo_owner: ${{ steps.set-vars.outputs.source_repo_owner }}
@@ -116,49 +120,63 @@ jobs:
       target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
       target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_embedding_quants }}"
       target_ollama_vision_quants: "${{ steps.set-vars.outputs.target_ollama_vision_quants }}"
+      source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
+      target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
     env:
       ARRAY_SEP: "','"
-      QUANT_F16: "f16"
+      DEF_CONVERTED_QUANT: "bf16" # "f16"
     steps:
       - name: List all environment variables
         id: list-env-vars
         run: env | sort
 
-      - name: Append f16 to Ollama llm quants
-        id: ollama-append-llm-quants
+      # TODO: allow diff. models to have diff. converted quant. default (e.g., "f16" for guardian)
+      # Append "default quant. (i.e., from initial safetensors to gguf conversion
+      # such as "f16") to Ollama the quants. matrix
+      - name: Append initial converted quant. to llm matrix
+        id: ollama-append-default-to-llm-quant-matrix
         run: |
           echo "Appending to SOURCE_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
           echo "TARGET_OLLAMA_LLM_QUANTS=$TARGET_OLLAMA_LLM_QUANTS" >> $GITHUB_ENV
 
-      - name: Append f16 to Ollama guardian quants
-        id: ollama-append-guardian-quants
+      - name: Append initial converted quant. to guardian matrix
+        id: ollama-append-default-to-guardian-quant-matrix
         run: |
           echo "Appending to SOURCE_GUARDIAN_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_GUARDIAN_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_GUARDIAN_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          TARGET_OLLAMA_GUARDIAN_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
           echo "TARGET_OLLAMA_GUARDIAN_QUANTS=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> $GITHUB_ENV
 
-      - name: Append f16 to Ollama embedding quants
-        id: ollama-append-embedding-quants
+      - name: Append initial converted quant. to embedding matrix
+        id: ollama-append-default-to-embedding-quant-matrix
         run: |
           echo "Appending to SOURCE_EMBEDDING_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_EMBEDDING_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_EMBEDDING_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_EMBEDDING_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          TARGET_OLLAMA_EMBEDDING_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
           echo "TARGET_OLLAMA_EMBEDDING_QUANTS=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> $GITHUB_ENV
 
-      - name: Append f16 to Ollama vision quants
-        id: ollama-append-vision-quants
+      - name: Append initial converted quant. to vision matrix
+        id: ollama-append-default-to-vision-quant-matrix
         run: |
           echo "Appending to SOURCE_VISION_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_VISION_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_VISION_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_VISION_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.QUANT_F16}}']"
+          TARGET_OLLAMA_VISION_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
           echo "TARGET_OLLAMA_VISION_QUANTS=$TARGET_OLLAMA_VISION_QUANTS" >> $GITHUB_ENV
+
+      - name: Append initial converted quant. to docling matrix
+        id: ollama-append-default-to-vision-quant-matrix
+        run: |
+          echo "Appending to SOURCE_DOCLING_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_DOCLING_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_DOCLING_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_DOCLING_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
+          echo "TARGET_OLLAMA_DOCLING_QUANTS=$TARGET_OLLAMA_DOCLING_QUANTS" >> $GITHUB_ENV
 
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -170,28 +188,32 @@ jobs:
             echo "SOURCE_HF_REPO_OWNER: $SOURCE_HF_REPO_OWNER"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
+            echo "source_repo_private=$SOURCE_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "source_repo_name_ext=$SOURCE_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_repo_owner=$SOURCE_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_instruct_quantizations=$SOURCE_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "source_repo_private=$SOURCE_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_vision_quantizations=$SOURCE_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_quantizations=$SOURCE_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_quantizations=$SOURCE_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_docling_repos=$SOURCE_DOCLING_REPOS" >> "$GITHUB_OUTPUT"
+            echo "source_docling_quantizations=$SOURCE_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "enable_ollama_push=$ENABLE_OLLAMA_PUSH" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
             echo "target_ollama_llm_quants=$TARGET_OLLAMA_LLM_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_guardian_quants=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_embedding_quants=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_vision_quants=$TARGET_OLLAMA_VISION_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_docling_quants=$TARGET_OLLAMA_DOCLING_QUANTS" >> "$GITHUB_OUTPUT"
 
       - name: Verify updated environment variables
         id: verify-updated-env-vars
@@ -206,6 +228,7 @@ jobs:
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
+            echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "source_repo_owner: '${{ steps.set-vars.outputs.source_repo_owner }}'"
             echo "source_repo_name_ext: '${{ steps.set-vars.outputs.source_repo_name_ext }}'"
@@ -218,6 +241,8 @@ jobs:
             echo "source_guardian_quantizations: '${{ steps.set-vars.outputs.source_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
             echo "source_embedding_quantizations: '${{ steps.set-vars.outputs.source_embedding_quantizations }}'"
+            echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
+            echo "source_docling_quantizations: '${{ steps.set-vars.outputs.source_docling_quantizations }}'"
             echo "enable_ollama_push: '${{ steps.set-vars.outputs.enable_ollama_push }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
             echo "target_ollama_llm_quants: '${{ steps.set-vars.outputs.target_ollama_llm_quants }}'"
@@ -337,7 +362,35 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+
+  # ===========================================================================
+  # Ollama (docling)
+  # ===========================================================================
+  ollama-release-docling-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-push-ollama-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_docling_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_docling_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
