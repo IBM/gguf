@@ -170,7 +170,7 @@ jobs:
           echo "TARGET_OLLAMA_VISION_QUANTS=$TARGET_OLLAMA_VISION_QUANTS" >> $GITHUB_ENV
 
       - name: Append initial converted quant. to docling matrix
-        id: ollama-append-default-to-vision-quant-matrix
+        id: ollama-append-default-to-docling-quant-matrix
         run: |
           echo "Appending to SOURCE_DOCLING_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_DOCLING_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_DOCLING_QUANTIZATIONS), env.ARRAY_SEP) }}"
