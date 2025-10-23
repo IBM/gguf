@@ -41,7 +41,14 @@ env:
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_INSTRUCT_REPOS: "[
+    'ibm-granite/granite-4.0-350m',
+    'ibm-granite/granite-4.0-350m-base',
+    'ibm-granite/granite-4.0-h-350m',
+    'ibm-granite/granite-4.0-h-350m-base',
+    'ibm-granite/granite-4.0-1b',
+    'ibm-granite/granite-4.0-1b-base',
     'ibm-granite/granite-4.0-h-1b',
+    'ibm-granite/granite-4.0-h-1b-base'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -248,6 +255,7 @@ jobs:
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
             echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
             echo "target_ollama_vision_quants: '${{ steps.set-vars.outputs.target_ollama_vision_quants }}'"
+            echo "target_ollama_docling_quants: '${{ steps.set-vars.outputs.target_ollama_docling_quants }}'"
 
       # - name: List all environment variables
       #   run: env | sort
