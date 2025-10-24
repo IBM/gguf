@@ -88,9 +88,7 @@ env:
   ]"
   SOURCE_HF_REPO_NAME_EXT: -GGUF
   SOURCE_HF_REPO_OWNER: ibm-granite
-  # SOURCE_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
-  # orgs: ibm | mrutkows
   TARGET_OLLAMA_ORG: mrutkows
 
 jobs:
@@ -195,13 +193,12 @@ jobs:
             echo "SOURCE_HF_REPO_OWNER: $SOURCE_HF_REPO_OWNER"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
-            echo "source_repo_private=$SOURCE_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
-            echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "source_repo_name_ext=$SOURCE_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_repo_owner=$SOURCE_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
@@ -231,15 +228,15 @@ jobs:
             echo "ollama_debug: ${{ steps.set-vars.outputs.ollama_debug }}"
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
+            echo "source_repo_owner: '${{ steps.set-vars.outputs.source_repo_owner }}'"
+            echo "source_repo_name_ext: '${{ steps.set-vars.outputs.source_repo_name_ext }}'"
+            echo "source_repo_private: '${{ steps.set-vars.outputs.source_repo_private }}'"
+            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
-            echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
-            echo "source_repo_owner: '${{ steps.set-vars.outputs.source_repo_owner }}'"
-            echo "source_repo_name_ext: '${{ steps.set-vars.outputs.source_repo_name_ext }}'"
-            echo "source_repo_private: '${{ steps.set-vars.outputs.source_repo_private }}'"
             echo "source_instruct_repos: '${{ steps.set-vars.outputs.source_instruct_repos }}'"
             echo "source_instruct_quantizations: '${{ steps.set-vars.outputs.source_instruct_quantizations }}'"
             echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
