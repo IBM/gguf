@@ -1,0 +1,4 @@
+The sky is blue because Earth's atmosphere scatters sunlight. White sunlight is
+made up of different colors, each with its own wavelength. The tiny gas molecules
+in the atmosphere scatter the shorter, blue wavelengths of light more effectively
+than the longer, red wavelengths. This phenomenon is known as Rayleigh scattering.
