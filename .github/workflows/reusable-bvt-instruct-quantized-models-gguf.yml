@@ -302,7 +302,7 @@ jobs:
     - name: test-llama-cli-response-with-regex-3
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
-        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}"
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
 
         # Extract the last line of the output, which contains "true" or "false"
         return_value=$(echo "$python_output" | tail -n 1)
