@@ -120,14 +120,15 @@ jobs:
       source_guardian_quantizations: "${{ steps.set-vars.outputs.source_guardian_quantizations }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       source_embedding_quantizations: "${{ steps.set-vars.outputs.source_embedding_quantizations }}"
+      source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
+      source_docling_quantizations: "${{ steps.set-vars.outputs.source_docling_quantizations }}"
       enable_ollama_push: ${{ steps.set-vars.outputs.enable_ollama_push }}
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       target_ollama_llm_quants: "${{ steps.set-vars.outputs.target_ollama_llm_quants }}"
       target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
       target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_embedding_quants }}"
       target_ollama_vision_quants: "${{ steps.set-vars.outputs.target_ollama_vision_quants }}"
-      source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
-      target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
+      target_ollama_docling_quants: "${{ steps.set-vars.outputs.target_ollama_docling_quants }}"
     env:
       ARRAY_SEP: "','"
       DEF_CONVERTED_QUANT: "bf16" # "f16"
