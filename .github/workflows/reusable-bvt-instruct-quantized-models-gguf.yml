@@ -299,6 +299,27 @@ jobs:
           echo "[SUCCESS] Regex '${{env.LLAMA_RESPONSE_REGEX}}' matched in llama-cli response."
         fi
 
+    - name: test-llama-cli-response-with-regex-3
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}"
+
+        # Extract the last line of the output, which contains "true" or "false"
+        return_value=$(echo "$python_output" | tail -n 1)
+
+        # Print the captured output for verification
+        echo "Full Python Output:"
+        echo "$python_output"
+
+        echo "Extracted Return Value: $return_value"
+
+        # Use the extracted "boolean" string in a conditional
+        if [ "$return_value" = "true" ]; then
+            echo "Python script returned true."
+        else
+            echo "Python script returned false."
+        fi
+
     # - name: test-llama-run
     #   if: env.TEST_LLAMA_RUN == 'true'
     #   timeout-minutes: 10
