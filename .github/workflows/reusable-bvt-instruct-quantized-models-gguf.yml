@@ -332,7 +332,13 @@ jobs:
     #     fi
 
     - name: Upload artifact
+      id: artifact-upload-log
       uses: actions/upload-artifact@v4
       with:
+        overwrite: true
+        retention-days: 3
         name: ${{env.BASE_FNAME_LOG_FILE}}
         path: ${{env.BASE_FNAME_LOG_FILE}}
+
+    - name: Output artifact ID
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
