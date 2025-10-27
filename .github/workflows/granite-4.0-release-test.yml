@@ -401,6 +401,7 @@ jobs:
       - name: Aggregate results
         run: |
           ls -al
+          ls -al artifacts
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
