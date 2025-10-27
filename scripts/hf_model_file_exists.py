@@ -1,6 +1,6 @@
 import os
 import sys
-import requests
+# import requests
 
 from huggingface_hub import file_exists
 from huggingface_hub.utils import HfHubHTTPError
@@ -35,14 +35,14 @@ def model_file_exists(
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', test_file_name: '{test_filename}'")
         return False
-    except requests.exceptions.HTTPError as exc:
-        print(f"HTTPError: {exc}")
-    except requests.exceptions.ConnectionError as exc:
-        print(f"ConnectionError: {exc}")
-    except requests.exceptions.Timeout as exc:
-        print(f"Timeout: {exc}")
-    except requests.exceptions.RequestException as exc:
-        print(f"RequestException: {exc}")
+    # except requests.exceptions.HTTPError as exc:
+    #     print(f"HTTPError: {exc}")
+    # except requests.exceptions.ConnectionError as exc:
+    #     print(f"ConnectionError: {exc}")
+    # except requests.exceptions.Timeout as exc:
+    #     print(f"Timeout: {exc}")
+    # except requests.exceptions.RequestException as exc:
+    #     print(f"RequestException: {exc}")
     except Exception as exc:
         print(f"Exception: {exc}")
     return False

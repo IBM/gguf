@@ -1,6 +1,6 @@
 import sys
 import argparse
-import requests
+# import requests
 import ast
 import json
 
@@ -28,14 +28,16 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
         )
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
-    except requests.exceptions.HTTPError as exc:
-        print(f"HTTPError: {exc}")
-    except requests.exceptions.ConnectionError as exc:
-        print(f"ConnectionError: {exc}")
-    except requests.exceptions.Timeout as exc:
-        print(f"Timeout: {exc}")
-    except requests.exceptions.RequestException as exc:
-        print(f"RequestException: {exc}")
+    # except requests.exceptions.HTTPError as exc:
+    #     print(f"HTTPError: {exc}")
+    # except requests.exceptions.ConnectionError as exc:
+    #     print(f"ConnectionError: {exc}")
+    # except requests.exceptions.Timeout as exc:
+    #     print(f"Timeout: {exc}")
+    # except requests.exceptions.RequestException as exc:
+    #     print(f"RequestException: {exc}")
+    except Exception as exc:
+        print(f"Exception: {exc}")
     else:
         return repo_url
     return None
