@@ -331,7 +331,7 @@ jobs:
     #       exit 1
     #     fi
 
-    - name: Upload artifact
+    - name: Upload log artifact
       id: artifact-upload-log
       uses: actions/upload-artifact@v4
       with:

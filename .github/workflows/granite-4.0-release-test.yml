@@ -385,6 +385,20 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  aggregate-language-results:
+    runs-on: ubuntu-latest
+    needs: [bvt-language-quantized-gguf-models] # matrix_job # Depends on the matrix job
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download log artifacts
+        id: artifact-download-logs
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts # Downloads all artifacts into this directory
+      - name: Aggregate results
+        run: |
+          ls -al
+
   # TODO: change collection from private to public (on success)
   create-hf-collections:
     needs: [
