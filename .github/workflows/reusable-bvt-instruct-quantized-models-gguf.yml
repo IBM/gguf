@@ -115,7 +115,7 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{ env.REPO_NAME }}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{ inputs.repo_id }}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -329,3 +329,9 @@ jobs:
     #     if [ $? -eq 1 ]; then
     #       exit 1
     #     fi
+
+ - name: Upload artifact
+   uses: actions/upload-artifact@v4
+   with:
+     name: ${{env.BASE_FNAME_LOG_FILE}}
+     path: ${{env.BASE_FNAME_LOG_FILE}}
