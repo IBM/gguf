@@ -340,15 +340,14 @@ jobs:
         retention-days: 3
         name: ${{env.BASE_FNAME_LOG_FILE}}
         path: ${{env.BASE_FNAME_LOG_FILE}}
-
     - name: Output artifact ID
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
-  upload-to-release:
-    steps:
-      - uses: Shopify/upload-to-release@v1
-        with:
-          name: ${{env.BASE_FNAME_LOG_FILE}}
-          path: ${{env.BASE_FNAME_LOG_FILE}}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          content-type: text/plain # Optional
+    - name: Upload log to release
+      id: release-upload-log
+      uses: Shopify/upload-to-release@v1
+      with:
+        name: ${{env.BASE_FNAME_LOG_FILE}}
+        path: ${{env.BASE_FNAME_LOG_FILE}}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        content-type: text/plain # Optional
