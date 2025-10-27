@@ -330,7 +330,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  convert-hf-to-f16-gguf:
+  language-convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
     permissions:
@@ -352,8 +352,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  quantize-upload-gguf:
-    needs: [ environment-setup, convert-hf-to-f16-gguf ]
+  language-quantize-upload-gguf:
+    needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
     permissions:
       contents: write
       packages: write
@@ -376,7 +376,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   bvt-language-quantized-gguf-models:
-    needs: [ environment-setup, quantize-upload-gguf ]
+    needs: [ environment-setup, language-quantize-upload-gguf ]
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write

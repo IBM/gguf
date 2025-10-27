@@ -37,6 +37,7 @@ on:
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
