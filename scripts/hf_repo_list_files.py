@@ -1,6 +1,5 @@
 import os
 import sys
-# import requests
 
 from typing import List
 from huggingface_hub import list_repo_files
@@ -28,26 +27,10 @@ def list_model_files(
             repo_type="model",
             token=hf_token,
         )
-        # print(f"file_list: {file_list}")
-        # for filename in file_list:
-        #     if filename==test_filename:
-        #         print("File exists")
-        #         return True
-        # else:
-        #     print("File does not exist")
-        #     return False
 
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
         return False
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
     except Exception as exc:
         print(f"Exception: {exc}")
     return None

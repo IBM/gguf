@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-# import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
 from huggingface_hub.utils import HfHubHTTPError
@@ -99,14 +98,6 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
             print(f"[WARNING] Collection '{title}' already exists in namespace '{hf_owner}'")
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
     except Exception as exc:
         print(f"Exception: {exc}")
     else:

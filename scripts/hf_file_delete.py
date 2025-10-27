@@ -1,6 +1,5 @@
 import os
 import sys
-# import requests
 
 from huggingface_hub import delete_file
 from huggingface_hub.utils import HfHubHTTPError
@@ -45,18 +44,6 @@ def safe_delete_file(
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', file_name: '{file_name}'")
         sys.exit(2)
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
-    #     sys.exit(2)
     except Exception as exc:
         print(f"Other Exception: {exc}")
         sys.exit(2)

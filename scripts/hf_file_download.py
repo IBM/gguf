@@ -1,5 +1,4 @@
 import sys
-# import requests
 import argparse
 
 from typing import List
@@ -73,18 +72,6 @@ def safe_download_file(
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', file_name: '{file_name}'")
         sys.exit(2)
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    #     sys.exit(2)
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
-    #     sys.exit(2)
     except Exception as exc:
         print(f"Exception: {exc}")
         sys.exit(2)

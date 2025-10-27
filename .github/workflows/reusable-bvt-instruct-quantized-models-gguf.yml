@@ -115,7 +115,7 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{ inputs.repo_id }}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{ env.REPO_NAME }}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -271,6 +271,7 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
       continue-on-error: true
       run: |
+        ls -al
         echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
 
     - name: test-print-llama-cli-response-with-metrics
@@ -302,7 +303,7 @@ jobs:
     #       echo "[SUCCESS] Regex '${{env.LLAMA_RESPONSE_REGEX}}' matched in llama-cli response."
     #     fi
 
-    - name: test-llama-cli-response-with-regex-3
+    - name: test-llama-cli-response-with-regex-2-word-match
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
         python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")

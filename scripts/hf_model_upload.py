@@ -1,6 +1,5 @@
 import os
 import sys
-# import requests
 
 from huggingface_hub import upload_file, CommitInfo
 from huggingface_hub.utils import HfHubHTTPError
@@ -48,14 +47,6 @@ def safe_upload_file(
         )
     except HfHubHTTPError as exc:
         print(f"[ERROR] HfHubHTTPError: {exc.server_message}, repo_name: '{repo_id}', model_file: '{model_file}'")
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
     except Exception as exc:
         print(f"Exception: {exc}")
     else:

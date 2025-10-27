@@ -1,6 +1,5 @@
 import os
 import sys
-# import requests
 
 from huggingface_hub import list_collections, delete_collection, Collection
 from huggingface_hub import delete_repo
@@ -93,14 +92,6 @@ def safe_delete_collection_in_namespace(hf_owner:str="", title:str="", hf_token:
             print(f"[WARNING] Collection '{title}' not found in namespace '{hf_owner}'")
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
-    # except requests.exceptions.HTTPError as exc:
-    #     print(f"HTTPError: {exc}")
-    # except requests.exceptions.ConnectionError as exc:
-    #     print(f"ConnectionError: {exc}")
-    # except requests.exceptions.Timeout as exc:
-    #     print(f"Timeout: {exc}")
-    # except requests.exceptions.RequestException as exc:
-    #     print(f"RequestException: {exc}")
     except Exception as exc:
         print(f"Exception: {exc}")
     else:
