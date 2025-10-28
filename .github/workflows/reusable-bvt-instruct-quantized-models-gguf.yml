@@ -345,7 +345,7 @@ jobs:
 
     - name: Upload log to release
       id: release-upload-log
-      uses: Shopify/upload-to-release@v1
+      uses: Shopify/upload-to-release@v2
       with:
         name: ${{env.BASE_FNAME_LOG_FILE}}
         path: ${{env.BASE_FNAME_LOG_FILE}}
