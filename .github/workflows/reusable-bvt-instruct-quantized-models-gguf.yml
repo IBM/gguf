@@ -392,12 +392,12 @@ jobs:
         echo "RELEASE_INFO=$RELEASE_INFO" >> $GITHUB_ENV
 
     - name: Get release upload URL
-        id: get-release-step
-        run: |
-          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
-            | jq -r '.upload_url')
-          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+      id: get-release-step
+      run: |
+        UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+          | jq -r '.upload_url')
+        echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
     - name: Upload Release Asset
       id: upload-release-asset
