@@ -50,8 +50,7 @@ env:
   # 'Q8_0',
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-    'Q8_0',
-    'F16'
+    'Q8_0'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'None'
@@ -176,20 +175,20 @@ jobs:
             echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
             echo "target_docling_quantizations: '${{ steps.set-vars.outputs.target_docling_quantizations }}'"
 
-      # - name: List all environment variables
-      #   run: env | sort
+      - name: List all environment variables
+        run: env | sort
 
-      # - name: Dump runner context
-      #   env:
-      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-      #   run: |
-      #     uname -a
-      #     echo "$RUNNER_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: |
+          uname -a
+          echo "$RUNNER_CONTEXT"
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GH_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GH_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"
 
       # - name: Dump GitHub quiet
       #   env:
