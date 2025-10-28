@@ -343,11 +343,23 @@ jobs:
     - name: Output artifact ID
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
+    # - name: Upload log to release
+    #   id: release-upload-log
+    #   uses: Shopify/upload-to-release@v2
+    #   with:
+    #     name: ${{env.BASE_FNAME_LOG_FILE}}
+    #     path: ${{env.BASE_FNAME_LOG_FILE}}
+    #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+    #     content-type: text/plain # Optional
+
     - name: Upload log to release
       id: release-upload-log
-      uses: Shopify/upload-to-release@v2
+      uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
+      name: Add asset to a release with GitReleaseManager
       with:
-        name: ${{env.BASE_FNAME_LOG_FILE}}
-        path: ${{env.BASE_FNAME_LOG_FILE}}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        content-type: text/plain # Optional
+        token: ${{ secrets.GITHUB_TOKEN }}
+        owner: ${{ github.repository_owner }}
+        repository: ${{ env.GITHUB_REPOSITORY }}
+        tagname: ${{env.GITHUB_REF_NAME}}
+        assets: |
+          ${{env.BASE_FNAME_LOG_FILE}}
