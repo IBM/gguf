@@ -356,10 +356,6 @@ jobs:
     #     content-type: text/plain # Optional
     - name: list params
       run: |
-        # env | sort
-        # echo "env.GITHUB_REPOSITORY_OWNER: '${{ env.GITHUB_REPOSITORY_OWNER }}'"
-        # echo "env.GITHUB_REPOSITORY: '${{ env.GITHUB_REPOSITORY }}'"
-        # echo "env.GITHUB_REF_NAME: '${{ env.GITHUB_REF_NAME }}'"
         echo "env.repository_owner : '${{ env.repository_owner }}'"
         echo "github.repository_owner : '${{ github.repository_owner }}'"
         echo "github.event.repository.name : '${{ github.event.repository.name }}'"
@@ -371,7 +367,7 @@ jobs:
         pwd
         # ls -R /Users/runner/work/gguf/gguf/
         ls -lha /Users/runner/work/gguf/gguf/
-        find /Users/runner/work/gguf/gguf/ -name "dotnet-gitreleasemanager"
+        # find /Users/runner/work/gguf/gguf/ -name "dotnet-gitreleasemanager"
 
     # - name: Upload log to release
     #   id: release-upload-log
@@ -384,6 +380,16 @@ jobs:
     #     assets: |
     #       ${{env.BASE_FNAME_LOG_FILE}}
 
+    - name: get release info
+      id: get-release-info
+      run: |
+        RELEASE_INFO=$(curl -sL \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{github.repository_owner }}/gguf/releases/tags/${{github.ref_name}}")
+        echo "RELEASE_INFO: $RELEASE_INFO"
+        echo "RELEASE_INFO=$RELEASE_INFO" >> $GITHUB_OUTPUT
+        echo "RELEASE_INFO=$RELEASE_INFO" >> $GITHUB_ENV
 
     - name: Upload Release Asset
       id: upload-release-asset
