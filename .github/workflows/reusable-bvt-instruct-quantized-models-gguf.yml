@@ -364,6 +364,7 @@ jobs:
         echo "github.repository_owner : '${{ github.repository_owner }}'"
         echo "github.event.repository.name : '${{ github.event.repository.name }}'"
         echo "github.event.ref : '${{ github.event.ref }}'"
+        echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
         ls -al ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Upload log to release
@@ -371,8 +372,8 @@ jobs:
       uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        owner: ${{ env.repository_owner }}
+        owner: ${{ github.repository_owner }}
         repository: ${{ github.event.repository.name }}
-        tagname: ${{ github.event.ref }}
+        tagname: ${{ github.event.release.tag_name}}
         assets: |
           ${{env.BASE_FNAME_LOG_FILE}}
