@@ -356,18 +356,23 @@ jobs:
     #     content-type: text/plain # Optional
     - name: list params
       run: |
-        echo "env.GITHUB_REPOSITORY_OWNER: ${{ env.GITHUB_REPOSITORY_OWNER }}"
-        echo "env.GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}"
-        echo "env.GITHUB_REF_NAME: ${{ env.GITHUB_REF_NAME }}"
-        ls -al
+        env | sort
+        echo "env.GITHUB_REPOSITORY_OWNER: '${{ env.GITHUB_REPOSITORY_OWNER }}'"
+        echo "env.GITHUB_REPOSITORY: '${{ env.GITHUB_REPOSITORY }}'"
+        echo "env.GITHUB_REF_NAME: '${{ env.GITHUB_REF_NAME }}'"
+        echo "env.repository_owner : '${{ env.repository_owner }}'"
+        echo "github.repository_owner : '${{ github.repository_owner }}'"
+        echo "github.event.repository.name : '${{ github.event.repository.name }}'"
+        echo "github.event.ref : '${{ github.event.ref }}'"
+        ls -al ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Upload log to release
       id: release-upload-log
       uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        owner: ${{ github.repository_owner }}
+        owner: ${{ env.repository_owner }}
         repository: ${{ github.event.repository.name }}
-        tagname: ${{env.GITHUB_REF_NAME}}
+        tagname: ${{ github.event.ref }}
         assets: |
           ${{env.BASE_FNAME_LOG_FILE}}
