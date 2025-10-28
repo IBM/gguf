@@ -391,13 +391,21 @@ jobs:
         echo "RELEASE_INFO=$RELEASE_INFO" >> $GITHUB_OUTPUT
         echo "RELEASE_INFO=$RELEASE_INFO" >> $GITHUB_ENV
 
+    - name: Get release upload URL
+        id: get-release-step
+        run: |
+          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+            | jq -r '.upload_url')
+          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+
     - name: Upload Release Asset
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        upload_url: ${{ steps.get-release-step.outputs.upload_url }}
         asset_path: ${{env.BASE_FNAME_LOG_FILE}}
         asset_name: ${{env.BASE_FNAME_LOG_FILE}}
         asset_content_type: text/plain
