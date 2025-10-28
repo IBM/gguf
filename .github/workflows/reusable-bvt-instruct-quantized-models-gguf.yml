@@ -360,7 +360,7 @@ jobs:
       uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        owner: ${{ github.repository_owner }}
+        owner: ${{ env.GITHUB_REPOSITORY_OWNER }}
         repository: ${{ env.GITHUB_REPOSITORY }}
         tagname: ${{env.GITHUB_REF_NAME}}
         assets: |
