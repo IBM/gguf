@@ -80,19 +80,19 @@ jobs:
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
-    - name: Dump GitHub context
-      env:
-        GH_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GH_CONTEXT"
+    # - name: Dump GitHub context
+    #   env:
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT"
 
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"
+    # - name: Dump GitHub inputs
+    #   env:
+    #     GITHUB_INPUTS: ${{ toJson(inputs) }}
+    #   run: echo "$GITHUB_INPUTS"
 
-    - name: List all environment variables
-      if: ${{ github.event.inputs.debug }}
-      run: env | sort
+    # - name: List all environment variables
+    #   if: ${{ github.event.inputs.debug }}
+    #   run: env | sort
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
@@ -356,7 +356,7 @@ jobs:
     #     content-type: text/plain # Optional
     - name: list params
       run: |
-        env | sort
+        # env | sort
         # echo "env.GITHUB_REPOSITORY_OWNER: '${{ env.GITHUB_REPOSITORY_OWNER }}'"
         # echo "env.GITHUB_REPOSITORY: '${{ env.GITHUB_REPOSITORY }}'"
         # echo "env.GITHUB_REF_NAME: '${{ env.GITHUB_REF_NAME }}'"
@@ -366,17 +366,32 @@ jobs:
         echo "github.event.ref : '${{ github.event.ref }}'"
         echo "github.ref_name: ${{ github.ref_name }}"
         echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
+        echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
         ls -al ${{env.BASE_FNAME_LOG_FILE}}
         pwd
-        ls -R /Users/runner/work/gguf/gguf/
+        # ls -R /Users/runner/work/gguf/gguf/
+        ls -lha /Users/runner/work/gguf/gguf/
+        find /Users/runner/work/gguf/gguf/ -name "dotnet-gitreleasemanager"
 
-    - name: Upload log to release
-      id: release-upload-log
-      uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
+    # - name: Upload log to release
+    #   id: release-upload-log
+    #   uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
+    #   with:
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+    #     owner: ${{ github.repository_owner }}
+    #     repository: ${{ github.event.repository.name }}
+    #     tagname: ${{ github.ref_name }}
+    #     assets: |
+    #       ${{env.BASE_FNAME_LOG_FILE}}
+
+
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        owner: ${{ github.repository_owner }}
-        repository: ${{ github.event.repository.name }}
-        tagname: ${{ github.ref_name }}
-        assets: |
-          ${{env.BASE_FNAME_LOG_FILE}}
+        upload_url: ${{ github.event.release.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+        asset_path: ${{env.BASE_FNAME_LOG_FILE}}
+        asset_name: ${{env.BASE_FNAME_LOG_FILE}}
+        asset_content_type: text/plain
