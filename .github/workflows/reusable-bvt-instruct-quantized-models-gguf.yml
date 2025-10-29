@@ -253,6 +253,18 @@ jobs:
     #   run: |
     #     echo "TODO: is netstat and ps commands to get PID and kill..."
 
+
+    # - name: test-llama-run
+    #   if: env.TEST_LLAMA_RUN == 'true'
+    #   timeout-minutes: 10
+    #   continue-on-error: true
+    #   run: |
+    #     echo "invoking llama-run to test inference..."
+    #     ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
+    #     if [ $? -eq 1 ]; then
+    #       exit 1
+    #     fi
+
     # NOTE: if we want to ignore stderr use: 2>/dev/null
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
@@ -267,10 +279,10 @@ jobs:
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp 0 \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.LLAMA_CLI_RESPONSE_FILE}}
+          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-          echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+          echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
           exit 1
         fi
 
@@ -284,12 +296,12 @@ jobs:
     - name: test-print-llama-cli-response-with-metrics
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
-        echo "llama-cli: ${{env.LLAMA_CLI_RESPONSE_FILE}} ($(wc -w ${{env.LLAMA_CLI_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
     # - name: test-llama-cli-response-with-regex
     #   if: env.TEST_LLAMA_CLI == 'true'
     #   run: |
-    #     python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_RESPONSE_FILE}}
+    #     python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     echo "matched: '$matched'"
     #     if [[ "$exists" == "False" ]]; then
     #       echo "[FAILURE] Regex '${{env.LLAMA_RESPONSE_REGEX}}' NOT matched in llama-cli response."
@@ -301,7 +313,7 @@ jobs:
     # - name: test-llama-cli-response-with-regex-2
     #   if: env.TEST_LLAMA_CLI == 'true'
     #   run: |
-    #     python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}"
+    #     python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}"
     #     echo "matched: '$matched'"
     #     if [[ "$exists" == "False" ]]; then
     #       echo "[FAILURE] Regex '${{env.LLAMA_RESPONSE_REGEX}}' NOT matched in llama-cli response."
@@ -313,7 +325,7 @@ jobs:
     - name: test-llama-cli-response-with-regex-2-word-match
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
-        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.LLAMA_CLI_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
         echo "Full Python Output: $python_output"
 
         # Extract the last line of the output, which contains "true" or "false"
@@ -325,17 +337,6 @@ jobs:
         else
           echo "[FAILURE]: $python_output"
         fi
-
-    # - name: test-llama-run
-    #   if: env.TEST_LLAMA_RUN == 'true'
-    #   timeout-minutes: 10
-    #   continue-on-error: true
-    #   run: |
-    #     echo "invoking llama-run to test inference..."
-    #     ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
-    #     if [ $? -eq 1 ]; then
-    #       exit 1
-    #     fi
 
     - name: Upload log artifact
       id: artifact-upload-log
