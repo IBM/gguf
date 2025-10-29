@@ -396,9 +396,19 @@ jobs:
         asset_name: ${{env.BASE_FNAME_LOG_FILE}}
         asset_content_type: text/plain
 
+    - name: Check for response file existence
+      id: check_response_file
+      run: |
+        if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "response_file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "response_file_exists=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Upload llama.cpp CLI response to release assets
       id: upload-asset-llama-cli-response
       uses: actions/upload-release-asset@v1
+      if: steps.check_response_file.outputs.response_file_exists == 'true'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:

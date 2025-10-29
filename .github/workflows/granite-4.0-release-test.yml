@@ -414,9 +414,19 @@ jobs:
             | jq -r '.upload_url')
           echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
+      - name: Check for response file existence
+        id: check_zip_file
+        run: |
+          if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+            echo "zip_file_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "zip_file_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload artifacts as zip
         id: upload-artifacts-zip
         uses: actions/upload-release-asset@v1
+        if: steps.check_zip_file.outputs.zip_file_exists == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
