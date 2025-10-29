@@ -374,8 +374,8 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository}}/releases/tags/${{ github.ref_name }}")
         echo "RELEASE_INFO: $RELEASE_INFO"
-        TEST_UPLOAD_URL=$("$RELEASE_INFO" | jq -r '.upload_url')
-        echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
+        # TEST_UPLOAD_URL=$("$RELEASE_INFO" | jq -r '.upload_url')
+        # echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
 
     - name: Get release upload URL
       id: get-release-step
