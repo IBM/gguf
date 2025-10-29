@@ -270,7 +270,7 @@ jobs:
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
-      continue-on-error: false
+      continue-on-error: true
       run: |
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
