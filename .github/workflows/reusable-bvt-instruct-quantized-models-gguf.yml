@@ -280,6 +280,7 @@ jobs:
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           -no-cnv \
           --temp 0 \
+          --verbose \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
