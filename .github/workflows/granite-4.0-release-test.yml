@@ -51,7 +51,9 @@ env:
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
     'Q4_K_M',
+    'Q5_K_M',
     'Q8_0',
+    'Q6_K',
     'F16'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
