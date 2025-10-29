@@ -41,7 +41,7 @@ env:
   EXT_GGUF: .gguf
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
-  LLAMA_REQUEST_SEED: 647063347
+  # LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RUN_BIN: ./bin/llama-run # ./bin/llama-run
@@ -266,6 +266,7 @@ jobs:
     #     fi
 
     # NOTE: if we want to ignore stderr use: 2>/dev/null
+    # -s ${{env.LLAMA_REQUEST_SEED}} \
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
@@ -274,10 +275,10 @@ jobs:
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-cli -no-cnv \
-          -s ${{env.LLAMA_REQUEST_SEED}} \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
+          -no-cnv \
           --temp 0 \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
