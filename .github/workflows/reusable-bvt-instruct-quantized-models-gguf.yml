@@ -399,8 +399,8 @@ jobs:
           | jq -r '.upload_url')
         echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
-    - name: Upload llama.cpp log to release assets
-      id: upload-asset-llama-cpp-log
+    - name: Upload llama.cpp CLI log to release assets
+      id: upload-asset-llama-cli-log
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -408,4 +408,15 @@ jobs:
         upload_url: ${{ steps.get-release-step.outputs.upload_url }}
         asset_path: ${{env.BASE_FNAME_LOG_FILE}}
         asset_name: ${{env.BASE_FNAME_LOG_FILE}}
+        asset_content_type: text/plain
+
+    - name: Upload llama.cpp CLI response to release assets
+      id: upload-asset-llama-cli-response
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get-release-step.outputs.upload_url }}
+        asset_path: ${{env.LLAMA_CLI_RESPONSE_FILE}}
+        asset_name: ${{env.LLAMA_CLI_RESPONSE_FILE}}
         asset_content_type: text/plain
