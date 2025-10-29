@@ -402,8 +402,28 @@ jobs:
           path: artifacts # Downloads all artifacts into this directory
       - name: Aggregate results
         run: |
-          ls -al
           ls -al artifacts
+          zip -j -r artifacts.zip artifacts
+          ls -al
+
+      - name: Get release upload URL
+        id: get-release-step
+        run: |
+          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+            | jq -r '.upload_url')
+          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+
+      - name: Upload artifacts as zip
+        id: upload-artifacts-zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get-release-step.outputs.upload_url }}
+          asset_path: artifacts.zip
+          asset_name: artifacts.zip
+          asset_content_type: application/zip
 
   # TODO: change collection from private to public (on success)
   create-hf-collections:
