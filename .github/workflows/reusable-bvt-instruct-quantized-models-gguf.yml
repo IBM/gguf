@@ -120,7 +120,8 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{ env.REPO_NAME }}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -136,6 +137,7 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
+        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
@@ -369,7 +371,7 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           "https://api.github.com/repos/${{ github.repository}}/releases/tags/${{ github.ref_name }}")
         echo "RELEASE_INFO: $RELEASE_INFO"
-        TEST_UPLOAD_URL=$( $RELEASE_INFO | jq -r '.upload_url')
+        TEST_UPLOAD_URL=$("$RELEASE_INFO" | jq -r '.upload_url')
         echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
 
     - name: Get release upload URL
@@ -398,6 +400,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get-release-step.outputs.upload_url }}
-        asset_path: ${{env.LLAMA_CLI_RESPONSE_FILE}}
-        asset_name: ${{env.LLAMA_CLI_RESPONSE_FILE}}
+        asset_path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+        asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
         asset_content_type: text/plain
