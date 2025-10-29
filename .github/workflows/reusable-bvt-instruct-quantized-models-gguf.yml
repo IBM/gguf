@@ -380,14 +380,16 @@ jobs:
     #     assets: |
     #       ${{env.BASE_FNAME_LOG_FILE}}
 
-    - name: get release info
+    - name: Get release info
       id: get-release-info
       run: |
         RELEASE_INFO=$(curl -sL \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{github.repository_owner }}/gguf/releases/tags/${{github.ref_name}}")
+          "https://api.github.com/repos/${{ github.repository}}/releases/tags/${{ github.ref_name }}")
         echo "RELEASE_INFO: $RELEASE_INFO"
+        TEST_UPLOAD_URL=$( $RELEASE_INFO | jq -r '.upload_url')
+        echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
 
     - name: Get release upload URL
       id: get-release-step
@@ -397,8 +399,8 @@ jobs:
           | jq -r '.upload_url')
         echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
-    - name: Upload Release Asset
-      id: upload-release-asset
+    - name: Upload llama.cpp log to release assets
+      id: upload-asset-llama-cpp-log
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
