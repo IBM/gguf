@@ -417,7 +417,7 @@ jobs:
       - name: Check for response file existence
         id: check_zip_file
         run: |
-          if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          if [ -f "artifacts.zip" ]; then
             echo "zip_file_exists=true"
             echo "zip_file_exists=true" >> $GITHUB_OUTPUT
           else
