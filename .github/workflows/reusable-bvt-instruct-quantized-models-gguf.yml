@@ -346,14 +346,6 @@ jobs:
     - name: Output artifact ID
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
-    # - name: Upload log to release
-    #   id: release-upload-log
-    #   uses: Shopify/upload-to-release@v2
-    #   with:
-    #     name: ${{env.BASE_FNAME_LOG_FILE}}
-    #     path: ${{env.BASE_FNAME_LOG_FILE}}
-    #     repo-token: ${{ secrets.GITHUB_TOKEN }}
-    #     content-type: text/plain # Optional
     - name: list params
       run: |
         echo "env.repository_owner : '${{ env.repository_owner }}'"
@@ -368,17 +360,6 @@ jobs:
         # ls -R /Users/runner/work/gguf/gguf/
         ls -lha /Users/runner/work/gguf/gguf/
         # find /Users/runner/work/gguf/gguf/ -name "dotnet-gitreleasemanager"
-
-    # - name: Upload log to release
-    #   id: release-upload-log
-    #   uses: gittools/actions/gitreleasemanager/addasset@v4.1.0
-    #   with:
-    #     token: ${{ secrets.GITHUB_TOKEN }}
-    #     owner: ${{ github.repository_owner }}
-    #     repository: ${{ github.event.repository.name }}
-    #     tagname: ${{ github.ref_name }}
-    #     assets: |
-    #       ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Get release info
       id: get-release-info
