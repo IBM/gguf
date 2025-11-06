@@ -289,24 +289,28 @@ jobs:
       bvt-language-quantized-gguf-models,
     ]
     env:
+      DEFAULT_ARTIFACTS_DIR: "artifacts"
       ARTIFACT_ROOT_NAME: "artifacts"
+      LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
+      LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
     steps:
       - uses: actions/checkout@v4
       - name: Download log artifacts
         id: artifact-download-logs
         uses: actions/download-artifact@v4
         with:
-          path: artifacts # Downloads all artifacts into this directory
+          path: ${{env.DEFAULT_ARTIFACTS_DIR}} # Downloads all artifacts into this directory
+
       - name: Create zip artifact filename with release tag
         id: create-zip-filename-with-release-tag
         run: |
           echo "ZIP_ARTIFACT_FNAME=${{ env.ARTIFACT_ROOT_NAME }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
 
-      - name: Zip all artifacts
-        id: zip-artifacts
+      - name: Zip all log artifacts
+        id: zip-artifacts-log
         run: |
           # ls -al artifacts
-          zip -j -r ${{env.ZIP_ARTIFACT_FNAME}} artifacts
+          zip -j ${{env.ZIP_ARTIFACT_FNAME}} ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.LLAMA_CLI_LOG_FILE}}
 
       - name: Get release upload URL
         id: get-release-step

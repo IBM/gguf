@@ -39,11 +39,12 @@ env:
   DEBUG: ${{inputs.debug}}
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
-  LLAMA_CLI_RESPONSE_FILE: response.txt
-  LLAMA_CLI_LOG_FILE: cli-log.txt
+  LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
+  LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
+  LLAMA_CLI_TEMP: "--temp 0"
   # LLAMA_REQUEST_SEED: 647063347
-  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
   # LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
+  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RUN_BIN: ./bin/llama-run
   LLAMA_RUN_FLAGS: "-v -n 9"
@@ -57,6 +58,7 @@ env:
   TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
   TEST_LLAMA_RUN: false
+  GH_ARTIFACT_RETENTION: 2
 
 jobs:
   build:
@@ -120,8 +122,8 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -278,8 +280,8 @@ jobs:
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-          -no-cnv \
           --temp 0 \
+          -no-cnv \
           --verbose \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
@@ -345,11 +347,26 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
-        retention-days: 3
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
         name: ${{env.BASE_FNAME_LOG_FILE}}
         path: ${{env.BASE_FNAME_LOG_FILE}}
-    - name: Output artifact ID
+
+    - name: Show log artifact ID
+      id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    - name: Upload response artifact
+      id: artifact-upload-response
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.BASE_FNAME_RESPONSE_FILE}}
+        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: Show response artifact ID
+      id: show-artifact-id-response
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
 
     - name: list params
       run: |
