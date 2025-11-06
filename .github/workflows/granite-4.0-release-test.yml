@@ -290,8 +290,8 @@ jobs:
     env:
       DEFAULT_ARTIFACTS_DIR: "artifacts"
       ARTIFACT_ROOT_NAME: "artifacts"
-      LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
-      LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
+      EXT_LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
+      EXT_LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
     steps:
       - uses: actions/checkout@v4
       - name: Download log artifacts
@@ -309,9 +309,9 @@ jobs:
         id: zip-artifacts-log
         run: |
           ls -al
-          ls -al artifacts
           ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}
-          zip -j ${{env.ZIP_ARTIFACT_FNAME}} ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.LLAMA_CLI_LOG_FILE}}
+          ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}
+          zip -j ${{env.ZIP_ARTIFACT_FNAME}} ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}
 
       - name: Get release upload URL
         id: get-release-step
