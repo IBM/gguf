@@ -315,7 +315,7 @@ jobs:
           ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}
           ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}
           zip --help
-          zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} ${{env.DEFAULT_ARTIFACTS_DIR}}/*.txt
+          find ${{env.DEFAULT_ARTIFACTS_DIR}} -name "${{env.EXT_LLAMA_CLI_LOG_FILE}}" | zip ${{env.ZIP_ARTIFACT_FNAME}} -@
 
       - name: Get release upload URL
         id: get-release-step
