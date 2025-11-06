@@ -300,7 +300,7 @@ jobs:
       - name: Create zip artifact filename with release tag
         id: create-zip-filename-with-release-tag
         run: |
-          echo "ZIP_ARTIFACT_FNAME="${{ env.ARTIFACT_ROOT_NAME }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
+          echo "ZIP_ARTIFACT_FNAME=${{ env.ARTIFACT_ROOT_NAME }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
           ${{github.ref_name}}
 
       - name: Zip all artifacts
