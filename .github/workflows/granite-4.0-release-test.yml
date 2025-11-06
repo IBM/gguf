@@ -74,16 +74,19 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'ibm-granite/granite-docling-258M'
+    'None'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
   # 'Q6_K',
-  # 'Q8_0'
+  # 'Q8_0',
+  # 'F16',
+  # 'BF16',
+  # 'F32'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'F32', 'BF16'
+    'None'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
@@ -311,7 +314,7 @@ jobs:
           ls -al
           ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}
           ls -al ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}
-          zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} ${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}
+          zip -j -v -r ${{env.ZIP_ARTIFACT_FNAME}} "${{env.DEFAULT_ARTIFACTS_DIR}}/*${{env.EXT_LLAMA_CLI_LOG_FILE}}"
 
       - name: Get release upload URL
         id: get-release-step
