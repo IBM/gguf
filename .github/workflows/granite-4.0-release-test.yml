@@ -93,6 +93,11 @@ env:
   TARGET_HF_REPO_PRIVATE: true
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
+  DEFAULT_ARTIFACTS_DIR: 'artifacts'
+  ARTIFACT_ROOT_NAME: 'artifacts'
+  EXT_LOG: '.llama-cli.log.txt '
+  EXT_RESPONSE: '.llama-cli.response.txt'
+
 jobs:
   # ===========================================================================
   # Environment setup
@@ -124,6 +129,12 @@ jobs:
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
       source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
       target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
+
+      default_artifacts_dir: "${{ steps.set-vars.outputs.default_artifacts_dir }}"
+      artifact_root_name: "${{ steps.set-vars.outputs.artifact_root_name }}"
+      ext_log: "${{ steps.set-vars.outputs.ext_log }}"
+      ext_response: "${{ steps.set-vars.outputs.ext_response }}"
+
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -155,6 +166,11 @@ jobs:
             echo "source_docling_repos=$SOURCE_DOCLING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_docling_quantizations=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
 
+            echo "default_artifacts_dir=$DEFAULT_ARTIFACTS_DIR" >> "$GITHUB_OUTPUT"
+            echo "artifact_root_name=$ARTIFACT_ROOT_NAME" >> "$GITHUB_OUTPUT"
+            echo "ext_log=$EXT_LOG" >> "$GITHUB_OUTPUT"
+            echo "ext_response=$EXT_RESPONSE" >> "$GITHUB_OUTPUT"
+
       - name: Confirm GitHub output values were set
         run: |
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
@@ -178,6 +194,11 @@ jobs:
             echo "target_embedding_quantizations: '${{ steps.set-vars.outputs.target_embedding_quantizations }}'"
             echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
             echo "target_docling_quantizations: '${{ steps.set-vars.outputs.target_docling_quantizations }}'"
+
+            echo "default_artifacts_dir: '${{ steps.set-vars.outputs.default_artifacts_dir }}'"
+            echo "artifact_root_name: '${{ steps.set-vars.outputs.artifact_root_name }}'"
+            echo "ext_log: '${{ steps.set-vars.outputs.ext_log }}'"
+            echo "ext_response: '${{ steps.set-vars.outputs.ext_response }}'"
 
       - name: List all environment variables
         run: env | sort
@@ -292,16 +313,12 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-    env:
-      DEFAULT_ARTIFACTS_DIR: 'artifacts'
-      ARTIFACT_ROOT_NAME: 'artifacts'
-      EXT_LOG: .llama-cli.log.txt
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_zip: true
-      artifacts_path: ${{env.DEFAULT_ARTIFACTS_DIR}}
-      artifacts_root_name: ${{ env.ARTIFACT_ROOT_NAME }}
-      artifacts_extension: ${{env.EXT_LOG}}
+      artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}"
+      artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
     secrets: inherit
 
   # aggregate-language-results:
