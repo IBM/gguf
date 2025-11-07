@@ -197,7 +197,7 @@ jobs:
         echo "env.LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-            --mmproj ${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_1}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
@@ -225,7 +225,7 @@ jobs:
         echo "env.LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-            --mmproj ${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_2}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
