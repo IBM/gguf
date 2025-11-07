@@ -14,11 +14,11 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_DOCLING_JOBS: false
+  ENABLE_DOCLING_JOBS: true
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -40,7 +40,7 @@ env:
   # 'ibm-granite/granite-4.0-h-small',
   # 'ibm-granite/granite-4.0-h-small-base'
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-4.0-h-350m'
+    'None'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -50,8 +50,7 @@ env:
   # 'Q8_0',
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-    'Q4_K_M',
-    'F16'
+    'None'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'None'
@@ -74,7 +73,7 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'None'
+    'ibm-granite/granite-docling-258M'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -86,7 +85,7 @@ env:
   # 'BF16',
   # 'F32'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'None'
+    'BF16'
   ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
