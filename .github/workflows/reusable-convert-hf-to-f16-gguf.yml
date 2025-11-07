@@ -51,6 +51,7 @@ on:
 env:
   DEF_SEP: "-"
   DEF_PRECISION: "bf16" # "f16"
+  DEF_MMPROJ_PRECISION: "f16"
   EXT_GGUF: .gguf
   MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
@@ -109,8 +110,10 @@ jobs:
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
         echo "env.DEF_SEP: ${{ env.DEF_SEP }}"
         echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
+        echo "env.DEF_MMPROJ_PRECISION: ${{ env.DEF_MMPROJ_PRECISION }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
         echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{env.DEF_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "EXT_PRECISION_MMPROJ_GGUF=${{ env.DEF_SEP }}${{env.DEF_MMPROJ_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
     # To allow `alias` in the default, non-interactive shell override using `shopt`.
@@ -129,7 +132,7 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_PRECISION_MMPROJ_GGUF}}" >> $GITHUB_ENV
 
     # for GGUF conversion, we only need a shallow copy (depth=1) and
     # specify only the scripts and requirements files we need (sparse).
@@ -195,6 +198,7 @@ jobs:
         echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
         echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
         echo "EXT_PRECISION_GGUF (env)=$EXT_PRECISION_GGUF (${{ env.EXT_PRECISION_GGUF }})"
+        echo "EXT_PRECISION_MMPROJ_GGUF (env)=$EXT_PRECISION_MMPROJ_GGUF (${{ env.EXT_PRECISION_MMPROJ_GGUF }})"
         echo "BASE_FNAME_MMPROJ_GGUF (env)=$BASE_FNAME_MMPROJ_GGUF (${{env.BASE_FNAME_MMPROJ_GGUF}})"
         ls -al $MODEL_DOWNLOAD_DIR
 

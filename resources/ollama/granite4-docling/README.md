@@ -1,60 +1,100 @@
-<center><img src="https://ollama.com/assets/library/granite3.2/90c5e567-0004-425c-a17a-1b846c2b5d3d" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="200" /></center>
+# Granite Docling
 
-### Granite 4 models
+<center>
+<img src="https://huggingface.co/ibm-granite/granite-docling-258M/resolve/main/granite_docling.png" data-canonical-src="https://huggingface.co/ibm-granite/granite-docling-258M/resolve/main/granite_docling.png" width="200" />
+</center>
 
-Granite 4 `base` models are developed using a diverse set of techniques with a structured chat format, including supervised finetuning, model alignment using reinforcement learning, and model merging.
+Granite Docling is a multimodal Image-Text-to-Text model engineered for efficient document conversion. It preserves the core features of Docling while maintaining seamless integration with [DoclingDocuments](https://docling-project.github.io/docling) to ensure full compatibility.
 
-Granite 4 `instruct` models are finetuned from their base models using a combination of open source instruction datasets with permissive license and internally collected synthetic datasets. They feature improved instruction following (IF) and tool-calling capabilities, making them more effective in enterprise applications.
-  - *Please note that `instruct` models do not have the `base` qualifier in their name (e.g., `ibm-granite/granite4:micro-h` vs. `mrutkows/granite4:micro-h-base`).*
+## Model Summary
 
-#### Sizes
+Granite Docling 258M builds upon the Idefics3 architecture, but introduces two key modifications: it replaces the vision encoder with siglip2-base-patch16-512 and substitutes the language model with a Granite 165M LLM.
 
-- **micro**: 3B parameters. These models are trained from scratch on approximately *15 trillion* tokens following a four-stage training strategy: 10 trillion tokens in the first stage, 2 trillion in the second, another 2 trillion in the third, and 0.5 trillion in the final stage.
-- **tiny**: 7B parameters. These models are trained from scratch on approximately *23 trillion* tokens following a four-stage training strategy: 15 trillion tokens in the first stage, 5 trillion in the second, 2 trillion in the third, and 0.5 trillion in the final stage.
-- **small**: 32B parameters. The model is trained from scratch on approximately *23 trillion* tokens following a four-stage training strategy: 15 trillion tokens in the first stage, 5 trillion in the second, 2 trillion in the third, and 0.5 trillion in the final stage.
+Granite-docling-258M is fully integrated into the Docling pipelines, which leverages all its capabilities for a one-shot prediction of all Docling features.
 
-#### Running
+### Features
 
-Example of running the default `tiny` model (i.e., with quantization of Q4_K_M):
+- 🏷️ **DocTags for Efficient Tokenization** – Introduces DocTags an efficient and minimal representation for documents that is fully compatible with **DoclingDocuments**.
+- 🔍 **OCR (Optical Character Recognition)** – Extracts text accurately from images.
+- 📐 **Layout and Localization** – Preserves document structure and document element **bounding boxes**.
+- 💻 **Code Recognition** – Detects and formats code blocks including indentation.
+- 🔢 **Formula Recognition** – [Enhanced] Identifies and processes mathematical expressions.
+- 🧮 **Inline Equations** – Better inline math recognition
+- 📊 **Chart Recognition** – Extracts and interprets chart data.
+- 📑 **Table Recognition** – Supports column and row headers for structured table extraction.
+- 🖼️ **Figure Classification** – Differentiates figures and graphical elements.
+- 📝 **Caption Correspondence** – Links captions to relevant images and figures.
+- 📜 **List Grouping** – Organizes and structures list elements correctly.
+- 📄 **Full-Page Conversion** – Processes entire pages for comprehensive document conversion including all page elements (code, equations, tables, charts etc.)
+- 🧩 **Flexible Inference Modes** – Choose between full-page inference, bbox-guided region inference
+- 📂 **General Document Processing** – Trained for both scientific and non-scientific documents.
+- 🧾 **Document Element QA** – Answer questions about a document's structure such as the presence and order of document elements
+- 🌍 **Multi-language** – Japanese, Arabic and Chinese support (_experimental_)
+- 💨 **Fast inference using VLLM** – Avg of 0.35 secs per page on A100 GPU.
 
-```
-ollama run ibm/granite4:tiny-h
-```
+## Intended Use
+Granite-Docling is designed to complement the Docling library, not replace it. It integrates as a component within the larger Docling library, consolidating the functions of multiple single-purpose models into a single, compact VLM.
+However, Granite-Docling is **not** intended for general image understanding. For tasks focused solely on image-text input, we recommend using [Granite Vision models](https://huggingface.co/collections/ibm-granite/granite-vision-models-67b3bd4ff90c915ba4cd2800), which are purpose-built and optimized for image-text processing.
 
-To run other quantizations (e.g., F16):
 
-```
-ollama run ibm/granite4:tiny-h-q8_0
-```
+## Supported Instructions
 
-#### Supported Languages
+<table>
+  <tr>
+    <th>Description</th>
+    <th>Instruction</th>
+    <th>Short Instruction</th>
+  </tr>
+  <tr>
+    <td><b>Full conversion</b></td>
+    <td>Convert this page to docling.</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td><b>Chart</b></td>
+    <td>Convert chart to table.</td>
+    <td><code>&lt;chart&gt;</code></td>
+  </tr>
+  <tr>
+    <td><b>Formula</b></td>
+    <td>Convert formula to LaTeX.</td>
+    <td><code>&lt;formula&gt;</code></td>
+  </tr>
+  <tr>
+    <td><b>Code</b></td>
+    <td>Convert code to text.</td>
+    <td><code>&lt;code&gt;</code></td>
+  </tr>
+  <tr>
+    <td><b>Table</b></td>
+    <td>Convert table to OTSL. (<a href="https://arxiv.org/pdf/2305.03393">Lysak et al., 2023</a>)</td>
+    <td><code>&lt;otsl&gt;</code></td>
+  </tr>
+  <tr>
+    <td rowspan="4"><b>Actions and Pipelines</b></td>
+    <td>OCR the text in a specific location: &lt;loc_155&gt;&lt;loc_233&gt;&lt;loc_206&gt;&lt;loc_237&gt;</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Identify element at: &lt;loc_247&gt;&lt;loc_482&gt;&lt;loc_252&gt;&lt;loc_486&gt;</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Find all 'text' elements on the page, retrieve all section headers.</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Detect footer elements on the page.</td>
+    <td>-</td>
+  </tr>
+</table>
 
-Supported Languages: English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, and Chinese. Users may finetune Granite 4.0 models for languages beyond these languages.
 
-#### Intended Use
+## Learn more
 
-This model is designed to handle general instruction-following tasks and can be integrated into AI assistants across various domains, including business applications.
-
-Intended use: The model is designed to respond to general instructions and can be used to build AI assistants for multiple domains, including business applications.
-
-#### Capabilities
-
-- Summarization
-- Text classification
-- Text extraction
-- Question-answering
-- Retrieval Augmented Generation (RAG)
-- Code related tasks
-- Function-calling tasks
-- Multilingual dialog use cases
-- Fill-In-the-Middle (FIM) code completions
-
----
-
-#### Learn more
-
-- Developers: Granite Team, IBM
-- Website: [Granite Docs](https://www.ibm.com/granite/docs)
-- GitHub Repository: [ibm-granite/granite-4.0-language-models](https://github.com/ibm-granite/granite-4.0-language-models)
-- Release Date: October 2nd, 2025
-- License: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- Developers: IBM Research
+- Website: [Docling](https://docling.ai)
+- Model: [ibm-granite/granite-docling-258M](https://huggingface.co/ibm-granite/granite-docling-258M)
+- GitHub Repository: [docling-project/docling](https://github.com/docling-project/docling)
+- Release Date: September 17, 2025
+- License: Apache 2.0

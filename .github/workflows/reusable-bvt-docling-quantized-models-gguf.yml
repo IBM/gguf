@@ -39,6 +39,7 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_BF16: "-bf16.gguf"
   LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_LOG_FILE: cli-log.txt
   LLAMA_CLI_STDOUT_FILE: output.txt
@@ -118,6 +119,7 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_BF16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -127,6 +129,7 @@ jobs:
       run: |
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_BF16_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
@@ -134,6 +137,7 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_BF16_GGUF='$BASE_FNAME_MMPROJ_BF16_GGUF' (${{ env.BASE_FNAME_MMPROJ_BF16_GGUF }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
@@ -161,7 +165,7 @@ jobs:
 
     - name: download-mmproj-gguf-hf-hub-download
       run: |
-        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."
+        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_BF16_GGUF}}..."
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
 
@@ -191,9 +195,10 @@ jobs:
       run: |
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
+        echo "env.LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -p "<__media__>Convert this image to markdown." \
             --verbose \
