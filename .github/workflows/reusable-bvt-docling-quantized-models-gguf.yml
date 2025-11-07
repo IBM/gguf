@@ -206,12 +206,13 @@ jobs:
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-mtmd-cli failed. Output (stderr):"
           ls -al
-          cat ${{env.LLAMA_CLI_STDOUT_FILE}}
           cat ${{env.LLAMA_CLI_STDERR_FILE}}
+          cat ${{env.LLAMA_CLI_STDOUT_FILE}}
           exit 1
         fi
         echo "[SUCCESS] llama-mtmd-cli succeeded. Output (stdout):"
         ls -al
+        cat ${{env.LLAMA_CLI_STDERR_FILE}}
         cat ${{env.LLAMA_CLI_STDOUT_FILE}}
 
     # - name: test-llama-cli-response-with-regex
