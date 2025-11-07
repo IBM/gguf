@@ -292,12 +292,16 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
+    env:
+      DEFAULT_ARTIFACTS_DIR: "artifacts"
+      ARTIFACT_ROOT_NAME: "artifacts"
+      EXT_LOG: .llama-cli.log.txt
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_zip: true
-      artifacts_path:  ${{env.DEFAULT_ARTIFACTS_DIR}}
+      artifacts_path: ${{env.DEFAULT_ARTIFACTS_DIR}}
       artifacts_root_name: ${{ env.ARTIFACT_ROOT_NAME }}
-      artifacts_extension: ${{env.EXT_LLAMA_CLI_LOG_FILE}}
+      artifacts_extension: ${{env.EXT_LOG}}
     secrets: inherit
 
   # aggregate-language-results:
