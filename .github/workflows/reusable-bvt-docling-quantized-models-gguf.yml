@@ -64,7 +64,7 @@ env:
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
 
 jobs:
-  build:
+  test-quantized-model:
     runs-on: macos-latest
     if: ${{ inputs.enable_docling_jobs == true }}
     steps:

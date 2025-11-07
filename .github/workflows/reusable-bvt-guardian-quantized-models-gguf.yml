@@ -56,16 +56,6 @@ env:
   QUANTIZED_MODEL_EXISTS: false
 
 jobs:
-  # test-llama-cpp-exec:
-  #   runs-on: macos-latest
-  #   continue-on-error: true
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Dump GitHub inputs
-  #     run : |
-  #       uname -a
-  #       ./bin/llama-cli --help
-
   test-quantized-model:
     runs-on: macos-latest
     timeout-minutes: 45

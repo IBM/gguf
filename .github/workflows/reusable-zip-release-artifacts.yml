@@ -1,0 +1,112 @@
+name: zip-release-artifacts-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+    inputs:
+      enable_zip:
+        type: boolean
+        required: false
+        default: false
+      artifacts_path:
+        type: string
+        required: false
+        default: 'artifacts'
+        description: 'path to artifacts'
+      artifacts_root_name:
+        type: string
+        required: true
+      artifacts_extension:
+        type: string
+        required: true
+      debug:
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  zip-release-artifacts:
+    runs-on: macos-latest
+    if: |
+      ${{ inputs.enable_zip == true }}
+    steps:
+      - run: |
+          echo "[INFO] >> github.run_id: '${{ github.run_id }}'"
+          echo "[INFO] >> github.event.base_ref: '${{ github.event.base_ref }}'"
+          echo "[INFO] >> github.workflow_ref: '${{ github.workflow_ref }}'"
+          echo "[INFO] >> github.ref: '${{ github.ref }}', github.ref_name: '${{ github.ref_name }}', github.ref_type: '${{ github.ref_type }}'"
+
+      # if: ${{ github.event.inputs.debug }}
+      - name: Dump GitHub inputs
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
+
+      - name: List all environment variables
+        if: ${{ github.event.inputs.debug }}
+        run: env | sort
+
+      - name: Dump GitHub context
+        if: inputs.debug == true
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"
+
+      - uses: actions/checkout@v4
+      - name: Download log artifacts
+        id: artifact-download-logs
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{inputs.artifacts_path}}
+
+      - name: Create zip artifact filename with release tag
+        id: create-zip-filename-with-release-tag
+        run: |
+          echo "ZIP_ARTIFACT_FNAME=${{ inputs.artifacts_root_name }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
+
+      - name: find-artifacts
+        if: inputs.debug == true
+        run: |
+          ls -al ${{inputs.artifacts_path}}
+          FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -name "*${{inputs.artifacts_extension}}")
+          echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Zip all log artifacts
+        id: zip-artifacts
+        run: |
+          echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
+          ls -al ${{inputs.artifacts_path}}
+          find ${{inputs.artifacts_path}}} -name "*${{inputs.artifacts_extension}}" | zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@
+
+      - name: Get release upload URL
+        id: get-release-upload-url
+        run: |
+          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+            | jq -r '.upload_url')
+          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+
+      - name: Check zip file exists
+        id: verify_zip_exists
+        run: |
+          if [ -f "${{env.ZIP_ARTIFACT_FNAME}}" ]; then
+            echo "${{env.ZIP_ARTIFACT_FNAME}} exists"
+            echo "zip_file_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "${{env.ZIP_ARTIFACT_FNAME}} does NOT exist"
+            echo "zip_file_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload zip
+        id: upload-zip
+        if: steps.verify_zip_exists.outputs.zip_file_exists == 'true'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get-release-step.outputs.upload_url }}
+          asset_path: ${{env.ZIP_ARTIFACT_FNAME}}
+          asset_name: ${{env.ZIP_ARTIFACT_FNAME}}
+          asset_content_type: application/zip

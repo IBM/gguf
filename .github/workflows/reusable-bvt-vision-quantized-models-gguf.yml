@@ -55,7 +55,7 @@ env:
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
 
 jobs:
-  build:
+  test-quantized-model:
     runs-on: macos-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     steps:

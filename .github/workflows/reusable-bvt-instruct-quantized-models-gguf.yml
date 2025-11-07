@@ -62,7 +62,7 @@ env:
   GH_ARTIFACT_RETENTION: 2
 
 jobs:
-  build:
+  test-quantized-model:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true }}
     env:
