@@ -293,8 +293,8 @@ jobs:
     strategy:
       fail-fast: false
     env:
-      DEFAULT_ARTIFACTS_DIR: "artifacts"
-      ARTIFACT_ROOT_NAME: "artifacts"
+      DEFAULT_ARTIFACTS_DIR: 'artifacts'
+      ARTIFACT_ROOT_NAME: 'artifacts'
       EXT_LOG: .llama-cli.log.txt
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
