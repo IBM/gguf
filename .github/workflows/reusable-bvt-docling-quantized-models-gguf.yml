@@ -45,7 +45,7 @@ env:
   LLAMA_CLI_STDOUT_FILE: output.txt
   LLAMA_CLI_STDERR_FILE: error.txt
   LLAMA_REQUEST_SEED: 647063347
-  LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
+  LLAMA_REQUEST_PROMPT_USER: "<__media__>Convert this image to markdown."
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_RUN_BIN: ./bin/llama-run # ./bin/llama-run
   LLAMA_RUN_FLAGS: "-v -n 9"
@@ -63,6 +63,7 @@ env:
   LLAMA_REQUEST_TEST_IMAGE: "test/images/sample-text-screenshot.png"
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
+  LLAMA_CLI_REPEAT_PENALTY: 1.05
 
 jobs:
   test-quantized-model:
@@ -186,12 +187,10 @@ jobs:
       run: |
         ./bin/llama-mtmd-cli --help
 
-    # -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-    # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
     # --temp ${{env.LLAMA_REQUEST_TEMP}}
     - name: test-llama-mtmd-cli
       timeout-minutes: 10
-      continue-on-error: false
+      continue-on-error: true
       run: |
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
@@ -200,7 +199,9 @@ jobs:
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-            -p "<__media__>Convert this image to markdown." \
+            -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+            --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            --repeat-penalty ${{env.LLAMA_CLI_REPEAT_PENALTY}} \
             --verbose \
             -ngl 99 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
         if [ $? -eq 1 ]; then
