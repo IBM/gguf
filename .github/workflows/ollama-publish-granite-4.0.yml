@@ -83,7 +83,7 @@ env:
     'None'
   ]"
   SOURCE_DOCLING_REPOS: "[
-    'mrutkows/granite-docling-258M'
+    'ibm-granite/granite-docling-258M'
   ]"
   SOURCE_DOCLING_QUANTIZATIONS: "[
     'BF16'
