@@ -16,7 +16,7 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
 
@@ -297,7 +297,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   language-aggregate-release-logs:
-    needs: [ environment-setup, bvt-language-quantized-gguf-models ]
+    needs: [ environment-setup, bvt-language-quantized-gguf-models, guardian-bvt-quantized-gguf-models ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
       contents: write
@@ -313,7 +313,7 @@ jobs:
     secrets: inherit
 
   language-aggregate-release-responses:
-    needs: [ environment-setup, bvt-language-quantized-gguf-models ]
+    needs: [ environment-setup, bvt-language-quantized-gguf-models, guardian-bvt-quantized-gguf-models ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
       contents: write
