@@ -39,7 +39,6 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  LLAMA_CLI_RESPONSE_FILE: response.txt
   LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
   LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
   LLAMA_REQUEST_TEMP: 0
