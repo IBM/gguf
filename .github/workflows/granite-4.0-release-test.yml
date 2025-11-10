@@ -14,15 +14,24 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: false
+  ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_DOCLING_JOBS: true
+  ENABLE_DOCLING_JOBS: false
+
+  TARGET_HF_REPO_NAME_EXT: -GGUF
+  TARGET_HF_REPO_OWNER: mrutkows
+  TARGET_HF_REPO_PRIVATE: true
+  COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
+
+  DEFAULT_ARTIFACTS_DIR: 'artifacts'
+  ARTIFACT_ROOT_NAME: 'artifacts'
+  EXT_LOG: '.llama-cli.log.txt'
+  EXT_RESPONSE: '.llama-cli.response.txt'
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
-
   # 'ibm-granite/granite-4.0-350m',
   # 'ibm-granite/granite-4.0-350m-base',
   # 'ibm-granite/granite-4.0-h-350m',
@@ -73,21 +82,12 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'ibm-granite/granite-docling-258M'
+    'None'
   ]"
   # 'BF16'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'BF16'
+    'None'
   ]"
-  TARGET_HF_REPO_NAME_EXT: -GGUF
-  TARGET_HF_REPO_OWNER: mrutkows
-  TARGET_HF_REPO_PRIVATE: true
-  COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
-
-  DEFAULT_ARTIFACTS_DIR: 'artifacts'
-  ARTIFACT_ROOT_NAME: 'artifacts'
-  EXT_LOG: '.llama-cli.log.txt '
-  EXT_RESPONSE: '.llama-cli.response.txt'
 
 jobs:
   # ===========================================================================
