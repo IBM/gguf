@@ -320,7 +320,7 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_zip: true
       artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
-      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}-responses"
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets: inherit
 

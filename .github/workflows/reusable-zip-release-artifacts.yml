@@ -71,18 +71,21 @@ jobs:
         run: |
           ls -al ${{inputs.artifacts_path}}
           find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | xargs -0 > find.txt
+          echo "==="
           cat find.txt
+          echo "==="
           FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | xargs -0)
           echo "FIND_OUTPUT: '$FIND_OUTPUT'"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
 
-      - name: Zip all log artifacts
+      - name: Zip artifacts
         id: zip-artifacts
         run: |
           ls -al ${{inputs.artifacts_path}}
+          echo "==="
           cat find.txt
+          echo "==="
           echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
-          # find ${{inputs.artifacts_path}}} -name "*${{inputs.artifacts_extension}}" | zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@
           zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find.txt
 
       - name: Get release upload URL
@@ -94,9 +97,10 @@ jobs:
           echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
       - name: Check zip file exists
-        id: verify_zip_exists
+        id: verify-zip-exists
         run: |
           if [ -f "${{env.ZIP_ARTIFACT_FNAME}}" ]; then
+            ls -al ${{env.ZIP_ARTIFACT_FNAME}}
             echo "${{env.ZIP_ARTIFACT_FNAME}} exists"
             echo "zip_file_exists=true" >> $GITHUB_OUTPUT
           else
@@ -106,7 +110,7 @@ jobs:
 
       - name: Upload zip
         id: upload-zip
-        if: steps.verify_zip_exists.outputs.zip_file_exists == 'true'
+        if: steps.verify-zip-exists.outputs.zip_file_exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
