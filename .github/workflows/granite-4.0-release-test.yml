@@ -300,7 +300,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  aggregate-language-results:
+  language-aggregate-release-logs:
     needs: [ environment-setup, bvt-language-quantized-gguf-models ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
@@ -314,6 +314,22 @@ jobs:
       artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
       artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}"
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
+    secrets: inherit
+
+  language-aggregate-release-responses:
+    needs: [ environment-setup, bvt-language-quantized-gguf-models ]
+    uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_zip: true
+      artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}"
+      artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets: inherit
 
   # aggregate-language-results:

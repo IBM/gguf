@@ -131,14 +131,14 @@ jobs:
 
       - name: set-derivative-env-vars-1
         run: |
-          echo "TARGET_HF_REPO_ID=${{inputs.source_repo_owner}}/${{env.REPO_NAME}}${{inputs.source_repo_name_ext}}" >> $GITHUB_ENV
+          echo "SOURCE_HF_REPO_ID=${{inputs.source_repo_owner}}/${{env.REPO_NAME}}${{inputs.source_repo_name_ext}}" >> $GITHUB_ENV
           echo "TARGET_OLLAMA_ORG=${{ inputs.target_ollama_org }}" >> $GITHUB_ENV
           echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-2
         run: |
           echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.BASE_NAME_QUANTIZED}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-          echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_HF_REPO_ID }}" >> $GITHUB_ENV
+          echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.SOURCE_HF_REPO_ID }}" >> $GITHUB_ENV
 
       - name: set-derivative-env-vars-3
         run: |
@@ -148,7 +148,7 @@ jobs:
       - name: verify-github-env
         run: |
           echo "================== Derivative Environment Variables 1 =================="
-          echo "TARGET_HF_REPO_ID='$TARGET_HF_REPO_ID' (${{ env.TARGET_HF_REPO_ID }})"
+          echo "SOURCE_HF_REPO_ID='$SOURCE_HF_REPO_ID' (${{ env.SOURCE_HF_REPO_ID }})"
           echo "BASE_NAME_QUANTIZED='$BASE_NAME_QUANTIZED' (${{ env.BASE_NAME_QUANTIZED }})"
           echo "================== Derivative Environment Variables 2 =================="
           echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
@@ -190,13 +190,13 @@ jobs:
 
       - name: verify-quantized-model-exists
         run: |
-          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.SOURCE_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
           echo "exists: '$exists'"
           if [[ "$exists" == "False" ]]; then
-            echo "FAILURE: model file: '${{env.TARGET_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+            echo "FAILURE: model file: '${{env.SOURCE_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
             exit 2
           else
-            echo "SUCCESS: model file: '${{env.TARGET_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+            echo "SUCCESS: model file: '${{env.SOURCE_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
             echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
             echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
           fi
@@ -206,7 +206,7 @@ jobs:
         run: |
           echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
           echo "--------------------"
-          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
           ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
 
       - name: hf-download-quantized-projector-gguf
@@ -214,7 +214,7 @@ jobs:
         run: |
           echo "Downloading projector model to: ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}}..."
           echo "--------------------"
-          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_HF_REPO_ID }} ${{ env.F16_MMPROJ_MODEL_FILENAME }} ${{secrets.hf_token}}
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_HF_REPO_ID }} ${{ env.F16_MMPROJ_MODEL_FILENAME }} ${{secrets.hf_token}}
           ls -al ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}}
 
       - name: verify-downloaded-files
