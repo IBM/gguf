@@ -70,15 +70,20 @@ jobs:
         if: inputs.debug == true
         run: |
           ls -al ${{inputs.artifacts_path}}
-          FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -name "*${{inputs.artifacts_extension}}")
+          find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}} | xargs -0" > find.txt
+          cat find.txt
+          FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}} | xargs -0")
+          echo "FIND_OUTPUT: '$FIND_OUTPUT'"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
 
       - name: Zip all log artifacts
         id: zip-artifacts
         run: |
-          echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
           ls -al ${{inputs.artifacts_path}}
-          find ${{inputs.artifacts_path}}} -name "*${{inputs.artifacts_extension}}" | zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@
+          cat find.txt
+          echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
+          # find ${{inputs.artifacts_path}}} -name "*${{inputs.artifacts_extension}}" | zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@
+          zip -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find.txt
 
       - name: Get release upload URL
         id: get-release-upload-url
