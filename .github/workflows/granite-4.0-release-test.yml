@@ -26,7 +26,9 @@ env:
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
   DEFAULT_ARTIFACTS_DIR: 'artifacts'
-  ARTIFACT_ROOT_NAME: 'artifacts'
+  ARTIFACT_ROOT_NAME: 'bvt'
+  ARTIFACT_NAME_LOGS: '-logs'
+  ARTIFACT_NAME_RESPONSES: '-responses'
   EXT_LOG: '.llama-cli.log.txt'
   EXT_RESPONSE: '.llama-cli.response.txt'
 
@@ -304,7 +306,7 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_zip: true
       artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
-      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}${{env.ARTIFACT_NAME_LOGS}}"
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
     secrets: inherit
 
@@ -320,7 +322,7 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       enable_zip: true
       artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
-      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}-responses"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_root_name }}${{env.ARTIFACT_NAME_RESPONSES}}"
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets: inherit
 
