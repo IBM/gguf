@@ -123,7 +123,7 @@ jobs:
       target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
       default_artifacts_dir: "${{ steps.set-vars.outputs.default_artifacts_dir }}"
       artifact_logs_name: "${{ steps.set-vars.outputs.artifact_logs_name }}"
-      artifact_responses_name: "${{ steps.set-vars.outputs.artifact_logs_name }}"
+      artifact_responses_name: "${{ steps.set-vars.outputs.artifact_responses_name }}"
       ext_log: "${{ steps.set-vars.outputs.ext_log }}"
       ext_response: "${{ steps.set-vars.outputs.ext_response }}"
     steps:
