@@ -28,7 +28,7 @@ on:
 
 jobs:
   zip-release-artifacts:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: |
       ${{ inputs.enable_zip == true }}
     steps:
