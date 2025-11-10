@@ -40,14 +40,15 @@ env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   LLAMA_CLI_RESPONSE_FILE: response.txt
-  LLAMA_CLI_STDOUT_FILE: output.txt
-  LLAMA_CLI_STDERR_FILE: error.txt
+  LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
+  LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
   LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>\nA chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\n"
   LLAMA_REQUEST_PROMPT_USER: "<|user|>\n\\<image>\nWhat type of flowers are in this picture?\n<|assistant|>\n"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
+  LLAMA_RESPONSE_WORDS:  "cherry,blossoms"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
@@ -109,6 +110,8 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -125,6 +128,8 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
+        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
@@ -174,23 +179,45 @@ jobs:
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
-            --temp ${{env.LLAMA_REQUEST_TEMP}} 2> ${{env.LLAMA_CLI_STDERR_FILE}} 1> ${{env.LLAMA_CLI_STDOUT_FILE}}
+            --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            --verbose \
+            --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
-          echo "[ERROR] llama-llava-cli failed. Output (stderr):"
-          cat ${{env.LLAMA_CLI_STDERR_FILE}}
+          echo "[ERROR] llama-mtmd-cli failed:"
+          ls -al
+          echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+          echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
           exit 1
         fi
-        echo "[SUCCESS] llama-llava-cli succeeded. Output (stdout):"
-        cat ${{env.LLAMA_CLI_STDOUT_FILE}}
+        echo "[SUCCESS] llama-mtmd-cli succeeded:"
+        echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
-        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.LLAMA_CLI_STDOUT_FILE}})
+        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}})
         echo "matched: '$matched'"
         if [[ "$exists" == "False" ]]; then
           echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-llava-cli response."
           exit 1
         else
           echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-llava-cli response."
+        fi
+
+    - name: test-llama-cli-response-with-regex-word-match
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
+        echo "Full Python Output: $python_output"
+
+        # Extract the last line of the output, which contains "true" or "false"
+        return_value=$(echo "$python_output" | tail -n 1)
+
+        # Use the extracted "boolean" string in a conditional
+        if [ "$return_value" = "true" ]; then
+          echo "[SUCCESS]: $python_output"
+        else
+          echo "[FAILURE]: $python_output"
         fi

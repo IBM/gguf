@@ -287,46 +287,28 @@ jobs:
           --verbose \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
+          echo "[ERROR] llama-cli failed:"
+          ls -al
           echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-          echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+          echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
           exit 1
         fi
-
-    - name: test-print-llama-cli-generated-log
-      if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
-      continue-on-error: true
-      run: |
-        ls -al
+        echo "[SUCCESS] llama-cli succeeded. Output (stdout):"
         echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
-    - name: test-print-llama-cli-response-with-metrics
-      if: env.TEST_LLAMA_CLI == 'true'
-      run: |
-        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+    # - name: test-print-llama-cli-generated-log
+    #   if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
+    #   continue-on-error: true
+    #   run: |
+    #     ls -al
+    #     echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
 
-    # - name: test-llama-cli-response-with-regex
+    # - name: test-print-llama-cli-response-with-metrics
     #   if: env.TEST_LLAMA_CLI == 'true'
     #   run: |
-    #     python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}}
-    #     echo "matched: '$matched'"
-    #     if [[ "$exists" == "False" ]]; then
-    #       echo "[FAILURE] Regex '${{env.LLAMA_RESPONSE_REGEX}}' NOT matched in llama-cli response."
-    #       exit 1
-    #     else
-    #       echo "[SUCCESS] Regex '${{env.LLAMA_RESPONSE_REGEX}}' matched in llama-cli response."
-    #     fi
-
-    # - name: test-llama-cli-response-with-regex-2
-    #   if: env.TEST_LLAMA_CLI == 'true'
-    #   run: |
-    #     python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}"
-    #     echo "matched: '$matched'"
-    #     if [[ "$exists" == "False" ]]; then
-    #       echo "[FAILURE] Regex '${{env.LLAMA_RESPONSE_REGEX}}' NOT matched in llama-cli response."
-    #       exit 1
-    #     else
-    #       echo "[SUCCESS] Regex '${{env.LLAMA_RESPONSE_REGEX}}' matched in llama-cli response."
-    #     fi
+    #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     - name: test-llama-cli-response-with-regex-2-word-match
       if: env.TEST_LLAMA_CLI == 'true'
