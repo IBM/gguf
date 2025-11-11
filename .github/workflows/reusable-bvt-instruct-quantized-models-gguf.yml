@@ -97,19 +97,6 @@ jobs:
     #   if: ${{ github.event.inputs.debug }}
     #   run: env | sort
 
-    # - name: list params
-    #   run: |
-    #     echo "env.repository_owner : '${{ env.repository_owner }}'"
-    #     echo "github.repository_owner : '${{ github.repository_owner }}'"
-    #     echo "github.event.repository.name : '${{ github.event.repository.name }}'"
-    #     echo "github.event.ref : '${{ github.event.ref }}'"
-    #     echo "github.ref_name: ${{ github.ref_name }}"
-    #     echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
-    #     echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
-    #     ls -al ${{env.BASE_FNAME_LOG_FILE}}
-    #     pwd
-    #     ls -lha /Users/runner/work/gguf/gguf/
-
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
@@ -207,82 +194,7 @@ jobs:
     #     echo "--------------------"
     #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
-    # - name: test-llama-server-with-quantized-gguf
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   timeout-minutes: 10
-    #   run: |
-    #     echo "--------------------"
-    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-    #     echo "--------------------"
-    #     echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
-    #     nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &
-
-    # echo waiting for llama-server to start...
-    # retry_count=0
-    # max_retries=10
-    # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
-    #   echo "retry_count: $retry_count"
-    #   if [ $? -eq 0 ]; then
-    #     echo "Connection successful!"
-    #     break
-    #   else
-    #     echo "Connection failed, retrying..."
-    #     echo "sleeping 1 second..." && sleep 1
-    #     retry_count=$((retry_count + 1))
-    #   fi
-    # done
-
-    # - name: test-llama-server-connection
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
-    #     echo "netstat:\n$(netstat -an -p tcp | grep ".${{env.LLAMA_SERVER_HOST}}")"
-
-    #     if nc -v -z ${{env.LLAMA_SERVER_HOST}} ${{env.LLAMA_SERVER_PORT}}; then
-    #       echo "SUCCESS: Connection to llama-server successful."
-    #     else
-    #       echo "Failure: Connection to llama-server failed."
-    #       # ps aux
-    #       exit 1
-    #     fi
-
-    # - name: test-llama-server-with-curl
-    #   timeout-minutes: 5
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
-    #     echo "TODO: Test for {"status":"ok"} from GET /health"
-    #     echo "${{env.LLAMA_REQUEST_PROMPT}}"
-    #     curl --request POST \
-    #       --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
-    #       --header "Content-Type: application/json" \
-    #       --data '{ \
-    #         "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
-    #         "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
-    #         "seed": ${{env.LLAMA_REQUEST_SEED}} \
-    #       }'
-    #     echo "TODO: Test for JSON response from POST /completion endpoint using jq"
-
-    # TODO:
-    # - name: kill-llama-server
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     echo "TODO: is netstat and ps commands to get PID and kill..."
-
-
-    # - name: test-llama-run
-    #   if: env.TEST_LLAMA_RUN == 'true'
-    #   timeout-minutes: 10
-    #   continue-on-error: true
-    #   run: |
-    #     echo "invoking llama-run to test inference..."
-    #     ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
-    #     if [ $? -eq 1 ]; then
-    #       exit 1
-    #     fi
-
     # NOTE: if we want to ignore stderr use: 2>/dev/null
-    # -s ${{env.LLAMA_REQUEST_SEED}} \
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
@@ -430,3 +342,78 @@ jobs:
     #     asset_path: ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     asset_content_type: text/plain
+
+
+    # - name: test-llama-server-with-quantized-gguf
+    #   if: env.TEST_LLAMA_SERVER == 'true'
+    #   timeout-minutes: 10
+    #   run: |
+    #     echo "--------------------"
+    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+    #     echo "--------------------"
+    #     echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
+    #     nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &
+
+    # echo waiting for llama-server to start...
+    # retry_count=0
+    # max_retries=10
+    # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
+    #   echo "retry_count: $retry_count"
+    #   if [ $? -eq 0 ]; then
+    #     echo "Connection successful!"
+    #     break
+    #   else
+    #     echo "Connection failed, retrying..."
+    #     echo "sleeping 1 second..." && sleep 1
+    #     retry_count=$((retry_count + 1))
+    #   fi
+    # done
+
+    # - name: test-llama-server-connection
+    #   if: env.TEST_LLAMA_SERVER == 'true'
+    #   run: |
+    #     echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
+    #     echo "netstat:\n$(netstat -an -p tcp | grep ".${{env.LLAMA_SERVER_HOST}}")"
+
+    #     if nc -v -z ${{env.LLAMA_SERVER_HOST}} ${{env.LLAMA_SERVER_PORT}}; then
+    #       echo "SUCCESS: Connection to llama-server successful."
+    #     else
+    #       echo "Failure: Connection to llama-server failed."
+    #       # ps aux
+    #       exit 1
+    #     fi
+
+    # - name: test-llama-server-with-curl
+    #   timeout-minutes: 5
+    #   if: env.TEST_LLAMA_SERVER == 'true'
+    #   run: |
+    #     curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
+    #     echo "TODO: Test for {"status":"ok"} from GET /health"
+    #     echo "${{env.LLAMA_REQUEST_PROMPT}}"
+    #     curl --request POST \
+    #       --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
+    #       --header "Content-Type: application/json" \
+    #       --data '{ \
+    #         "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
+    #         "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
+    #         "seed": ${{env.LLAMA_REQUEST_SEED}} \
+    #       }'
+    #     echo "TODO: Test for JSON response from POST /completion endpoint using jq"
+
+    # TODO:
+    # - name: kill-llama-server
+    #   if: env.TEST_LLAMA_SERVER == 'true'
+    #   run: |
+    #     echo "TODO: is netstat and ps commands to get PID and kill..."
+
+
+    # - name: test-llama-run
+    #   if: env.TEST_LLAMA_RUN == 'true'
+    #   timeout-minutes: 10
+    #   continue-on-error: true
+    #   run: |
+    #     echo "invoking llama-run to test inference..."
+    #     ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
+    #     if [ $? -eq 1 ]; then
+    #       exit 1
+    #     fi

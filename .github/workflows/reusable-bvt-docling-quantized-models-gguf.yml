@@ -57,8 +57,8 @@ env:
   TEST_LLAMA_CLI: true
   TEST_LLAMA_RUN: false
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
-  LLAMA_REQUEST_TEST_IMAGE_1: "test/images/sample-text-screenshot.png"
-  LLAMA_REQUEST_TEST_IMAGE_2: "test/images/old_newspaper.png"
+  LLAMA_REQUEST_TEST_IMAGE_GH_SS: "test/images/sample-text-screenshot.png"
+  LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER: "test/images/old_newspaper.png"
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_CLI_REPEAT_PENALTY: 1.05
@@ -175,18 +175,11 @@ jobs:
         find . -name \*.gguf -type f
         find . -name \*.jpg -type f
 
-    # Run a sample
-    # ./bin/llama-mtmd-cli -m ~/models/ibm-granite/granite-docling-258M/granite-docling-258M-F16.gguf \
-    #    --image ~/Pictures/sample-doc.png \
-    #    --mmproj ~/models/ibm-granite/mmproj-granite-docling-258M
-    #    -p "<__media__>Convert this page to markdown."
-    #    --verbose
-    #.   -ngl 99
-    - name: test-llama-mtmd-cli-help
-      run: |
-        ./bin/llama-mtmd-cli --help
+    # - name: test-llama-mtmd-cli-help
+    #   run: |
+    #     ./bin/llama-mtmd-cli --help
 
-    - name: test-llama-mtmd-cli-1
+    - name: test-llama-mtmd-cli-gh-ss
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -196,7 +189,7 @@ jobs:
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
-            --image ${{env.LLAMA_REQUEST_TEST_IMAGE_1}} \
+            --image ${{env.LLAMA_REQUEST_TEST_IMAGE_GH_SS}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             -ngl 99 \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
@@ -215,7 +208,7 @@ jobs:
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
-    - name: test-llama-mtmd-cli-2
+    - name: test-llama-mtmd-cli-old-newspaper
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -225,7 +218,7 @@ jobs:
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
-            --image ${{env.LLAMA_REQUEST_TEST_IMAGE_2}} \
+            --image ${{env.LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
             --repeat-penalty ${{env.LLAMA_CLI_REPEAT_PENALTY}} \
@@ -242,3 +235,29 @@ jobs:
         echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+
+    - name: Upload log artifact
+      id: artifact-upload-log
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.BASE_FNAME_LOG_FILE}}
+        path: ${{env.BASE_FNAME_LOG_FILE}}
+
+    - name: Show log artifact ID
+      id: show-artifact-id-log
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    - name: Upload response artifact
+      id: artifact-upload-response
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.BASE_FNAME_RESPONSE_FILE}}
+        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: Show response artifact ID
+      id: show-artifact-id-response
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
