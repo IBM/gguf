@@ -459,7 +459,7 @@ jobs:
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' }}
+    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success') }}
     permissions:
       contents: write
       packages: write
