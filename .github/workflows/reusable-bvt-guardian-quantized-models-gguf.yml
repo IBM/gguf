@@ -183,12 +183,13 @@ jobs:
       run: |
         echo "invoking llama-cli to test inference (generation)..."
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli.test -no-cnv \
+        ./bin/llama-cli -no-cnv \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp ${{env.LLAMA_REQUEST_TEMP}} \
           --n-gpu-layers ${{ env.LLAMA_REQUEST_NUM_GPU_LAYERS }} \
-          --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} 1> ${{env.LLAMA_RESPONSE_OUTPUT_FILE}}
+          --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
+          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-cli failed:"
           ls -al
