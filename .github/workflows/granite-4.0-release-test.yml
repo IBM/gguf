@@ -277,6 +277,7 @@ jobs:
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -381,6 +382,7 @@ jobs:
 
   bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -485,6 +487,7 @@ jobs:
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
+    if: ${{ always() && (needs.guardian-quantize-upload-gguf.result == 'success' || needs.guardian-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -695,6 +698,7 @@ jobs:
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
     needs: [ environment-setup, docling-quantize-upload-gguf ]
+    if: ${{ always() && (needs.docling-quantize-upload-gguf.result == 'success' || needs.docling-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -736,7 +740,9 @@ jobs:
   language-logs-aggregate-zip-upload:
     needs: [
       environment-setup,
-      language-bvt-quantized-gguf-models
+      language-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
@@ -755,7 +761,9 @@ jobs:
   language-responses-aggregate-zip-upload:
     needs: [
       environment-setup,
-      language-bvt-quantized-gguf-models
+      language-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
