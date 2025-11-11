@@ -71,13 +71,13 @@ jobs:
         run: |
           ls -al ${{inputs.artifacts_path}}
           echo "%%%"
-          find artifacts -type f -name "*.txt"
+          find artifacts -type f -name "*.txt" -print0
           echo "%%%"
-          find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | xargs -0 > find.txt
+          find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" -print0 | xargs -0 > find.txt
           echo "==="
           cat find.txt
           echo "==="
-          FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | xargs -0)
+          FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" -print0 | xargs -0)
           echo "FIND_OUTPUT: '$FIND_OUTPUT'"
           echo "&&&"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
