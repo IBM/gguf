@@ -459,6 +459,7 @@ jobs:
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' }}
     permissions:
       contents: write
       packages: write
@@ -728,12 +729,10 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  logs-aggregate-zip-upload:
+  language-logs-aggregate-zip-upload:
     needs: [
       environment-setup,
-      language-bvt-quantized-gguf-models,
-      guardian-bvt-quantized-gguf-models,
-      docling-bvt-quantized-gguf-models,
+      language-bvt-quantized-gguf-models
     ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
@@ -749,12 +748,10 @@ jobs:
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
     secrets: inherit
 
-  responses-aggregate-zip-upload:
+  language-responses-aggregate-zip-upload:
     needs: [
       environment-setup,
-      language-bvt-quantized-gguf-models,
-      guardian-bvt-quantized-gguf-models,
-      docling-bvt-quantized-gguf-models,
+      language-bvt-quantized-gguf-models
     ]
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
