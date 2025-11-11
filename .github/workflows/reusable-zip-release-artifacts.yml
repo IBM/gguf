@@ -76,7 +76,9 @@ jobs:
           echo "==="
           FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | xargs -0)
           echo "FIND_OUTPUT: '$FIND_OUTPUT'"
+          echo "&&&"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "&&&"
 
       - name: Zip artifacts
         id: zip-artifacts
