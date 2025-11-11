@@ -97,6 +97,19 @@ jobs:
     #   if: ${{ github.event.inputs.debug }}
     #   run: env | sort
 
+    # - name: list params
+    #   run: |
+    #     echo "env.repository_owner : '${{ env.repository_owner }}'"
+    #     echo "github.repository_owner : '${{ github.repository_owner }}'"
+    #     echo "github.event.repository.name : '${{ github.event.repository.name }}'"
+    #     echo "github.event.ref : '${{ github.event.ref }}'"
+    #     echo "github.ref_name: ${{ github.ref_name }}"
+    #     echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
+    #     echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
+    #     ls -al ${{env.BASE_FNAME_LOG_FILE}}
+    #     pwd
+    #     ls -lha /Users/runner/work/gguf/gguf/
+
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
@@ -352,70 +365,68 @@ jobs:
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
 
-    - name: list params
-      run: |
-        echo "env.repository_owner : '${{ env.repository_owner }}'"
-        echo "github.repository_owner : '${{ github.repository_owner }}'"
-        echo "github.event.repository.name : '${{ github.event.repository.name }}'"
-        echo "github.event.ref : '${{ github.event.ref }}'"
-        echo "github.ref_name: ${{ github.ref_name }}"
-        echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
-        echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
-        ls -al ${{env.BASE_FNAME_LOG_FILE}}
-        pwd
-        # ls -R /Users/runner/work/gguf/gguf/
-        ls -lha /Users/runner/work/gguf/gguf/
-        # find /Users/runner/work/gguf/gguf/ -name "dotnet-gitreleasemanager"
+    # - name: list params
+    #   run: |
+    #     echo "env.repository_owner : '${{ env.repository_owner }}'"
+    #     echo "github.repository_owner : '${{ github.repository_owner }}'"
+    #     echo "github.event.repository.name : '${{ github.event.repository.name }}'"
+    #     echo "github.event.ref : '${{ github.event.ref }}'"
+    #     echo "github.ref_name: ${{ github.ref_name }}"
+    #     echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
+    #     echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
+    #     ls -al ${{env.BASE_FNAME_LOG_FILE}}
+    #     pwd
+    #     ls -lha /Users/runner/work/gguf/gguf/
 
-    - name: Get release info
-      id: get-release-info
-      run: |
-        RELEASE_INFO=$(curl -sL \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository}}/releases/tags/${{ github.ref_name }}")
-        echo "RELEASE_INFO: $RELEASE_INFO"
-        # TEST_UPLOAD_URL=$("$RELEASE_INFO" | jq -r '.upload_url')
-        # echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
+    # - name: Get release info
+    #   id: get-release-info
+    #   run: |
+    #     RELEASE_INFO=$(curl -sL \
+    #       -H "Accept: application/vnd.github+json" \
+    #       -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+    #       "https://api.github.com/repos/${{ github.repository}}/releases/tags/${{ github.ref_name }}")
+    #     echo "RELEASE_INFO: $RELEASE_INFO"
+    #     # TEST_UPLOAD_URL=$("$RELEASE_INFO" | jq -r '.upload_url')
+    #     # echo "test_upload_url=$TEST_UPLOAD_URL" >> $GITHUB_ENV
 
-    - name: Get release upload URL
-      id: get-release-step
-      run: |
-        UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
-          | jq -r '.upload_url')
-        echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+    # - name: Get release upload URL
+    #   id: get-release-step
+    #   run: |
+    #     UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+    #       "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+    #       | jq -r '.upload_url')
+    #     echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
-    - name: Upload llama.cpp CLI log to release assets
-      id: upload-asset-llama-cli-log
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get-release-step.outputs.upload_url }}
-        asset_path: ${{env.BASE_FNAME_LOG_FILE}}
-        asset_name: ${{env.BASE_FNAME_LOG_FILE}}
-        asset_content_type: text/plain
+    # - name: Upload llama.cpp CLI log to release assets
+    #   id: upload-asset-llama-cli-log
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.get-release-step.outputs.upload_url }}
+    #     asset_path: ${{env.BASE_FNAME_LOG_FILE}}
+    #     asset_name: ${{env.BASE_FNAME_LOG_FILE}}
+    #     asset_content_type: text/plain
 
-    - name: Check for response file existence
-      id: check_response_file
-      run: |
-        if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
-          echo "response_file_exists=true"
-          echo "response_file_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "response_file_exists=false"
-          echo "response_file_exists=false" >> $GITHUB_OUTPUT
-        fi
+    # - name: Check for response file existence
+    #   id: check_response_file
+    #   run: |
+    #     if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+    #       echo "response_file_exists=true"
+    #       echo "response_file_exists=true" >> $GITHUB_OUTPUT
+    #     else
+    #       echo "response_file_exists=false"
+    #       echo "response_file_exists=false" >> $GITHUB_OUTPUT
+    #     fi
 
-    - name: Upload llama.cpp CLI response to release assets
-      id: upload-asset-llama-cli-response
-      if: steps.check_response_file.outputs.response_file_exists == 'true'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get-release-step.outputs.upload_url }}
-        asset_path: ${{env.BASE_FNAME_RESPONSE_FILE}}
-        asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
-        asset_content_type: text/plain
+    # - name: Upload llama.cpp CLI response to release assets
+    #   id: upload-asset-llama-cli-response
+    #   if: steps.check_response_file.outputs.response_file_exists == 'true'
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.get-release-step.outputs.upload_url }}
+    #     asset_path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+    #     asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
+    #     asset_content_type: text/plain
