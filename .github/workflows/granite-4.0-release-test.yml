@@ -253,6 +253,7 @@ jobs:
 
   language-quantize-upload-gguf:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -356,6 +357,7 @@ jobs:
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
+    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -563,6 +565,7 @@ jobs:
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -667,6 +670,7 @@ jobs:
 
   docling-quantize-upload-gguf:
     needs: [ environment-setup, docling-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
