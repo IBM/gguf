@@ -38,8 +38,9 @@ if __name__ == "__main__":
 
         with open(args.output_file, 'w') as f:
             f.write(file_list)
-    except FileNotFoundError:
-        print(f"Error: The file '{args.filename}' was not found.")
+
+    except IOError as e:
+        print(f"Error: Unable to write to file '{args.output_file}': {e}")
         exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
