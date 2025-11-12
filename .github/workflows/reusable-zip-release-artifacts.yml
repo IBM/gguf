@@ -55,6 +55,17 @@ jobs:
         run: echo "$GH_CONTEXT"
 
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/
+
+      # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+      # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/checkout@v4
       - name: Download log artifacts
         id: artifact-download-logs
         uses: actions/download-artifact@v4
@@ -69,12 +80,11 @@ jobs:
       - name: find-artifacts
         if: inputs.debug == true
         run: |
-          find --help
           ls -alR ${{inputs.artifacts_path}}
           echo "%%%"
           find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}"
           echo "%%%"
-          find ${{inputs.artifacts_path}} -type f -name "${{inputs.artifacts_extension}}" | tr '\n' ' ' > find.txt
+          find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | tr '\n' ' ' > find.txt
           echo "==="
           cat find.txt
           echo "==="
@@ -84,6 +94,8 @@ jobs:
           echo "FIND_OUTPUT: '$FIND_OUTPUT'"
           echo "3"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
+          python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o find2.txt
+          cat find2.txt
 
       - name: Zip artifacts
         id: zip-artifacts
