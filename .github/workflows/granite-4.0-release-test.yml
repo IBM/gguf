@@ -744,6 +744,11 @@ jobs:
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
     ]
+    if: |
+      always() && (
+        needs.guardian-bvt-quantized-gguf-models.result == 'success' ||
+        needs.guardian-bvt-quantized-gguf-models.result == 'skipped'
+      )
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
       contents: write
