@@ -257,7 +257,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.BASE_FNAME_LOG_FILE}}
+        name: ${{inputs.repo_id}}
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
@@ -270,7 +270,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.BASE_FNAME_RESPONSE_FILE}}
+        name: ${{inputs.repo_id}}
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show response artifact ID

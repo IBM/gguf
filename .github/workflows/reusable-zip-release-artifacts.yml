@@ -107,7 +107,8 @@ jobs:
           cat find2.txt
           echo "==="
           # echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
-          zip -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
+          # zip -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
+          zip -v -r ${{env.ZIP_ARTIFACT_FNAME}} @find2.txt
 
       - name: Get release upload URL
         id: get-release-upload-url
