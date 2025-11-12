@@ -102,13 +102,11 @@ jobs:
       - name: Zip artifacts
         id: zip-artifacts
         run: |
-          ls -al ${{inputs.artifacts_path}}
-          echo "==="
-          cat find.txt
+          ls -alR ${{inputs.artifacts_path}}
           echo "==="
           cat find2.txt
           echo "==="
-          echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
+          # echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
           zip -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
 
       - name: Get release upload URL
