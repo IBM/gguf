@@ -74,17 +74,16 @@ jobs:
           echo "%%%"
           find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}"
           echo "%%%"
-          # find ${{inputs.artifacts_path}} -type f -name *${{inputs.artifacts_extension}} | xargs -0 > find.txt
-          find ${{inputs.artifacts_path}} -type f -name "${{inputs.artifacts_extension}} | tr '\n' ' ' > find.txt
+          find ${{inputs.artifacts_path}} -type f -name "${{inputs.artifacts_extension}}" | tr '\n' ' ' > find.txt
           echo "==="
           cat find.txt
           echo "==="
-          # FIND_OUTPUT=$(find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" -print0 | xargs -0)
+          echo "1"
           echo "FIND_OUTPUT=$(cat find.txt)"
-          echo "&&&"
+          echo "2"
           echo "FIND_OUTPUT: '$FIND_OUTPUT'"
+          echo "3"
           echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
-          echo "&&&"
 
       - name: Zip artifacts
         id: zip-artifacts
