@@ -236,18 +236,22 @@ jobs:
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
+    # ========================= Upload log as artifact ======================================
+
     - name: Upload log artifact
       id: artifact-upload-log
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.BASE_FNAME_LOG_FILE}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-log
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
       id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    # ========================= Upload response as artifact ======================================
 
     - name: Upload response artifact
       id: artifact-upload-response
@@ -255,7 +259,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.BASE_FNAME_RESPONSE_FILE}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show response artifact ID

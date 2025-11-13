@@ -58,6 +58,9 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
+  LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
+  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
+
 jobs:
   convert-safetensor-to-gguf:
     runs-on: macos-latest
