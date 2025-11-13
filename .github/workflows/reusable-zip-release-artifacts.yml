@@ -87,7 +87,7 @@ jobs:
           find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | tr '\n' ' ' > find.txt
           echo "==="
           cat find.txt
-          echo "==="
+          echo "\n==="
           echo "1"
           echo "FIND_OUTPUT=$(cat find.txt)"
           echo "2"
@@ -97,18 +97,20 @@ jobs:
           echo "4"
           python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o find2.txt
           echo "5"
+          echo "==="
           cat find2.txt
+          echo "\n==="
 
       - name: Zip artifacts
         id: zip-artifacts
+        continue-on-error: false
         run: |
           ls -alR ${{inputs.artifacts_path}}
           echo "==="
           cat find2.txt
-          echo "==="
+          echo "\n==="
           # echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
-          # zip -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
-          zip -v -r ${{env.ZIP_ARTIFACT_FNAME}} @find2.txt
+          zip -r -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
 
       - name: Get release upload URL
         id: get-release-upload-url

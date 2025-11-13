@@ -25,7 +25,7 @@ def get_files_with_extension(path, extension):
 
     file_paths = [str(p) for p in directory_path.rglob(f'*{extension}') if p.is_file()]
 
-    return " ".join(file_paths)
+    return "\n".join(file_paths)
 
 if __name__ == "__main__":
     try:
