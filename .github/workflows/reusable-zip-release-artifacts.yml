@@ -96,7 +96,7 @@ jobs:
           # echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
           # echo "4"
           python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o find2.txt
-          echo "5"
+          # echo "5"
           echo "==="
           cat find2.txt
           echo "\n==="
