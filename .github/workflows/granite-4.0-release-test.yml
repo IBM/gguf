@@ -16,7 +16,7 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
 
@@ -67,7 +67,7 @@ env:
     'ibm-granite/granite-guardian-3.3-8b'
   ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'Q8_0'
+    'Q4_K_M'
   ]"
   SOURCE_VISION_REPOS: "[
     'ibm-granite/granite-vision-3.3-2b'
@@ -738,10 +738,6 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  # always() && (
-  #   needs.guardian-bvt-quantized-gguf-models.result == 'success' ||
-  #   needs.guardian-bvt-quantized-gguf-models.result == 'skipped'
-  # )
   language-logs-aggregate-zip-upload:
     needs: [
       environment-setup,
@@ -771,6 +767,7 @@ jobs:
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
     ]
+    if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
     permissions:
       contents: write

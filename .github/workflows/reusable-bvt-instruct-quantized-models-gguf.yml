@@ -37,7 +37,7 @@ on:
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
-  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+  # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   # LLAMA_REQUEST_SEED: 647063347
   # LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
@@ -251,6 +251,8 @@ jobs:
           echo "[FAILURE]: $python_output"
         fi
 
+    # ========================= Upload log as artifact ======================================
+
     - name: Upload log artifact
       id: artifact-upload-log
       uses: actions/upload-artifact@v4
@@ -263,6 +265,8 @@ jobs:
     - name: Show log artifact ID
       id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    # ========================= Upload response as artifact ======================================
 
     - name: Upload response artifact
       id: artifact-upload-response
@@ -277,18 +281,7 @@ jobs:
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
 
-    # - name: list params
-    #   run: |
-    #     echo "env.repository_owner : '${{ env.repository_owner }}'"
-    #     echo "github.repository_owner : '${{ github.repository_owner }}'"
-    #     echo "github.event.repository.name : '${{ github.event.repository.name }}'"
-    #     echo "github.event.ref : '${{ github.event.ref }}'"
-    #     echo "github.ref_name: ${{ github.ref_name }}"
-    #     echo "github.event.release.tag_name '${{github.event.release.tag_name}}'"
-    #     echo "github.event.release.upload_url '${{github.event.release.upload_url}}'"
-    #     ls -al ${{env.BASE_FNAME_LOG_FILE}}
-    #     pwd
-    #     ls -lha /Users/runner/work/gguf/gguf/
+    # ========================= Upload log to release ======================================
 
     # - name: Get release info
     #   id: get-release-info
@@ -320,6 +313,8 @@ jobs:
     #     asset_name: ${{env.BASE_FNAME_LOG_FILE}}
     #     asset_content_type: text/plain
 
+    # ========================= Upload response to release ======================================
+
     # - name: Check for response file existence
     #   id: check_response_file
     #   run: |
@@ -343,6 +338,7 @@ jobs:
     #     asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     asset_content_type: text/plain
 
+    # ========================= llama.cpp llama-server tests ======================================
 
     # - name: test-llama-server-with-quantized-gguf
     #   if: env.TEST_LLAMA_SERVER == 'true'
@@ -406,6 +402,7 @@ jobs:
     #   run: |
     #     echo "TODO: is netstat and ps commands to get PID and kill..."
 
+    # ========================= llama.cpp llama-run tests ======================================
 
     # - name: test-llama-run
     #   if: env.TEST_LLAMA_RUN == 'true'
