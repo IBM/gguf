@@ -764,23 +764,23 @@ jobs:
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
     secrets: inherit
 
-  # language-responses-aggregate-zip-upload:
-  #   needs: [
-  #     environment-setup,
-  #     language-bvt-quantized-gguf-models,
-  #     guardian-bvt-quantized-gguf-models,
-  #     docling-bvt-quantized-gguf-models,
-  #   ]
-  #   uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     enable_zip: true
-  #     artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
-  #     artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_responses_name }}"
-  #     artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
-  #   secrets: inherit
+  language-responses-aggregate-zip-upload:
+    needs: [
+      environment-setup,
+      language-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_zip: true
+      artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_responses_name }}"
+      artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets: inherit
