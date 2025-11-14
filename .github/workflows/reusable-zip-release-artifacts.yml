@@ -27,7 +27,7 @@ on:
         default: false
 
 env:
-  ARTIFACT_LIST_FILENAME: find2.text
+  ARTIFACT_LIST_FILENAME: find2.txt
 
 jobs:
   zip-release-artifacts:
@@ -94,10 +94,11 @@ jobs:
         continue-on-error: false
         run: |
           # ls -alR ${{inputs.artifacts_path}}
+          ls -al
           echo "=== ${{env.ARTIFACT_LIST_FILENAME}} ===:"
           cat ${{env.ARTIFACT_LIST_FILENAME}}
           echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
-          zip -r -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
+          zip -r -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < ${{env.ARTIFACT_LIST_FILENAME}}
 
       - name: Get release upload URL
         id: get-release-upload-url
