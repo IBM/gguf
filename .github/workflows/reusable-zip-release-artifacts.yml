@@ -26,6 +26,9 @@ on:
         required: true
         default: false
 
+env:
+  ARTIFACT_LIST_FILENAME: find2.text
+
 jobs:
   zip-release-artifacts:
     runs-on: ubuntu-latest
@@ -80,36 +83,20 @@ jobs:
       - name: find-artifacts
         if: inputs.debug == true
         run: |
-          ls -alR ${{inputs.artifacts_path}}
-          # echo "%%%"
-          # find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}"
-          # echo "%%%"
-          # find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" | tr '\n' ' ' > find.txt
-          # echo "==="
-          # cat find.txt
-          # echo "\n==="
-          # echo "1"
-          # echo "FIND_OUTPUT=$(cat find.txt)"
-          # echo "2"
-          # echo "FIND_OUTPUT: '$FIND_OUTPUT'"
-          # echo "3"
-          # echo "find_output=$FIND_OUTPUT" >> "$GITHUB_OUTPUT"
-          # echo "4"
-          python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o find2.txt
-          # echo "5"
-          echo "==="
-          cat find2.txt
-          echo "\n==="
+          # ls -alR ${{inputs.artifacts_path}}
+          python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o ${{env.ARTIFACT_LIST_FILENAME}}
+          echo "=== ${{env.ARTIFACT_LIST_FILENAME}} ===:"
+          cat ${{env.ARTIFACT_LIST_FILENAME}}
+          echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
 
       - name: Zip artifacts
         id: zip-artifacts
         continue-on-error: false
         run: |
-          ls -alR ${{inputs.artifacts_path}}
-          echo "==="
-          cat find2.txt
-          echo "\n==="
-          # echo "find_output: '${{ steps.find-artifacts.outputs.find_output }}'"
+          # ls -alR ${{inputs.artifacts_path}}
+          echo "=== ${{env.ARTIFACT_LIST_FILENAME}} ===:"
+          cat ${{env.ARTIFACT_LIST_FILENAME}}
+          echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
           zip -r -j -v ${{env.ZIP_ARTIFACT_FNAME}} -@ < find2.txt
 
       - name: Get release upload URL

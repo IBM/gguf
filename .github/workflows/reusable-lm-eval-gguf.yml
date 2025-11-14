@@ -43,7 +43,7 @@ env:
   LLAMA_REQUEST_N_PREDICT: 128
   LLAMA_CLI_RESPONSE_FILE: .llama-server.response.txt
   LLAMA_CLI_LOG_FILE: .llama-server.log.txt
-  LLAMA_CLI_TEMP: 0.8
+  LLAMA_SERVER_TEMP: 0.8
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
   LLAMACPP_DIR: llama.cpp
@@ -198,7 +198,7 @@ jobs:
     #       -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
     #       -p '${{env.LLAMA_REQUEST_PROMPT}}' \
     #       -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-    #       --temp ${{env.LLAMA_CLI_TEMP}} \
+    #       --temp ${{env.LLAMA_SERVER_TEMP}} \
     #       -no-cnv \
     #       --verbose \
     #       --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
@@ -213,18 +213,6 @@ jobs:
     #     echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
     #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
     #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
-
-    # - name: test-print-llama-cli-generated-log
-    #   if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
-    #   continue-on-error: true
-    #   run: |
-    #     ls -al
-    #     echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-
-    # - name: test-print-llama-cli-response-with-metrics
-    #   if: env.TEST_LLAMA_CLI == 'true'
-    #   run: |
-    #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     # - name: test-llama-cli-response-with-regex-2-word-match
     #   if: env.TEST_LLAMA_CLI == 'true'
@@ -242,11 +230,6 @@ jobs:
     #       echo "[FAILURE]: $python_output"
     #     fi
 
-    git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
-    cd lm-evaluation-harness
-    pip install -e .
-    cd ..
-
     # ========================= llama.cpp llama-server install ======================================
 
     - name: test-llama-server-with-quantized-gguf
@@ -261,6 +244,7 @@ jobs:
         nohup ./bin/llama-server \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           --port ${{env.LLAMA_SERVER_PORT}}
+          --temp ${{env.LLAMA_SERVER_TEMP}} \
           --verbose \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}} &
 
@@ -312,7 +296,21 @@ jobs:
           }'
         echo "TODO: Test for JSON response from POST /completion endpoint using jq"
 
-    TODO:
+    # ========================= Install im-eval-harness ====================================
+
+    - name: clone-install-lm-eval-harness
+      if: env.TEST_LLAMA_SERVER == 'true'
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |
+        git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
+        cd lm-evaluation-harness
+        pip install -e .
+        cd ..
+
+    # ========================= Kill llama-server ===========================================
+
+    # TODO: look to add confirmation of kill and take extra measures for gc if failed
     - name: kill-llama-server
       if: env.TEST_LLAMA_SERVER == 'true'
       continue-on-error: true
