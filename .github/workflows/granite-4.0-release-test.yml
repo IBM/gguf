@@ -300,7 +300,7 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   language-lm-eval-gguf-models:
-    needs: [ language-bvt-quantized-gguf-models ]
+    needs: [ environment-setup, language-bvt-quantized-gguf-models ]
     if: ${{ always() && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
     permissions:
