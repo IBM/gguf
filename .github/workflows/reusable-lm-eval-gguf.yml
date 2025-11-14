@@ -246,8 +246,8 @@ jobs:
           --port ${{env.LLAMA_SERVER_PORT}}
           --temp ${{env.LLAMA_SERVER_TEMP}} \
           --verbose \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}} &
-
+          --log-file ${{env.BASE_FNAME_LOG_FILE}} &
+        echo "Llama server started in the background."
         echo waiting for llama-server to start...
         retry_count=0
         max_retries=10
@@ -288,7 +288,7 @@ jobs:
         echo "TODO: Test for {"status":"ok"} from GET /health"
         echo "${{env.LLAMA_REQUEST_PROMPT}}"
         curl --request POST \
-          --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
+          --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
           --header "Content-Type: application/json" \
           --data '{ \
             "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
@@ -334,15 +334,15 @@ jobs:
 
     # ========================= Upload response as artifact ======================================
 
-    - name: Upload response artifact
-      id: artifact-upload-response
-      uses: actions/upload-artifact@v4
-      with:
-        overwrite: true
-        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
-        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+    # - name: Upload response artifact
+    #   id: artifact-upload-response
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     overwrite: true
+    #     retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+    #     name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
+    #     path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
-    - name: Show response artifact ID
-      id: show-artifact-id-response
-      run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+    # - name: Show response artifact ID
+    #   id: show-artifact-id-response
+    #   run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
