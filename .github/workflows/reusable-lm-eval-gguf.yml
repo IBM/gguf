@@ -246,7 +246,7 @@ jobs:
         echo waiting for llama-server to start...
         retry_count=0
         max_retries=10
-        while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
+        while ! nc -v -z ${{env.LLAMA_SERVER_HOST}} ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
           echo "retry_count: $retry_count"
           if [ $? -eq 0 ]; then
             echo "Connection successful!"
@@ -282,14 +282,10 @@ jobs:
         curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
         echo "TODO: Test for {"status":"ok"} from GET /health"
         echo "${{env.LLAMA_REQUEST_PROMPT}}"
-        curl --request POST \
-          --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
-          --header "Content-Type: application/json" \
-          --data '{ \
-            "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
-            "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
-          }'
-        echo "TODO: Test for JSON response from POST /completion endpoint using jq"
+        curl --request POST --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion --header "Content-Type: application/json" -o llama_response.json --data '{ "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}} }'
+        echo "==="
+        cat llama_response.json | jq .
+        echo "==="
 
     # ========================= Install im-eval-harness ====================================
 
