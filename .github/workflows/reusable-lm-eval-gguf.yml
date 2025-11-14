@@ -241,12 +241,7 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
         echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
-        nohup ./bin/llama-server \
-          -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-          --port ${{env.LLAMA_SERVER_PORT}}
-          --temp ${{env.LLAMA_SERVER_TEMP}} \
-          --verbose \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} &
+        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} --temp ${{env.LLAMA_SERVER_TEMP}} --verbose --log-file ${{env.BASE_FNAME_LOG_FILE}} &
         echo "Llama server started in the background."
         echo waiting for llama-server to start...
         retry_count=0
