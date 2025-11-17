@@ -49,7 +49,7 @@ env:
   LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
   LLAMA_REQUEST_N_PREDICT: 128
-  LLAMA_CLI_TOOL: llama-cli
+  LLAMA_CLI_TOOL: llama-server
   LLAMA_SERVER_TEMP: 0.8
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
@@ -57,6 +57,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   TEST_LLAMA_SERVER: true
+  RUN_LM_EVAL: true
   GH_ARTIFACT_RETENTION: 2
 
 jobs:
@@ -175,8 +176,9 @@ jobs:
 
     # ========================= llama.cpp llama-server install ======================================
 
-    - name: test-llama-server-with-quantized-gguf
-      if: env.TEST_LLAMA_SERVER == 'true'
+    # NOTE: pgrep: -o returns most recent process if multiple started; -o requires an exact name match
+    - name: start-llama-server
+      if: ${{ env.TEST_LLAMA_SERVER == 'true' || env.RUN_LM_EVAL == 'true' }}
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -193,6 +195,9 @@ jobs:
           echo "retry_count: $retry_count"
           if [ $? -eq 0 ]; then
             echo "Connection successful!"
+            LLAMA_SERVER_PID=$(pgrep -o -x llama-server)
+            echo "LLAMA_SERVER_PID: $LLAMA_SERVER_PID"
+            echo "llama_server_pid=$LLAMA_SERVER_PID" >> $GITHUB_OUTPUT # Set the step output
             break
           else
             echo "Connection failed, retrying..."
@@ -201,8 +206,8 @@ jobs:
           fi
         done
 
-    - name: test-llama-server-connection
-      if: env.TEST_LLAMA_SERVER == 'true'
+    - name: verify-llama-server-connection
+      if: ${{ env.TEST_LLAMA_SERVER == 'true' || env.RUN_LM_EVAL == 'true' }}
       continue-on-error: true
       run: |
         echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
@@ -216,10 +221,9 @@ jobs:
           exit 1
         fi
 
-    # "seed": ${{env.LLAMA_REQUEST_SEED}} \
     - name: test-llama-server-with-curl
       timeout-minutes: 5
-      if: env.TEST_LLAMA_SERVER == 'true'
+      if: ${{ env.TEST_LLAMA_SERVER == 'true' || env.RUN_LM_EVAL == 'true' }}
       continue-on-error: true
       run: |
         curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
@@ -233,7 +237,7 @@ jobs:
     # ========================= Install im-eval-harness ====================================
 
     - name: clone-install-lm-eval-harness
-      if: env.TEST_LLAMA_SERVER == 'true'
+      if: env.RUN_LM_EVAL == 'true'
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -246,39 +250,42 @@ jobs:
 
     # TODO: look to add confirmation of kill and take extra measures for gc if failed
     - name: kill-llama-server
-      if: env.TEST_LLAMA_SERVER == 'true'
+      if: ${{ env.TEST_LLAMA_SERVER == 'true' || env.RUN_LM_EVAL == 'true' }}
       continue-on-error: true
       run: |
-        echo "TODO: is netstat and ps commands to get PID and kill..."
+        echo "killing ${{env.LLAMA_CLI_TOOL}} ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}} (PID: ${{ steps.start-llama-server.outputs.llama_server_pid }})..."
+        pkill -9 ${{env.LLAMA_CLI_TOOL}}
 
     # ========================= Upload log as artifact ======================================
 
     - name: Upload log artifact
       if: env.TEST_LLAMA_SERVER == 'true'
-      id: artifact-upload-log
+      id: artifact-upload-llama-server-log
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-log
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-log
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
       if: env.TEST_LLAMA_SERVER == 'true'
-      id: show-artifact-id-log
-      run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+      id: show-artifact-id-llama-server-log
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-llama-server-log.outputs.artifact-id }}'
 
     # ========================= Upload response as artifact ======================================
 
-    # - name: Upload response artifact
-    #   id: artifact-upload-response
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     overwrite: true
-    #     retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-    #     name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
-    #     path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+    - name: Upload response artifact
+      if: env.TEST_LLAMA_SERVER == 'true'
+      id: artifact-upload-llama-server-response
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-response
+        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
-    # - name: Show response artifact ID
-    #   id: show-artifact-id-response
-    #   run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+    - name: Show response artifact ID
+      if: env.TEST_LLAMA_SERVER == 'true'
+      id: show-artifact-id-llama-server-response
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-llama-server-response.outputs.artifact-id }}'
