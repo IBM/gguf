@@ -25,6 +25,14 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
       debug:
         type: boolean
         required: true
@@ -39,8 +47,7 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
-  LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
-  LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
+  LLAMA_CLI_TOOL: llama-mtmd-cli
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT_USER: "<__media__>Convert this image to markdown."
   LLAMA_REQUEST_N_PREDICT: 128
@@ -53,9 +60,7 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
-  TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
-  TEST_LLAMA_RUN: false
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   LLAMA_REQUEST_TEST_IMAGE_GH_SS: "test/images/sample-text-screenshot.png"
   LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER: "test/images/old_newspaper.png"
@@ -118,8 +123,8 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -161,25 +166,26 @@ jobs:
       run: |
         echo "Downloading model: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
     - name: download-mmproj-f16-gguf-hf-hub-download
       run: |
         echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
-    - name: verify-downloaded-files
-      if: env.DEBUG == 'true' && runner.os == 'macOS'
-      run: |
-        find . -name \*.gguf -type f
-        find . -name \*.jpg -type f
+    # - name: verify-downloaded-files
+    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
+    #   run: |
+    #     find . -name \*.gguf -type f
+    #     find . -name \*.jpg -type f
 
     # - name: test-llama-mtmd-cli-help
     #   run: |
     #     ./bin/llama-mtmd-cli --help
 
     - name: test-llama-mtmd-cli-gh-ss
+      if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -209,6 +215,7 @@ jobs:
         echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
     - name: test-llama-mtmd-cli-old-newspaper
+      if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
       continue-on-error: true
       run: |
@@ -239,29 +246,33 @@ jobs:
     # ========================= Upload log as artifact ======================================
 
     - name: Upload log artifact
+      if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-log
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-log
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-log
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
+      if: env.TEST_LLAMA_CLI == 'true'
       id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
     # ========================= Upload response as artifact ======================================
 
     - name: Upload response artifact
+      if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-response
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-response
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show response artifact ID
+      if: env.TEST_LLAMA_CLI == 'true'
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'

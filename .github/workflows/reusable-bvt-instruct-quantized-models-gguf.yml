@@ -25,6 +25,14 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
       debug:
         type: boolean
         required: true
@@ -44,12 +52,10 @@ env:
   LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
   LLAMA_REQUEST_N_PREDICT: 128
-  LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
-  LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
+  LLAMA_CLI_TOOL: llama-cli
   LLAMA_CLI_TEMP: 0.8
-  LLAMA_RUN_BIN: ./bin/llama-run
-  LLAMA_RUN_FLAGS: "-v -n 9"
-  LLAMA_RESPONSE_REGEX: "(Rayleigh|scatter)+"
+  # LLAMA_RUN_BIN: ./bin/llama-run
+  # LLAMA_RUN_FLAGS: "-v -n 9"
   LLAMA_RESPONSE_WORDS:  "Rayleigh,scatter,atmosphere"
   LLAMA_SERVER_HOST: localhost
   LLAMA_SERVER_PORT: 8080
@@ -123,8 +129,8 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_LOG_FILE}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}${{env.LLAMA_CLI_RESPONSE_FILE}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -165,15 +171,15 @@ jobs:
         echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
-    - name: verify-downloaded-files
-      if: env.DEBUG == 'true' && runner.os == 'macOS'
-      run: |
-        echo downloaded files...
-        echo "--------------------"
-        find . -name \*.gguf -type f
-        echo "--------------------"
+    # - name: verify-downloaded-files
+    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
+    #   run: |
+    #     echo downloaded files...
+    #     echo "--------------------"
+    #     find . -name \*.gguf -type f
+    #     echo "--------------------"
 
     # - name: print-storage-memory-info
     #   if: env.DEBUG == 'true' && runner.os == 'macOS'
@@ -235,7 +241,7 @@ jobs:
     #   run: |
     #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
-    - name: test-llama-cli-response-with-regex-2-word-match
+    - name: test-llama-cli-response-with-regex-word-match
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
         python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
@@ -254,30 +260,34 @@ jobs:
     # ========================= Upload log as artifact ======================================
 
     - name: Upload log artifact
+      if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: artifact-upload-log
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-log
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-log
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
+      if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
     # ========================= Upload response as artifact ======================================
 
     - name: Upload response artifact
+      if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: artifact-upload-response
       uses: actions/upload-artifact@v4
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-response
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-response
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show response artifact ID
+      if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
 

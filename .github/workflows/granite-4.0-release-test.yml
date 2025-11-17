@@ -28,8 +28,8 @@ env:
   DEFAULT_ARTIFACTS_DIR: 'artifacts'
   ARTIFACT_LOGS_NAME: 'bvt-logs'
   ARTIFACT_RESPONSES_NAME: 'bvt-responses'
-  EXT_LOG: '.llama-cli.log.txt'
-  EXT_RESPONSE: '.llama-cli.response.txt'
+  EXT_LOG: '.log.txt'
+  EXT_RESPONSE: '.response.txt'
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -296,6 +296,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ steps.set-vars.outputs.ext_log }}"
+      ext_response: "${{ steps.set-vars.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -319,6 +321,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ steps.set-vars.outputs.ext_log }}"
+      ext_response: "${{ steps.set-vars.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
