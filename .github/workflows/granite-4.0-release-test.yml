@@ -771,7 +771,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  language-logs-aggregate-zip-upload:
+  logs-aggregate-zip-upload:
     needs: [
       environment-setup,
       language-bvt-quantized-gguf-models,
@@ -793,7 +793,7 @@ jobs:
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
     secrets: inherit
 
-  language-responses-aggregate-zip-upload:
+  responses-aggregate-zip-upload:
     needs: [
       environment-setup,
       language-bvt-quantized-gguf-models,

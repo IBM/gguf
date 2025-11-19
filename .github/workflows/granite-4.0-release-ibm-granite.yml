@@ -14,7 +14,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: false
+  ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
@@ -26,9 +26,10 @@ env:
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
   DEFAULT_ARTIFACTS_DIR: 'artifacts'
-  ARTIFACT_ROOT_NAME: 'artifacts'
-  EXT_LOG: '.llama-cli.log.txt'
-  EXT_RESPONSE: '.llama-cli.response.txt'
+  ARTIFACT_LOGS_NAME: 'bvt-logs'
+  ARTIFACT_RESPONSES_NAME: 'bvt-responses'
+  EXT_LOG: '.log.txt'
+  EXT_RESPONSE: '.response.txt'
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -121,7 +122,8 @@ jobs:
       source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
       target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
       default_artifacts_dir: "${{ steps.set-vars.outputs.default_artifacts_dir }}"
-      artifact_root_name: "${{ steps.set-vars.outputs.artifact_root_name }}"
+      artifact_logs_name: "${{ steps.set-vars.outputs.artifact_logs_name }}"
+      artifact_responses_name: "${{ steps.set-vars.outputs.artifact_responses_name }}"
       ext_log: "${{ steps.set-vars.outputs.ext_log }}"
       ext_response: "${{ steps.set-vars.outputs.ext_response }}"
     steps:
@@ -155,7 +157,8 @@ jobs:
             echo "source_docling_repos=$SOURCE_DOCLING_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_docling_quantizations=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "default_artifacts_dir=$DEFAULT_ARTIFACTS_DIR" >> "$GITHUB_OUTPUT"
-            echo "artifact_root_name=$ARTIFACT_ROOT_NAME" >> "$GITHUB_OUTPUT"
+            echo "artifact_logs_name=$ARTIFACT_LOGS_NAME" >> "$GITHUB_OUTPUT"
+            echo "artifact_responses_name=$ARTIFACT_RESPONSES_NAME" >> "$GITHUB_OUTPUT"
             echo "ext_log=$EXT_LOG" >> "$GITHUB_OUTPUT"
             echo "ext_response=$EXT_RESPONSE" >> "$GITHUB_OUTPUT"
 
@@ -183,24 +186,25 @@ jobs:
             echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
             echo "target_docling_quantizations: '${{ steps.set-vars.outputs.target_docling_quantizations }}'"
             echo "default_artifacts_dir: '${{ steps.set-vars.outputs.default_artifacts_dir }}'"
-            echo "artifact_root_name: '${{ steps.set-vars.outputs.artifact_root_name }}'"
+            echo "artifact_logs_name: '${{ steps.set-vars.outputs.artifact_logs_name }}'"
+            echo "artifact_responses_name: '${{ steps.set-vars.outputs.artifact_responses_name }}'"
             echo "ext_log: '${{ steps.set-vars.outputs.ext_log }}'"
             echo "ext_response: '${{ steps.set-vars.outputs.ext_response }}'"
 
-      # - name: List all environment variables
-      #   run: env | sort
+      - name: List all environment variables
+        run: env | sort
 
-      # - name: Dump runner context
-      #   env:
-      #     RUNNER_CONTEXT: ${{ toJson(runner) }}
-      #   run: |
-      #     uname -a
-      #     echo "$RUNNER_CONTEXT"
+      - name: Dump runner context
+        env:
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
+        run: |
+          uname -a
+          echo "$RUNNER_CONTEXT"
 
-      # - name: Dump GitHub context
-      #   env:
-      #     GH_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GH_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"
 
       # - name: Dump GitHub quiet
       #   env:
@@ -249,6 +253,7 @@ jobs:
 
   language-quantize-upload-gguf:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -270,8 +275,9 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
-  bvt-language-quantized-gguf-models:
+  language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -289,11 +295,38 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
+  language-lm-eval-gguf-models:
+    needs: [ environment-setup, language-bvt-quantized-gguf-models ]
+    if: ${{ always() && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') }}
+    uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
   # TODO: change collection from private to public (on success)
-  create-hf-collections:
+  language-create-hf-collections:
     needs: [
       environment-setup,
       bvt-language-quantized-gguf-models,
@@ -352,6 +385,7 @@ jobs:
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
+    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -375,6 +409,7 @@ jobs:
 
   bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -455,6 +490,7 @@ jobs:
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -558,6 +594,7 @@ jobs:
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -662,6 +699,7 @@ jobs:
 
   docling-quantize-upload-gguf:
     needs: [ environment-setup, docling-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -686,6 +724,7 @@ jobs:
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
     needs: [ environment-setup, docling-quantize-upload-gguf ]
+    if: ${{ always() && (needs.docling-quantize-upload-gguf.result == 'success' || needs.docling-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -703,6 +742,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
@@ -723,3 +764,47 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  logs-aggregate-zip-upload:
+    needs: [
+      environment-setup,
+      language-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
+    ]
+    if: always()
+    uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_zip: true
+      artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_logs_name }}"
+      artifacts_extension: "${{ needs.environment-setup.outputs.ext_log }}"
+    secrets: inherit
+
+  responses-aggregate-zip-upload:
+    needs: [
+      environment-setup,
+      language-bvt-quantized-gguf-models,
+      guardian-bvt-quantized-gguf-models,
+      docling-bvt-quantized-gguf-models,
+    ]
+    if: always()
+    uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_zip: true
+      artifacts_path: "${{ needs.environment-setup.outputs.default_artifacts_dir }}"
+      artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_responses_name }}"
+      artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets: inherit
