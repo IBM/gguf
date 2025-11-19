@@ -329,7 +329,7 @@ jobs:
   language-create-hf-collections:
     needs: [
       environment-setup,
-      bvt-language-quantized-gguf-models,
+      language-bvt-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -427,6 +427,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
@@ -514,6 +516,7 @@ jobs:
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
+    if: ${{ always() && (needs.guardian-quantize-upload-gguf.result == 'success' || needs.guardian-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -531,6 +534,8 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
