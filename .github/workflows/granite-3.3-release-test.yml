@@ -36,7 +36,9 @@ env:
   # 'ibm-granite/granite-3.3-2b-instruct',
   # 'ibm-granite/granite-3.3-8b-instruct',
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-3.3-2b-base'
+    'ibm-granite/granite-3.3-2b-base',
+    'ibm-granite/granite-3.3-2b-instruct',
+    'ibm-granite/granite-3.3-8b-instruct'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
