@@ -332,7 +332,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   language-create-hf-collections:
