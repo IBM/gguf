@@ -89,6 +89,16 @@ jobs:
           echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
+      - name: Dump GitHub context
+        env:
+          GH_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GH_CONTEXT"
+
+      - name: Dump GitHub inputs
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
+
       - name: verify-secrets-present
         if: ${{ github.event.inputs.debug }}
         run: |
