@@ -72,13 +72,24 @@ jobs:
       - name: Check Docker version
         run: docker version
 
-      - name: Check Docker model version
-        run: docker model version
+      # NOTE: Not model plugin is not installed by default
+      # - name: Check Docker model version
+      #   run: docker model version
 
       - name: clone-docker-model-cli
         run: |
           git clone https://github.com/docker/model-cli.git
           ls model-cli
+
+      - name: Build Docker Model Runner CLI
+        run: |
+          cd model-cli
+          make build
+
+      - name: Install Docker Model Runner
+        run: |
+          cd model-cli
+          ./model install-runner
 
       - name: confirm-environment
         run: |
