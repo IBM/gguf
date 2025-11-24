@@ -85,11 +85,19 @@ jobs:
         run: |
           cd model-cli
           make build
+          ls
 
       - name: Install Docker Model Runner
         run: |
           cd model-cli
-          ./model install-runner
+          ls
+          ./model-cli install-runner
+
+      - name: Install Docker Model Runner
+        run: |
+          cd model-cli
+          ls
+          ./model-cli help
 
       - name: confirm-environment
         run: |
