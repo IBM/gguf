@@ -47,13 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.enable_docker_push == true && ( inputs.enable_language_jobs == true ) }}
     env:
-      DEFAULT_MODEL_LICENSE: Apache-2.0
+      # DEFAULT_MODEL_LICENSE: Apache-2.0
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
-      # F16_MMPROJ_MODEL_FILENAME: mmproj-model-f16.gguf
       # DOCKER_LICENSE_FILE: resources/LICENSE-2.0.txt
       DOCKER_MODEL_PRIVATE: true
-      IS_DEFAULT_QUANT: false
       HAS_PROJECTOR_MODEL: false
       HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
       # NOTE: hf_xet and hf_transfer are mutually exclusive:
@@ -84,9 +82,6 @@ jobs:
           echo "runner.arch: ${{ runner.arch }}"
           echo "github.workspace: ${{ github.workspace }}"
           echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-          echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
-          echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"
-          echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
       - name: Dump GitHub context
