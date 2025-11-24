@@ -236,6 +236,6 @@ jobs:
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
       docker_username: ${{ secrets.DOCKER_USERNAME }}
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
