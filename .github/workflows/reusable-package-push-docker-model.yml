@@ -110,12 +110,14 @@ jobs:
       #   run: docker model version
 
       # Attempt to login to docker
-      # NOTE: to use stdin to provide password:
-      # $ echo "YOUR_PERSONAL_ACCESS_TOKEN" | docker login --username YOUR_USERNAME --password-stdin YOUR_REGISTRY_SERVER
       # NOTE: we use the --password param as documented here:
       # - https://docs.docker.com/reference/cli/docker/login/
-      - name: Docker login
-        run: docker login -u ${{secrets.docker_username}} -p ${{ secrets.dockerhub_token}}
+      # - name: Docker login
+      #   run: docker login -u ${{secrets.docker_username}} -p ${{ secrets.dockerhub_token}}
+
+      # NOTE: to use stdin to provide password:
+      - name: Stdin Docker login
+        run: echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
 
       - name: confirm-environment
         run: |
