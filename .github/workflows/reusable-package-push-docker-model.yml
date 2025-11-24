@@ -69,6 +69,13 @@ jobs:
             resources/json/latest
             resources/LICENSE-2.0.txt
 
+      - name: verify-secrets-present
+        if: ${{ github.event.inputs.debug }}
+        run: |
+          echo "HF_TOKEN: ${{ secrets.hf_token }}"
+          echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
+          echo "DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}"
+
       - name: Check Docker version
         run: docker version
 
@@ -93,11 +100,22 @@ jobs:
           ls
           ./model-cli install-runner
 
-      - name: Install Docker Model Runner
+      - name: Verify DMR
         run: |
           cd model-cli
           ls
           ./model-cli help
+
+      - name: Check Docker model version
+        run: docker model version
+
+      # Attempt to login to docker
+      # NOTE: to use stdin to provide password:
+      # $ echo "YOUR_PERSONAL_ACCESS_TOKEN" | docker login --username YOUR_USERNAME --password-stdin YOUR_REGISTRY_SERVER
+      # NOTE: we use the --password param as documented here:
+      # - https://docs.docker.com/reference/cli/docker/login/
+      - name: Check Docker model version
+        run: docker login -u ${{secrets.docker_username}} -p ${{ secrets.dockerhub_token}}
 
       - name: confirm-environment
         run: |
@@ -117,13 +135,6 @@ jobs:
         env:
           GITHUB_INPUTS: ${{ toJson(inputs) }}
         run: echo "$GITHUB_INPUTS"
-
-      - name: verify-secrets-present
-        if: ${{ github.event.inputs.debug }}
-        run: |
-          echo "HF_TOKEN: ${{ secrets.hf_token }}"
-          echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
-          echo "DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}"
 
       - uses: actions/setup-python@v5
         with:
