@@ -5,7 +5,9 @@ on:
     secrets:
       hf_token:
         required: true
-      docker_token:
+      docker_username:
+        required: true
+      dockerhub_token:
         required: true
     inputs:
       debug:
