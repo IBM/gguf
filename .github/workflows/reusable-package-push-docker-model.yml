@@ -238,7 +238,8 @@ jobs:
         run: |
           cd model-cli
           ls
+          echo "github.workspaceF: ${{ github.workspace }}"
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-          ABSOLUTE_PATH="${GITHUB_WORKSPACE}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+          ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
-          ./model-cli package --gguf ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
+          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
