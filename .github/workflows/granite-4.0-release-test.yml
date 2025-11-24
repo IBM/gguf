@@ -52,8 +52,7 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-4.0-8b',
-    'ibm-granite/granite-4.0-8b-base'
+    'ibm-granite/granite-4.0-8b'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -63,25 +62,24 @@ env:
   # 'Q8_0',
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-    'Q2_K',
-    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-    'Q6_K',
+    'Q4_K_M',
     'Q8_0',
     'F16'
   ]"
+  # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'ibm-granite/granite-guardian-3.3-8b'
+    'None'
   ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'Q4_K_M'
+    'None'
   ]"
+  # 'ibm-granite/granite-vision-3.3-2b'
   SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.3-2b'
+    'None'
   ]"
+  # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-    'Q8_0'
+    'None'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[
@@ -92,11 +90,11 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'ibm-granite/granite-docling-258M'
+    'None'
   ]"
   # 'BF16'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'BF16'
+    'None'
   ]"
 
 jobs:
