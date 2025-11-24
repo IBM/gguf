@@ -109,9 +109,9 @@ jobs:
       # - name: Check Docker model version
       #   run: docker model version
 
-      # Attempt to login to docker
-      # NOTE: we use the --password param as documented here:
+      # This step uses the --password param as documented here:
       # - https://docs.docker.com/reference/cli/docker/login/
+      # NOTE: a login action exists: https://docs.docker.com/guides/reactjs/configure-github-actions/
       # - name: Docker login
       #   run: docker login -u ${{secrets.docker_username}} -p ${{ secrets.dockerhub_token}}
 
@@ -232,3 +232,10 @@ jobs:
             echo "File does not exist"
             exit 1
           fi
+
+      # See: https://github.com/docker/model-runner/blob/main/cmd/cli/README.md#common-commands
+      - name: Package and Push GGUF Model
+        run: |
+          cd model-cli
+          ls
+          ./model-cli package --gguf ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
