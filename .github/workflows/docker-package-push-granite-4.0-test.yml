@@ -131,8 +131,8 @@ jobs:
           echo "Appending to SOURCE_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
-          echo "TARGET_OLLAMA_LLM_QUANTS=$TARGET_OLLAMA_LLM_QUANTS" >> $GITHUB_ENV
+          TARGET_DOCKER_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
+          echo "TARGET_DOCKER_LLM_QUANTS=$TARGET_OLLAMA_LLM_QUANTS" >> $GITHUB_ENV
 
       - name: Set environment variables in GitHub output
         id: set-vars
