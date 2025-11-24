@@ -72,6 +72,9 @@ jobs:
       - name: Check Docker version
         run: docker version
 
+      - name: Check Docker model version
+        run: docker model version
+
       - name: clone-docker-model-cli
         run: |
           git clone https://github.com/docker/model-cli.git
