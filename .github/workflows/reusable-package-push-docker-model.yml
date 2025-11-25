@@ -49,10 +49,9 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.enable_docker_push == true && ( inputs.enable_language_jobs == true ) }}
     env:
-      # DEFAULT_MODEL_LICENSE: Apache-2.0
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
-      # DOCKER_LICENSE_FILE: resources/LICENSE-2.0.txt
+      GRANITE_LICENSE_FILE: resources/LICENSE-2.0.txt
       DOCKER_MODEL_PRIVATE: true
       HAS_PROJECTOR_MODEL: false
       HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
@@ -68,6 +67,11 @@ jobs:
             bin/ollama
             resources/json/latest
             resources/LICENSE-2.0.txt
+
+      - name: Dump GitHub inputs
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
 
       - name: verify-secrets-present
         if: ${{ github.event.inputs.debug }}
@@ -234,6 +238,8 @@ jobs:
           fi
 
       # See: https://github.com/docker/model-runner/blob/main/cmd/cli/README.md#common-commands
+      # ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
+
       - name: Package and Push GGUF Model
         run: |
           cd model-cli
@@ -242,4 +248,4 @@ jobs:
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
-          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
+          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{env.REPO_NAME}}:${{inputs.quantization}} --license "${{env.GRANITE_LICENSE_FILE}}" --push
