@@ -248,4 +248,4 @@ jobs:
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
-          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{env.REPO_NAME}}:${{inputs.quantization}} --license "${{env.GRANITE_LICENSE_FILE}}" --push
+          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{env.REPO_NAME}}:${{inputs.quantization}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
