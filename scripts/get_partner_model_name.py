@@ -9,6 +9,7 @@ MODEL_FORMAT_GGUF = "gguf"
 
 class SUPPORTED_PARTNERS(StrEnum):
     OLLAMA = "ollama"
+    DOCKER = "docker"
 
 class SUPPORTED_MODEL_MODALITIES(StrEnum):
     BASE      = "base"
@@ -130,11 +131,15 @@ if __name__ == "__main__":
         parser.add_argument('--default-quant',  default=False, action='store_true', help='Model selected as the default quantization')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
+        parser.add_argument('--tag-only', default=False, action='store_true', help='Return only the tag portion of the model name')
         args = parser.parse_args()
 
         if(args.debug):
             # Print input variables being used for this run
             print(f">> hf_model_name='{args.hf_model_name}', partner='{args.partner}', default_quant='{args.default_quant}'")
+
+        if args.partner == SUPPORTED_PARTNERS.DOCKER:
+            args.tag_only = True
 
         normalized_model_name = args.hf_model_name.lower()
 
@@ -255,7 +260,7 @@ if __name__ == "__main__":
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
-        if args.partner == SUPPORTED_PARTNERS.OLLAMA:
+        if (args.partner == SUPPORTED_PARTNERS.OLLAMA or args.partner == SUPPORTED_PARTNERS.DOCKER):
 
             partner_model_base = ""
 
@@ -341,6 +346,9 @@ if __name__ == "__main__":
 
                 if model_quantization:
                     partner_model_name = ollama_append_attribute(partner_model_name, model_quantization)
+
+        if args.tag_only:
+          partner_model_name = partner_model_name.rsplit(MODEL_NAME_SEP, 1)[1]
 
         # NOTE: This script MUST only return a string
         print(partner_model_name)

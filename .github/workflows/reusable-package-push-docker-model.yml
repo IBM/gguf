@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.enable_docker_push == true && ( inputs.enable_language_jobs == true ) }}
     env:
+      PARTNER: docker
       MODEL_DOWNLOAD_DIR: models
       EXT_GGUF: .gguf
       GRANITE_LICENSE_FILE: resources/LICENSE-2.0.txt
@@ -73,8 +74,18 @@ jobs:
           GITHUB_INPUTS: ${{ toJson(inputs) }}
         run: echo "$GITHUB_INPUTS"
 
+      - name: confirm-environment
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+          uname -a
+          echo "runner.os: ${{ runner.os }}"
+          echo "runner.arch: ${{ runner.arch }}"
+          echo "github.workspace: ${{ github.workspace }}"
+          echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+          echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+
       - name: verify-secrets-present
-        if: ${{ github.event.inputs.debug }}
+        if: ${{ inputs.debug == 'true' }}
         run: |
           echo "HF_TOKEN: ${{ secrets.hf_token }}"
           echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
@@ -123,25 +134,6 @@ jobs:
       - name: Stdin Docker login
         run: echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
 
-      - name: confirm-environment
-        run: |
-          uname -a
-          echo "runner.os: ${{ runner.os }}"
-          echo "runner.arch: ${{ runner.arch }}"
-          echo "github.workspace: ${{ github.workspace }}"
-          echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-          echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
-
-      - name: Dump GitHub context
-        env:
-          GH_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GH_CONTEXT"
-
-      - name: Dump GitHub inputs
-        env:
-          GITHUB_INPUTS: ${{ toJson(inputs) }}
-        run: echo "$GITHUB_INPUTS"
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -189,18 +181,18 @@ jobs:
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
           echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF='$LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF }})"
 
-      # - name: ollama-generate-model-name
-      #   run: |
-      #     model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
-      #     echo "model_name: '$model_name'"
-      #     echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
-      #     model_prefix="${model_name%%:*}"
-      #     echo "OLLAMA_MODEL_PREFIX=$model_prefix" >> $GITHUB_ENV
-      #     model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
-      #     echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
+      - name: generate-model-name
+        run: |
+          model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ${{env.PARTNER}})
+          echo "model_name: '$model_name'"
+          echo "DOCKER_MODEL_NAME=$model_name" >> $GITHUB_ENV
+          # model_prefix="${model_name%%:*}"
+          # echo "OLLAMA_MODEL_PREFIX=$model_prefix" >> $GITHUB_ENV
+          # model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
+          # echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
 
       - name: list-env-vars
-        if: ${{ github.event.inputs.debug }}
+        if: ${{ github.event.inputs.debug == 'true' }}
         run: env | sort
 
       - name: verify-quantized-model-exists
@@ -248,4 +240,4 @@ jobs:
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
-          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{env.REPO_NAME}}:${{inputs.quantization}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
+          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{env.REPO_NAME}}:${{env.DOCKER_MODEL_NAME}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
