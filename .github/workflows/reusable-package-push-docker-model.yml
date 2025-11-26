@@ -75,7 +75,7 @@ jobs:
         run: echo "$GITHUB_INPUTS"
 
       - name: confirm-environment
-        if: ${{ inputs.debug == 'true' }}
+        if: inputs.debug == true
         run: |
           uname -a
           echo "runner.os: ${{ runner.os }}"
