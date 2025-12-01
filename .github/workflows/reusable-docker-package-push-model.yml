@@ -1,0 +1,243 @@
+name: docker-package-push-model-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      docker_username:
+        required: true
+      dockerhub_token:
+        required: true
+    inputs:
+      debug:
+        type: boolean
+        required: true
+        default: false
+      enable_language_jobs:
+        type: boolean
+        required: false
+        default: false
+      source_repo_owner:
+        type: string
+        required: true
+      source_repo_name_ext:
+        type: string
+        required: true
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      hf_collection_config:
+        type: string
+        required: true
+      enable_docker_push:
+        type: boolean
+        required: false
+        default: false
+      target_dockerhub_namespace:
+        type: string
+        required: true
+      target_dockerhub_repository:
+        type: string
+        required: true
+
+jobs:
+  docker-continuous-delivery:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable_docker_push == true && ( inputs.enable_language_jobs == true ) }}
+    env:
+      PARTNER: docker
+      MODEL_DOWNLOAD_DIR: models
+      EXT_GGUF: .gguf
+      GRANITE_LICENSE_FILE: resources/LICENSE-2.0.txt
+      DOCKER_MODEL_PRIVATE: true
+      HAS_PROJECTOR_MODEL: false
+      HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
+      # NOTE: hf_xet and hf_transfer are mutually exclusive:
+      # hf_xet is for Xet-enabled repos, while hf_transfer handles LFS files in regular repos.
+      HF_HUB_DISABLE_XET: 0
+      HF_HUB_ENABLE_HF_TRANSFER: 0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/
+            bin/ollama
+            resources/json/latest
+            resources/LICENSE-2.0.txt
+
+      - name: Dump GitHub inputs
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
+
+      - name: confirm-environment
+        if: inputs.debug == true
+        run: |
+          uname -a
+          echo "runner.os: ${{ runner.os }}"
+          echo "runner.arch: ${{ runner.arch }}"
+          echo "github.workspace: ${{ github.workspace }}"
+          echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+          echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+
+      - name: verify-secrets-present
+        if: inputs.debug == true
+        run: |
+          echo "HF_TOKEN: ${{ secrets.hf_token }}"
+          echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
+          echo "DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}"
+
+      - name: Check Docker version
+        run: docker version
+
+      # NOTE: Not model plugin is not installed by default
+      # - name: Check Docker model version
+      #   run: docker model version
+
+      - name: clone-docker-model-cli
+        run: |
+          git clone https://github.com/docker/model-cli.git
+          ls model-cli
+
+      - name: Build Docker Model Runner CLI
+        run: |
+          cd model-cli
+          make build
+          ls
+
+      - name: Install Docker Model Runner
+        run: |
+          cd model-cli
+          ls
+          ./model-cli install-runner
+
+      - name: Verify DMR
+        run: |
+          cd model-cli
+          ls
+          ./model-cli help
+
+      # - name: Check Docker model version
+      #   run: docker model version
+
+      # This step uses the --password param as documented here:
+      # - https://docs.docker.com/reference/cli/docker/login/
+      # NOTE: a login action exists: https://docs.docker.com/guides/reactjs/configure-github-actions/
+      # - name: Docker login
+      #   run: docker login -u ${{secrets.docker_username}} -p ${{ secrets.dockerhub_token}}
+
+      # NOTE: to use stdin to provide password:
+      - name: Stdin Docker login
+        run: echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install -r ./requirements.txt
+          pip list
+
+      # Use this step to set values to the github context (shared across jobs/steps)
+      # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+      # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+      # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+      - name: set-github-env
+        id: set_github_env
+        run: |
+          echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+          echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-1
+        run: |
+          echo "SOURCE_HF_REPO_ID=${{inputs.source_repo_owner}}/${{env.REPO_NAME}}${{inputs.source_repo_name_ext}}" >> $GITHUB_ENV
+          echo "TARGET_OLLAMA_ORG=${{ inputs.target_ollama_org }}" >> $GITHUB_ENV
+          echo "BASE_NAME_QUANTIZED=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-2
+        run: |
+          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.BASE_NAME_QUANTIZED}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+          echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.SOURCE_HF_REPO_ID }}" >> $GITHUB_ENV
+
+      - name: set-derivative-env-vars-3
+        run: |
+          echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+          echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.F16_MMPROJ_MODEL_FILENAME}}" >> $GITHUB_ENV
+
+      - name: verify-github-env
+        run: |
+          echo "================== Derivative Environment Variables 1 =================="
+          echo "SOURCE_HF_REPO_ID='$SOURCE_HF_REPO_ID' (${{ env.SOURCE_HF_REPO_ID }})"
+          echo "BASE_NAME_QUANTIZED='$BASE_NAME_QUANTIZED' (${{ env.BASE_NAME_QUANTIZED }})"
+          echo "================== Derivative Environment Variables 2 =================="
+          echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+          echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+          echo "================== Derivative Environment Variables 3 =================="
+          echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+          echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF='$LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF }})"
+
+      - name: generate-model-name
+        run: |
+          model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ${{env.PARTNER}})
+          echo "model_name: '$model_name'"
+          echo "DOCKER_MODEL_TAG=$model_name" >> $GITHUB_ENV
+          # model_prefix="${model_name%%:*}"
+          # echo "OLLAMA_MODEL_PREFIX=$model_prefix" >> $GITHUB_ENV
+          # model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
+          # echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
+
+      - name: list-env-vars
+        if: inputs.debug == true
+        run: env | sort
+
+      - name: verify-quantized-model-exists
+        run: |
+          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.SOURCE_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+          echo "exists: '$exists'"
+          if [[ "$exists" == "False" ]]; then
+            echo "FAILURE: model file: '${{env.SOURCE_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+            exit 2
+          else
+            echo "SUCCESS: model file: '${{env.SOURCE_HF_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+            echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+            echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+          fi
+
+      - name: hf-download-quantized-gguf
+        if: env.QUANTIZED_MODEL_EXISTS == 'true'
+        run: |
+          echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+          echo "--------------------"
+          python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+          ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+
+      - name: verify-downloaded-files
+        run: |
+          echo downloaded files...
+          echo "--------------------"
+          find . -name \*.gguf -type f
+          echo "--------------------"
+          if [ -f ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ]; then
+            echo "File exists"
+          else
+            echo "File does not exist"
+            exit 1
+          fi
+
+      # See: https://github.com/docker/model-runner/blob/main/cmd/cli/README.md#common-commands
+      # ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
+
+      - name: Package and Push GGUF Model
+        run: |
+          cd model-cli
+          ls
+          echo "github.workspaceF: ${{ github.workspace }}"
+          echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+          ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+          echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
+          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
