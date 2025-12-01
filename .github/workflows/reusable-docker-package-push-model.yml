@@ -107,18 +107,15 @@ jobs:
         run: |
           cd model-cli
           make build
-          ls
 
       - name: Install Docker Model Runner
         run: |
           cd model-cli
-          ls
           ./model-cli install-runner
 
       - name: Verify DMR
         run: |
           cd model-cli
-          ls
           ./model-cli help
 
       # - name: Check Docker model version
@@ -186,10 +183,6 @@ jobs:
           model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ${{env.PARTNER}})
           echo "model_name: '$model_name'"
           echo "DOCKER_MODEL_TAG=$model_name" >> $GITHUB_ENV
-          # model_prefix="${model_name%%:*}"
-          # echo "OLLAMA_MODEL_PREFIX=$model_prefix" >> $GITHUB_ENV
-          # model_resources="${{env.OLLAMA_RESOURCE_DIR}}/${model_prefix}"
-          # echo "OLLAMA_MODEL_RESOURCES=$model_resources" >> $GITHUB_ENV
 
       - name: list-env-vars
         if: inputs.debug == true

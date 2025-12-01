@@ -79,7 +79,7 @@ env:
   SOURCE_HF_REPO_OWNER: ibm-granite
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
   TARGET_DOCKERHUB_NAMESPACE: ibmcom
-  TARGET_DOCKERHUB_REPOSITORY: yyz
+  TARGET_DOCKERHUB_REPOSITORY: granite4-test
 
 jobs:
   # ===========================================================================
