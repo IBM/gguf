@@ -222,7 +222,7 @@ jobs:
   # ===========================================================================
   docker-package-push-llm-models:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-package-push-docker-model.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-docker-package-push-model.yml@main
     permissions:
       contents: write
       packages: write
