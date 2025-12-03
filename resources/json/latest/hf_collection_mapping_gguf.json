@@ -368,7 +368,8 @@
                     "size": "mini",
                     "family": "instruct",
                     "repo_name":"granite-4.0-8b",
-                    "default_quant": "q4_K_M"
+                    "default_quant": "q4_K_M",
+                    "is_latest": true
                 },
                 {
                     "type": "model",
