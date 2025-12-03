@@ -54,6 +54,7 @@ jobs:
       EXT_GGUF: .gguf
       GRANITE_LICENSE_FILE: resources/LICENSE-2.0.txt
       DOCKER_MODEL_PRIVATE: true
+      IS_DEFAULT_QUANT: false
       HAS_PROJECTOR_MODEL: false
       HF_XET_NUM_CONCURRENT_RANGE_GETS: 4
       # NOTE: hf_xet and hf_transfer are mutually exclusive:
@@ -234,3 +235,18 @@ jobs:
           ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
           ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
+
+      - name: is-model-default-quantization
+        continue-on-error: true
+        run: |
+          result=$(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
+
+          if [[ "$result" == "true" ]]; then
+            echo "Default model"
+            echo "IS_DEFAULT_QUANT=true" >> $GITHUB_ENV
+            model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ${{env.PARTNER}} --default-quant)
+            echo "model_name (default): '$model_name'"
+            echo "DEFAULT_MODEL_NAME=$model_name" >> $GITHUB_ENV
+          else
+            echo "NOT the default model"
+          fi

@@ -368,14 +368,14 @@
                     "size": "mini",
                     "family": "instruct",
                     "repo_name":"granite-4.0-8b",
-                    "default_quant": "bf16"
+                    "default_quant": "q4_K_M"
                 },
                 {
                     "type": "model",
                     "size": "mini",
                     "family": "instruct",
                     "repo_name":"granite-4.0-8b-base",
-                    "default_quant": "bf16"
+                    "default_quant": "q4_K_M"
                 }
             ]
         }
