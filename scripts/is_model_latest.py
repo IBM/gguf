@@ -27,17 +27,19 @@ if __name__ == "__main__":
 
             # upload all models associated with the collection
             for item_defn in collection_items:
-                # is_latest = item_defn["is_latest"]
-                formatted_item_defn = json.dumps(item_defn, indent=4)
-                print(f"item_defn: '{formatted_item_defn}'", file=sys.stderr)
-                is_latest = item_defn.get("is_latest",False)
-                print(f"is_latest: '{is_latest}'", file=sys.stderr)
-                if is_latest:
-                    print('true')
-                    sys.exit(0)
-                else:
-                    print('false')
-                    sys.exit(0)
+                repo_name = item_defn["repo_name"]
+                if repo_name.lower() == args.model_name.lower():
+                    # is_latest = item_defn["is_latest"]
+                    formatted_item_defn = json.dumps(item_defn, indent=4)
+                    print(f"item_defn: '{formatted_item_defn}'", file=sys.stderr)
+                    is_latest = item_defn.get("is_latest",False)
+                    print(f"is_latest: '{is_latest}'", file=sys.stderr)
+                    if is_latest:
+                        print('true')
+                        sys.exit(0)
+                    else:
+                        print('false')
+                        sys.exit(0)
 
     except Exception as e:
         print(f"[ERROR] {e}", file=sys.stderr)

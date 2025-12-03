@@ -29,9 +29,8 @@ if __name__ == "__main__":
             # upload all models associated with the collection
             for item_defn in collection_items:
                 repo_name = item_defn["repo_name"]
-                default_quantization = item_defn["default_quant"]
-
                 if repo_name.lower() == args.model_name.lower():
+                    default_quantization = item_defn["default_quant"]
                     if args.quantization.lower() == default_quantization.lower():
                         print(f"quantization ('{args.quantization}') is the default: '{default_quantization}'", file=sys.stderr)
                         print('true')
