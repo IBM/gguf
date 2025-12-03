@@ -255,7 +255,7 @@ jobs:
       - name: is-model-latest
         continue-on-error: true
         run: |
-          result=$(python ./scripts/is_model_latest.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
+          result=$(python ./scripts/is_model_latest.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}})
 
           if [[ "$result" == "true" ]]; then
             echo "Latest model"
