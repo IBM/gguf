@@ -266,11 +266,11 @@ jobs:
 
       - name: push-model-with-latest-tag
         if: env.MY_VAR_1 == 'true' && env.MY_VAR_2 == 'true'
-          run: |
-            if [[ "$REPO_NAME" =~ "base" ]]; then
-              echo "Environment variable contains 'base'. Exiting."
-              exit 0
-            fi
-            echo "pushing model as latest: ${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}"
-            ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
+        run: |
+          if [[ "$REPO_NAME" =~ "base" ]]; then
+            echo "Environment variable contains 'base'. Exiting."
             exit 0
+          fi
+          echo "pushing model as latest: ${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}"
+          ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
+          exit 0
