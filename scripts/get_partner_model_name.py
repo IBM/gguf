@@ -350,6 +350,9 @@ if __name__ == "__main__":
         if args.tag_only:
           partner_model_name = partner_model_name.rsplit(MODEL_NAME_SEP, 1)[1]
 
+        if args.partner == SUPPORTED_PARTNERS.DOCKER:
+          partner_model_name = partner_model_name.upper()
+
         # NOTE: This script MUST only return a string
         print(partner_model_name)
     except SystemExit as se:
