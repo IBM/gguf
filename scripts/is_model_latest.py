@@ -27,7 +27,8 @@ if __name__ == "__main__":
 
             # upload all models associated with the collection
             for item_defn in collection_items:
-                is_latest = item_defn["is_latest"]
+                # is_latest = item_defn["is_latest"]
+                is_latest = item_defn.get("is_latest",False)
                 print(f"is_latest: '{is_latest}'", file=sys.stderr)
                 if is_latest:
                     print('true')
