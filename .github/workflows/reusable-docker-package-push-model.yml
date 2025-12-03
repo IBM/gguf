@@ -233,9 +233,10 @@ jobs:
           ls
           echo "github.workspaceF: ${{ github.workspace }}"
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-          ABSOLUTE_PATH="${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-          echo "ABSOLUTE_PATH: ${ABSOLUTE_PATH}"
-          ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{ github.workspace }}/${{env.GRANITE_LICENSE_FILE}}" --push
+          ABSOLUTE_PATH_FNAME_QUANTIZED="${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+          echo "ABSOLUTE_PATH_FNAME_QUANTIZED_FNAME_QUANTIZED: ${ABSOLUTE_PATH_FNAME_QUANTIZED}"
+          echo "ABSOLUTE_PATH_FNAME_QUANTIZED=${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+          ./model-cli package --gguf "${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{github.workspace}}/${{env.GRANITE_LICENSE_FILE}}" --push
 
       - name: is-model-default-quantization
         continue-on-error: true
@@ -256,10 +257,20 @@ jobs:
         continue-on-error: true
         run: |
           result=$(python ./scripts/is_model_latest.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}})
-
           if [[ "$result" == "true" ]]; then
             echo "Latest model"
             echo "IS_LATEST=true" >> $GITHUB_ENV
           else
             echo "NOT the latest model"
           fi
+
+      - name: push-model-with-latest-tag
+        if: env.MY_VAR_1 == 'true' && env.MY_VAR_2 == 'true'
+          run: |
+            if [[ "$REPO_NAME" =~ "base" ]]; then
+              echo "Environment variable contains 'base'. Exiting."
+              exit 0
+            fi
+            echo "pushing model as latest: ${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}"
+            ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
+            exit 0

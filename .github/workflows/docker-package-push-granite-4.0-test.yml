@@ -39,8 +39,7 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_INSTRUCT_REPOS: "[
-    'ibm-granite/granite-4.0-8b',
-    'ibm-granite/granite-4.0-8b-base'
+    'ibm-granite/granite-4.0-8b'
   ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
