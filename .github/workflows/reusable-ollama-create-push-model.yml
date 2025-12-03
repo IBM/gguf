@@ -312,6 +312,7 @@ jobs:
             echo "NOT the default model"
           fi
 
+      # NOTE: "base" models are never selected for latest LLM model
       - name: ollama-push-model-default-quantization
         run: |
           if [[ "$REPO_NAME" =~ "base" ]]; then
