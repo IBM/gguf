@@ -14,11 +14,11 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
-  ENABLE_DOCLING_JOBS: false
+  ENABLE_DOCLING_JOBS: true
 
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
@@ -90,11 +90,14 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'None'
+    'ibm-granite/granite-docling-258M'
   ]"
   # 'BF16'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'None'
+    'Q4_K_M',
+    'Q5_K_M',
+    'Q8_0',
+    'BF16'
   ]"
 
 jobs:
