@@ -100,24 +100,44 @@ jobs:
       # - name: Check Docker model version
       #   run: docker model version
 
-      - name: clone-docker-model-cli
-        run: |
-          git clone https://github.com/docker/model-cli.git
-          ls model-cli
+      # - name: clone-docker-model-cli
+      #   run: |
+      #     git clone https://github.com/docker/model-cli.git
+      #     ls model-cli
 
-      - name: Build Docker Model Runner CLI
+      - name: clone-docker-model-runner
         run: |
-          cd model-cli
+          git clone git@github.com:docker/model-runner.git
+          ls model-runner
+
+      # - name: Build Docker Model Runner CLI
+      #   run: |
+      #     cd model-cli
+      #     make build
+
+      - name: Build Docker Model Runner CLI, under model-runner
+        run: |
+          cd model-runner/cmd/cli
           make build
 
-      - name: Install Docker Model Runner
+      # - name: Install Docker Model Runner CLI
+      #   run: |
+      #     cd model-cli
+      #     ./model-cli install-runner
+
+      - name: Install Docker Model Runner CLI
         run: |
-          cd model-cli
+          cd model-runner/cmd/cli
           ./model-cli install-runner
 
-      - name: Verify DMR
+      # - name: Verify DMR CLI installed
+      #   run: |
+      #     cd model-cli
+      #     ./model-cli help
+
+      - name: Verify DMR CLI installed
         run: |
-          cd model-cli
+          cd model-runner/cmd/cli
           ./model-cli help
 
       # - name: Check Docker model version
