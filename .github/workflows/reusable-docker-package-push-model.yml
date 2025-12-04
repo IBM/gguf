@@ -107,7 +107,7 @@ jobs:
 
       - name: clone-docker-model-runner
         run: |
-          git clone git@github.com:docker/model-runner.git
+          git clone https://github.com/docker/model-runner.git
           ls model-runner
 
       # - name: Build Docker Model Runner CLI
