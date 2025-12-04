@@ -254,7 +254,7 @@ jobs:
           ABSOLUTE_PATH_FNAME_QUANTIZED="${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           echo "ABSOLUTE_PATH_FNAME_QUANTIZED_FNAME_QUANTIZED: ${ABSOLUTE_PATH_FNAME_QUANTIZED}"
           echo "ABSOLUTE_PATH_FNAME_QUANTIZED=${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-          cd model-cli
+          cd model-runner/cmd/cli
           ./model-cli package --gguf "${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{github.workspace}}/${{env.GRANITE_LICENSE_FILE}}" --push
 
       - name: is-model-default-quantization
@@ -292,6 +292,6 @@ jobs:
             exit 0
           fi
           echo "pushing model as latest: ${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}"
-          cd model-cli
+          cd model-runner/cmd/cli
           ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
           exit 0
