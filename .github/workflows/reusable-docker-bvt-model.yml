@@ -179,7 +179,7 @@ jobs:
           echo "repo: ${{inputs.target_dockerhub_repository}}"
           echo "tag: ${{env.DOCKER_MODEL_TAG}}"
           cd model-runner/cmd/cli
-          ./model-cli model pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
+          ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
           ls
 
       # - name: hf-download-quantized-gguf
