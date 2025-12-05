@@ -240,3 +240,30 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       docker_username: ${{ secrets.DOCKER_USERNAME }}
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  docker-bvt-models:
+      needs: [ environment-setup, docker-package-push-llm-models ]
+      uses: IBM/gguf/.github/workflows/reusable-docker-bvt-model.yml@main
+      permissions:
+        contents: write
+        packages: write
+      strategy:
+        fail-fast: false
+        matrix:
+          repo_id: ${{ fromJson(needs.environment-setup.outputs.source_instruct_repos) }}
+          quantization: ${{ fromJson(needs.environment-setup.outputs.target_docker_llm_quants) }}
+      with:
+        debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+        hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+        enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+        source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+        source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+        enable_docker_push: ${{ needs.environment-setup.outputs.enable_docker_push == 'true' }}
+        target_dockerhub_namespace: ${{ needs.environment-setup.outputs.target_dockerhub_namespace }}
+        target_dockerhub_repository: ${{ needs.environment-setup.outputs.target_dockerhub_repository }}
+        repo_id: ${{ matrix.repo_id }}
+        quantization: ${{ matrix.quantization }}
+      secrets:
+        hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+        docker_username: ${{ secrets.DOCKER_USERNAME }}
+        dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
