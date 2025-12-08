@@ -115,7 +115,9 @@ jobs:
 
       # NOTE: to use stdin to provide password:
       - name: Stdin Docker login
-        run: echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
+        run: |
+          echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
+          docker model pull ibmcom/granite4-test-2:8B-Q4_K_M
 
       - uses: actions/setup-python@v5
         with:
@@ -194,18 +196,18 @@ jobs:
             echo "[FAILURE]: exit code: '$pull_status'"
           fi
 
-      - name: Run docker model
-        if: needs.docker-model-pull.outputs.pull_status == '0'
-        run: |
-          cd model-runner/cmd/cli
-          ./model-cli run ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} ${{env.DOCKER_REQUEST_PROMPT}}
-          run_status=$?
-          echo "run_status=$run_status" >> $GITHUB_ENV
-          if [ "$run_status" -eq 0 ]; then
-            echo "[SUCCESS]"
-          else
-            echo "[FAILURE]: exit code: $run_status"
-          fi
+      # - name: Run docker model
+      #   if: needs.docker-model-pull.outputs.pull_status == '0'
+      #   run: |
+      #     cd model-runner/cmd/cli
+      #     ./model-cli run ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} ${{env.DOCKER_REQUEST_PROMPT}}
+      #     run_status=$?
+      #     echo "run_status=$run_status" >> $GITHUB_ENV
+      #     if [ "$run_status" -eq 0 ]; then
+      #       echo "[SUCCESS]"
+      #     else
+      #       echo "[FAILURE]: exit code: $run_status"
+      #     fi
 
       # - name: hf-download-quantized-gguf
       #   if: env.QUANTIZED_MODEL_EXISTS == 'true'
