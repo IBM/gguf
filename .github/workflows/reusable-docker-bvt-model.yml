@@ -58,6 +58,7 @@ jobs:
       # hf_xet is for Xet-enabled repos, while hf_transfer handles LFS files in regular repos.
       HF_HUB_DISABLE_XET: 0
       HF_HUB_ENABLE_HF_TRANSFER: 0
+      DOCKER_REQUEST_PROMPT: "Why is the sky blue according to science?"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -169,18 +170,40 @@ jobs:
           echo "model_name: '$model_name'"
           echo "DOCKER_MODEL_TAG=$model_name" >> $GITHUB_ENV
 
-      - name: list-env-vars
-        if: inputs.debug == true
-        run: env | sort
+      # - name: list-env-vars
+      #   if: inputs.debug == true
+      #   run: env | sort
 
-      - name: Pull docker model
+      - name: List model environment variables
         run: |
           echo "namespace: ${{inputs.target_dockerhub_namespace}}"
           echo "repo: ${{inputs.target_dockerhub_repository}}"
           echo "tag: ${{env.DOCKER_MODEL_TAG}}"
+
+      - name: Pull docker model
+        run: |
           cd model-runner/cmd/cli
           ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
-          ls
+          pull_status=$?
+          echo "pull_status=$pull_status" >> $GITHUB_ENV
+          if [ "$pull_status" -eq 0 ]; then
+            echo "[SUCCESS]"
+          else
+            echo "[FAILURE]: exit code: '$pull_status'"
+          fi
+
+      - name: Run docker model
+        if ${{ env.pull_status == '0' }}
+        run: |
+          cd model-runner/cmd/cli
+          ./model-cli run ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} ${{env.DOCKER_REQUEST_PROMPT}}
+          run_status=$?
+          echo "run_status=$run_status" >> $GITHUB_ENV
+          if [ "$run_status" -eq 0 ]; then
+            echo "[SUCCESS]"
+          else
+            echo "[FAILURE]: exit code: $run_status"
+          fi
 
       # - name: hf-download-quantized-gguf
       #   if: env.QUANTIZED_MODEL_EXISTS == 'true'
