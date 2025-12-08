@@ -49,8 +49,7 @@ env:
   # 'Q8_0',
   # 'F16'
   SOURCE_INSTRUCT_QUANTIZATIONS: "[
-    'Q4_1',
-    'Q5_1'
+    'Q5_K_M'
   ]"
   SOURCE_GUARDIAN_REPOS: "[
     'None'
