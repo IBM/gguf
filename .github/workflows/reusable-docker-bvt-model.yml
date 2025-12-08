@@ -193,7 +193,7 @@ jobs:
           fi
 
       - name: Run docker model
-        if ${{ env.pull_status == '0' }}
+        if ${{ env.pull_status == '0' }}:
         run: |
           cd model-runner/cmd/cli
           ./model-cli run ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} ${{env.DOCKER_REQUEST_PROMPT}}
