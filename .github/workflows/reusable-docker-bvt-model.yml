@@ -117,7 +117,9 @@ jobs:
       - name: Stdin Docker login
         run: |
           echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
-          docker model pull ibmcom/granite4-test-2:8B-Q4_K_M
+          cd model-runner/cmd/cli
+          ./model-cli pull ai/qwen3:0.6B-Q4_0
+          ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
 
       - uses: actions/setup-python@v5
         with:
