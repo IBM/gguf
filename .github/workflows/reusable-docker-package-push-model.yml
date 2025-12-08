@@ -98,8 +98,8 @@ jobs:
         run: docker version
 
       # NOTE: the image version of docker does not have model plugin installed by default
-      - name: Check Docker model version
-        run: docker model version
+      - name: Check Docker version
+        run: docker version
 
       - name: clone-docker-model-runner
         run: |
