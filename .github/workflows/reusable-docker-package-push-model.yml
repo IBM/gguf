@@ -273,3 +273,8 @@ jobs:
           cd model-runner/cmd/cli
           ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.TAG_LATEST}} --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
           exit 0
+
+      - name: model pull
+        run: |
+          cd model-runner/cmd/cli
+          ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
