@@ -98,8 +98,8 @@ jobs:
         run: docker version
 
       # NOTE: the image version of docker does not have model plugin installed by default
-      # - name: Check Docker model version
-      #   run: docker model version
+      - name: Check Docker model version
+        run: docker model version
 
       - name: clone-docker-model-runner
         run: |
@@ -277,4 +277,6 @@ jobs:
       - name: model pull
         run: |
           cd model-runner/cmd/cli
+          ./model-cli status
           ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
+          ./model-cli logs
