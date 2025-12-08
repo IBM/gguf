@@ -90,8 +90,8 @@ jobs:
           echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
           echo "DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}"
 
-      - name: Check Docker version
-        run: docker version
+      # - name: Check Docker version
+      #   run: docker version
 
       - name: clone-docker-model-runner
         run: |
@@ -184,7 +184,8 @@ jobs:
         id: docker-model-pull
         run: |
           cd model-runner/cmd/cli
-          ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
+          #./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
+          ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
           pull_status=$?
           echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
           if [ "$pull_status" -eq 0 ]; then
