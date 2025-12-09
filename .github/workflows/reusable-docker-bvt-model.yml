@@ -184,21 +184,24 @@ jobs:
           echo "namespace: ${{inputs.target_dockerhub_namespace}}"
           echo "repo: ${{inputs.target_dockerhub_repository}}"
           echo "tag: ${{env.DOCKER_MODEL_TAG}}"
+          echo "DOCKER_FQ_MODEL_NAME=${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}" >> $GITHUB_ENV
 
+      # ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
       - name: Pull docker model
         id: docker-model-pull
         continue-on-error: true
         run: |
+          echo "DOCKER_FQ_MODEL_NAME: ${{env.DOCKER_FQ_MODEL_NAME}}"
           cd model-runner/cmd/cli
           echo "pulling model: '${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}'"
-          ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
-          # ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
+          ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --ignore-runtime-memory-check
           pull_status=$?
           echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
           if [ "$pull_status" -eq 0 ]; then
-            echo "[SUCCESS]"
+            echo "[SUCCESS]: pulling '${{env.DOCKER_FQ_MODEL_NAME}}'"
+          ./model-cli list
           else
-            echo "[FAILURE]: exit code: '$pull_status'"
+            echo "[FAILURE]: pulling '${{env.DOCKER_FQ_MODEL_NAME}}', exit code: '$pull_status'"
             ./model-cli logs
           fi
 
