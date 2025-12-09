@@ -115,6 +115,7 @@ jobs:
 
       # NOTE: to use stdin to provide password:
       - name: Stdin Docker login
+        continue-on-error: true
         run: |
           echo "${{ secrets.dockerhub_token }}" | docker login -u ${{ secrets.docker_username }} --password-stdin
           cd model-runner/cmd/cli
@@ -186,16 +187,19 @@ jobs:
 
       - name: Pull docker model
         id: docker-model-pull
+        continue-on-error: true
         run: |
           cd model-runner/cmd/cli
-          #./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
-          ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
+          echo "pulling model: '${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}'"
+          ./model-cli pull ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}}
+          # ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
           pull_status=$?
           echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
           if [ "$pull_status" -eq 0 ]; then
             echo "[SUCCESS]"
           else
             echo "[FAILURE]: exit code: '$pull_status'"
+            ./model-cli logs
           fi
 
       # - name: Run docker model

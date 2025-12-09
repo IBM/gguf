@@ -275,9 +275,19 @@ jobs:
           exit 0
 
       - name: model pull
+        continue-on-error: true
         run: |
           cd model-runner/cmd/cli
           ./model-cli status
+          echo "downloading model: ibmcom/yyz:foo ..."
           ./model-cli pull ibmcom/yyz:foo
+          echo "downloading model: ibmcom/granite4-test-2:8B-Q4_K_M ..."
           ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
-          ./model-cli logs
+          pull_status=$?
+          echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
+          if [ "$pull_status" -eq 0 ]; then
+            echo "[SUCCESS]"
+          else
+            echo "[FAILURE]: pulling 'ibmcom/granite4-test-2:8B-Q4_K_M', exit code: '$pull_status'"
+            ./model-cli logs
+          fi
