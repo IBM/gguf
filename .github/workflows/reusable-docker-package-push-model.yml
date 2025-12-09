@@ -101,6 +101,14 @@ jobs:
       - name: Check Docker version
         run: docker version
 
+      - name: Install Docker engine by version
+        uses: docker/setup-docker-action@v4
+        with:
+          version: latest # Replace with your required version (e.g., v26.1.0)
+
+      - name: Check Docker version again
+        run: docker version
+
       - name: clone-docker-model-runner
         run: |
           git clone https://github.com/docker/model-runner.git
@@ -282,10 +290,10 @@ jobs:
           echo "downloading model: ibmcom/yyz:foo ..."
           ./model-cli pull ibmcom/yyz:foo
           ./model-cli list
-          echo "downloading model: ibmcom/granite4-test-2:foo ..."
-          ./model-cli pull ibmcom/granite4-test-2:foo
-          ./model-cli list
-          echo "downloading model: ibmcom/granite4-test-2:8B-Q4_K_M ..."
+          # echo "downloading model: ibmcom/granite4-test-2:foo ..."
+          # ./model-cli pull ibmcom/granite4-test-2:foo
+          # ./model-cli list
+          # echo "downloading model: ibmcom/granite4-test-2:8B-Q4_K_M ..."
           ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M --ignore-runtime-memory-check
           pull_status=$?
           echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
