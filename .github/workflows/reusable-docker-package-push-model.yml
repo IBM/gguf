@@ -278,5 +278,6 @@ jobs:
         run: |
           cd model-runner/cmd/cli
           ./model-cli status
+          ./model-cli pull ibmcom/yyz:foo
           ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
           ./model-cli logs
