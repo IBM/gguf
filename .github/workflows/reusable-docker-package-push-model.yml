@@ -94,9 +94,6 @@ jobs:
           echo "DOCKER_USERNAME: ${{ secrets.docker_username }}"
           echo "DOCKERHUB_TOKEN: ${{ secrets.dockerhub_token }}"
 
-      - name: Check Docker version
-        run: docker version
-
       # NOTE: the image version of docker does not have model plugin installed by default
       - name: Check Docker version
         run: docker version
@@ -299,8 +296,13 @@ jobs:
           echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
           if [ "$pull_status" -eq 0 ]; then
             echo "[SUCCESS]: pulling 'ibmcom/granite4-test-2:8B-Q4_K_M'"
-          ./model-cli list
+            ./model-cli list
           else
             echo "[FAILURE]: pulling 'ibmcom/granite4-test-2:8B-Q4_K_M', exit code: '$pull_status'"
             ./model-cli logs
           fi
+
+      - name: docker logs
+        run: |
+          cd model-runner/cmd/cli
+          ./model-cli logs
