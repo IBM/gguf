@@ -231,6 +231,7 @@ jobs:
       # ./model-cli package --gguf "${{ github.workspace }}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:latest --push
 
       - name: Package and Push GGUF Model
+        continue-on-error: true
         run: |
           echo "github.workspaceF: ${{ github.workspace }}"
           echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
@@ -255,6 +256,11 @@ jobs:
             echo "NOT the default model"
           fi
 
+      - name: docker logs
+        run: |
+          cd model-runner/cmd/cli
+          ./model-cli logs
+
       - name: is-model-latest
         continue-on-error: true
         run: |
@@ -268,6 +274,7 @@ jobs:
 
       # NOTE: "base" models are never selected for latest LLM model
       - name: push-model-with-latest-tag
+        continue-on-error: true
         if: env.IS_LATEST == 'true' && env.IS_DEFAULT_QUANT == 'true'
         run: |
           if [[ "$REPO_NAME" =~ "base" ]]; then
@@ -278,31 +285,3 @@ jobs:
           cd model-runner/cmd/cli
           ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.TAG_LATEST}} --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
           exit 0
-
-      # - name: model pull
-      #   continue-on-error: true
-      #   run: |
-      #     cd model-runner/cmd/cli
-      #     ./model-cli status
-      #     echo "downloading model: ibmcom/yyz:foo ..."
-      #     ./model-cli pull ibmcom/yyz:foo
-      #     ./model-cli list
-      #     # echo "downloading model: ibmcom/granite4-test-2:foo ..."
-      #     # ./model-cli pull ibmcom/granite4-test-2:foo
-      #     # ./model-cli list
-      #     # echo "downloading model: ibmcom/granite4-test-2:8B-Q4_K_M ..."
-      #     # ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M --ignore-runtime-memory-check
-      #     # pull_status=$?
-      #     # echo "pull_status=$pull_status" >> $GITHUB_OUTPUT
-      #     # if [ "$pull_status" -eq 0 ]; then
-      #     #   echo "[SUCCESS]: pulling 'ibmcom/granite4-test-2:8B-Q4_K_M'"
-      #     #   ./model-cli list
-      #     # else
-      #     #   echo "[FAILURE]: pulling 'ibmcom/granite4-test-2:8B-Q4_K_M', exit code: '$pull_status'"
-      #     #   ./model-cli logs
-      #     # fi
-
-      - name: docker logs
-        run: |
-          cd model-runner/cmd/cli
-          ./model-cli logs

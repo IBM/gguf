@@ -217,34 +217,3 @@ jobs:
       #     else
       #       echo "[FAILURE]: exit code: $run_status"
       #     fi
-
-      # - name: hf-download-quantized-gguf
-      #   if: env.QUANTIZED_MODEL_EXISTS == 'true'
-      #   run: |
-      #     echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
-      #     echo "--------------------"
-      #     python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_HF_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
-      #     ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
-
-      # - name: verify-downloaded-files
-      #   run: |
-      #     echo downloaded files...
-      #     echo "--------------------"
-      #     find . -name \*.gguf -type f
-      #     echo "--------------------"
-      #     if [ -f ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} ]; then
-      #       echo "File exists"
-      #     else
-      #       echo "File does not exist"
-      #       exit 1
-      #     fi
-
-      # - name: Package and Push GGUF Model
-      #   run: |
-      #     echo "github.workspaceF: ${{ github.workspace }}"
-      #     echo "LOCAL_FNAME_QUANTIZED_GGUF: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-      #     ABSOLUTE_PATH_FNAME_QUANTIZED="${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-      #     echo "ABSOLUTE_PATH_FNAME_QUANTIZED_FNAME_QUANTIZED: ${ABSOLUTE_PATH_FNAME_QUANTIZED}"
-      #     echo "ABSOLUTE_PATH_FNAME_QUANTIZED=${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-      #     cd model-cli
-      #     ./model-cli package --gguf "${{github.workspace}}/${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.DOCKER_MODEL_TAG}} --license "${{github.workspace}}/${{env.GRANITE_LICENSE_FILE}}" --push
