@@ -48,6 +48,7 @@ env:
   DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_BF16: "-bf16.gguf"
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
@@ -96,7 +97,6 @@ jobs:
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
 
-    # echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
     - name: confirm-environment
       run: |
         uname -a
@@ -106,6 +106,7 @@ jobs:
         echo "inputs.repo_id: ${{ inputs.repo_id }}"
         echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
         echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
@@ -141,11 +142,9 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "LOCAL_VISUAL_GGUF_F16=${{env.ENCODER_PATH}}/mmproj-model-f16.gguf" >> $GITHUB_ENV
-        # echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
 
-    # echo "BASE_FNAME_F16_GGUF=$BASE_FNAME_F16_GGUF"
     - name: verify-github-env
       run: |
         echo "REPO_ORG=$REPO_ORG"
@@ -253,10 +252,11 @@ jobs:
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
         ls -al ${{ env.LLM_EXPORT_PATH }}
 
-    # --outfile ${{ env.BASE_FNAME_F16_GGUF }} \
     - name: convert-vision-model-llm-to-gguf-bf16
       run: |
+        echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
+        echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
         python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LLM_EXPORT_PATH }} \
           --outfile ${{ env.BASE_FNAME_BF16_GGUF }} \
           --outtype ${{env.DEF_PRECISION}} \
