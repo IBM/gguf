@@ -43,6 +43,8 @@ on:
 
 # TODO: F16_OPT_ENABLED
 env:
+  DEF_SEP: "-"
+  DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   F16_FILE_EXISTS: "0"
@@ -97,27 +99,30 @@ jobs:
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
 
+    # echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
     - name: set-derivative-env-vars-1
       run: |
-        echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
     # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
     # or streaming will cause a SIGSEV error
+    # echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV
     - name: set-derivative-env-vars-2
       run: |
-        echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_BF16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_BF16_GGUF" >> $GITHUB_ENV
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
 
+    # echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"
     - name: verify-github-env
       run: |
         echo "================== GITHUB_ENV ====================="
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"
         echo "================== Derivative Environment Variables 1 =================="
-        echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"
+        echo "BASE_FNAME_BF16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_BF16_GGUF }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 2 =================="
@@ -146,38 +151,41 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
+    # output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
     - name: test-f16-exists
       run: |
-        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
+        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}})
         echo "output: '$output'"
         if [[ "$output" == "True" ]]; then
-          echo "F16_FILE_EXISTS=1" >> $GITHUB_ENV
+          echo "BF16_FILE_EXISTS=1" >> $GITHUB_ENV
         elif [[ "$output" == "False" ]]; then
-          echo "F16_FILE_EXISTS=0" >> $GITHUB_ENV
+          echo "BF16_FILE_EXISTS=0" >> $GITHUB_ENV
         else
           echo "Unexpected output from Python script: $output"
           exit 2
         fi
 
-    - name: download-f16-gguf-hf-hub-download
+    # python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
+    # echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+    - name: download-bf16-gguf-hf-hub-download
       run: |
-        echo "Downloading f16 GGUF using hf_file_download..."
+        echo "Downloading bf16 GGUF using hf_file_download..."
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
-        echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_BF16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_BF16_GGUF }}" >> $GITHUB_ENV
 
-    - name: verify-f16-gguf-hf-hub-download
+    - name: verify-bf16-gguf-hf-hub-download
       run: |
         echo downloaded files...
         echo "--------------------"
         find . -name \*.gguf -type f
         echo "--------------------"
-        if [ -f ${{env.LOCAL_FNAME_F16_GGUF}} ]; then
+        if [ -f ${{env.LOCAL_FNAME_BF16_GGUF}} ]; then
           echo "File exists"
         else
           env | sort
-          echo "File does not exist. env.LOCAL_FNAME_F16_GGUF=${{env.LOCAL_FNAME_F16_GGUF}}"
+          echo "File does not exist. env.LOCAL_FNAME_F16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
           exit 1
         fi
 
@@ -221,10 +229,10 @@ jobs:
     - name: quantize-gguf
       run: |
         echo "--------------------"
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"
+        echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_F16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
 
     - name: find-gguf-files
       if: inputs.debug == true
