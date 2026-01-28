@@ -87,6 +87,12 @@ jobs:
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
+    # if: ${{ github.event.inputs.debug }}
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"
+
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.
@@ -107,9 +113,9 @@ jobs:
     # or streaming will cause a SIGSEV error
     - name: set-derivative-env-vars-2
       run: |
-        echo "LOCAL_FNAME_BF16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_BF16_GGUF" >> $GITHUB_ENV
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_BF16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}/$BASE_FNAME_BF16_GGUF" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
 
     # echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"
     - name: verify-github-env
@@ -122,15 +128,9 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 2 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
-
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      if: ${{ github.event.inputs.debug }}
-      run: echo "$GITHUB_INPUTS"
 
     - name: List all environment variables
       if: ${{ github.event.inputs.debug }}
@@ -148,7 +148,7 @@ jobs:
         pip list
 
     # output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
-    - name: test-f16-exists
+    - name: test-bf16-exists
       run: |
         output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}})
         echo "output: '$output'"
@@ -161,7 +161,6 @@ jobs:
           exit 2
         fi
 
-    # python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
     - name: download-bf16-gguf-hf-hub-download
       run: |
         echo "Downloading bf16 GGUF using hf_file_download..."
@@ -178,6 +177,7 @@ jobs:
         echo "--------------------"
         find . -name \*.gguf -type f
         echo "--------------------"
+        echo "LOCAL_FNAME_BF16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
         if [ -f ${{env.LOCAL_FNAME_BF16_GGUF}} ]; then
           echo "File exists"
         else
