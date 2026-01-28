@@ -41,14 +41,12 @@ on:
         required: false
         default: false
 
-# TODO: F16_OPT_ENABLED
 env:
   DEF_SEP: "-"
   DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"
-  F16_FILE_EXISTS: "0"
-  F16_OPT_ENABLED: true
+  EXT_NAME_BF16: "-bf16.gguf"
+  BF16_FILE_EXISTS: "0"
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -83,8 +81,8 @@ jobs:
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-        echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
-        echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"
+        echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
+        echo "env.BF16_FILE_EXISTS: ${{ env.BF16_FILE_EXISTS }}"
         echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
@@ -99,16 +97,14 @@ jobs:
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
 
-    # echo "BASE_FNAME_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
     - name: set-derivative-env-vars-1
       run: |
-        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
     # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
     # or streaming will cause a SIGSEV error
-    # echo "LOCAL_FNAME_F16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_F16_GGUF" >> $GITHUB_ENV
     - name: set-derivative-env-vars-2
       run: |
         echo "LOCAL_FNAME_BF16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_BF16_GGUF" >> $GITHUB_ENV
@@ -126,7 +122,7 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 2 =================="
-        echo "LOCAL_FNAME_F16_GGUF='$LOCAL_FNAME_F16_GGUF' (${{ env.LOCAL_FNAME_F16_GGUF }})"
+        echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
 
@@ -166,14 +162,15 @@ jobs:
         fi
 
     # python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}}
-    # echo "LOCAL_FNAME_F16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_F16_GGUF }}" >> $GITHUB_ENV
     - name: download-bf16-gguf-hf-hub-download
       run: |
         echo "Downloading bf16 GGUF using hf_file_download..."
         echo "--------------------"
+        echo "MODEL_DOWNLOAD_DIR=${{env.MODEL_DOWNLOAD_DIR}}"
+        echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
-        echo "LOCAL_FNAME_BF16_GGUF=${{ env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_BF16_GGUF }}" >> $GITHUB_ENV
 
     - name: verify-bf16-gguf-hf-hub-download
       run: |
@@ -185,7 +182,7 @@ jobs:
           echo "File exists"
         else
           env | sort
-          echo "File does not exist. env.LOCAL_FNAME_F16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
+          echo "File does not exist. env.LOCAL_FNAME_BF16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
           exit 1
         fi
 
