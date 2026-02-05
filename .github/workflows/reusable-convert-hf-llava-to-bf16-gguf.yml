@@ -3,9 +3,9 @@
 # - Separates the "vision" portion of a llava (granite vision) model from HF (in safetensors format)
 # - Converts the vision (projector) model to an f16 GGUF format vision encoder model.
 # - Uploads the f16 vision encoder model to Hugging Face Hub for the 'repo_id' (from the build matrix).
-# - Uses HF Transformers to save just the LLM portion of the llava model to an f16 GGUF
-# - Convert the LLM model to an f16 GGUF
-# - Uploads the f16 GGUF to target 'repo_id'.
+# - Uses HF Transformers to save just the LLM portion of the llava model to an bf16 GGUF
+# - Convert the LLM model to an bf16 GGUF
+# - Uploads the bf16 GGUF to target 'repo_id'.
 
 name: convert-hf-llava-to-f16-gguf-reusable
 
@@ -64,6 +64,8 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
+      HF_TRANSFORMERS_VERSION: "4.52.4"
+      LLAMA_CPP_VERSION: b7951 # Previously: b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
     - uses: actions/checkout@v4
 
@@ -164,7 +166,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: 'master'  # default to master branch
+        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -189,7 +191,7 @@ jobs:
         python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         python -m pip install -r ./llama.cpp/tools/mtmd/requirements.txt
         pip uninstall --yes transformers
-        pip install transformers==4.49.0
+        pip install transformers==${{ env.HF_TRANSFORMERS_VERSION }}
         pip list
 
     # TODO: need a "source" and "target" HF_TOKEN

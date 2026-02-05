@@ -55,7 +55,8 @@ env:
   # 'Q5_K_M',
   # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-    'Q8_0'
+    'Q8_0',
+    'F16'
   ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
@@ -192,7 +193,7 @@ jobs:
 
   convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -295,7 +296,7 @@ jobs:
 
   convert-hf-llava-to-f16-gguf:
     needs: [ environment-setup, vision-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -398,7 +399,7 @@ jobs:
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -501,7 +502,7 @@ jobs:
 
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
