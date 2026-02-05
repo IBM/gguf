@@ -162,7 +162,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_RESEARCH }}
 
-  convert-hf-to-f16-gguf:
+  convert-hf-to-bf16-gguf:
     needs: [ environment-setup, instruct-create-hf-repos ]
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
@@ -185,7 +185,7 @@ jobs:
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-upload-gguf:
-    needs: [ environment-setup, convert-hf-to-f16-gguf ]
+    needs: [ environment-setup, convert-hf-to-bf16-gguf ]
     permissions:
       contents: write
       packages: write
