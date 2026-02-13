@@ -15,6 +15,7 @@ This repository provides an automated CI/CD process to convert, test and deploy 
     - [Embedding](#embedding-dense)
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
 - [GGUF Verification Testing](#gguf-verification-testing)
+- [GGUF Model Signing](#gguf-model-signing)
 - [References](#references)
 - [Releasing GGUF model conversions & quantizations](#releasing-gguf-model-conversions--quantizations)
 
@@ -154,6 +155,42 @@ As a baseline, each converted model MUST successfully be run in the following pr
 - Ollama does not yet support sharded GGUF models
     - "Ollama does not support this yet. Follow this issue for more info: https://github.com/ollama/ollama/issues/5245"
     - e.g., `ollama pull hf.co/Qwen/Qwen2.5-14B-Instruct-GGUF`
+
+---
+
+### GGUF Model Signing
+
+To enable model signing, simply set the `TARGET_HF_REPO_SIGN_MODELS` build
+switch to 'true'.
+
+If the `TARGET_HF_REPO_DO_TOKEN_EXCHANGE` build switch is set to 'false',
+then the signatures will appear to have been made by an identity expressed
+through a URL associated with the repository from which the build was
+inititated. To change this to an IBM identity, such as a functional Id, this
+option must be set to 'true' to run a token exchange with
+sigstore.verify.ibm.com. However, for the token exchange to work, it requires
+that there exist a mapping in sigstore.verify.ibm.com from the github
+identity to an IBM email/identity, otherwise the signing will fail.
+
+For signature verification a version of the model_signing library
+later than v1.0.1 is needed:
+
+```
+pip install model_signing>v1.0.1
+
+```
+
+To for example verify one of the signatures of granite-embedding-30m-english,
+use the following command in the directory of the huggingface git checkout:
+
+```
+model_signing verify sigstore \
+	--signature granite-embedding-30m-english-Q8_0.gguf.sig \
+	--identity Garnite.GGUF@ibm.com \
+	--identity_provider https://sigstore.verify.ibm.com/oauth2 \
+	--ignore_unsigned_files \
+	.
+```
 
 ---
 

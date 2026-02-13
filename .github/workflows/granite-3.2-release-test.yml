@@ -83,6 +83,8 @@ env:
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: false
+  TARGET_HF_REPO_SIGN_MODELS: true
+  TARGET_HF_REPO_DO_TOKEN_EXCHANGE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
 jobs:
@@ -104,6 +106,8 @@ jobs:
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
+      target_repo_sign_models: ${{ steps.set-vars.outputs.target_repo_sign_models }}
+      target_repo_do_token_exchange: ${{ steps.set-vars.outputs.target_repo_do_token_exchange }}
       source_language_repos: "${{ steps.set-vars.outputs.source_language_repos }}"
       target_language_quantizations: "${{ steps.set-vars.outputs.target_language_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
@@ -130,6 +134,8 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "target_repo_sign_models=$TARGET_HF_REPO_SIGN_MODELS" >> "$GITHUB_OUTPUT"
+            echo "target_repo_do_token_exchange=$TARGET_HF_REPO_DO_TOKEN_EXCHANGE" >> "$GITHUB_OUTPUT"
             echo "source_language_repos=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_language_quantizations=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
@@ -151,6 +157,8 @@ jobs:
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
+            echo "target_repo_sign_models: '${{ steps.set-vars.outputs.target_repo_sign_models }}'"
+            echo "target_repo_do_token_exchange: '${{ steps.set-vars.outputs.target_repo_do_token_exchange }}'"
             echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
             echo "source_language_repos: '${{ steps.set-vars.outputs.source_language_repos }}'"
             echo "target_language_quantizations: '${{ steps.set-vars.outputs.target_language_quantizations }}'"
@@ -266,6 +274,30 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  language-sign-models-in-repos:
+    if: ${{ needs.environment-setup.outputs.target_repo_sign_models == 'true' }}
+    needs: [ environment-setup, bvt-language-quantized-gguf-models ]
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization:
+          - f16
+          - ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-sign-model-in-hf-repo.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      do_token_exchange: ${{ needs.environment-setup.outputs.target_repo_do_token_exchange == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
+
   # TODO: change collection from private to public (on success)
   create-hf-collections:
     needs: [
@@ -369,6 +401,31 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  vision-sign-models-in-repos:
+    if: ${{ needs.environment-setup.outputs.target_repo_sign_models == 'true' }}
+    needs: [ environment-setup, bvt-vision-quantized-gguf-models ]
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+        quantization:
+          - f16
+          - ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+          - "fullname:mmproj-model-f16.gguf"
+    uses: IBM/gguf/.github/workflows/reusable-sign-model-in-hf-repo.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      do_token_exchange: ${{ needs.environment-setup.outputs.target_repo_do_token_exchange == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
+
   # TODO: change collection from private to public (on success)
   vision-create-hf-collections:
     needs: [
@@ -471,6 +528,30 @@ jobs:
       quantization: "${{ matrix.quantization }}"
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  guardian-sign-models-in-repos:
+    if: ${{ needs.environment-setup.outputs.target_repo_sign_models == 'true' }}
+    needs: [ environment-setup, guardian-bvt-quantized-gguf-models ]
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
+        quantization:
+          - f16
+          - ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-sign-model-in-hf-repo.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      do_token_exchange: ${{ needs.environment-setup.outputs.target_repo_do_token_exchange == 'true' }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: ${{ matrix.repo_id }}
+      quantization: "${{ matrix.quantization }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
 
   # TODO: change collection from private to public (on success)
   guardian-create-hf-collections:
@@ -593,3 +674,27 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  embedding-sign-models-in-repos:
+    if: ${{ needs.environment-setup.outputs.target_repo_sign_models == 'true' }}
+    needs: [ environment-setup, embedding-quantize-upload-gguf ]
+    permissions:
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization:
+          - f16
+          - ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
+    uses: IBM/gguf/.github/workflows/reusable-sign-model-in-hf-repo.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      do_token_exchange: ${{ needs.environment-setup.outputs.target_repo_do_token_exchange == 'true' }}
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      sigstore_sts_client_secret: ${{ secrets.SIGSTORE_STS_CLIENT_SECRET }}
