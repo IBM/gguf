@@ -4,6 +4,7 @@
 # IDEs (e.g., VSCode)
 .vscode/*.log
 .vscode/launch.json
+.vscode/diff
 
 # repos.
 /llama.cpp
