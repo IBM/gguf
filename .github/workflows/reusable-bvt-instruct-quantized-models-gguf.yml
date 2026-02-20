@@ -4,9 +4,59 @@ name: bvt-hf-quantized-models-gguf
 
 on:
   workflow_dispatch:
+    inputs:
+      enable_language_jobs:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable language jobs to run tests'
+      repo_id:
+        type: string
+        required: true
+        description: 'HuggingFace repository ID (e.g., ibm-granite/granite-3.0-2b-instruct)'
+      quantization:
+        type: string
+        required: true
+        description: 'Quantization type (e.g., Q4_K_M)'
+      target_repo_owner:
+        type: string
+        required: true
+        description: 'Target repository owner'
+      target_repo_name_ext:
+        type: string
+        required: true
+        description: 'Target repository name extension'
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+        description: 'Log file extension'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+        description: 'Response file extension'
+      debug:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable debug mode'
+      trace:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable trace mode'
   workflow_call:
     secrets:
       hf_token:
+        required: true
+      IBM_CLOUD_API_KEY:
+        required: true
+      UAT_REGISTRY_NAMESPACE:
+        required: true
+      UAT_IMAGE_NAME:
+        required: true
+      UAT_IMAGE_TAG:
         required: true
     inputs:
       enable_language_jobs:
@@ -35,7 +85,7 @@ on:
         default: '.response.txt'
       debug:
         type: boolean
-        required: true
+        required: false
         default: false
       trace:
         type: boolean
