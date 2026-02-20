@@ -194,9 +194,9 @@ jobs:
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       env:
         IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
-        REGISTRY_NAMESPACE: ${{ secrets.REGISTRY_NAMESPACE }}
-        IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-        IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
+        UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
+        UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
+        UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
       run: |
         # Login to IBM Cloud
         ibmcloud login --quiet --apikey "${IBM_CLOUD_API_KEY}" -r "us-south"
@@ -205,7 +205,7 @@ jobs:
         ibmcloud cr login
 
         # Pull the Docker image
-        docker pull "us.icr.io/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
+        docker pull "us.icr.io/${UAT_REGISTRY_NAMESPACE}/${UAT_IMAGE_NAME}:${UAT_IMAGE_TAG}"
 
     - name: Create run-config file
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
@@ -289,9 +289,9 @@ jobs:
     - name: Run Docker image for testing
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       env:
-        REGISTRY_NAMESPACE: ${{ secrets.REGISTRY_NAMESPACE }}
-        IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-        IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
+        UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
+        UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
+        UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
       run: |
         # Create data directory for test results
         mkdir -p data
@@ -302,7 +302,7 @@ jobs:
           -v $(pwd)/run-config.json:/app/run-config.json \
           -v $(pwd)/data:/app/data \
           -e RUN_CONFIG_PATH=/app/run-config.json \
-          "us.icr.io/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
+          "us.icr.io/${UAT_REGISTRY_NAMESPACE}/${UAT_IMAGE_NAME}:${UAT_IMAGE_TAG}"
 
         # Mark that Docker tests have run
         echo "DOCKER_TESTS_RAN=true" >> $GITHUB_ENV
