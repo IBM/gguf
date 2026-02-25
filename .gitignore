@@ -12,6 +12,9 @@
 /models
 *.gguf
 
+# Test input
+test/
+
 # Test output
 **/temp/
 **/tmp/
