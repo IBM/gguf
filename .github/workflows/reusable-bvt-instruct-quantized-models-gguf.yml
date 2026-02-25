@@ -123,7 +123,7 @@ env:
 
 jobs:
   test-quantized-model:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: ${{ inputs.enable_language_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
