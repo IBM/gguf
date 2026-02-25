@@ -24,7 +24,7 @@ on:
         description: 'Target repository owner'
       target_repo_name_ext:
         type: string
-        required: true
+        required: false
         description: 'Target repository name extension'
       ext_log:
         type: string
