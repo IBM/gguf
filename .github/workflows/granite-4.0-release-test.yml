@@ -90,15 +90,15 @@ env:
   ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-    'ibm-granite/granite-docling-258M'
+    'ibm-granite/granite-vision-3.3-2b'
   ]"
-  # 'BF16'
+  # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+  # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+  # 'Q6_K',
+  # 'Q8_0',
+  # 'F16'
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-    'Q6_K',
-    'Q8_0',
-    'F16'
+    'Q8_0'
   ]"
 
 jobs:
