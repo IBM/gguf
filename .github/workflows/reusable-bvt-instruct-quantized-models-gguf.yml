@@ -46,6 +46,21 @@ on:
         required: false
         default: false
         description: 'Enable trace mode'
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+        description: 'Tests to run (JSON array)'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+        description: 'Maximum number of parallel workers for UAT testing'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
+        description: 'Maximum number of tests to run for each test suite'
   workflow_call:
     secrets:
       hf_token:
@@ -91,6 +106,18 @@ on:
         type: boolean
         required: false
         default: false
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
@@ -259,20 +286,32 @@ jobs:
 
     - name: Create run-config file
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        TESTS: ${{ inputs.tests || env.TESTS }}
+        MAX_WORKERS: ${{ inputs.max_workers || env.MAX_WORKERS }}
+        MAX_TESTS: ${{ inputs.max_tests || env.MAX_TESTS }}
       run: |
+        # Create output filename with timestamp
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        OUTPUT_FILE="llama_cpp_results_${TIMESTAMP}.json"
+        echo "OUTPUT_FILE=${OUTPUT_FILE}" >> $GITHUB_ENV
+        echo "Created output filename: ${OUTPUT_FILE}"
+
         cat > run-config.json <<EOF
         {
           "llama-cpp": {
             "model": {
               "model_name": "${{ env.TARGET_REPO_ID }}"
             },
-            "tests": ${{env.TESTS}},
-            "max_workers": ${{env.MAX_WORKERS}},
-            "max_tests": ${{env.MAX_TESTS}}
+            "tests": ${TESTS},
+            "max_workers": ${MAX_WORKERS},
+            "max_tests": ${MAX_TESTS},
+            "output_file": "/app/data/${OUTPUT_FILE}"
           }
         }
         EOF
-        echo "Created run-config.json:"
+
+        echo "Generated run-config.json:"
         cat run-config.json
 
     - name: Run llama.cpp server with Docker
@@ -346,7 +385,7 @@ jobs:
         # Create data directory for test results
         mkdir -p data
 
-        # Run the Docker container with mounted run-config and env var
+        # Run the Docker container with mounted run-config and env vars
         docker run --rm \
           --network host \
           -v $(pwd)/run-config.json:/app/run-config.json \
@@ -360,28 +399,69 @@ jobs:
     - name: Print test results
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |
-        # Find the most recent file in the data directory (cross-platform)
-        LATEST_FILE=$(find $(pwd)/data -type f -name "*.json" -exec stat -f "%m %N" {} \; 2>/dev/null | sort -n | tail -1 | cut -f2- -d" " || \
-                      find $(pwd)/data -type f -name "*.json" -exec stat -c "%Y %n" {} \; 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
+        # List contents of data directory
+        echo "Contents of data directory:"
+        ls -la $(pwd)/data
+        echo ""
 
-        if [ -z "$LATEST_FILE" ]; then
-          echo "No JSON files found in data directory"
+        # Get all runtimes from run-config.json
+        RUNTIMES=$(jq -r 'keys[]' run-config.json)
+
+        if [ -z "$RUNTIMES" ]; then
+          echo "No runtimes found in run-config.json"
           exit 0
         fi
 
-        echo "Most recent test results file: $LATEST_FILE"
-        echo "---"
-        jq . "$LATEST_FILE"
+        # Iterate through each runtime
+        for RUNTIME in $RUNTIMES; do
+          echo "========================================"
+          echo "Processing runtime: $RUNTIME"
+          echo "========================================"
 
-        echo ""
-        echo "=== Failed Tests ==="
-        FAILED_TESTS=$(jq -r '.results[] | select(.test_status == "Failed") | .test_name' "$LATEST_FILE")
+          # Read the output_file path from run-config.json for this runtime
+          OUTPUT_FILE_PATH=$(jq -r ".\"$RUNTIME\".output_file" run-config.json)
 
-        if [ -z "$FAILED_TESTS" ]; then
-          echo "No failed tests found!"
-        else
-          echo "$FAILED_TESTS"
-        fi
+          if [ "$OUTPUT_FILE_PATH" = "null" ] || [ -z "$OUTPUT_FILE_PATH" ]; then
+            echo "No output_file specified for runtime: $RUNTIME"
+            echo ""
+            continue
+          fi
+
+          echo "Output file path from config: $OUTPUT_FILE_PATH"
+
+          # Extract just the filename from the path
+          OUTPUT_FILENAME=$(basename "$OUTPUT_FILE_PATH")
+          echo "Output filename: $OUTPUT_FILENAME"
+
+          # Construct the actual path in $(pwd)/data/<filename>
+          RESULTS_FILE="$(pwd)/data/${OUTPUT_FILENAME}"
+          echo "Looking for results file: $RESULTS_FILE"
+
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "Expected results file not found: $RESULTS_FILE"
+            echo ""
+            continue
+          fi
+
+          echo "Test results file: $RESULTS_FILE"
+          echo "---"
+          jq . "$RESULTS_FILE"
+
+          echo ""
+          echo "=== Failed Tests for $RUNTIME ==="
+          FAILED_TESTS=$(jq -r '.results[] | select(.test_status == "Failed") | .test_name' "$RESULTS_FILE")
+
+          if [ -z "$FAILED_TESTS" ]; then
+            echo "No failed tests found!"
+          else
+            echo "$FAILED_TESTS"
+          fi
+          echo ""
+        done
+
+        echo "========================================"
+        echo "All runtimes processed"
+        echo "========================================"
 
     - name: Print llama.cpp server logs
       if: env.DEBUG == 'true' && env.DOCKER_TESTS_RAN == 'true'
