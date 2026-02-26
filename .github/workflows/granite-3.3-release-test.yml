@@ -64,6 +64,7 @@ env:
   # 'ibm-granite/granite-vision-3.3-2b'
   # 'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
   SOURCE_VISION_REPOS: "[
+    'ibm-granite/granite-vision-3.3-2b',
     'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
   ]"
   # 'Q4_K_M',
