@@ -1,5 +1,5 @@
-# This workflow runs Build Verification Tests (BVT) on the quantized models
-# using llama.cpp utilities.
+# This workflow runs User Acceptance Tests (UAT) on the quantized models.
+# UAT is a suite to test model variants on different platforms and runtimes.
 name: uat-hf-quantized-models-gguf
 
 on:
