@@ -349,6 +349,10 @@ jobs:
       UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
       UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
       UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
+      IBM_COS_API_KEY: ${{ secrets.IBM_COS_API_KEY }}
+      IBM_COS_INSTANCE_ID: ${{ secrets.IBM_COS_INSTANCE_ID }}
+      IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
+      IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
 
   language-lm-eval-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models, language-uat-quantized-gguf-models ]

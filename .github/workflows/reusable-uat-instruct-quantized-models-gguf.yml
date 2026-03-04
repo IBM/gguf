@@ -73,6 +73,14 @@ on:
         required: true
       UAT_IMAGE_TAG:
         required: true
+      IBM_COS_API_KEY:
+        required: true
+      IBM_COS_INSTANCE_ID:
+        required: true
+      IBM_COS_ENDPOINT_URL:
+        required: true
+      IBM_COS_BUCKET_NAME:
+        required: true
     inputs:
       enable_language_jobs:
         type: boolean
@@ -299,6 +307,9 @@ jobs:
 
         cat > run-config.json <<EOF
         {
+          "metadata": {
+            "gguf_pipeline_run": true
+          },
           "llama-cpp": {
             "model": {
               "model_name": "${{ env.TARGET_REPO_ID }}"
@@ -381,6 +392,10 @@ jobs:
         UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
         UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
         UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
+        IBM_COS_API_KEY: ${{ secrets.IBM_COS_API_KEY }}
+        IBM_COS_INSTANCE_ID: ${{ secrets.IBM_COS_INSTANCE_ID }}
+        IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
+        IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
       run: |
         # Create data directory for test results
         mkdir -p data
@@ -391,6 +406,11 @@ jobs:
           -v $(pwd)/run-config.json:/app/run-config.json \
           -v $(pwd)/data:/app/data \
           -e RUN_CONFIG_PATH=/app/run-config.json \
+          -e IBM_COS_API_KEY="${IBM_COS_API_KEY}" \
+          -e IBM_COS_INSTANCE_ID="${IBM_COS_INSTANCE_ID}" \
+          -e IBM_COS_ENDPOINT_URL="${IBM_COS_ENDPOINT_URL}" \
+          -e IBM_COS_BUCKET_NAME="${IBM_COS_BUCKET_NAME}" \
+          -e DATA_PATH=/app/data \
           "us.icr.io/${UAT_REGISTRY_NAMESPACE}/${UAT_IMAGE_NAME}:${UAT_IMAGE_TAG}"
 
         # Mark that Docker tests have run
