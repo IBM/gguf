@@ -1,6 +1,6 @@
 # This workflow runs Build Verification Tests (BVT) on the quantized models
 # using llama.cpp utilities.
-name: bvt-hf-quantized-models-gguf
+name: uat-hf-quantized-models-gguf
 
 on:
   workflow_dispatch:
