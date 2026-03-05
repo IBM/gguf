@@ -64,12 +64,13 @@ env:
   # 'ibm-granite/granite-vision-3.3-2b'
   # 'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
   SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.3-2b',
-    'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
+    'ibm-granite/granite-vision-3.3-2b'
   ]"
   # 'Q8_0',
   # 'F16'
   TARGET_VISION_QUANTIZATIONS: "[
+    'Q5_K_M',
+    'Q6_K',
     'Q8_0',
     'f16'
   ]"
