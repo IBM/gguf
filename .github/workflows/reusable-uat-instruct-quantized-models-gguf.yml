@@ -309,7 +309,8 @@ jobs:
         {
           "metadata": {
             "gguf_pipeline_run": true,
-            "model_name": "${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_QUANTIZED_GGUF }}"
+            "model_name": "${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_QUANTIZED_GGUF }}",
+            "workflow_run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           },
           "llama-cpp": {
             "model": {
