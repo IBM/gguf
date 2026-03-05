@@ -16,10 +16,10 @@ def save_llm_from_llava(source_repo:str, target_repo:str):
     # as shown below; it won't be loaded correctly, but the LLM part of the model that
     # we are exporting will be loaded correctly.
     print(f"Loading model (AutoModelForImageTextToText) from: {source_repo}...")
-    config = transformers.AutoConfig.from_pretrained(source_repo)
+    # config = transformers.AutoConfig.from_pretrained(source_repo)
+    # config=config,
     model = transformers.AutoModelForImageTextToText.from_pretrained(
         source_repo,
-        config=config,
         ignore_mismatched_sizes=True
         )
     print(f"Saving pre-trained tokenizer to: {target_repo}...")
