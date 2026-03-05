@@ -1,0 +1,244 @@
+# This workflow runs User Acceptance Tests (UAT) on the quantized models.
+# UAT is a suite to test model variants on different platforms and runtimes.
+name: uat-hf-quantized-models-gguf
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_language_jobs:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable language jobs to run tests'
+      repo_id:
+        type: string
+        required: true
+        description: 'HuggingFace repository ID (e.g., ibm-granite/granite-3.0-2b-instruct)'
+      quantization:
+        type: string
+        required: true
+        description: 'Quantization type (e.g., Q4_K_M)'
+      target_repo_owner:
+        type: string
+        required: true
+        description: 'Target repository owner'
+      target_repo_name_ext:
+        type: string
+        required: false
+        description: 'Target repository name extension'
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+        description: 'Log file extension'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+        description: 'Response file extension'
+      debug:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable debug mode'
+      trace:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable trace mode'
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+        description: 'Tests to run (JSON array)'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+        description: 'Maximum number of parallel workers for UAT testing'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
+        description: 'Maximum number of tests to run for each test suite'
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      IBM_CLOUD_API_KEY:
+        required: true
+      UAT_REGISTRY_NAMESPACE:
+        required: true
+      UAT_IMAGE_NAME:
+        required: true
+      UAT_IMAGE_TAG:
+        required: true
+      IBM_COS_API_KEY:
+        required: true
+      IBM_COS_INSTANCE_ID:
+        required: true
+      IBM_COS_ENDPOINT_URL:
+        required: true
+      IBM_COS_BUCKET_NAME:
+        required: true
+    inputs:
+      enable_language_jobs:
+        type: boolean
+        required: false
+        default: false
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+      debug:
+        type: boolean
+        required: false
+        default: false
+      trace:
+        type: boolean
+        required: false
+        default: false
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
+
+# See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
+env:
+  DEBUG: ${{inputs.debug}}
+  # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+  EXT_GGUF: .gguf
+  # LLAMA_REQUEST_SEED: 647063347
+  # LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
+  LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
+  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
+  LLAMA_REQUEST_N_PREDICT: 128
+  LLAMA_CLI_TOOL: llama-cli
+  LLAMA_CLI_TEMP: 0.8
+  # LLAMA_RUN_BIN: ./bin/llama-run
+  # LLAMA_RUN_FLAGS: "-v -n 9"
+  LLAMA_RESPONSE_WORDS:  "Rayleigh,scatter,atmosphere"
+  LLAMA_SERVER_HOST: localhost
+  LLAMA_SERVER_PORT: 8080
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+  QUANTIZED_MODEL_EXISTS: false
+  TEST_LLAMA_SERVER: false
+  TEST_LLAMA_CLI: false
+  TEST_LLAMA_RUN: false
+  GH_ARTIFACT_RETENTION: 2
+  # Docker test configuration
+  TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
+  MAX_WORKERS: 1
+  MAX_TESTS: 10
+
+jobs:
+  test-quantized-model:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable_language_jobs == true }}
+    env:
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
+      LLAMA_CPP_VERSION: "b6569" # 'b5717', # 'b6050'
+    steps:
+    - uses: actions/checkout@v4
+    - name: confirm-environment
+      run: |
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_type: '${{ github.event_type }}'"
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+
+    - name: Dump GitHub context
+      env:
+        GH_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GH_CONTEXT"
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"
+
+    # - name: List all environment variables
+    #   if: ${{ github.event.inputs.debug }}
+    #   run: env | sort
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-3
+      run: |
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+
+    - name: verify-github-env
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
+        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 3 =================="
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    
