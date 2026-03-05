@@ -15,6 +15,7 @@
 
 # Test input
 test/
+temp*/
 
 # Test output
 **/temp/
