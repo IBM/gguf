@@ -308,7 +308,8 @@ jobs:
         cat > run-config.json <<EOF
         {
           "metadata": {
-            "gguf_pipeline_run": true
+            "gguf_pipeline_run": true,
+            "model_name": ${{env.BASE_FNAME_QUANTIZED_GGUF}}
           },
           "llama-cpp": {
             "model": {
