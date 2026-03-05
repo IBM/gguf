@@ -4,9 +4,82 @@ name: bvt-hf-quantized-models-gguf
 
 on:
   workflow_dispatch:
+    inputs:
+      enable_language_jobs:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable language jobs to run tests'
+      repo_id:
+        type: string
+        required: true
+        description: 'HuggingFace repository ID (e.g., ibm-granite/granite-3.0-2b-instruct)'
+      quantization:
+        type: string
+        required: true
+        description: 'Quantization type (e.g., Q4_K_M)'
+      target_repo_owner:
+        type: string
+        required: true
+        description: 'Target repository owner'
+      target_repo_name_ext:
+        type: string
+        required: false
+        description: 'Target repository name extension'
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+        description: 'Log file extension'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+        description: 'Response file extension'
+      debug:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable debug mode'
+      trace:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable trace mode'
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+        description: 'Tests to run (JSON array)'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+        description: 'Maximum number of parallel workers for UAT testing'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
+        description: 'Maximum number of tests to run for each test suite'
   workflow_call:
     secrets:
       hf_token:
+        required: true
+      IBM_CLOUD_API_KEY:
+        required: true
+      UAT_REGISTRY_NAMESPACE:
+        required: true
+      UAT_IMAGE_NAME:
+        required: true
+      UAT_IMAGE_TAG:
+        required: true
+      IBM_COS_API_KEY:
+        required: true
+      IBM_COS_INSTANCE_ID:
+        required: true
+      IBM_COS_ENDPOINT_URL:
+        required: true
+      IBM_COS_BUCKET_NAME:
         required: true
     inputs:
       enable_language_jobs:
@@ -35,12 +108,24 @@ on:
         default: '.response.txt'
       debug:
         type: boolean
-        required: true
+        required: false
         default: false
       trace:
         type: boolean
         required: false
         default: false
+      tests:
+        type: string
+        required: false
+        default: '["inference", "control", "function-calling", "rag", "structured-output"]'
+      max_workers:
+        type: string
+        required: false
+        default: '1'
+      max_tests:
+        type: string
+        required: false
+        default: '10'
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
@@ -63,9 +148,13 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   TEST_LLAMA_SERVER: false
-  TEST_LLAMA_CLI: true
+  TEST_LLAMA_CLI: false
   TEST_LLAMA_RUN: false
   GH_ARTIFACT_RETENTION: 2
+  # Docker test configuration
+  TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
+  MAX_WORKERS: 1
+  MAX_TESTS: 10
 
 jobs:
   test-quantized-model:
@@ -173,89 +262,249 @@ jobs:
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
-    # - name: verify-downloaded-files
-    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
-    #   run: |
-    #     echo downloaded files...
-    #     echo "--------------------"
-    #     find . -name \*.gguf -type f
-    #     echo "--------------------"
+    # ========================= Docker-based testing steps ======================================
 
-    # - name: print-storage-memory-info
-    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
-    #   run: |
-    #     df
-    #     echo "--------------------"
-    #     xcodebuild -version
-    #     clang --version
-    #     echo "--------------------"
-    #     top -l 1 | grep -E "^CPU|^PhysMem"
-    #     echo "--------------------"
-
-    # TODO:
-    # - name: validate-sha256
-    #   if: env.DEBUG == 'true'
-    #   run: |
-    #     echo "validating sha256..."
-    #     echo "--------------------"
-    #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
-
-    # NOTE: if we want to ignore stderr use: 2>/dev/null
-    - name: test-llama-cli
-      if: env.TEST_LLAMA_CLI == 'true'
-      timeout-minutes: 10
-      continue-on-error: true
+    - name: Install IBM Cloud CLI
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |
-        echo "invoking llama-cli to test inference (generation)..."
-        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli -no-cnv \
-          -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-          -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
-          -p '${{env.LLAMA_REQUEST_PROMPT}}' \
-          -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-          --temp ${{env.LLAMA_CLI_TEMP}} \
-          -no-cnv \
-          --verbose \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
-        if [ $? -eq 1 ]; then
-          echo "[ERROR] llama-cli failed:"
-          ls -al
-          echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-          echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          curl -fsSL https://clis.cloud.ibm.com/install/osx | sh
+        else
+          curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+        fi
+        ibmcloud --version
+        ibmcloud plugin install container-registry -r 'IBM Cloud'
+
+    - name: Login to IBM Cloud and pull UAT testing image
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+        UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
+        UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
+        UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
+      run: |
+        # Login to IBM Cloud
+        ibmcloud login --quiet --apikey "${IBM_CLOUD_API_KEY}" -r "us-south"
+
+        # Login to IBM Cloud Container Registry
+        ibmcloud cr login
+
+        # Pull the Docker image
+        docker pull "us.icr.io/${UAT_REGISTRY_NAMESPACE}/${UAT_IMAGE_NAME}:${UAT_IMAGE_TAG}"
+
+    - name: Create run-config file
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        TESTS: ${{ inputs.tests || env.TESTS }}
+        MAX_WORKERS: ${{ inputs.max_workers || env.MAX_WORKERS }}
+        MAX_TESTS: ${{ inputs.max_tests || env.MAX_TESTS }}
+      run: |
+        # Create output filename with timestamp
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        OUTPUT_FILE="llama_cpp_results_${TIMESTAMP}.json"
+        echo "OUTPUT_FILE=${OUTPUT_FILE}" >> $GITHUB_ENV
+        echo "Created output filename: ${OUTPUT_FILE}"
+
+        cat > run-config.json <<EOF
+        {
+          "metadata": {
+            "gguf_pipeline_run": true
+          },
+          "llama-cpp": {
+            "model": {
+              "model_name": "${{ env.TARGET_REPO_ID }}"
+            },
+            "tests": ${TESTS},
+            "max_workers": ${MAX_WORKERS},
+            "max_tests": ${MAX_TESTS},
+            "output_file": "/app/data/${OUTPUT_FILE}"
+          }
+        }
+        EOF
+
+        echo "Generated run-config.json:"
+        cat run-config.json
+
+    - name: Run llama.cpp server with Docker
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        # Verify the model file exists
+        if [ ! -f "${{env.LOCAL_FNAME_QUANTIZED_GGUF}}" ]; then
+          echo "Error: Model file not found at ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
           exit 1
         fi
-        echo "[SUCCESS] llama-cli succeeded. Output (stdout):"
-        echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
 
-    # - name: test-print-llama-cli-generated-log
-    #   if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
-    #   continue-on-error: true
-    #   run: |
-    #     ls -al
-    #     echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+        echo "Model file found. File size:"
+        ls -lh "${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
 
-    # - name: test-print-llama-cli-response-with-metrics
-    #   if: env.TEST_LLAMA_CLI == 'true'
-    #   run: |
-    #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        # Start llama.cpp server using Docker
+        docker run -d \
+          --name llama-server \
+          -p ${{env.LLAMA_SERVER_PORT}}:${{env.LLAMA_SERVER_PORT}} \
+          -v "$(pwd)/${{env.MODEL_DOWNLOAD_DIR}}:/models" \
+          ghcr.io/ggml-org/llama.cpp:server \
+          -m /models/${{ env.TARGET_REPO_ID }}/${{env.BASE_FNAME_QUANTIZED_GGUF}} \
+          --host 0.0.0.0 \
+          --port ${{env.LLAMA_SERVER_PORT}} \
+          -c 4096
 
-    - name: test-llama-cli-response-with-regex-word-match
-      if: env.TEST_LLAMA_CLI == 'true'
-      run: |
-        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
-        echo "Full Python Output: $python_output"
+        # Wait for server to be ready by checking docker logs
+        echo "Waiting for llama.cpp server to start..."
+        TIMEOUT=180
+        ELAPSED=0
 
-        # Extract the last line of the output, which contains "true" or "false"
-        return_value=$(echo "$python_output" | tail -n 1)
+        while [ $ELAPSED -lt $TIMEOUT ]; do
+          if docker logs llama-server 2>&1 | grep -q "main: server is listening"; then
+            echo "Server startup detected in logs!"
+            break
+          fi
+          echo "Waiting for server to start... ($ELAPSED seconds elapsed)"
+          sleep 5
+          ELAPSED=$((ELAPSED + 5))
+        done
 
-        # Use the extracted "boolean" string in a conditional
-        if [ "$return_value" = "true" ]; then
-          echo "[SUCCESS]: $python_output"
-        else
-          echo "[FAILURE]: $python_output"
+        # Check if we timed out
+        if [ $ELAPSED -ge $TIMEOUT ]; then
+          echo "Timeout waiting for server to start"
+          echo "Server logs:"
+          docker logs llama-server
+          exit 1
         fi
+
+        # Give the server a bit more time to fully initialize
+        echo "Server detected, waiting 5 more seconds..."
+        sleep 5
+
+        # Final health check
+        echo "Performing health check..."
+        if curl -s http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health > /dev/null 2>&1; then
+          echo "Health check passed! Server is ready."
+        else
+          echo "Health check failed!"
+          echo "Server logs:"
+          docker logs llama-server
+          exit 1
+        fi
+
+    - name: Run Docker image for testing
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
+        UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
+        UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
+        IBM_COS_API_KEY: ${{ secrets.IBM_COS_API_KEY }}
+        IBM_COS_INSTANCE_ID: ${{ secrets.IBM_COS_INSTANCE_ID }}
+        IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
+        IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
+      run: |
+        # Create data directory for test results
+        mkdir -p data
+
+        # Run the Docker container with mounted run-config and env vars
+        docker run --rm \
+          --network host \
+          -v $(pwd)/run-config.json:/app/run-config.json \
+          -v $(pwd)/data:/app/data \
+          -e RUN_CONFIG_PATH=/app/run-config.json \
+          -e IBM_COS_API_KEY="${IBM_COS_API_KEY}" \
+          -e IBM_COS_INSTANCE_ID="${IBM_COS_INSTANCE_ID}" \
+          -e IBM_COS_ENDPOINT_URL="${IBM_COS_ENDPOINT_URL}" \
+          -e IBM_COS_BUCKET_NAME="${IBM_COS_BUCKET_NAME}" \
+          -e DATA_PATH=/app/data \
+          "us.icr.io/${UAT_REGISTRY_NAMESPACE}/${UAT_IMAGE_NAME}:${UAT_IMAGE_TAG}"
+
+        # Mark that Docker tests have run
+        echo "DOCKER_TESTS_RAN=true" >> $GITHUB_ENV
+
+    - name: Print test results
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        # List contents of data directory
+        echo "Contents of data directory:"
+        ls -la $(pwd)/data
+        echo ""
+
+        # Get all runtimes from run-config.json
+        RUNTIMES=$(jq -r 'keys[]' run-config.json)
+
+        if [ -z "$RUNTIMES" ]; then
+          echo "No runtimes found in run-config.json"
+          exit 0
+        fi
+
+        # Iterate through each runtime
+        for RUNTIME in $RUNTIMES; do
+          echo "========================================"
+          echo "Processing runtime: $RUNTIME"
+          echo "========================================"
+
+          # Read the output_file path from run-config.json for this runtime
+          OUTPUT_FILE_PATH=$(jq -r ".\"$RUNTIME\".output_file" run-config.json)
+
+          if [ "$OUTPUT_FILE_PATH" = "null" ] || [ -z "$OUTPUT_FILE_PATH" ]; then
+            echo "No output_file specified for runtime: $RUNTIME"
+            echo ""
+            continue
+          fi
+
+          echo "Output file path from config: $OUTPUT_FILE_PATH"
+
+          # Extract just the filename from the path
+          OUTPUT_FILENAME=$(basename "$OUTPUT_FILE_PATH")
+          echo "Output filename: $OUTPUT_FILENAME"
+
+          # Construct the actual path in $(pwd)/data/<filename>
+          RESULTS_FILE="$(pwd)/data/${OUTPUT_FILENAME}"
+          echo "Looking for results file: $RESULTS_FILE"
+
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "Expected results file not found: $RESULTS_FILE"
+            echo ""
+            continue
+          fi
+
+          echo "Test results file: $RESULTS_FILE"
+          echo "---"
+          jq . "$RESULTS_FILE"
+
+          echo ""
+          echo "=== Failed Tests for $RUNTIME ==="
+          FAILED_TESTS=$(jq -r '.results[] | select(.test_status == "Failed") | .test_name' "$RESULTS_FILE")
+
+          if [ -z "$FAILED_TESTS" ]; then
+            echo "No failed tests found!"
+          else
+            echo "$FAILED_TESTS"
+          fi
+          echo ""
+        done
+
+        echo "========================================"
+        echo "All runtimes processed"
+        echo "========================================"
+
+    - name: Print llama.cpp server logs
+      if: env.DEBUG == 'true' && env.DOCKER_TESTS_RAN == 'true'
+      run: |
+        echo "=== llama.cpp Server Logs ==="
+        docker logs llama-server
+
+    # ========================= Upload Docker test results as artifact ======================================
+
+    - name: Upload Docker test results artifact
+      if: env.DOCKER_TESTS_RAN == 'true'
+      id: artifact-upload-docker-results
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-docker-test-results
+        path: data/*.json
+
+    - name: Show Docker test results artifact ID
+      if: env.DOCKER_TESTS_RAN == 'true'
+      id: show-artifact-id-docker-results
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-docker-results.outputs.artifact-id }}'
 
     # ========================= Upload log as artifact ======================================
 
@@ -347,80 +596,3 @@ jobs:
     #     asset_path: ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     asset_name: ${{env.BASE_FNAME_RESPONSE_FILE}}
     #     asset_content_type: text/plain
-
-    # ========================= llama.cpp llama-server tests ======================================
-
-    # - name: test-llama-server-with-quantized-gguf
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   timeout-minutes: 10
-    #   run: |
-    #     echo "--------------------"
-    #     echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-    #     echo "--------------------"
-    #     echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
-    #     nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} &
-
-    # echo waiting for llama-server to start...
-    # retry_count=0
-    # max_retries=10
-    # while ! nc -v -z localhost ${{env.LLAMA_SERVER_PORT}} && [ $retry_count -lt $max_retries ]; do
-    #   echo "retry_count: $retry_count"
-    #   if [ $? -eq 0 ]; then
-    #     echo "Connection successful!"
-    #     break
-    #   else
-    #     echo "Connection failed, retrying..."
-    #     echo "sleeping 1 second..." && sleep 1
-    #     retry_count=$((retry_count + 1))
-    #   fi
-    # done
-
-    # - name: test-llama-server-connection
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     echo "testing llama-server connection: ${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}..."
-    #     echo "netstat:\n$(netstat -an -p tcp | grep ".${{env.LLAMA_SERVER_HOST}}")"
-
-    #     if nc -v -z ${{env.LLAMA_SERVER_HOST}} ${{env.LLAMA_SERVER_PORT}}; then
-    #       echo "SUCCESS: Connection to llama-server successful."
-    #     else
-    #       echo "Failure: Connection to llama-server failed."
-    #       # ps aux
-    #       exit 1
-    #     fi
-
-    # - name: test-llama-server-with-curl
-    #   timeout-minutes: 5
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     curl --request GET --url http://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/health
-    #     echo "TODO: Test for {"status":"ok"} from GET /health"
-    #     echo "${{env.LLAMA_REQUEST_PROMPT}}"
-    #     curl --request POST \
-    #       --url ttp://${{env.LLAMA_SERVER_HOST}}:${{env.LLAMA_SERVER_PORT}}/completion \
-    #       --header "Content-Type: application/json" \
-    #       --data '{ \
-    #         "prompt": "${{env.LLAMA_REQUEST_PROMPT}}", \
-    #         "n_predict": ${{env.LLAMA_REQUEST_N_PREDICT}}, \
-    #         "seed": ${{env.LLAMA_REQUEST_SEED}} \
-    #       }'
-    #     echo "TODO: Test for JSON response from POST /completion endpoint using jq"
-
-    # TODO:
-    # - name: kill-llama-server
-    #   if: env.TEST_LLAMA_SERVER == 'true'
-    #   run: |
-    #     echo "TODO: is netstat and ps commands to get PID and kill..."
-
-    # ========================= llama.cpp llama-run tests ======================================
-
-    # - name: test-llama-run
-    #   if: env.TEST_LLAMA_RUN == 'true'
-    #   timeout-minutes: 10
-    #   continue-on-error: true
-    #   run: |
-    #     echo "invoking llama-run to test inference..."
-    #     ${{env.LLAMA_RUN_BIN}} ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} -p ${{env.LLAMA_REQUEST_PROMPT}} ${{env.LLAMA_RUN_FLAGS}}
-    #     if [ $? -eq 1 ]; then
-    #       exit 1
-    #     fi
