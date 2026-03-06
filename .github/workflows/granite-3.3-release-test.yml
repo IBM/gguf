@@ -95,7 +95,7 @@ jobs:
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
   environment-setup:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     # Note: declaration of these outputs is essential to pass to the next job
     outputs:
       debug: ${{ steps.set-vars.outputs.debug }}
