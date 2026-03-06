@@ -1,0 +1,210 @@
+name: sign-model-in-hf-repo-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      sigstore_sts_client_secret:
+        required: true
+    inputs:
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      do_token_exchange:
+        type: boolean
+        required: false
+        default: false
+      debug:
+        type: boolean
+        required: false
+        default: false
+
+env:
+  EXT_GGUF: .gguf
+  MODEL_DOWNLOAD_DIR: models
+
+jobs:
+  sign-model-in-hf-repo:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          scripts/hf_model_upload.py
+          scripts/hf_model_file_exists.py
+          requirements.txt
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      if: ${{ github.event.inputs.debug }}
+      run: echo "$GITHUB_INPUTS"
+
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        quantization=${{inputs.quantization}}
+        if [ "${quantization:0:9}" = "fullname:" ]; then
+          echo "BASE_FNAME_QUANTIZED_GGUF=${quantization:9}" >> $GITHUB_ENV
+        else
+          echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        fi
+
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-3
+      run: |
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+
+    - name: verify-github-env
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 3 =================="
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    # Most models signature is being removed before they are uploaded.
+    # Some models are only generated once (*-f16.gguf, mmproj-model-f16.gguf)
+    # and need not be re-signed.
+    - name: test-signature-does-not-exist
+      run: |
+        signature=${{ env.BASE_FNAME_QUANTIZED_GGUF }}.sig
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${signature} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: signature for model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          echo setting environment variable: QUANTIZED_MODEL_SIGNATURE_EXISTS='false'...
+          echo "QUANTIZED_MODEL_SIGNATURE_EXISTS=false" >> $GITHUB_ENV
+        else
+          echo "SUCCESS: signature for model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo setting environment variable: QUANTIZED_MODEL_SIGNATURE_EXISTS='true'...
+          echo "QUANTIZED_MODEL_SIGNATURE_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-gguf-hf-hub-download
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.QUANTIZED_MODEL_SIGNATURE_EXISTS == 'false'
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+
+    - name: Install model signing tool and dependencies
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.QUANTIZED_MODEL_SIGNATURE_EXISTS == 'false'
+      run: |
+        pip install model_signing
+
+    - name: Get github OIDC token and maybe run token exchange
+      id: get-oidc-token
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.QUANTIZED_MODEL_SIGNATURE_EXISTS == 'false'
+      run: |
+        identity_token=$(
+          curl -H \
+            "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sigstore" \
+          | jq -r .value
+        )
+        #echo "Identity token from github"
+        #echo "${identity_token}" | base64
+        if [ ${{ inputs.do_token_exchange }} = true ]; then
+          if ! resjson=$(
+            curl 'https://sigstore.verify.ibm.com/oauth2/token' \
+              --header 'Content-Type: application/x-www-form-urlencoded' \
+              --data-urlencode 'client_id=sigstore' \
+              --data-urlencode "client_secret=${{ secrets.sigstore_sts_client_secret }}" \
+              --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:token-exchange' \
+              --data-urlencode "subject_token=${identity_token}" \
+              --data-urlencode 'subject_token_type=GitHubIdentityToken' -s \
+          ); then
+            echo "Error: ${resjson}"
+            exit 1
+          else
+            identity_token=$(echo ${resjson} | jq -r .access_token)
+            if [ "${identity_token}" = "null" ]; then
+              echo "Error: ${resjson}"
+              exit 1
+            fi
+          fi
+          #echo "Identity token from sigstore.verify.ibm.com"
+          #echo "${identity_token}" | base64
+        fi
+        echo "identity-token=$identity_token" >> $GITHUB_OUTPUT
+
+    - name: Sign the model
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.QUANTIZED_MODEL_SIGNATURE_EXISTS == 'false'
+      run: |
+        full_model_file=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
+        gguffile=$(basename "${full_model_file}")
+        signature=${gguffile}.sig
+
+        # Move to-be-signed file into a directory all for itself
+        work_dir=signingdir
+        mkdir "${work_dir}"
+        mv "${full_model_file}" "${work_dir}"
+
+        python -m model_signing sign sigstore \
+            --identity_token "${{ steps.get-oidc-token.outputs.identity-token }}" \
+            --signature "${signature}" \
+            "${work_dir}"
+
+        echo "SIGNATURE=${signature}" >> $GITHUB_ENV
+
+    - name: Upload new model signature
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.QUANTIZED_MODEL_SIGNATURE_EXISTS == 'false'
+      run: |
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.SIGNATURE}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
