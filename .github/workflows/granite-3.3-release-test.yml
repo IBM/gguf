@@ -35,12 +35,11 @@ env:
   # 'ibm-granite/granite-3.3-8b-base'
   # 'ibm-granite/granite-3.3-2b-instruct',
   # 'ibm-granite/granite-3.3-8b-instruct',
-  SOURCE_LANGUAGE_REPOS: >-
-    [
+  SOURCE_LANGUAGE_REPOS: "[
       'ibm-granite/granite-3.3-2b-base',
       'ibm-granite/granite-3.3-2b-instruct',
       'ibm-granite/granite-3.3-8b-instruct'
-    ]
+    ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
@@ -48,58 +47,49 @@ env:
   # 'Q6_K',
   # 'Q8_0',
   # 'F16'
-  TARGET_LANGUAGE_QUANTIZATIONS: >-
-    [
+  TARGET_LANGUAGE_QUANTIZATIONS: "[
       'F16'
-    ]
+    ]"
   # 'ibm-granite/granite-guardian-3.3-8b'
-  SOURCE_GUARDIAN_REPOS: >-
-    [
+  SOURCE_GUARDIAN_REPOS: "[
       'None'
-    ]
+    ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
-  TARGET_GUARDIAN_QUANTIZATIONS: >-
-    [
+  TARGET_GUARDIAN_QUANTIZATIONS: "[
       'None'
-    ]
+    ]"
   # 'ibm-granite/granite-vision-3.3-2b'
   # 'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
-  SOURCE_VISION_REPOS: >-
-    [
+  SOURCE_VISION_REPOS: "[
       'ibm-granite/granite-vision-3.3-2b'
-    ]
+    ]"
   # 'Q8_0',
   # 'F16'
-  TARGET_VISION_QUANTIZATIONS: >-
-    [
+  TARGET_VISION_QUANTIZATIONS: "[
       'Q5_K_M',
       'Q6_K',
       'Q8_0',
       'f16'
-    ]
+    ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
   # 'ibm-granite/granite-vision-3.3-2b-embedding'
-  SOURCE_EMBEDDING_REPOS: >-
-    [
+  SOURCE_EMBEDDING_REPOS: "[
       'None'
-    ]
+    ]"
   # 'Q4_K_M', 'Q8_0'
-  TARGET_EMBEDDING_QUANTIZATIONS: >-
-    [
+  TARGET_EMBEDDING_QUANTIZATIONS: "[
       'None'
-    ]
-  SOURCE_DOCLING_REPOS: >-
-    [
+    ]"
+  SOURCE_DOCLING_REPOS: "[
       'None'
-    ]
-  TARGET_DOCLING_QUANTIZATIONS: >-
-    [
+    ]"
+  TARGET_DOCLING_QUANTIZATIONS: "[
       'None'
-    ]
+    ]"
 
 jobs:
   # ===========================================================================
