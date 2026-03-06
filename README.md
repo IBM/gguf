@@ -328,19 +328,19 @@ env:
 
 ##### Automated Build Workflow (Recommended)
 
-A GitHub Actions workflow is available to automatically build llama.cpp binaries for both macOS and Ubuntu:
+A GitHub Actions workflow is available to automatically build llama.cpp binaries:
 
 1. Navigate to **Actions** → **Build llama.cpp Binaries**
 2. Click **Run workflow**
 3. Enter the llama.cpp version (commit hash or tag, e.g., `b8216`)
 4. Optionally provide a release tag to upload binaries as release assets
-5. Download the zip artifacts from the workflow run or release page
+5. Download the zip artifact from the workflow run or release page
 6. Extract binaries to the `bin/` directory
 
 **Benefits:**
-- Consistent build environment
+- Consistent build environment (Ubuntu)
 - Automated testing with smoke tests
-- Cross-platform builds (macOS and Ubuntu)
+- Minimal CMake flags for maximum compatibility
 - Zip packaging for easy distribution
 - 90-day artifact retention
 
@@ -352,17 +352,16 @@ If you prefer to build locally, clone and build the following llama.cpp binaries
 
 ###### Build intermediate CMake build files
 
-The following command will create the proper CMake `build` files for generating code that will run within both `macos` and `ubuntu` container images.  They also assure that the llama.cpp libraries will not attempt to use GPUs since the current GitHub Virtual Machines for both operating systems do not support this.
+The following command will create the proper CMake `build` files with minimal flags for maximum compatibility:
 
 ```
-cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
+cmake -B build -DBUILD_SHARED_LIBS=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
 ```
 
-**Note**: As flags have changed often, the following minimal set of flags MAY work but needs testing:
-
-```
-cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_NO_ACCELERATE=ON -DCMAKE_CROSSCOMPILING=TRUE
-```
+**Flag Explanations:**
+- `-DBUILD_SHARED_LIBS=OFF`: Build static libraries for portability
+- `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
+- `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
 
 ###### Build release binaries
 
@@ -379,7 +378,6 @@ Once built locally, copy the following files from your `build/bin` directory to 
 - llama-cli
 - llama-quantize
 - llama-server
-- llama-llava-cli
 - llama-mtmd-cli
 
 **Note:** Archive old binaries to `bin/archive/$(date +%Y-%m-%d)/` before updating.

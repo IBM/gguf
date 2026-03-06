@@ -6,21 +6,18 @@
 # 1. Go to GitHub Actions → Build llama.cpp Binaries → Run workflow
 # 2. Enter version: b8216 (or latest)
 # 3. Wait for build to complete
-# 4. Download artifacts and extract:
+# 4. Download artifact and extract:
 
-unzip llama-cpp-macOS-b8216.zip -d bin/
-# or
-unzip llama-cpp-Linux-b8216.zip -d bin/
+unzip llama-cpp-b8216.zip -d bin/
 ```
 
 ## What Gets Built
 
-5 binaries optimized for GitHub Actions runners:
+4 binaries optimized for GitHub Actions runners:
 
 - `llama-cli` - Inference CLI
 - `llama-quantize` - Quantization tool
 - `llama-server` - HTTP server
-- `llama-llava-cli` - LLaVA multimodal
 - `llama-mtmd-cli` - MTMD multimodal
 
 ## Common Tasks
@@ -29,13 +26,13 @@ unzip llama-cpp-Linux-b8216.zip -d bin/
 
 ```bash
 # 1. Run workflow with version "b8216" (or newer)
-# 2. Download both platform zips
+# 2. Download zip file
 # 3. Archive old binaries
 mkdir -p bin/archive/$(date +%Y-%m-%d)
 mv bin/llama-* bin/archive/$(date +%Y-%m-%d)/
 
 # 4. Extract new binaries
-unzip llama-cpp-macOS-b8216.zip -d bin/
+unzip llama-cpp-b8216.zip -d bin/
 chmod +x bin/llama-*
 ```
 
@@ -69,8 +66,8 @@ chmod +x bin/llama-*
 
 **Binary not working?**
 - Verify file permissions: `chmod +x bin/llama-*`
-- Check platform (macOS vs Linux)
 - Test with `--help` flag
+- Check if binary is compatible with your system
 
 ## More Information
 

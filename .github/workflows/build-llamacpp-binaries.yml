@@ -29,12 +29,8 @@ env:
 
 jobs:
   build-binaries:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, ubuntu-latest]
+    name: Build llama.cpp Binaries
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -56,16 +52,10 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using llama.cpp version: $VERSION"
 
-      - name: Install dependencies (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake
-
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          # CMake is pre-installed on macOS runners
           echo "CMake version:"
           cmake --version
 
@@ -81,8 +71,6 @@ jobs:
           cd llama.cpp
           cmake -B build \
             -DBUILD_SHARED_LIBS=OFF \
-            -DGGML_METAL=OFF \
-            -DGGML_NATIVE_DEFAULT=OFF \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DGGML_NO_ACCELERATE=ON \
             -DCMAKE_BUILD_TYPE=Release
@@ -99,7 +87,7 @@ jobs:
           ls -lh
           echo ""
           echo "Checking for required binaries..."
-          for binary in llama-cli llama-quantize llama-server llama-llava-cli llama-mtmd-cli; do
+          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -122,9 +110,6 @@ jobs:
           # Test llama-server
           ./llama-server --version || ./llama-server --help | head -5
 
-          # Test llama-llava-cli
-          ./llama-llava-cli --version || ./llama-llava-cli --help | head -5
-
           # Test llama-mtmd-cli
           ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
 
@@ -133,16 +118,16 @@ jobs:
       - name: Create zip archive
         run: |
           cd llama.cpp/build/bin
-          ZIP_NAME="llama-cpp-${{ runner.os }}-${{ steps.set_version.outputs.version }}.zip"
-          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-llava-cli llama-mtmd-cli
+          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}.zip"
+          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-mtmd-cli
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llama-cpp-binaries-${{ runner.os }}-${{ steps.set_version.outputs.version }}
-          path: llama.cpp/build/bin/llama-cpp-${{ runner.os }}-${{ steps.set_version.outputs.version }}.zip
+          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}
+          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}.zip
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
           if-no-files-found: error
 
@@ -156,11 +141,7 @@ jobs:
           cmake --version
           echo ""
           echo "=== Compiler version ==="
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            gcc --version
-          else
-            clang --version
-          fi
+          gcc --version
           echo ""
           echo "=== Build directory contents ==="
           find llama.cpp/build -type f -name "llama-*" -o -name "*.zip"
@@ -232,11 +213,9 @@ jobs:
           echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
           echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
-          echo "- llama-llava-cli" >> $GITHUB_STEP_SUMMARY
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Platforms" >> $GITHUB_STEP_SUMMARY
-          echo "- macOS (latest)" >> $GITHUB_STEP_SUMMARY
+          echo "## Platform" >> $GITHUB_STEP_SUMMARY
           echo "- Ubuntu (latest)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Artifacts" >> $GITHUB_STEP_SUMMARY

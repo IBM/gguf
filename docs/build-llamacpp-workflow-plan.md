@@ -22,36 +22,30 @@ This document outlines the plan for creating a GitHub Actions workflow to build 
 - **On release**: Automatically build when a new release is created
 - **Scheduled** (optional): Weekly builds to keep binaries up-to-date
 
-### Build Matrix Strategy
-Build on two platforms simultaneously:
-- `macos-latest` runner
+### Build Strategy
+Build on a single platform:
 - `ubuntu-latest` runner
 
 ### Required Binaries
 1. `llama-cli` - Command-line interface for inference
 2. `llama-quantize` - Model quantization tool
 3. `llama-server` - HTTP server for model serving
-4. `llama-llava-cli` - LLaVA multimodal interface
-5. `llama-mtmd-cli` - Multimodal (MTMD) interface
+4. `llama-mtmd-cli` - Multimodal (MTMD) interface
 
 ### CMake Build Configuration
 
-#### CMake Configuration Flags (from README)
+#### CMake Configuration Flags
 ```bash
 cmake -B build \
   -DBUILD_SHARED_LIBS=OFF \
-  -DGGML_METAL=OFF \
-  -DGGML_NATIVE_DEFAULT=OFF \
   -DCMAKE_CROSSCOMPILING=TRUE \
   -DGGML_NO_ACCELERATE=ON
 ```
 
 **Flag Explanations:**
 - `-DBUILD_SHARED_LIBS=OFF`: Build static libraries for portability
-- `-DGGML_METAL=OFF`: Disable Metal GPU support (not available in GitHub runners)
-- `-DGGML_NATIVE_DEFAULT=OFF`: Disable native CPU optimizations for broader compatibility
 - `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
-- `-DGGML_NO_ACCELERATE=ON`: Disable macOS Accelerate framework for consistency
+- `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
 
 #### Build Command
 ```bash
@@ -61,14 +55,13 @@ cmake --build build --config Release
 ### Workflow Steps
 
 #### Job: build-binaries
-**Matrix:** `[macos-latest, ubuntu-latest]`
+**Runner:** `ubuntu-latest`
 
 1. **Checkout repository**
    - Use `actions/checkout@v4`
 
 2. **Install dependencies**
-   - macOS: Ensure CMake is available (pre-installed)
-   - Ubuntu: Install build essentials and CMake
+   - Install build essentials and CMake
    ```bash
    sudo apt-get update
    sudo apt-get install -y build-essential cmake
@@ -84,8 +77,6 @@ cmake --build build --config Release
    ```bash
    cmake -B build \
      -DBUILD_SHARED_LIBS=OFF \
-     -DGGML_METAL=OFF \
-     -DGGML_NATIVE_DEFAULT=OFF \
      -DCMAKE_CROSSCOMPILING=TRUE \
      -DGGML_NO_ACCELERATE=ON
    ```
@@ -106,7 +97,6 @@ cmake --build build --config Release
    ./build/bin/llama-cli --version
    ./build/bin/llama-quantize --help
    ./build/bin/llama-server --version
-   ./build/bin/llama-llava-cli --version
    ./build/bin/llama-mtmd-cli --version
    ```
 
@@ -142,34 +132,22 @@ cmake --build build --config Release
 
 ### Workflow Artifacts (90-day retention)
 ```
-llama-cpp-binaries-macOS-b8216/
-└── llama-cpp-macOS-b8216.zip
-
-llama-cpp-binaries-Linux-b8216/
-└── llama-cpp-Linux-b8216.zip
+llama-cpp-binaries-b8216/
+└── llama-cpp-b8216.zip
 ```
 
 ### Zip Contents
 ```
-llama-cpp-macOS-b8216.zip:
+llama-cpp-b8216.zip:
 ├── llama-cli
 ├── llama-quantize
 ├── llama-server
-├── llama-llava-cli
-└── llama-mtmd-cli
-
-llama-cpp-Linux-b8216.zip:
-├── llama-cli
-├── llama-quantize
-├── llama-server
-├── llama-llava-cli
 └── llama-mtmd-cli
 ```
 
 ### Release Assets (permanent)
 When triggered with a release tag or on release event:
-- `llama-cpp-macos-b8216.zip`
-- `llama-cpp-linux-b8216.zip`
+- `llama-cpp-b8216.zip`
 
 ## Integration with Existing Workflows
 
@@ -183,8 +161,8 @@ Existing workflows use pre-built binaries from `bin/` directory:
 
 ### After Implementation
 1. **Manual workflow run** to build new binaries
-2. **Download zip artifacts** from workflow run or release assets
-3. **Extract binaries** to `bin/` directory manually or via script
+2. **Download zip artifact** from workflow run or release assets
+3. **Extract binaries** to `bin/` directory
 4. **Existing workflows** continue to use binaries from `bin/` directory
 
 ## Testing Strategy
@@ -212,23 +190,23 @@ A GitHub Actions workflow is available to build llama.cpp binaries:
 2. Click "Run workflow"
 3. Enter the llama.cpp version (commit hash or tag)
 4. Optionally provide a release tag to upload as release assets
-5. Download zip artifacts from the workflow run or release page
+5. Download zip artifact from the workflow run or release page
 
-The workflow builds binaries for both macOS and Ubuntu with flags optimized for GitHub Actions runners. Binaries are packaged as zip files for easy distribution.
+The workflow builds binaries on Ubuntu with minimal CMake flags for maximum compatibility. Binaries are packaged as a zip file for easy distribution.
 ```
 
 ## Future Enhancements
-1. Add Windows support if needed
+1. Add macOS or Windows builds if platform-specific binaries are needed
 2. Implement automatic version detection from llama.cpp releases
 3. Add performance benchmarks for built binaries
 4. Create reusable workflow for other repositories to use
 5. Add automated script to extract and update `bin/` directory
 
 ## Success Criteria
-- [ ] Workflow successfully builds all required binaries on both platforms
+- [ ] Workflow successfully builds all required binaries
 - [ ] Binaries pass smoke tests
-- [ ] Zip archives are created correctly
-- [ ] Workflow artifacts are uploaded with 90-day retention
-- [ ] Release assets are uploaded when release tag is provided
+- [ ] Zip archive is created correctly
+- [ ] Workflow artifact is uploaded with 90-day retention
+- [ ] Release asset is uploaded when release tag is provided
 - [ ] Documentation is clear and complete
 - [ ] Existing workflows continue to function with extracted binaries

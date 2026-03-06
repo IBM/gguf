@@ -6,13 +6,12 @@ The `build-llamacpp-binaries.yml` workflow automates the building of llama.cpp b
 
 ## Built Binaries
 
-The workflow builds the following 5 binaries:
+The workflow builds the following 4 binaries:
 
 1. **llama-cli** - Command-line interface for inference
 2. **llama-quantize** - Model quantization tool
 3. **llama-server** - HTTP server for model serving
-4. **llama-llava-cli** - LLaVA multimodal interface
-5. **llama-mtmd-cli** - Multimodal (MTMD) interface
+4. **llama-mtmd-cli** - Multimodal (MTMD) interface
 
 ## Trigger Methods
 
@@ -41,9 +40,8 @@ The workflow runs automatically every Sunday at 2 AM UTC to keep binaries up-to-
 
 1. Navigate to the workflow run in the Actions tab
 2. Scroll to the **Artifacts** section at the bottom
-3. Download the zip files:
-   - `llama-cpp-binaries-macOS-{version}.zip`
-   - `llama-cpp-binaries-Linux-{version}.zip`
+3. Download the zip file:
+   - `llama-cpp-binaries-{version}.zip`
 4. Artifacts are retained for 90 days
 
 ### From Release Assets
@@ -60,13 +58,10 @@ If the workflow was triggered with a release tag or on a release event:
 ### Extract to bin/ Directory
 
 ```bash
-# Download the appropriate zip for your platform
-unzip llama-cpp-macOS-b8216.zip -d bin/
+# Download and extract the zip file
+unzip llama-cpp-b8216.zip -d bin/
 
-# Or for Linux
-unzip llama-cpp-Linux-b8216.zip -d bin/
-
-# Make binaries executable (if needed)
+# Make binaries executable
 chmod +x bin/llama-*
 ```
 
@@ -87,24 +82,21 @@ unzip llama-cpp-macOS-b8216.zip -d bin/
 
 ### CMake Flags
 
-The workflow uses the following CMake flags for maximum compatibility with GitHub Actions runners:
+The workflow uses the following minimal CMake flags for maximum compatibility:
 
 ```bash
 cmake -B build \
   -DBUILD_SHARED_LIBS=OFF \          # Static linking for portability
-  -DGGML_METAL=OFF \                 # No Metal GPU support
-  -DGGML_NATIVE_DEFAULT=OFF \        # Broader CPU compatibility
   -DCMAKE_CROSSCOMPILING=TRUE \      # Maximum compatibility
-  -DGGML_NO_ACCELERATE=ON \          # Consistent across platforms
+  -DGGML_NO_ACCELERATE=ON \          # Consistent behavior
   -DCMAKE_BUILD_TYPE=Release         # Optimized release build
 ```
 
 ### Why These Flags?
 
 - **Static linking**: Ensures binaries work without external dependencies
-- **No GPU support**: GitHub Actions runners don't have GPU access
-- **Cross-compilation mode**: Produces binaries that work across different CPU architectures
-- **No Accelerate framework**: Ensures consistent behavior on macOS runners
+- **Cross-compilation mode**: Produces binaries that work across different environments
+- **No Accelerate**: Ensures consistent behavior without platform-specific optimizations
 
 ## Integration with Existing Workflows
 
@@ -175,10 +167,9 @@ If smoke tests fail but binaries built successfully:
 # 1. Trigger workflow manually with version b8216
 # (Use GitHub Actions UI)
 
-# 2. Download artifacts after workflow completes
+# 2. Download artifact after workflow completes
 cd ~/Downloads
-unzip llama-cpp-binaries-macOS-b8216.zip
-unzip llama-cpp-binaries-Linux-b8216.zip
+unzip llama-cpp-b8216.zip
 
 # 3. Navigate to repository
 cd /path/to/gguf
