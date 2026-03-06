@@ -17,11 +17,6 @@ on:
         required: false
         default: false
         type: boolean
-  release:
-    types: [created, published]
-  schedule:
-    # Run weekly on Sundays at 2 AM UTC to keep binaries up-to-date
-    - cron: '0 2 * * 0'
 
 env:
   LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
