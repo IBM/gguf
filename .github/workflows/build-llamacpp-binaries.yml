@@ -1,0 +1,253 @@
+name: Build llama.cpp Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      llama_cpp_version:
+        description: 'llama.cpp version (commit hash or tag)'
+        required: true
+        default: 'b8216'
+        type: string
+      release_tag:
+        description: 'Optional: Release tag to upload binaries as release assets'
+        required: false
+        type: string
+      debug:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
+  release:
+    types: [created, published]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC to keep binaries up-to-date
+    - cron: '0 2 * * 0'
+
+env:
+  LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
+  ARTIFACT_RETENTION_DAYS: 90
+
+jobs:
+  build-binaries:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set llama.cpp version
+        id: set_version
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # For scheduled runs, use the default version
+            VERSION="b8216"
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            # For release events, extract version from release tag
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            # For manual dispatch, use the input
+            VERSION="${{ inputs.llama_cpp_version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using llama.cpp version: $VERSION"
+
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # CMake is pre-installed on macOS runners
+          echo "CMake version:"
+          cmake --version
+
+      - name: Clone llama.cpp
+        run: |
+          git clone --depth 1 --branch ${{ steps.set_version.outputs.version }} ${{ env.LLAMA_CPP_REPO }}
+          cd llama.cpp
+          echo "Cloned llama.cpp at version: ${{ steps.set_version.outputs.version }}"
+          git log -1 --oneline
+
+      - name: Configure CMake
+        run: |
+          cd llama.cpp
+          cmake -B build \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DGGML_METAL=OFF \
+            -DGGML_NATIVE_DEFAULT=OFF \
+            -DCMAKE_CROSSCOMPILING=TRUE \
+            -DGGML_NO_ACCELERATE=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build binaries
+        run: |
+          cd llama.cpp
+          cmake --build build --config Release -j $(nproc 2>/dev/null || sysctl -n hw.ncpu)
+
+      - name: Verify binaries exist
+        run: |
+          cd llama.cpp/build/bin
+          echo "Built binaries:"
+          ls -lh
+          echo ""
+          echo "Checking for required binaries..."
+          for binary in llama-cli llama-quantize llama-server llama-llava-cli llama-mtmd-cli; do
+            if [ -f "$binary" ]; then
+              echo "✓ $binary found"
+            else
+              echo "✗ $binary NOT FOUND"
+              exit 1
+            fi
+          done
+
+      - name: Run smoke tests
+        run: |
+          cd llama.cpp/build/bin
+          echo "Running smoke tests..."
+
+          # Test llama-cli
+          ./llama-cli --version || ./llama-cli --help | head -5
+
+          # Test llama-quantize
+          ./llama-quantize --help | head -5
+
+          # Test llama-server
+          ./llama-server --version || ./llama-server --help | head -5
+
+          # Test llama-llava-cli
+          ./llama-llava-cli --version || ./llama-llava-cli --help | head -5
+
+          # Test llama-mtmd-cli
+          ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
+
+          echo "All smoke tests passed!"
+
+      - name: Create zip archive
+        run: |
+          cd llama.cpp/build/bin
+          ZIP_NAME="llama-cpp-${{ runner.os }}-${{ steps.set_version.outputs.version }}.zip"
+          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-llava-cli llama-mtmd-cli
+          echo "Created archive: $ZIP_NAME"
+          ls -lh "$ZIP_NAME"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama-cpp-binaries-${{ runner.os }}-${{ steps.set_version.outputs.version }}
+          path: llama.cpp/build/bin/llama-cpp-${{ runner.os }}-${{ steps.set_version.outputs.version }}.zip
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+          if-no-files-found: error
+
+      - name: Debug output
+        if: inputs.debug == true
+        run: |
+          echo "=== Environment ==="
+          uname -a
+          echo ""
+          echo "=== CMake version ==="
+          cmake --version
+          echo ""
+          echo "=== Compiler version ==="
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            gcc --version
+          else
+            clang --version
+          fi
+          echo ""
+          echo "=== Build directory contents ==="
+          find llama.cpp/build -type f -name "llama-*" -o -name "*.zip"
+
+  upload-release-assets:
+    name: Upload Release Assets
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && inputs.release_tag != '') ||
+      github.event_name == 'release'
+
+    steps:
+      - name: Set release tag
+        id: set_tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ inputs.release_tag }}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Using release tag: $TAG"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display artifact structure
+        run: |
+          echo "Downloaded artifacts:"
+          ls -R artifacts/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          # Find and copy zip files
+          find artifacts -name "*.zip" -exec cp {} release-assets/ \;
+          echo "Release assets prepared:"
+          ls -lh release-assets/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.set_tag.outputs.tag }}
+          files: release-assets/*.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  summary:
+    name: Build Summary
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# llama.cpp Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ inputs.llama_cpp_version || 'b8216' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-server" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-llava-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Platforms" >> $GITHUB_STEP_SUMMARY
+          echo "- macOS (latest)" >> $GITHUB_STEP_SUMMARY
+          echo "- Ubuntu (latest)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "Zip files are available as workflow artifacts (90-day retention) and can be downloaded from the Actions tab." >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.build-binaries.result }}" = "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **All builds completed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Some builds failed. Check the logs above.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+# Made with Bob

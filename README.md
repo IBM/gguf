@@ -326,9 +326,31 @@ env:
 
 #### llama.cpp
 
-Clone and build the following llama.cpp binaries using these build/link flags:
+##### Automated Build Workflow (Recommended)
 
-##### Build intermediate CMake build files
+A GitHub Actions workflow is available to automatically build llama.cpp binaries for both macOS and Ubuntu:
+
+1. Navigate to **Actions** → **Build llama.cpp Binaries**
+2. Click **Run workflow**
+3. Enter the llama.cpp version (commit hash or tag, e.g., `b8216`)
+4. Optionally provide a release tag to upload binaries as release assets
+5. Download the zip artifacts from the workflow run or release page
+6. Extract binaries to the `bin/` directory
+
+**Benefits:**
+- Consistent build environment
+- Automated testing with smoke tests
+- Cross-platform builds (macOS and Ubuntu)
+- Zip packaging for easy distribution
+- 90-day artifact retention
+
+For detailed usage instructions, see [Build llama.cpp Workflow Usage Guide](docs/build-llamacpp-workflow-usage.md).
+
+##### Manual Build (Alternative)
+
+If you prefer to build locally, clone and build the following llama.cpp binaries using these build/link flags:
+
+###### Build intermediate CMake build files
 
 The following command will create the proper CMake `build` files for generating code that will run within both `macos` and `ubuntu` container images.  They also assure that the llama.cpp libraries will not attempt to use GPUs since the current GitHub Virtual Machines for both operating systems do not support this.
 
@@ -342,7 +364,7 @@ cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OF
 cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_NO_ACCELERATE=ON -DCMAKE_CROSSCOMPILING=TRUE
 ```
 
-##### Build release binaries
+###### Build release binaries
 
 Use this command to build all llama.cpp tool binaries to `build/bin` directory:
 
@@ -350,15 +372,17 @@ Use this command to build all llama.cpp tool binaries to `build/bin` directory:
 cmake --build build --config Release
 ```
 
-##### Copy built binaries and push to `bin`
+###### Copy built binaries and push to `bin`
 
 Once built locally, copy the following files from your `build/bin` directory to this repository's `bin` directory:
 
 - llama-cli
 - llama-quantize
-- llama-run
 - llama-server
-- llama-llava-cli *(May no longer be needed/supported as of May 2025 as llava support has been rolled into general libs under multimodal support aka. `mtmd` )*
+- llama-llava-cli
+- llama-mtmd-cli
+
+**Note:** Archive old binaries to `bin/archive/$(date +%Y-%m-%d)/` before updating.
 
 ### Triggering a release
 
