@@ -1,9 +1,6 @@
 # gguf
 
-This repository provides an automated CI/CD process to convert, test and deploy IBM Granite models, in safetensor format, from the `ibm-granite` organization to versioned IBM GGUF collections in Hugging Face Hub under the [`ibm-research` organization](https://huggingface.co/collections/ibm-research). This includes:
-
-- [Granite 3.2 Models (GGUF)](https://huggingface.co/collections/ibm-research/granite-32-models-gguf-67bf411f8eb52909dde3532b)
-
+This repository provides an automated CI/CD process to convert, test and deploy IBM Granite models, in safetensor format, from the `ibm-granite` organization to IBM GGUF versions (with various supported quantizations) within model repositories respectively named with the `-GGUF` extension.  These GGUF model repositories are also included to the [Granite Quantized Model](https://huggingface.co/collections/ibm-granite/granite-quantized-models) collection for convenience.
 
 #### Topic index
 
@@ -22,22 +19,21 @@ This repository provides an automated CI/CD process to convert, test and deploy 
 
 ### Target IBM models for format conversion
 
-Format conversions (i.e., GGUF) and  quantizations will only be provided for canonically hosted model repositories hosted in an official IBM Huggingface organization.
-
-Currently, this includes the following organizations:
-
-- https://huggingface.co/ibm-granite
-- https://huggingface.co/ibm-research
+Format conversions (i.e., GGUF) and  quantizations will only be provided for  model repositories hosted within the official `ibm-granite` organization.
 
 Additionally, only a select set of IBM models from these orgs. will be converted based upon the following general criteria:
 
-- The IBM GGUF model needs to be referenced by an AI provider service as a "supported" model.
-    - *For example, a local AI provider service such as [Ollama](https://ollama.com/) or a hosted service such as [Replicate](https://replicate.com/).*
+- The IBM GGUF model can be supported by local or hosted model provider service that is an IBM partner.
+    - *For example, [Ollama](https://ollama.com/), [LM Studio](https://lmstudio.ai/) or a hosted service such as [Replicate](https://replicate.com/).*
+
+    This typically means the model's architecture is supported by the the following projects/libraries:
+    - [llama.cpp](https://github.com/ggml-org/llama.cpp)
+    - [Hugging Face Transformers](https://github.com/huggingface/transformers)
 
 - The GGUF model is referenced by a public blog, tutorial, demo, or other public use case.
     - Specifically, if the model is referenced in an  IBM [Granite Snack Cookbook](https://github.com/ibm-granite-community/granite-snack-cookbook)
 
-Select quantization will only be made available when:
+Select quantizations of a model will only be made available when:
 
 - **Small form-factor** is justified:
     - *e.g., Reduced model size intended running locally on small form-factor devices such as watches and mobile devices.*
