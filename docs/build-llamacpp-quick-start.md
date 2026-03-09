@@ -4,11 +4,11 @@
 
 ```bash
 # 1. Go to GitHub Actions → Build llama.cpp Binaries → Run workflow
-# 2. Enter version: b8216 (or latest)
+# 2. Enter version: b6808 (or latest)
 # 3. Wait for build to complete
 # 4. Download artifact and extract:
 
-unzip llama-cpp-b8216.zip -d bin/
+unzip llama-cpp-b6808.zip -d bin/
 ```
 
 ## What Gets Built
@@ -25,14 +25,14 @@ unzip llama-cpp-b8216.zip -d bin/
 ### Update to Latest Version
 
 ```bash
-# 1. Run workflow with version "b8216" (or newer)
+# 1. Run workflow with version "b6808" (or newer)
 # 2. Download zip file
 # 3. Archive old binaries
 mkdir -p bin/archive/$(date +%Y-%m-%d)
 mv bin/llama-* bin/archive/$(date +%Y-%m-%d)/
 
 # 4. Extract new binaries
-unzip llama-cpp-b8216.zip -d bin/
+unzip llama-cpp-b6808.zip -d bin/
 chmod +x bin/llama-*
 ```
 
@@ -40,7 +40,7 @@ chmod +x bin/llama-*
 
 ```bash
 # 1. Run workflow with:
-#    - version: b8216
+#    - version: b6808
 #    - release_tag: v1.0.0
 # 2. Binaries automatically attached to release
 # 3. Download from Releases page

@@ -6,7 +6,7 @@ on:
       llama_cpp_version:
         description: 'llama.cpp version (commit hash or tag)'
         required: true
-        default: 'b8216'
+        default: 'b6808'
         type: string
       release_tag:
         description: 'Optional: Release tag to upload binaries as release assets'
@@ -36,7 +36,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             # For scheduled runs, use the default version
-            VERSION="b8216"
+            VERSION="b6808"
           elif [ "${{ github.event_name }}" = "release" ]; then
             # For release events, extract version from release tag
             VERSION="${{ github.event.release.tag_name }}"
@@ -66,6 +66,8 @@ jobs:
           cd llama.cpp
           cmake -B build \
             -DBUILD_SHARED_LIBS=OFF \
+            -DGGML_METAL=OFF \
+            -DGGML_NATIVE_DEFAULT=OFF \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DGGML_NO_ACCELERATE=ON \
             -DCMAKE_BUILD_TYPE=Release
@@ -201,7 +203,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Build Information" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ inputs.llama_cpp_version || 'b8216' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ inputs.llama_cpp_version || 'b6808' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY

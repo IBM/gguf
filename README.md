@@ -283,44 +283,150 @@ For example, a `3.2` versioned release uses the following files which correspond
 - **Preview**: [.github/workflows/granite-3.2-release-preview-ibm-granite.yml](.github/workflows/granite-3.2-release-preview-ibm-granite.yml)
 - **Public**: [.github/workflows/granite-3.2-release-ibm-research.yml](.github/workflows/granite-3.2-release-ibm-research.yml)
 
-###### What to update
+###### Workflow Environment Variables
 
-The YAML GitHub workflow files have a few environment variables that may need to be updated to reflect which collections, models and quantizations should be included on the next, subsequent GitHub (tagged)release. Using the "Public" release YAML file as an example:
+The YAML GitHub workflow files use environment variables to control which model families are processed, which source repositories to convert, and which quantizations to generate. Below is a comprehensive guide using the `granite-4.0-tagged-test-release` workflow as an example.
+
+**Control Variables**
+
+These boolean flags enable or disable specific model family jobs:
 
 ```yaml
 env:
-  ENABLE_INSTRUCT_JOBS: false
-  ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: true
-  SOURCE_INSTRUCT_REPOS: "[
-    'ibm-granite/granite-3.2-2b-instruct',
-    ...
-  ]"
-  TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q4_K_M',
-    ...
-  ]"
-  SOURCE_GUARDIAN_REPOS: "[
-    'ibm-granite/granite-guardian-3.2-3b-a800m',
-    ...
-  ]"
-  TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'Q4_K_M',
-    ...
-  ]"
-  SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.2-2b',
-    ...
-  ]"
-  TARGET_VISION_QUANTIZATIONS: "[
-    'Q4_K_M',
-    ...
-  ]"
-  ...
+  DEBUG: true                      # Enable debug output in workflows
+  TRACE: false                     # Enable trace-level logging (very verbose)
+  ENABLE_LANGUAGE_JOBS: false      # Process language/instruct models
+  ENABLE_VISION_JOBS: false        # Process vision models
+  ENABLE_GUARDIAN_JOBS: false      # Process guardian models
+  ENABLE_EMBEDDING_JOBS: false     # Process embedding models
+  ENABLE_DOCLING_JOBS: true        # Process docling models
+```
+
+**Target Repository Configuration**
+
+These variables control where GGUF model repositories are uploaded and what collections to create:
+
+```yaml
+  TARGET_HF_REPO_NAME_EXT: -GGUF           # Suffix added to repo names
+  TARGET_HF_REPO_OWNER: <HF org. name>           # HuggingFace organization/user
+  TARGET_HF_REPO_PRIVATE: true             # true for private, false for public
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 ```
 
-**Note**: that the `COLLECTION_CONFIG` env. var. provides the relative path to the collection configuration file, which is located in the `resources/json` directory of the repository for the specific Granite release.
+**Artifact Configuration**
+
+These variables control workflow artifact storage:
+
+```yaml
+  DEFAULT_ARTIFACTS_DIR: 'artifacts'       # Directory for storing artifacts
+  ARTIFACT_LOGS_NAME: 'bvt-logs'          # Name for log artifacts
+  ARTIFACT_RESPONSES_NAME: 'bvt-responses' # Name for response artifacts
+  EXT_LOG: '.log.txt'                      # Log file extension
+  EXT_RESPONSE: '.response.txt'            # Response file extension
+```
+
+**Model Family Configuration**
+
+Each model family has two environment variables:
+1. `SOURCE_*_REPOS` - List of source HuggingFace repository IDs to convert
+2. `TARGET_*_QUANTIZATIONS` - List of quantization formats to generate
+
+**Language Models (Instruct)**
+
+```yaml
+  SOURCE_LANGUAGE_REPOS: "[
+      'ibm-granite/granite-4.0-8b',
+      'ibm-granite/granite-4.0-8b-base'
+    ]"
+  TARGET_LANGUAGE_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q8_0',
+      'F16'
+    ]"
+```
+
+**Guardian Models**
+
+```yaml
+  SOURCE_GUARDIAN_REPOS: "[
+      'ibm-granite/granite-guardian-3.3-8b'
+    ]"
+  TARGET_GUARDIAN_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
+    ]"
+```
+
+**Vision Models**
+
+```yaml
+  SOURCE_VISION_REPOS: "[
+      'ibm-granite/granite-vision-3.3-2b'
+    ]"
+  TARGET_VISION_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
+    ]"
+```
+
+**Embedding Models**
+
+```yaml
+  SOURCE_EMBEDDING_REPOS: "[
+      'ibm-granite/granite-embedding-125m-english'
+    ]"
+  TARGET_EMBEDDING_QUANTIZATIONS: "[
+      'Q8_0',
+      'F16'
+    ]"
+```
+
+**Docling Models**
+
+```yaml
+  SOURCE_DOCLING_REPOS: "[
+      'ibm-granite/granite-docling-258M'
+    ]"
+  TARGET_DOCLING_QUANTIZATIONS: "[
+      'Q8_0',
+      'F16'
+    ]"
+```
+
+**Disabling Model Families**
+
+To disable a model family, set its repos to `'None'`:
+
+```yaml
+  SOURCE_VISION_REPOS: "[
+      'None'
+    ]"
+  TARGET_VISION_QUANTIZATIONS: "[
+      'None'
+    ]"
+```
+
+**Available Quantization Types**
+
+Common quantization formats (from highest to lowest quality/size):
+- `F16` - Full 16-bit floating point (largest, highest quality)
+- `Q8_0` - 8-bit quantization
+- `Q6_K` - 6-bit k-quant
+- `Q5_K_M`, `Q5_K_S` - 5-bit k-quant (medium/small)
+- `Q4_K_M`, `Q4_K_S` - 4-bit k-quant (medium/small)
+- `Q3_K_L`, `Q3_K_M`, `Q3_K_S` - 3-bit k-quant (large/medium/small)
+- `Q2_K` - 2-bit quantization (smallest, lowest quality)
+
+**Important Notes:**
+- Array items must be properly indented (6 spaces from the start of the line)
+- Closing bracket must be indented (4 spaces from the start of the line)
+- Each repo ID must be a valid HuggingFace repository path
+- The `COLLECTION_CONFIG` file must exist and contain valid JSON mapping
+- Set `ENABLE_*_JOBS` to `false` to skip processing that model family entirely
 
 ### Updating Tools
 
@@ -332,7 +438,7 @@ A GitHub Actions workflow is available to automatically build llama.cpp binaries
 
 1. Navigate to **Actions** → **Build llama.cpp Binaries**
 2. Click **Run workflow**
-3. Enter the llama.cpp version (commit hash or tag, e.g., `b8216`)
+3. Enter the llama.cpp version (commit hash or tag, e.g., `b6808`)
 4. Optionally provide a release tag to upload binaries as release assets
 5. Download the zip artifact from the workflow run or release page
 6. Extract binaries to the `bin/` directory
@@ -355,11 +461,13 @@ If you prefer to build locally, clone and build the following llama.cpp binaries
 The following command will create the proper CMake `build` files with minimal flags for maximum compatibility:
 
 ```
-cmake -B build -DBUILD_SHARED_LIBS=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
+cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
 ```
 
 **Flag Explanations:**
 - `-DBUILD_SHARED_LIBS=OFF`: Build static libraries for portability
+- `-DGGML_METAL=OFF`: Disable Metal GPU acceleration (prevents "Illegal instruction" errors on systems without Metal support or in virtualized environments)
+- `-DGGML_NATIVE_DEFAULT=OFF`: Disable native CPU optimizations (prevents embedding CPU-specific instructions that may not be available on all target systems)
 - `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
 - `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
 
@@ -381,6 +489,98 @@ Once built locally, copy the following files from your `build/bin` directory to 
 - llama-mtmd-cli
 
 **Note:** Archive old binaries to `bin/archive/$(date +%Y-%m-%d)/` before updating.
+
+###### Manual Testing
+
+After building or downloading llama.cpp binaries, you can test them locally with GGUF models before running full CI/CD workflows.
+
+**Testing Language Models (Instruct)**
+
+Use `llama-cli` to test language/instruct models with a simple prompt:
+
+```bash
+./bin/llama-cli -no-cnv \
+  -m models/granite-3.3-8b-instruct-Q8_0.gguf \
+  -sys "You are a helpful assistant. Please ensure responses are professional, accurate, and safe." \
+  -p "Why is the sky blue according to science?" \
+  -n 128 \
+  --temp 0.8 \
+  --verbose \
+  --log-file test.log.txt 1>test.response.txt
+```
+
+**Parameters:**
+- `-m`: Path to the quantized GGUF model file
+- `-sys`: System prompt to set assistant behavior
+- `-p`: User prompt/question
+- `-n`: Maximum number of tokens to generate (128 for quick tests)
+- `--temp`: Temperature for sampling (0.8 for balanced creativity)
+- `--verbose`: Enable detailed logging
+- `--log-file`: Save detailed logs to file
+- `-no-cnv`: Disable conversation mode
+
+**Expected output:** The response should contain scientific terms like "Rayleigh", "scatter", or "atmosphere".
+
+**Testing Vision Models**
+
+Use `llama-mtmd-cli` to test vision models with image inputs:
+
+```bash
+./bin/llama-mtmd-cli \
+  -m models/granite-vision-3.3-2b-Q8_0.gguf \
+  --mmproj models/mmproj-model-f16.gguf \
+  -c 16384 \
+  -p "<|user|><image>What type of flowers are in this picture?<|assistant|>" \
+  --temp 0 \
+  --verbose \
+  --image test/images/cherry_blossom.jpg \
+  --log-file test-vision.log.txt 1>test-vision.response.txt
+```
+
+**Parameters:**
+- `-m`: Path to the quantized vision LLM GGUF file
+- `--mmproj`: Path to the multimodal projector model (f16 format)
+- `-c`: Context size (16384 for vision models)
+- `-p`: Prompt with `<image>` placeholder for image insertion
+- `--temp`: Temperature (0 for deterministic output in tests)
+- `--image`: Path to test image file
+- `--verbose`: Enable detailed logging
+- `--log-file`: Save detailed logs to file
+
+**Expected output:** The response should mention "cherry" and/or "blossoms" when analyzing the test image.
+
+**Testing Docling Models**
+
+Docling models use the same `llama-mtmd-cli` tool with document-specific prompts:
+
+```bash
+./bin/llama-mtmd-cli \
+  -m models/granite-docling-1b-Q8_0.gguf \
+  --mmproj models/mmproj-model-f16.gguf \
+  -c 16384 \
+  -p "<|user|><image>Extract the text from this document.<|assistant|>" \
+  --temp 0 \
+  --verbose \
+  --image test/images/old_newspaper.png \
+  --log-file test-docling.log.txt 1>test-docling.response.txt
+```
+
+**Verifying Test Results**
+
+Check the response files for expected content:
+
+```bash
+# Check word count
+wc -w test.response.txt
+
+# Search for expected keywords
+grep -i "rayleigh\|scatter\|atmosphere" test.response.txt
+
+# View full response
+cat test.response.txt
+```
+
+For vision/docling models, verify the response contains relevant image descriptions or extracted text.
 
 ### Triggering a release
 

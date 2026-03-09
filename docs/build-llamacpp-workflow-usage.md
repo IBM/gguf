@@ -22,7 +22,7 @@ Navigate to the Actions tab and manually trigger the workflow:
 1. Go to **Actions** → **Build llama.cpp Binaries**
 2. Click **Run workflow**
 3. Configure inputs:
-   - **llama_cpp_version**: Git commit hash or tag (e.g., `b8216`, `master`)
+   - **llama_cpp_version**: Git commit hash or tag (e.g., `b6808`, `master`)
    - **release_tag**: (Optional) Release tag to upload binaries as release assets
    - **debug**: Enable verbose debug output
 
@@ -59,7 +59,7 @@ If the workflow was triggered with a release tag or on a release event:
 
 ```bash
 # Download and extract the zip file
-unzip llama-cpp-b8216.zip -d bin/
+unzip llama-cpp-b6808.zip -d bin/
 
 # Make binaries executable
 chmod +x bin/llama-*
@@ -75,28 +75,59 @@ mkdir -p bin/archive/$(date +%Y-%m-%d)
 mv bin/llama-* bin/archive/$(date +%Y-%m-%d)/
 
 # Extract new binaries
-unzip llama-cpp-macOS-b8216.zip -d bin/
+unzip llama-cpp-macOS-b6808.zip -d bin/
 ```
 
 ## Build Configuration
 
 ### CMake Flags
 
-The workflow uses the following minimal CMake flags for maximum compatibility:
+The workflow uses the following CMake flags for maximum compatibility across GitHub Actions runners:
 
 ```bash
 cmake -B build \
   -DBUILD_SHARED_LIBS=OFF \          # Static linking for portability
-  -DCMAKE_CROSSCOMPILING=TRUE \      # Maximum compatibility
-  -DGGML_NO_ACCELERATE=ON \          # Consistent behavior
+  -DGGML_METAL=OFF \                 # Disable Metal GPU acceleration
+  -DGGML_NATIVE_DEFAULT=OFF \        # Disable native CPU optimizations
+  -DCMAKE_CROSSCOMPILING=TRUE \      # Cross-compilation compatibility mode
+  -DGGML_NO_ACCELERATE=ON \          # Disable Apple Accelerate framework
   -DCMAKE_BUILD_TYPE=Release         # Optimized release build
 ```
 
-### Why These Flags?
+### Compiler Flag Descriptions
 
-- **Static linking**: Ensures binaries work without external dependencies
-- **Cross-compilation mode**: Produces binaries that work across different environments
-- **No Accelerate**: Ensures consistent behavior without platform-specific optimizations
+#### `-DBUILD_SHARED_LIBS=OFF`
+**Purpose**: Static linking for portability
+**Effect**: Links all dependencies directly into the binary, eliminating runtime library dependencies. This ensures binaries work across different systems without requiring specific shared libraries to be installed.
+
+#### `-DGGML_METAL=OFF`
+**Purpose**: Disable Metal GPU acceleration
+**Effect**: Prevents compilation of Metal-specific code for Apple GPUs. This avoids "Illegal instruction" errors on systems without Metal support or in virtualized environments like GitHub Actions runners.
+
+#### `-DGGML_NATIVE_DEFAULT=OFF`
+**Purpose**: Disable native CPU optimizations
+**Effect**: Prevents the compiler from using CPU-specific instructions (like AVX512, SVE) that may not be available on all target systems. Ensures binaries work on older CPUs and virtualized environments.
+
+#### `-DCMAKE_CROSSCOMPILING=TRUE`
+**Purpose**: Cross-compilation compatibility mode
+**Effect**: Tells CMake to build for maximum compatibility rather than optimizing for the build machine. Prevents auto-detection of CPU features that may not exist on target systems.
+
+#### `-DGGML_NO_ACCELERATE=ON`
+**Purpose**: Disable Apple Accelerate framework
+**Effect**: Prevents use of Apple's optimized BLAS/LAPACK libraries. Ensures consistent behavior across different macOS versions and avoids framework-specific issues in CI environments.
+
+#### `-DCMAKE_BUILD_TYPE=Release`
+**Purpose**: Optimized release build
+**Effect**: Enables compiler optimizations (-O3) and strips debug symbols for smaller, faster binaries while maintaining portability.
+
+### Why These Flags Matter
+
+These flags are specifically chosen to prevent "Illegal instruction" errors that occur when binaries contain CPU instructions not supported by GitHub Actions runners:
+
+- **Prevents CPU instruction mismatches**: Older GitHub runners may not support advanced SIMD instructions (AVX512, SVE, etc.)
+- **Ensures cross-platform compatibility**: Binaries work on both local development machines and CI environments
+- **Avoids GPU-specific code**: GitHub runners typically don't have GPU access or Metal support
+- **Maximizes portability**: Binaries can run on a wide range of systems without modification
 
 ## Integration with Existing Workflows
 
@@ -141,7 +172,7 @@ If smoke tests fail but binaries built successfully:
 
 ### Recommended Versions
 
-- **Production**: Use stable release tags (e.g., `b8216`)
+- **Production**: Use stable release tags (e.g., `b6808`)
 - **Testing**: Use specific commit hashes for reproducibility
 - **Latest**: Use `master` branch (not recommended for production)
 
@@ -164,12 +195,12 @@ If smoke tests fail but binaries built successfully:
 ## Example: Complete Update Process
 
 ```bash
-# 1. Trigger workflow manually with version b8216
+# 1. Trigger workflow manually with version b6808
 # (Use GitHub Actions UI)
 
 # 2. Download artifact after workflow completes
 cd ~/Downloads
-unzip llama-cpp-b8216.zip
+unzip llama-cpp-b6808.zip
 
 # 3. Navigate to repository
 cd /path/to/gguf
@@ -190,7 +221,7 @@ ls -lh bin/llama-*
 
 # 8. Commit changes
 git add bin/
-git commit -m "Update llama.cpp binaries to version b8216"
+git commit -m "Update llama.cpp binaries to version b6808"
 git push
 ```
 
