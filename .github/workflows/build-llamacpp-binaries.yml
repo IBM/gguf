@@ -70,6 +70,9 @@ jobs:
             -DGGML_NATIVE_DEFAULT=OFF \
             -DCMAKE_CROSSCOMPILING=TRUE \
             -DGGML_NO_ACCELERATE=ON \
+            -DGGML_SVE=OFF \
+            -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic" \
+            -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic" \
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build binaries

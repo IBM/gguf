@@ -457,7 +457,15 @@ If you prefer to build locally, clone and build the following llama.cpp binaries
 The following command will create the proper CMake `build` files with minimal flags for maximum compatibility:
 
 ```
-cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OFF -DCMAKE_CROSSCOMPILING=TRUE -DGGML_NO_ACCELERATE=ON
+cmake -B build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DGGML_METAL=OFF \
+  -DGGML_NATIVE_DEFAULT=OFF \
+  -DCMAKE_CROSSCOMPILING=TRUE \
+  -DGGML_NO_ACCELERATE=ON \
+  -DGGML_SVE=OFF \
+  -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic" \
+  -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic"
 ```
 
 **Flag Explanations:**
@@ -466,6 +474,9 @@ cmake -B build -DBUILD_SHARED_LIBS=OFF -DGGML_METAL=OFF -DGGML_NATIVE_DEFAULT=OF
 - `-DGGML_NATIVE_DEFAULT=OFF`: Disable native CPU optimizations (prevents embedding CPU-specific instructions that may not be available on all target systems)
 - `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
 - `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
+- `-DGGML_SVE=OFF`: Disable ARM Scalable Vector Extension (SVE) instructions (prevents "Illegal instruction" errors on older ARM CPUs that don't support SVE)
+- `-DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic"`: Force baseline ARMv8-A architecture for C code (ensures compatibility across all ARMv8 CPUs)
+- `-DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic"`: Force baseline ARMv8-A architecture for C++ code (ensures compatibility across all ARMv8 CPUs)
 
 ###### Build release binaries
 
