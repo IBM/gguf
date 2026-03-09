@@ -58,7 +58,7 @@ env:
 
 jobs:
   convert-f16:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     timeout-minutes: 30
     env:
