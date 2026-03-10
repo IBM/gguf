@@ -475,8 +475,10 @@ cmake -B build \
 - `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
 - `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
 - `-DGGML_SVE=OFF`: Disable ARM Scalable Vector Extension (SVE) instructions (prevents "Illegal instruction" errors on older ARM CPUs that don't support SVE)
-- `-DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic"`: Force baseline ARMv8-A architecture for C code (ensures compatibility across all ARMv8 CPUs)
-- `-DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic"`: Force baseline ARMv8-A architecture for C++ code (ensures compatibility across all ARMv8 CPUs)
+- `-DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic"`: Compiler flags for C code:
+  - `-march=armv8-a`: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs: M1/M2/M3/M4, Graviton, etc.)
+  - `-mtune=generic`: Optimize for generic ARM processors (not chip-specific), ensuring reasonable performance across all ARM64 systems
+- `-DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic"`: Compiler flags for C++ code (same as C flags above)
 
 ###### Build release binaries
 

@@ -24,24 +24,8 @@ env:
 
 jobs:
   build-binaries:
-    name: Build llama.cpp Binaries (${{ matrix.os }})
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            platform: darwin-arm64
-            cmake_osx_arch: arm64
-            cmake_osx_target: "15.0"
-            cmake_system_name: Darwin
-            cmake_system_processor: arm64
-            cmake_crosscompiling: "TRUE"
-            cmake_flags: "-march=armv8-a -mtune=generic"
-          - os: ubuntu-latest
-            platform: linux-x86_64
-            cmake_flags: "-march=x86-64 -mtune=generic"
-            build_deps_cmd: "sudo apt-get update && sudo apt-get install -y build-essential"
-
-    runs-on: ${{ matrix.os }}
+    name: Build llama.cpp Binaries
+    runs-on: macos-latest
 
     steps:
       - name: Print CMake version
@@ -60,12 +44,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using llama.cpp version: $VERSION"
 
-      - name: Install build dependencies (Linux only)
-        if: startsWith(matrix.os, 'ubuntu') && matrix.build_deps_cmd != ''
-        run: |
-          echo "Installing build dependencies..."
-          ${{ matrix.build_deps_cmd }}
-
       - name: Verify environment
         run: |
           echo "CMake version:"
@@ -80,48 +58,40 @@ jobs:
           echo "Cloned llama.cpp at version: ${{ steps.set_version.outputs.version }}"
           git log -1 --oneline
 
-      - name: Configure CMake (macOS)
-        if: startsWith(matrix.os, 'macos')
+      - name: Configure CMake
         run: |
           cd llama.cpp
+          # Configure for ARM64 cross-compilation with maximum compatibility
+          # - Cross-compile from x86_64 macOS to ARM64 target
+          # - Target macOS 15 (Sequoia) as minimum deployment version
+          # - Disable all hardware acceleration for software-only operations
+          # - Use baseline ARMv8-A architecture for compatibility with all ARM64 CPUs
           cmake -B build \
-            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_osx_arch }} \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cmake_osx_target }} \
-            -DCMAKE_SYSTEM_NAME=${{ matrix.cmake_system_name }} \
-            -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.cmake_system_processor }} \
-            -DCMAKE_CROSSCOMPILING=${{ matrix.cmake_crosscompiling }} \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
+            -DCMAKE_SYSTEM_NAME=Darwin \
+            -DCMAKE_SYSTEM_PROCESSOR=arm64 \
+            -DCMAKE_CROSSCOMPILING=TRUE \
             -DBUILD_SHARED_LIBS=OFF \
             -DGGML_METAL=OFF \
             -DGGML_METAL_EMBED_LIBRARY=OFF \
             -DGGML_NATIVE_DEFAULT=OFF \
             -DGGML_NO_ACCELERATE=ON \
             -DGGML_ACCELERATE=OFF \
+            -DGGML_SVE=OFF \
             -DGGML_BLAS=OFF \
             -DGGML_CUDA=OFF \
             -DGGML_VULKAN=OFF \
             -DGGML_KOMPUTE=OFF \
             -DGGML_SYCL=OFF \
-            -DCMAKE_C_FLAGS="${{ matrix.cmake_flags }}" \
-            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic" \
+            -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic" \
             -DCMAKE_BUILD_TYPE=Release
 
-      - name: Configure CMake (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          cd llama.cpp
-          cmake -B build \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DGGML_METAL=OFF \
-            -DGGML_NATIVE_DEFAULT=OFF \
-            -DGGML_NO_ACCELERATE=ON \
-            -DGGML_BLAS=OFF \
-            -DGGML_CUDA=OFF \
-            -DGGML_VULKAN=OFF \
-            -DGGML_KOMPUTE=OFF \
-            -DGGML_SYCL=OFF \
-            -DCMAKE_C_FLAGS="${{ matrix.cmake_flags }}" \
-            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flags }}" \
-            -DCMAKE_BUILD_TYPE=Release
+          # Compiler flag explanation:
+          # -march=armv8-a: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
+          # -mtune=generic: Optimize for generic ARM processors (not chip-specific like M1/M2)
+          # Result: Binaries work on any ARMv8-A system (M1/M2/M3/M4, Graviton, etc.) with reasonable performance
 
       - name: Build binaries
         run: |
@@ -166,7 +136,7 @@ jobs:
       - name: Create zip archive
         run: |
           cd llama.cpp/build/bin
-          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}.zip"
+          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
           zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-mtmd-cli
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
@@ -174,8 +144,8 @@ jobs:
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}
-          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}.zip
+          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}-darwin-arm64
+          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
           if-no-files-found: error
 
