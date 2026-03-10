@@ -36,37 +36,38 @@ jobs:
             cmake_system_processor: arm64
             cmake_crosscompiling: "TRUE"
             cmake_flags: "-march=armv8-a -mtune=generic"
-            install_deps: "brew install cmake"
           - os: ubuntu-latest
-            platform: linux-arm64
-            cmake_flags: "-march=armv8-a -mtune=generic"
-            install_deps: "sudo apt-get update && sudo apt-get install -y build-essential cmake"
+            platform: linux-x86_64
+            cmake_flags: "-march=x86-64 -mtune=generic"
+            build_deps_cmd: "sudo apt-get update && sudo apt-get install -y build-essential"
 
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Print CMake version
+        run: |
+          set -e
+          echo "CMake version:"
+          cmake --version || { echo "ERROR: CMake not found or failed to execute"; exit 1; }
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set llama.cpp version
         id: set_version
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            # For scheduled runs, use the default version
-            VERSION="b6808"
-          elif [ "${{ github.event_name }}" = "release" ]; then
-            # For release events, extract version from release tag
-            VERSION="${{ github.event.release.tag_name }}"
-          else
-            # For manual dispatch, use the input
-            VERSION="${{ inputs.llama_cpp_version }}"
-          fi
+          VERSION="${{ inputs.llama_cpp_version }}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using llama.cpp version: $VERSION"
 
-      - name: Install dependencies
+      - name: Install build dependencies (Linux only)
+        if: startsWith(matrix.os, 'ubuntu') && matrix.build_deps_cmd != ''
         run: |
-          ${{ matrix.install_deps }}
+          echo "Installing build dependencies..."
+          ${{ matrix.build_deps_cmd }}
+
+      - name: Verify environment
+        run: |
           echo "CMake version:"
           cmake --version
           echo "System architecture:"
