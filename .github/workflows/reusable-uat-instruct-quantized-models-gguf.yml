@@ -152,7 +152,7 @@ env:
   TEST_LLAMA_RUN: false
   GH_ARTIFACT_RETENTION: 2
   # Docker test configuration
-  TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
+  UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
   MAX_WORKERS: 1
   MAX_TESTS: 10
 
@@ -295,7 +295,7 @@ jobs:
     - name: Create run-config file
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       env:
-        TESTS: ${{ inputs.tests || env.TESTS }}
+        UAT_TESTS: ${{ inputs.tests || env.UAT_TESTS }}
         MAX_WORKERS: ${{ inputs.max_workers || env.MAX_WORKERS }}
         MAX_TESTS: ${{ inputs.max_tests || env.MAX_TESTS }}
       run: |
@@ -316,7 +316,7 @@ jobs:
             "model": {
               "model_name": "${{ env.TARGET_REPO_ID }}"
             },
-            "tests": ${TESTS},
+            "tests": ${UAT_TESTS},
             "max_workers": ${MAX_WORKERS},
             "max_tests": ${MAX_TESTS},
             "output_file": "/app/data/${OUTPUT_FILE}"

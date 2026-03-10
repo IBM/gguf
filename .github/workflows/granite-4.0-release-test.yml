@@ -33,7 +33,7 @@ env:
   EXT_RESPONSE: '.response.txt'
 
   # Docker test configuration
-  TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
+  UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
   MAX_WORKERS: 1
   MAX_TESTS: 10
 
