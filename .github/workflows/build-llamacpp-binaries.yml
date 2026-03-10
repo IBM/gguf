@@ -176,10 +176,12 @@ jobs:
       - name: Set release tag
         id: set_tag
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            TAG="${{ github.event.release.tag_name }}"
+          # Always create release tag as "llama.cpp-{release_tag}"
+          if [ -n "${{ inputs.release_tag }}" ]; then
+            TAG="llama.cpp-${{ inputs.release_tag }}"
           else
-            TAG="${{ inputs.release_tag }}"
+            echo "ERROR: release_tag input is required for release uploads"
+            exit 1
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Using release tag: $TAG"
