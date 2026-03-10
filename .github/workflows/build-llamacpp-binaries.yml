@@ -24,8 +24,25 @@ env:
 
 jobs:
   build-binaries:
-    name: Build llama.cpp Binaries
-    runs-on: ubuntu-latest
+    name: Build llama.cpp Binaries (${{ matrix.os }})
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin-arm64
+            cmake_osx_arch: arm64
+            cmake_osx_target: "15.0"
+            cmake_system_name: Darwin
+            cmake_system_processor: arm64
+            cmake_crosscompiling: "TRUE"
+            cmake_flags: "-march=armv8-a -mtune=generic"
+            install_deps: "brew install cmake"
+          - os: ubuntu-24.04-arm64
+            platform: linux-arm64
+            cmake_flags: "-march=armv8-a -mtune=generic"
+            install_deps: "sudo apt-get update && sudo apt-get install -y build-essential cmake"
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -49,10 +66,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake
+          ${{ matrix.install_deps }}
           echo "CMake version:"
           cmake --version
+          echo "System architecture:"
+          uname -m
 
       - name: Clone llama.cpp
         run: |
@@ -61,18 +79,47 @@ jobs:
           echo "Cloned llama.cpp at version: ${{ steps.set_version.outputs.version }}"
           git log -1 --oneline
 
-      - name: Configure CMake
+      - name: Configure CMake (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          cd llama.cpp
+          cmake -B build \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake_osx_arch }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cmake_osx_target }} \
+            -DCMAKE_SYSTEM_NAME=${{ matrix.cmake_system_name }} \
+            -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.cmake_system_processor }} \
+            -DCMAKE_CROSSCOMPILING=${{ matrix.cmake_crosscompiling }} \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DGGML_METAL=OFF \
+            -DGGML_METAL_EMBED_LIBRARY=OFF \
+            -DGGML_NATIVE_DEFAULT=OFF \
+            -DGGML_NO_ACCELERATE=ON \
+            -DGGML_ACCELERATE=OFF \
+            -DGGML_BLAS=OFF \
+            -DGGML_CUDA=OFF \
+            -DGGML_VULKAN=OFF \
+            -DGGML_KOMPUTE=OFF \
+            -DGGML_SYCL=OFF \
+            -DCMAKE_C_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           cd llama.cpp
           cmake -B build \
             -DBUILD_SHARED_LIBS=OFF \
             -DGGML_METAL=OFF \
             -DGGML_NATIVE_DEFAULT=OFF \
-            -DCMAKE_CROSSCOMPILING=TRUE \
             -DGGML_NO_ACCELERATE=ON \
-            -DGGML_SVE=OFF \
-            -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic" \
-            -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic" \
+            -DGGML_BLAS=OFF \
+            -DGGML_CUDA=OFF \
+            -DGGML_VULKAN=OFF \
+            -DGGML_KOMPUTE=OFF \
+            -DGGML_SYCL=OFF \
+            -DCMAKE_C_FLAGS="${{ matrix.cmake_flags }}" \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cmake_flags }}" \
             -DCMAKE_BUILD_TYPE=Release
 
       - name: Build binaries
@@ -118,7 +165,7 @@ jobs:
       - name: Create zip archive
         run: |
           cd llama.cpp/build/bin
-          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}.zip"
+          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}.zip"
           zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-mtmd-cli
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
@@ -126,8 +173,8 @@ jobs:
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}
-          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}.zip
+          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}
+          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform }}.zip
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
           if-no-files-found: error
 
