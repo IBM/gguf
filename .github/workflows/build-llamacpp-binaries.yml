@@ -17,6 +17,11 @@ on:
         required: false
         default: false
         type: boolean
+      minimize_acceleration:
+        description: 'Disable all hardware acceleration for maximum compatibility'
+        required: false
+        default: false
+        type: boolean
 
 env:
   LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
@@ -61,32 +66,40 @@ jobs:
       - name: Configure CMake
         run: |
           cd llama.cpp
-          # Configure for ARM64 cross-compilation with maximum compatibility
+          # Configure for ARM64 cross-compilation
           # - Cross-compile from x86_64 macOS to ARM64 target
           # - Target macOS 15 (Sequoia) as minimum deployment version
-          # - Disable all hardware acceleration for software-only operations
           # - Use baseline ARMv8-A architecture for compatibility with all ARM64 CPUs
-          cmake -B build \
-            -DCMAKE_OSX_ARCHITECTURES=arm64 \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
-            -DCMAKE_SYSTEM_NAME=Darwin \
-            -DCMAKE_SYSTEM_PROCESSOR=arm64 \
-            -DCMAKE_CROSSCOMPILING=TRUE \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DGGML_METAL=OFF \
-            -DGGML_METAL_EMBED_LIBRARY=OFF \
-            -DGGML_NATIVE_DEFAULT=OFF \
-            -DGGML_NO_ACCELERATE=ON \
-            -DGGML_ACCELERATE=OFF \
-            -DGGML_SVE=OFF \
-            -DGGML_BLAS=OFF \
-            -DGGML_CUDA=OFF \
-            -DGGML_VULKAN=OFF \
-            -DGGML_KOMPUTE=OFF \
-            -DGGML_SYCL=OFF \
-            -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic" \
-            -DCMAKE_CXX_FLAGS="-march=armv8-a -mtune=generic" \
-            -DCMAKE_BUILD_TYPE=Release
+
+          # Base flags (always applied)
+          CMAKE_FLAGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=ON"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+
+          # Additional acceleration-disabling flags (only when minimize_acceleration is true)
+          if [ "${{ inputs.minimize_acceleration }}" = "true" ]; then
+            echo "Applying additional acceleration-disabling flags for maximum compatibility..."
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL_EMBED_LIBRARY=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_ACCELERATE=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_BLAS=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_CUDA=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_VULKAN=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_KOMPUTE=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SYCL=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
+          fi
+
+          # Execute cmake with all flags
+          eval cmake -B build $CMAKE_FLAGS
 
           # Compiler flag explanation:
           # -march=armv8-a: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
