@@ -10,6 +10,7 @@ This repository provides an automated CI/CD process to convert, test and deploy 
     - [Guardian](#guardian)
     - [Vision](#vision)
     - [Embedding](#embedding-dense)
+    - [Docling](#docling)
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
 - [GGUF Verification Testing](#gguf-verification-testing)
 - [References](#references)
@@ -43,9 +44,9 @@ Select quantizations of a model will only be made available when:
 
 Specifically, the following Granite model repositories are currently supported in GGUF format (by collection) with listed:
 
-###### Language
+##### Language
 
-Typically, this model category includes "instruct" models.
+Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description |
 | --- | --- | --- |
@@ -94,7 +95,7 @@ Typically, this model category includes "instruct" models.
 
 - Supported quantizations: `F16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
-###### Guardian
+##### Guardian
 
 | Source Repo. ID | Architecture (HF) | Architecture Description |
 | --- | --- | --- |
@@ -108,7 +109,7 @@ Typically, this model category includes "instruct" models.
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
-###### Vision
+##### Vision
 
 | Source Repo. ID | Architecture (HF) | Architecture Description |
 | --- | --- | --- |
@@ -118,7 +119,7 @@ Typically, this model category includes "instruct" models.
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
-###### Embedding (dense)
+##### Embedding (dense)
 
 | Source Repo. ID | Architecture (HF) | Architecture Description |
 | --- | --- | --- |
