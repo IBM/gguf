@@ -40,7 +40,7 @@ jobs:
           cmake --version || { echo "ERROR: CMake not found or failed to execute"; exit 1; }
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set llama.cpp version
         id: set_version
