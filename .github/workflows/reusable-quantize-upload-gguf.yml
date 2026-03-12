@@ -63,6 +63,15 @@ env:
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-2 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_FNAME_CONVERTED_GGUF: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-2 step
+
 jobs:
   quantize:
     runs-on: macos-latest

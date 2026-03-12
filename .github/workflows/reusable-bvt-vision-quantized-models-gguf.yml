@@ -62,6 +62,7 @@ env:
   QUANTIZED_MODEL_EXISTS: false
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   TEST_LLAMA_CLI: true
+  GH_ARTIFACT_RETENTION: 2
 
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
@@ -213,7 +214,7 @@ jobs:
         echo "[SUCCESS] ${{env.LLAMA_CLI_TOOL}} succeeded:"
         echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     - name: show-response
       run: |
