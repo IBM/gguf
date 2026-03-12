@@ -98,8 +98,8 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
           fi
 
-          # Save CMAKE_FLAGS for later use in README
-          echo "$CMAKE_FLAGS" > build/cmake_flags.txt
+          # Save CMAKE_FLAGS for later use in README (save before creating build dir)
+          echo "$CMAKE_FLAGS" > cmake_flags.txt
 
           # Execute cmake with all flags
           eval cmake -B build $CMAKE_FLAGS
@@ -157,7 +157,7 @@ jobs:
           cd llama.cpp/build/bin
 
           # Read the actual CMAKE_FLAGS that were used
-          CMAKE_FLAGS_USED=$(cat ../cmake_flags.txt)
+          CMAKE_FLAGS_USED=$(cat ../../cmake_flags.txt)
 
           # Format flags for better readability (one per line)
           CMAKE_FLAGS_FORMATTED=$(echo "$CMAKE_FLAGS_USED" | sed 's/ -D/\n-D/g' | sed 's/^-D/  -D/')
