@@ -118,7 +118,7 @@ jobs:
           ls -lh
           echo ""
           echo "Checking for required binaries..."
-          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli; do
+          for binary in llama-cli llama-quantize llama-server llama-run llama-mtmd-cli; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -141,6 +141,9 @@ jobs:
           # Test llama-server
           ./llama-server --version || ./llama-server --help | head -5
 
+          # Test llama-run
+          ./llama-run --version || ./llama-run --help | head -5
+
           # Test llama-mtmd-cli
           ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
 
@@ -150,7 +153,7 @@ jobs:
         run: |
           cd llama.cpp/build/bin
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
-          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-mtmd-cli
+          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-run llama-mtmd-cli
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
 
@@ -246,6 +249,7 @@ jobs:
           echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
           echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-run" >> $GITHUB_STEP_SUMMARY
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platform" >> $GITHUB_STEP_SUMMARY
