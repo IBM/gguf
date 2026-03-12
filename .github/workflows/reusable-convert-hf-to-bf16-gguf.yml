@@ -61,6 +61,17 @@ env:
   LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  EXT_PRECISION_GGUF: ""  # Set in confirm-environment step
+  EXT_PRECISION_MMPROJ_GGUF: ""  # Set in confirm-environment step
+  BASE_FNAME_MMPROJ_GGUF: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in download-safetensors-convert-to-gguf step
+  FNAME_CONVERTED_GGUF: ""  # Set in download-safetensors-convert-to-gguf step
+  HAS_PROJECTOR_MODEL: ""  # Set in download-safetensors-convert-to-gguf and convert-and-extract-mmproj-model steps
+  FNAME_MMPROJ_GGUF: ""  # Set in convert-and-extract-mmproj-model step
+
 jobs:
   convert-safetensor-to-gguf:
     runs-on: macos-latest
@@ -161,7 +172,7 @@ jobs:
     # find llama.cpp ${{env.FIND_ARGS}}
     - name: print-llamacpp
       run: |
-        echo "PATH: '{{$PATH}}'"
+        echo "PATH: '$PATH'"
         ls -al llama.cpp
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.

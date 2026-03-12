@@ -56,6 +56,17 @@ env:
   VISION_CONFIG: resources/json/granite-3.3/vision_config.json
   LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  LOCAL_MODEL_PATH: ""  # Set in set-github-env step
+  ENCODER_PATH: ""  # Set in set-github-env step
+  LLM_EXPORT_PATH: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_VISUAL_GGUF_F16: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_BF16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+
 jobs:
   convert-f16:
     runs-on: ubuntu-latest
@@ -181,7 +192,7 @@ jobs:
 
     - name: print-llamacpp
       run: |
-        echo "PATH: '{{$PATH}}'"
+        echo "PATH: '$PATH'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
 
