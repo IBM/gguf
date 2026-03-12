@@ -156,7 +156,7 @@ jobs:
           exit 2
         else
           echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
-          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
         fi
 
@@ -212,7 +212,7 @@ jobs:
           ls -al
           echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
           echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-         exit 1
+          exit 1
         fi
         echo "[SUCCESS] llama-cli succeeded:"
         echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
@@ -222,9 +222,9 @@ jobs:
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
-        python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}}
+        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}})
         echo "matched: '$matched'"
-        if [[ "$exists" == "False" ]]; then
+        if [[ "$matched" == "False" ]]; then
           echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-cli response."
           exit 1
         else
