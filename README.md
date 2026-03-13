@@ -23,31 +23,31 @@ This repository provides an automated CI/CD process to convert, test and deploy 
 
 ### Criteria for IBM Granite model format conversion and quantization
 
-Format conversions (i.e., GGUF) and  quantizations will only be provided for  model repositories hosted within the official `ibm-granite` organization.
+Format conversions (i.e., GGUF) and quantizations will only be provided for model repositories hosted within the official `ibm-granite` organization.
 
 Additionally, only a select set of IBM models from these orgs. will be converted based upon the following general criteria:
 
-- The IBM GGUF model can be supported by local or hosted model provider service that is an IBM partner.
+- The IBM GGUF model can be supported by a local or hosted model provider service that is an IBM partner.
     - *For example, [Ollama](https://ollama.com/), [LM Studio](https://lmstudio.ai/) or a hosted service such as [Replicate](https://replicate.com/).*
 
-    This typically means the model's architecture is supported by the the following projects/libraries:
+    This typically means the model's architecture is supported by the following projects/libraries:
     - [llama.cpp](https://github.com/ggml-org/llama.cpp)
     - [Hugging Face Transformers](https://github.com/huggingface/transformers)
 
 - The GGUF model is referenced by a public blog, tutorial, demo, or other public use case.
-    - Specifically, if the model is referenced in an  IBM [Granite Snack Cookbook](https://github.com/ibm-granite-community/granite-snack-cookbook)
+    - Specifically, if the model is referenced in an IBM [Granite Snack Cookbook](https://github.com/ibm-granite-community/granite-snack-cookbook)
 
 Select quantizations of a model will only be made available when:
 
 - **Small form-factor** is justified:
-    - *e.g., Reduced model size intended running locally especially on small form-factor devices such as watches and mobile devices.*
+    - *e.g., Reduced model size intended for running locally, especially on small form-factor devices such as watches and mobile devices.*
 - **Performance** provides significant benefit without compromising on accuracy (or enabling hallucination).
 
 ---
 
 ### Supported IBM Granite models (GGUF)
 
-Specifically, the following Granite model repositories are currently supported in GGUF format (by collection) with listed:
+Specifically, the following Granite model repositories are currently supported in GGUF format (by model type):
 
 #### Language
 
@@ -354,12 +354,12 @@ Each item represents a single source repository and contains the following field
 
 #### Release workflow files
 
-Each release type has a corresponding (parent, master) workflow that configures and controls which model family (i.e., `instruct` (language), `vision`, `guardian` and `embedding`) are executed for a given GitHub (tagged) release.
+Each release type has a corresponding (parent, master) workflow that configures and controls which model families (i.e., `language`, `vision`, `guardian`, `docling` and `embedding`) are executed for a given GitHub (tagged) release.
 
-For example, a `3.2` versioned release uses the following files which correspond to one of the release types (i.e., `Test` or `Public`):
+For example, a `3.3` versioned release uses the following files which correspond to one of the release types (i.e., `test` or `ibm-granite` for public):
 
-- **Test**: [.github/workflows/granite-3.2-release-test.yml](.github/workflows/granite-3.2-release-test.yml)
-- **Public**: [.github/workflows/granite-3.2-release-ibm-research.yml](.github/workflows/granite-3.2-release-ibm-research.yml)
+- **Test**: [.github/workflows/granite-3.3-release-test.yml](.github/workflows/granite-3.3-release-test.yml)
+- **Public**: [.github/workflows/granite-3.3-release-ibm-granite.yml](.github/workflows/granite-3.3-release-ibm-granite.yml)
 
 ###### Workflow Environment Variables
 
