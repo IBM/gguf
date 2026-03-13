@@ -40,7 +40,7 @@ Additionally, only a select set of IBM models from these orgs. will be converted
 Select quantizations of a model will only be made available when:
 
 - **Small form-factor** is justified:
-    - *e.g., Reduced model size intended running locally on small form-factor devices such as watches and mobile devices.*
+    - *e.g., Reduced model size intended running locally especially on small form-factor devices such as watches and mobile devices.*
 - **Performance** provides significant benefit without compromising on accuracy (or enabling hallucination).
 
 ---
