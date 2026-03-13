@@ -13,8 +13,8 @@ This repository provides an automated CI/CD process to convert, test and deploy 
     - [Docling](#docling)
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
 - [GGUF Verification Testing](#gguf-verification-testing)
-- [References](#references)
 - [Releasing GGUF model conversions & quantizations](#releasing-gguf-model-conversions--quantizations)
+- [References](#references)
 
 ---
 
@@ -117,7 +117,7 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) |
 | ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) |
 
-- Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
+- Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
 
 ##### Embedding (dense)
 
@@ -128,7 +128,7 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-embedding-107m-multilingual | Roberta | roberta-bpe |
 | ibm-granite/granite-embedding-278m-multilingual | Roberta | roberta-bpe |
 
-- Supported quantizations: `fp16`, `Q8_0`
+- Supported quantizations: `f16`, `Q8_0`
 
 **Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
 
@@ -138,7 +138,7 @@ Typically, this model category includes "base" and "instruct" models.
 | --- | --- | --- |
 | ibm-granite/granite-docling-258M | Idefics3ForConditionalGeneration (text: LlamaForCausalLM, vision: idefics3_vision) | idefics3 (text: llama, vision: idefics3_vision) |
 
-- Supported quantizations: `BF16`
+- Supported quantizations: `bf16`
 
 ###### RAG LoRA support**
 
@@ -209,42 +209,16 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 ---
 
-## References
-
-- GGUF format
-    - Huggingface: [GGUF](https://huggingface.co/docs/hub/gguf) - describes the format and some of the header structure.
-    - llama.cpp:
-        - [GGUF Quantization types (*`ggml_ftype`*)](https://github.com/ggerganov/llama.cpp/blob/master/ggml/include/ggml.h#L355) - `ggml/include/ggml.h`
-        - [GGUF Quantization types (*`LlamaFileType`*)](https://github.com/ggerganov/llama.cpp/blob/master/gguf-py/gguf/constants.py#L1480) - `gguf-py/gguf/constants.py`
-
-- GGUF Examples
-    - [llama.cpp/examples/quantize](https://github.com/ggerganov/llama.cpp/tree/master/examples/quantize#quantize)
-
-- GGUF tools
-    - [GGUF-my-repo](https://huggingface.co/spaces/ggml-org/gguf-my-repo) - Hugging Face space to build your own quants. without any setup. *(ref. by llama.cpp example docs.)*
-    - [CISCai/gguf-editor](https://huggingface.co/spaces/CISCai/gguf-editor) - batch conversion tool for HF model repos. GGUF models.
-
-- llama.cpp Tutorials
-    - [How to convert any HuggingFace Model to gguf file format?](https://www.geeksforgeeks.org/how-to-convert-any-huggingface-model-to-gguf-file-format/) - using the `llama.cpp/convert-hf-to-gguf.py` conversion script.
-
-- Ollama tutorials
-    - [Importing a model](https://github.com/ollama/ollama/blob/main/docs/import.md) - includes Safetensors, GGUF.
-    - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
-    - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
-
----
-
 ## Releasing GGUF model conversions & quantizations
 
 This repository uses GitHub workflows and actions to convert IBM Granite models hosted on Huggingface to GGUF format, quantize them, run build-verification tests on the resultant models and publish them to target GGUF collections in IBM owned Huggingface organizations (e.g., `ibm-research` and `ibm-granite`).
 
 ### Types of releases
 
-There are 3 types of releases that can be performed on this repository:
+There are 2 types of releases that can be performed on this repository:
 
 1. **Test** (private) - releases GGUF models to a test (or private) repo. on Huggingface.
-2. **Preview** (private) - releases GGUF models to a GGUF collection within the `ibm-granite` HF organization for time-limited access to select IBM partners (typically for pre-release testing and integration).
-3. **Public** - releases GGUF models to a public GGUF collection within the `ibm-research` HF organization for general use.
+2. **Public** - releases GGUF models to a public GGUF collection within the `ibm-granite` HF organization for general use.
 
 **Note**: *The Huggingface (HF) term "private" means that repos. and collections created in the target HF organization are only visible to organization contributors and not visible (or hidden) from normal users.*
 
@@ -258,7 +232,7 @@ Project maintainers for this repo. are able to access the secrets (tokens) that 
 
 [https://github.com/IBM/gguf/settings/secrets/actions](https://github.com/IBM/gguf/settings/secrets/actions)
 
-Secrets are used to authenticate with Github and Huggingface (HF) and are already configured for the `ibm-granite` and `ibm-research` HF organizations for "preview" and "public" release types.
+Secrets are used to authenticate with Github and Huggingface (HF) and are already configured for the `ibm-granite` HF organization for "public" release types.
 
 For "test" (or private) builds, users can fork the repo. and add a repository secret named `HF_TOKEN_TEST` with a token (value) created on their test (personal, private) HF organization account with appropriate privileges to allow write access to repos. and collections.
 
@@ -280,59 +254,104 @@ Originally, different IBM Granite releases had their own collection mapping file
 
 ###### What to update
 
-The JSON collection mapping files have the following structure using the "Public" release as an example:
+The JSON collection mapping files have the following structure:
 
 ```json
 {
     "collections": [
         {
-            "title": "Granite GGUF Models",
-            "description": "GGUF-formatted versions of IBM Granite models. Licensed under the Apache 2.0 license.",
+            "title": "Granite Quantized Models",
+            "description": "Quantized versions of IBM Granite models. Licensed under the Apache 2.0 license.",
             "items": [
                 {
                     "type": "model",
                     "family": "instruct",
-                    "repo_name": "granite-3.3-8b-instruct"
+                    "repo_name": "granite-3.3-8b-instruct",
+                    "default_quant": "q4_K_M"
                 },
-                ...
                 {
                     "type": "model",
                     "family": "vision",
-                    "repo_name": "granite-vision-3.2-2b"
+                    "repo_name": "granite-vision-3.3-2b",
+                    "default_quant": "q8_0",
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "vision_config": "VISION_CONFIG: resources/json/granite-3.3/vision_config.json"
                 },
-                ...
                 {
                     "type": "model",
                     "family": "guardian",
-                    "repo_name": "granite-guardian-3.2-3b-a800m"
+                    "repo_name": "granite-guardian-3.3-8b",
+                    "default_quant": "q6_K"
                 },
-                ...
                 {
                     "type": "model",
                     "family": "embedding",
-                    "repo_name": "granite-embedding-30m-english"
+                    "version": "3.2",
+                    "repo_name": "granite-embedding-30m-english",
+                    "default_quant": "f16"
                 },
-                ...
+                {
+                    "type": "model",
+                    "family": "docling",
+                    "repo_name": "granite-docling-258M",
+                    "default_quant": "bf16",
+                    "projector_model": "mmproj-model-f16.gguf"
+                },
+                {
+                    "type": "model",
+                    "size": "mini",
+                    "family": "instruct",
+                    "repo_name": "granite-4.0-8b",
+                    "default_quant": "q4_K_M",
+                    "is_latest": true
+                }
             ]
         }
     ]
 }
 ```
 
-Simple add a new object under the `items` array for each new IBM Granite repo. you want added to the corresponding (GGUF) collection.
+Simply add a new object under the `items` array for each new IBM Granite repo. you want added to the corresponding (GGUF) collection.
 
-Currently, the only HF item type supported is `model` and valid families (which have supported workflows) include: `instruct` (language), `vision`, `guardian` and `embedding`.
+**Collection fields:**
 
-**Note**: If you need to change the HF collection description, please know that *HF limits this string to **150 chars.** or less*.
+The top-level collection object contains the following fields:
+
+- `title`: The display name of the collection (i.e., "Granite Quantized Models").
+- `description`: A brief description of the collection and its contents. **Important:** Hugging Face limits collection descriptions to **150 characters or less**. Keep descriptions concise while clearly conveying the collection's purpose and licensing information.
+- `items`: An array of model objects to include in the collection
+
+**Supported item fields:**
+
+*Common fields (all model types):*
+- `type`: Currently only `"model"` is supported (required)
+- `family`: Valid families include `instruct` (language), `vision`, `guardian`, `embedding`, and `docling` (required)
+- `repo_name`: The repository name (required)
+- `default_quant`: Default quantization format (e.g., `q4_K_M`, `q8_0`, `f16`, `bf16`) (required)
+- `version`: Optional version identifier for models that need explicit versioning
+- `size`: Abstract size category (required for models without size designation in repo name). Used by partner registries like Ollama and Docker Model Factory for standardized naming. Valid values from `get_partner_model_name.py`:
+  - `nano` - Smallest models (~350M-1B parameters)
+  - `micro` - Very small models (~3B parameters)
+  - `tiny` - Small models (~7B parameters, 1B active for MoE)
+  - `small` - Medium-small models
+  - `medium` - Medium models
+  - `large` - Large models
+  - `mini` - Mini models (~8B parameters)
+- `is_latest`: Boolean flag to mark the latest model in a series (optional)
+
+*Vision/Docling-specific fields:*
+- `projector_model`: Specifies the multimodal projector file (e.g., `mmproj-model-f16.gguf`) (required for vision/docling models)
+- `vision_config`: Path to vision configuration JSON file (e.g., `VISION_CONFIG: resources/json/granite-3.3/vision_config.json`) (optional)
+
+**Note:** The `size` field is used by the `get_partner_model_name.py` script to generate standardized model names for partner registries (Ollama, Docker Model Factory) when the model repository name doesn't include an explicit size designation. This ensures consistent naming conventions across different deployment platforms.
 
 #### Release workflow files
 
 Each release type has a corresponding (parent, master) workflow that configures and controls which model family (i.e., `instruct` (language), `vision`, `guardian` and `embedding`) are executed for a given GitHub (tagged) release.
 
-For example, a `3.2` versioned release uses the following files which correspond to one of the release types (i.e., `Test`, `Preview` or `Public`):
+For example, a `3.2` versioned release uses the following files which correspond to one of the release types (i.e., `Test` or `Public`):
 
 - **Test**: [.github/workflows/granite-3.2-release-test.yml](.github/workflows/granite-3.2-release-test.yml)
-- **Preview**: [.github/workflows/granite-3.2-release-preview-ibm-granite.yml](.github/workflows/granite-3.2-release-preview-ibm-granite.yml)
 - **Public**: [.github/workflows/granite-3.2-release-ibm-research.yml](.github/workflows/granite-3.2-release-ibm-research.yml)
 
 ###### Workflow Environment Variables
@@ -656,7 +675,6 @@ This section contains the steps required to successfully "trigger" a release wor
 1. Click the "Choose a tag" drop-down menu and enter a tag name that starts with one of the following strings relative to which release type you want to "trigger":
 
     - **Test**: `test-v3.3` (private HF org.)
-    - **Preview**: `preview-v3.3` (IBM Granite, private/hidden)
     - **Public**: `v3.3`  (IBM Granite)
 
     Treat these strings as "prefixes" which you must append a unique build version.  For example:
@@ -681,3 +699,254 @@ and look for the name of the `tag` you entered for the release (above) in the wo
 
 > [!NOTE]
 > It is common to occasionally see some jobs "fail" due to network or scheduling timeout errors.  In these cases, you can go into the failed workflow run and click on the "Re-run failed jobs" button to re-trigger the failed job(s).
+
+---
+
+## Partner Model Registries
+
+This section describes workflows and processes for publishing IBM Granite GGUF models to partner model registries such as Ollama and Docker Model Factory.
+
+### Ollama
+
+[Ollama](https://github.com/ollama/ollama) is a key model service provider supported by higher level frameworks and platforms (e.g., [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm), [LM Studio](https://github.com/lmstudio-ai) etc.). This repository provides automated workflows to build, test, and publish IBM Granite GGUF models to the Ollama registry.
+
+#### Ollama Publish Workflows
+
+The repository includes version-specific Ollama publish workflows (e.g., `ollama-publish-granite-3.3.yml`, `ollama-publish-granite-4.0.yml`) that orchestrate the entire process of creating and publishing models to Ollama. These workflows:
+
+- Are triggered by Git tags (e.g., `test-ollama-3.3*`, `ollama-4.0*`) or manual workflow dispatch
+- Support all model families: language/instruct, vision, guardian, embedding, and docling
+- Use a matrix strategy to process multiple models and quantizations in parallel
+- Call the reusable workflow `reusable-ollama-create-push-model.yml` for each model/quantization combination
+
+**Key Workflow Configuration:**
+
+Each workflow defines:
+- `SOURCE_*_REPOS`: Arrays of Hugging Face repository IDs to process (e.g., `ibm-granite/granite-3.3-8b-instruct`)
+- `SOURCE_*_QUANTIZATIONS`: Arrays of quantization formats to publish (e.g., `Q4_K_M`, `Q8_0`, `BF16`)
+- `TARGET_OLLAMA_ORG`: Target Ollama organization (typically `ibm`)
+- `ENABLE_*_JOBS`: Boolean flags to enable/disable specific model families
+- `ENABLE_OLLAMA_PUSH`: Master switch to enable actual pushing to Ollama registry
+
+#### Build, Test, and Release Process
+
+The `reusable-ollama-create-push-model.yml` workflow performs the following steps for each model:
+
+**1. Environment Setup**
+- Validates Ollama credentials before starting downloads
+- Generates standardized Ollama model names using `get_partner_model_name.py`
+- Determines if model requires a projector (for vision/docling models)
+
+**2. Model Download**
+- Downloads quantized GGUF model from Hugging Face using `hf_file_download.py`
+- Downloads multimodal projector model (f16) for vision/docling models
+- Verifies file existence before proceeding
+
+**3. Modelfile Creation**
+- Customizes README with model-specific information
+- Creates Ollama Modelfile using `create_ollama_model_file.py` with:
+  - Model file path
+  - Projector model path (if applicable)
+  - License file (Apache 2.0)
+  - Template file (chat format)
+  - System prompt file
+  - Parameters file (temperature, context size, etc.)
+
+**4. Local Testing**
+- Starts local Ollama server on macOS runner
+- Creates model from Modelfile using `ollama create`
+- Copies model to target organization namespace
+- Verifies model creation with `ollama list`
+
+**5. Publishing**
+- Pushes model to Ollama registry using `ollama push`
+- For default quantizations: creates and pushes additional tag without quantization suffix
+- Tracks push timing for monitoring
+
+**6. Cleanup**
+- Stops Ollama server
+- Cleans up temporary files
+
+#### Model Naming Convention
+
+Ollama model names are generated using the `get_partner_model_name.py` script, which:
+- Converts Hugging Face model names to Ollama-compatible format
+- Uses abstract size categories (nano, micro, tiny, small, medium, large, mini) from collection config
+- Follows pattern: `granite{version}[-{modality}]:{size}[-{arch}][-{modality}][-{language}][-{quantization}]`
+- Examples:
+  - `ibm/granite3.3:8b-instruct-q4_k_m` (non-default quantization)
+  - `ibm/granite3.3:8b` (default quantization, no suffix)
+  - `ibm/granite3.3-vision:2b-q8_0` (vision model)
+  - `ibm/granite4:nano-h` (hybrid architecture with abstract size)
+
+#### Supported Quantizations
+
+Ollama workflows support all standard GGUF quantizations plus the initial converted format:
+- Rounding: `q4_0`, `q4_1`, `q5_0`, `q5_1`, `q8_0`
+- K-means: `q2_K`, `q3_K_S`, `q3_K_M`, `q3_K_L`, `q4_K_S`, `q4_K_M`, `q5_K_S`, `q5_K_M`, `q6_K`
+- Full precision: `f16`, `bf16` (initial conversion format)
+
+**Note**: The workflow automatically appends the initial conversion quantization (typically `f16` or `bf16`) to the quantization matrix to ensure the base converted model is also published.
+
+#### Triggering Ollama Releases
+
+To trigger an Ollama release:
+
+1. Ensure GGUF models are already published to Hugging Face (via standard release workflows)
+2. Create a Git tag matching the workflow pattern (e.g., `ollama-4.0-rc-01`)
+3. Push the tag to trigger the workflow
+4. Monitor workflow progress at [https://github.com/IBM/gguf/actions](https://github.com/IBM/gguf/actions)
+
+Alternatively, use workflow dispatch to manually trigger a release from the Actions tab.
+
+#### Notes
+
+- *The official Ollama Docker image [ollama/ollama](https://hub.docker.com/r/ollama/ollama) is available on Docker Hub.*
+- Ollama does not yet support sharded GGUF models
+    - "Ollama does not support this yet. Follow this issue for more info: https://github.com/ollama/ollama/issues/5245"
+    - e.g., `ollama pull hf.co/Qwen/Qwen2.5-14B-Instruct-GGUF`
+- All Ollama workflows run on macOS runners for compatibility with Ollama's native tooling
+- Models are tested locally before being pushed to ensure they load correctly
+
+### Docker Model Factory
+
+[Docker Model Factory](https://github.com/docker/model-runner) enables packaging and distribution of GGUF models as Docker containers, making them easily deployable across different environments. This repository provides automated workflows to package, test, and publish IBM Granite GGUF models to Docker Hub.
+
+#### Docker Package Push Workflows
+
+The repository includes version-specific Docker package push workflows (e.g., `docker-package-push-granite-4.0-test.yml`) that orchestrate the entire process of packaging and publishing models to Docker Hub. These workflows:
+
+- Are triggered by Git tags (e.g., `test-docker-4.0*`) or manual workflow dispatch
+- Currently support language/instruct models (vision, guardian, embedding, and docling support planned)
+- Use a matrix strategy to process multiple models and quantizations in parallel
+- Call the reusable workflow `reusable-docker-package-push-model.yml` for each model/quantization combination
+
+**Key Workflow Configuration:**
+
+Each workflow defines:
+- `SOURCE_*_REPOS`: Arrays of Hugging Face repository IDs to process (e.g., `ibm-granite/granite-4.0-8b`)
+- `SOURCE_*_QUANTIZATIONS`: Arrays of quantization formats to publish (e.g., `Q5_K_M`, `BF16`)
+- `TARGET_DOCKERHUB_NAMESPACE`: Target Docker Hub namespace (typically `ibmcom`)
+- `TARGET_DOCKERHUB_REPOSITORY`: Target Docker Hub repository name
+- `ENABLE_*_JOBS`: Boolean flags to enable/disable specific model families
+- `ENABLE_DOCKER_PUSH`: Master switch to enable actual pushing to Docker Hub
+
+#### Build, Test, and Release Process
+
+The `reusable-docker-package-push-model.yml` workflow performs the following steps for each model:
+
+**1. Environment Setup**
+- Installs latest Docker engine with model plugin support
+- Clones and builds Docker Model Runner CLI from source
+- Authenticates with Docker Hub using provided credentials
+- Generates standardized Docker tags using `get_partner_model_name.py`
+
+**2. Docker Model Runner Installation**
+- Clones the [docker/model-runner](https://github.com/docker/model-runner) repository
+- Builds the Model Runner CLI tool (`model-cli`)
+- Installs the runner plugin into Docker
+- Verifies installation with `model-cli help`
+
+**3. Model Download**
+- Downloads quantized GGUF model from Hugging Face using `hf_file_download.py`
+- Verifies file existence before proceeding
+- Prepares absolute paths for Docker packaging
+
+**4. Model Packaging**
+- Uses `model-cli package` command to create Docker container image
+- Includes GGUF model file in the container
+- Adds Apache 2.0 license file to the image
+- Tags image with standardized naming convention
+
+**5. Publishing**
+- Pushes packaged model to Docker Hub using `--push` flag
+- For default quantizations: creates and pushes additional tag without quantization suffix
+- For latest models: creates and pushes `latest` tag
+- Tracks packaging and push operations in logs
+
+**6. Verification**
+- Checks if model is the default quantization using `is_model_quant_default.py`
+- Checks if model is marked as latest using `is_model_latest.py`
+- Reviews Docker logs with `model-cli logs`
+
+#### Model Naming Convention
+
+Docker model tags are generated using the `get_partner_model_name.py` script with `--partner docker` flag, which:
+- Converts Hugging Face model names to Docker-compatible uppercase tags
+- Uses abstract size categories from collection config
+- Follows pattern: `{SIZE}[-{ARCH}][-{MODALITY}][-{LANGUAGE}][-{QUANTIZATION}]`
+- Examples:
+  - `8B-Q5_K_M` (non-default quantization)
+  - `8B` (default quantization, no suffix)
+  - `NANO-H` (hybrid architecture with abstract size)
+  - `MICRO-H-BF16` (hybrid micro model with bf16 quantization)
+
+Full Docker image reference: `{namespace}/{repository}:{tag}`
+- Example: `ibmcom/granite4-test-2:8B-Q5_K_M`
+
+#### Supported Quantizations
+
+Docker workflows support all standard GGUF quantizations plus the initial converted format:
+- Rounding: `q4_0`, `q4_1`, `q5_0`, `q5_1`, `q8_0`
+- K-means: `q2_K`, `q3_K_S`, `q3_K_M`, `q3_K_L`, `q4_K_S`, `q4_K_M`, `q5_K_S`, `q5_K_M`, `q6_K`
+- Full precision: `f16`, `bf16` (initial conversion format)
+
+**Note**: The workflow automatically appends the initial conversion quantization (typically `bf16` for Granite 4.0 models) to the quantization matrix.
+
+#### Triggering Docker Releases
+
+To trigger a Docker Model Factory release:
+
+1. Ensure GGUF models are already published to Hugging Face (via standard release workflows)
+2. Create a Git tag matching the workflow pattern (e.g., `test-docker-4.0-rc-01`)
+3. Push the tag to trigger the workflow
+4. Monitor workflow progress at [https://github.com/IBM/gguf/actions](https://github.com/IBM/gguf/actions)
+
+Alternatively, use workflow dispatch to manually trigger a release from the Actions tab.
+
+#### Docker Model Usage
+
+Once published, models can be pulled and run using standard Docker commands:
+
+```bash
+# Pull the model
+docker pull ibmcom/granite4-test-2:8B-Q5_K_M
+
+# Run the model (example)
+docker run -p 8080:8080 ibmcom/granite4-test-2:8B-Q5_K_M
+```
+
+Refer to [Docker Model Runner documentation](https://github.com/docker/model-runner) for detailed usage instructions.
+
+#### Notes
+
+- All Docker workflows run on Ubuntu runners for compatibility with Docker tooling
+- Docker Model Runner CLI is built from source during each workflow run
+- Models are packaged with Apache 2.0 license included in the container
+- The `latest` tag is only applied to models marked with `is_latest: true` in the collection config and using the default quantization
+- Docker Hub credentials are managed via GitHub secrets (`DOCKER_USERNAME`, `DOCKERHUB_TOKEN`)
+
+---
+
+## References
+
+- GGUF format
+    - Huggingface: [GGUF](https://huggingface.co/docs/hub/gguf) - describes the format and some of the header structure.
+    - llama.cpp:
+        - [GGUF Quantization types (*`ggml_ftype`*)](https://github.com/ggerganov/llama.cpp/blob/master/ggml/include/ggml.h#L355) - `ggml/include/ggml.h`
+        - [GGUF Quantization types (*`LlamaFileType`*)](https://github.com/ggerganov/llama.cpp/blob/master/gguf-py/gguf/constants.py#L1480) - `gguf-py/gguf/constants.py`
+
+- GGUF Examples
+    - [llama.cpp/examples/quantize](https://github.com/ggerganov/llama.cpp/tree/master/examples/quantize#quantize)
+
+- GGUF tools
+    - [GGUF-my-repo](https://huggingface.co/spaces/ggml-org/gguf-my-repo) - Hugging Face space to build your own quants. without any setup. *(ref. by llama.cpp example docs.)*
+    - [CISCai/gguf-editor](https://huggingface.co/spaces/CISCai/gguf-editor) - batch conversion tool for HF model repos. GGUF models.
+
+- llama.cpp Tutorials
+    - [How to convert any HuggingFace Model to gguf file format?](https://www.geeksforgeeks.org/how-to-convert-any-huggingface-model-to-gguf-file-format/) - using the `llama.cpp/convert-hf-to-gguf.py` conversion script.
+
+- Ollama tutorials
+    - [Importing a model](https://github.com/ollama/ollama/blob/main/docs/import.md) - includes Safetensors, GGUF.
+    - [Use Ollama with any GGUF Model on Hugging Face Hub](https://huggingface.co/docs/hub/en/ollama)
+    - [Using Ollama models from Langchain](https://ollama.com/library/gemma2) - This example uses the `gemma2` model supported by Ollama.
