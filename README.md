@@ -257,7 +257,7 @@ Originally, different IBM Granite releases had their own collection mapping file
 
 - **Unified mapping**: (all release types) [resources/json/latest/hf_collection_mapping_gguf.json](resources/json/latest/hf_collection_mapping_gguf.json)
 
-###### What to update
+##### What to update
 
 The JSON collection mapping files have the following structure:
 
@@ -318,15 +318,17 @@ The JSON collection mapping files have the following structure:
 
 Simply add a new object under the `items` array for each new IBM Granite repo. you want added to the corresponding (GGUF) collection.
 
-**Collection fields:**
+###### Collection fields:
 
 The top-level collection object contains the following fields:
 
 - `title`: The display name of the collection (i.e., "Granite Quantized Models").
 - `description`: A brief description of the collection and its contents. **Important:** Hugging Face limits collection descriptions to **150 characters or less**. Keep descriptions concise while clearly conveying the collection's purpose and licensing information.
-- `items`: An array of model objects to include in the collection
+- `items`: An array of model objects to include in the collection.
 
-**Supported item fields:**
+###### Item fields:
+
+Each item represents a single source repository and contains the following fields:
 
 *Common fields (all model types):*
 - `type`: Currently only `"model"` is supported (required)
