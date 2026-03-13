@@ -344,7 +344,7 @@ Each item represents a single source repository and contains the following field
   - `medium` - Medium models
   - `large` - Large models
   - `mini` - Mini models (~8B parameters)
-- `is_latest`: Boolean flag to mark the latest model in a series (optional)
+- `is_latest`: Boolean flag to mark which model should receive the `latest` tag in Docker Hub. Used by Docker Model Factory workflows to identify the primary model for a given repository. Only one model should be marked as `is_latest: true` per repository, and it must use the default quantization. Base models are excluded from receiving the `latest` tag. (optional, defaults to `false`)
 
 *Vision/Docling-specific fields:*
 - `projector_model`: Specifies the multimodal projector file (e.g., `mmproj-model-f16.gguf`) (required for vision/docling models)
