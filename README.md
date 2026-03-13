@@ -361,7 +361,7 @@ For example, a `3.3` versioned release uses the following files which correspond
 - **Test**: [.github/workflows/granite-3.3-release-test.yml](.github/workflows/granite-3.3-release-test.yml)
 - **Public**: [.github/workflows/granite-3.3-release-ibm-granite.yml](.github/workflows/granite-3.3-release-ibm-granite.yml)
 
-###### Workflow Environment Variables
+##### Workflow Environment Variables
 
 The YAML GitHub workflow files use environment variables to control which model families are processed, which source repositories to convert, and which quantizations to generate. Below is a comprehensive guide using the `granite-4.0-tagged-test-release` workflow as an example.
 
