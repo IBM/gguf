@@ -14,6 +14,9 @@ This repository provides an automated CI/CD process to convert, test and deploy 
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
 - [GGUF Verification Testing](#gguf-verification-testing)
 - [Releasing GGUF model conversions & quantizations](#releasing-gguf-model-conversions--quantizations)
+- [Partner Registry Build, Test & Delivery](#partner-registry-build-test--delivery)
+  - [Ollama](#ollama)
+  - [Docker Model Factory](#docker-model-factory)
 - [References](#references)
 
 ---
@@ -702,9 +705,9 @@ and look for the name of the `tag` you entered for the release (above) in the wo
 
 ---
 
-## Partner Model Registries
+## Partner Registry Build, Test & Delivery
 
-This section describes workflows and processes for publishing IBM Granite GGUF models to partner model registries such as Ollama and Docker Model Factory.
+This section describes workflows and processes for building, testing, and delivering IBM Granite GGUF models to partner model registries such as Ollama and Docker Model Factory.
 
 ### Ollama
 
