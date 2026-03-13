@@ -258,6 +258,7 @@ jobs:
 
   language-quantize-upload-gguf:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -281,6 +282,7 @@ jobs:
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -363,6 +365,7 @@ jobs:
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
+    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -386,6 +389,7 @@ jobs:
 
   bvt-vision-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -468,6 +472,7 @@ jobs:
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -491,6 +496,7 @@ jobs:
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
+    if: ${{ always() && (needs.guardian-quantize-upload-gguf.result == 'success' || needs.guardian-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -573,6 +579,7 @@ jobs:
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
+    if: ${{ always() && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
