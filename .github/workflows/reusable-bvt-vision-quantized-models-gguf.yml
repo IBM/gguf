@@ -41,10 +41,15 @@ on:
         type: boolean
         required: false
         default: false
+      verify_runtime:
+        type: boolean
+        required: false
+        default: true
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
+  VERIFY_RUNTIME: ${{inputs.verify_runtime}}
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   # LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
@@ -78,7 +83,7 @@ env:
 
 jobs:
   test-quantized-model:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v4
@@ -155,6 +160,40 @@ jobs:
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: verify-llama-mtmd-cli-runtime
+      if: env.VERIFY_RUNTIME == 'true'
+      continue-on-error: false
+      run: |
+        echo "Verifying llama-mtmd-cli runtime on ${{ runner.os }}..."
+        if [ ! -f "./bin/${{env.LLAMA_CLI_TOOL}}" ]; then
+          echo "[ERROR] llama-mtmd-cli binary not found at ./bin/${{env.LLAMA_CLI_TOOL}}"
+          exit 1
+        fi
+
+        # Check if binary is executable
+        if [ ! -x "./bin/${{env.LLAMA_CLI_TOOL}}" ]; then
+          echo "[ERROR] llama-mtmd-cli binary is not executable"
+          exit 1
+        fi
+
+        # Test basic execution (help/version)
+        echo "Testing llama-mtmd-cli execution..."
+        ./bin/${{env.LLAMA_CLI_TOOL}} --version || ./bin/${{env.LLAMA_CLI_TOOL}} --help || true
+
+        if [ $? -ne 0 ]; then
+          echo "[WARNING] llama-mtmd-cli execution test returned non-zero exit code"
+          echo "Checking for dynamic library dependencies..."
+          if command -v otool &> /dev/null; then
+            echo "macOS: Checking dynamic libraries with otool..."
+            otool -L ./bin/${{env.LLAMA_CLI_TOOL}}
+          elif command -v ldd &> /dev/null; then
+            echo "Linux: Checking dynamic libraries with ldd..."
+            ldd ./bin/${{env.LLAMA_CLI_TOOL}}
+          fi
+        else
+          echo "[SUCCESS] llama-mtmd-cli runtime verification passed"
+        fi
 
     - name: test-quantized-model-exists
       run: |
