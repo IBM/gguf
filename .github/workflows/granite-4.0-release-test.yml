@@ -19,6 +19,7 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: true
+  USE_UAT_WORKFLOW: false
 
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
@@ -30,6 +31,11 @@ env:
   ARTIFACT_RESPONSES_NAME: 'bvt-responses'
   EXT_LOG: '.log.txt'
   EXT_RESPONSE: '.response.txt'
+
+  # Docker test configuration
+  UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
+  MAX_WORKERS: 1
+  MAX_TESTS: 10
 
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
@@ -118,6 +124,7 @@ jobs:
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
+      use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
@@ -146,6 +153,7 @@ jobs:
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_HF_REPO_OWNER: $TARGET_HF_REPO_OWNER"
             echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
+            echo "USE_UAT_WORKFLOW: $USE_UAT_WORKFLOW"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
@@ -153,6 +161,7 @@ jobs:
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "use_uat_workflow=$USE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -182,6 +191,7 @@ jobs:
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
+            echo "use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
@@ -288,7 +298,7 @@ jobs:
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
-    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'false' }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -311,9 +321,42 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  language-uat-quantized-gguf-models:
+    needs: [ environment-setup, language-quantize-upload-gguf ]
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
+    uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
+      UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
+      UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
+      UAT_IMAGE_TAG: ${{ secrets.UAT_IMAGE_TAG }}
+      IBM_COS_API_KEY: ${{ secrets.IBM_COS_API_KEY }}
+      IBM_COS_INSTANCE_ID: ${{ secrets.IBM_COS_INSTANCE_ID }}
+      IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
+      IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
+
   language-lm-eval-gguf-models:
-    needs: [ environment-setup, language-bvt-quantized-gguf-models ]
-    if: ${{ always() && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') }}
+    needs: [ environment-setup, language-bvt-quantized-gguf-models, language-uat-quantized-gguf-models ]
+    if: ${{ always() && ((needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') || (needs.language-uat-quantized-gguf-models.result == 'success' || needs.language-uat-quantized-gguf-models.result == 'skipped')) }}
     uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
     permissions:
       contents: write
@@ -341,6 +384,7 @@ jobs:
     needs: [
       environment-setup,
       language-bvt-quantized-gguf-models,
+      language-uat-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
@@ -785,6 +829,7 @@ jobs:
     needs: [
       environment-setup,
       language-bvt-quantized-gguf-models,
+      language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
     ]
@@ -807,6 +852,7 @@ jobs:
     needs: [
       environment-setup,
       language-bvt-quantized-gguf-models,
+      language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
     ]
