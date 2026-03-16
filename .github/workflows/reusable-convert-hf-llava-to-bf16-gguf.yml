@@ -45,7 +45,7 @@ on:
 # TODO: VISION_CONFIG is not currently used in this workflow (currently the config file loc. is hardcoded)
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # "f16"
+  DEF_PRECISION: "bf16" # use bf16 as f16 has some issues we have not been able to discern
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   EXT_NAME_BF16: "-bf16.gguf"
@@ -75,7 +75,8 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_TRANSFORMERS_VERSION: "4.51.3" # xv4.52.1 (x == does not work any longer)
+      HF_TRANSFORMERS_VERSION: "4.52.1" # "4.51.3" (good), xv4.52.1 (x == does not work any longer)
+      HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1" # Version where LlavaNextModel class initialization changed (last good version 4.51.3)
       LLAMA_CPP_VERSION: b7951 # Previously: b7951, *b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
     - uses: actions/checkout@v4
@@ -264,6 +265,32 @@ jobs:
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
         ls -al ${{ env.LLM_EXPORT_PATH }}
+
+    - name: fix-granite-architecture-in-config
+      if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
+      run: |
+        CONFIG_FILE="${{ env.LLM_EXPORT_PATH }}/config.json"
+
+        # Check if config.json exists
+        if [ ! -f "$CONFIG_FILE" ]; then
+          echo "Config file not found: $CONFIG_FILE"
+          exit 0
+        fi
+
+        echo "Transformers version ${{ env.HF_TRANSFORMERS_VERSION }} is >= ${{ env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}, checking architecture..."
+
+        # Check if architecture is "GraniteModel"
+        ARCHITECTURE=$(grep -o '"architectures"[[:space:]]*:[[:space:]]*\[[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
+        echo "Current architecture: $ARCHITECTURE"
+
+        if [ "$ARCHITECTURE" = "GraniteModel" ]; then
+          echo "Found incorrect architecture 'GraniteModel', fixing to 'GraniteForCausalLM'..."
+          sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
+          echo "Architecture fixed. Updated config.json:"
+          grep -A 2 '"architectures"' "$CONFIG_FILE"
+        else
+          echo "Architecture is not 'GraniteModel', no fix needed"
+        fi
 
     - name: convert-vision-model-llm-to-gguf-bf16
       run: |
