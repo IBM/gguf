@@ -285,21 +285,26 @@ jobs:
         echo "=========================================="
 
         # Extract architecture from config.json
-        ARCHITECTURE=$(grep -o '"architectures"[[:space:]]*:[[:space:]]*\[[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
-        echo "Current architecture: $ARCHITECTURE"
+        # Force no color and strip any ANSI codes that might be present
+        ARCHITECTURE=$(GREP_COLORS='' grep --color=never -A 1 '"architectures"' "$CONFIG_FILE" | grep --color=never -o '"[^"]*"' | tail -1 | tr -d '"' | sed $'s/\x1b\\[[0-9;]*m//g' | sed $'s/\x1b\\[K//g')
+        echo "Extracted architecture: '$ARCHITECTURE'"
+        echo "Architecture length: ${#ARCHITECTURE}"
 
-        # Check if architecture is "GraniteModel" (specific case)
+        # Debug: show the raw grep output
+        echo "Debug - raw architectures section:"
+        grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
+
+        # Check if architecture needs fixing
         if [ "$ARCHITECTURE" = "GraniteModel" ]; then
           echo "Found incorrect architecture 'GraniteModel', fixing to 'GraniteForCausalLM'..."
           sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
           echo "Architecture fixed. Updated config.json:"
-          grep -A 2 '"architectures"' "$CONFIG_FILE"
-        # Check if architecture is NOT "GraniteForCausalLM" (general case)
+          grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
         elif [ "$ARCHITECTURE" != "GraniteForCausalLM" ] && [ -n "$ARCHITECTURE" ]; then
           echo "Found architecture '$ARCHITECTURE', replacing with 'GraniteForCausalLM'..."
           sed -i "s/\"$ARCHITECTURE\"/\"GraniteForCausalLM\"/g" "$CONFIG_FILE"
           echo "Architecture fixed. Updated config.json:"
-          grep -A 2 '"architectures"' "$CONFIG_FILE"
+          grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
         else
           echo "Architecture is already 'GraniteForCausalLM', no fix needed"
         fi
