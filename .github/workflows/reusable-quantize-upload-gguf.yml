@@ -327,4 +327,6 @@ jobs:
       run: |
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "File size:"
+        ls -lh ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
