@@ -279,17 +279,29 @@ jobs:
 
         echo "Transformers version ${{ env.HF_TRANSFORMERS_VERSION }} is >= ${{ env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}, checking architecture..."
 
-        # Check if architecture is "GraniteModel"
+        # Print config.json contents before any logic
+        echo "=== Contents of config.json before fix ==="
+        cat "$CONFIG_FILE"
+        echo "=========================================="
+
+        # Extract architecture from config.json
         ARCHITECTURE=$(grep -o '"architectures"[[:space:]]*:[[:space:]]*\[[[:space:]]*"[^"]*"' "$CONFIG_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
         echo "Current architecture: $ARCHITECTURE"
 
+        # Check if architecture is "GraniteModel" (specific case)
         if [ "$ARCHITECTURE" = "GraniteModel" ]; then
           echo "Found incorrect architecture 'GraniteModel', fixing to 'GraniteForCausalLM'..."
           sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
           echo "Architecture fixed. Updated config.json:"
           grep -A 2 '"architectures"' "$CONFIG_FILE"
+        # Check if architecture is NOT "GraniteForCausalLM" (general case)
+        elif [ "$ARCHITECTURE" != "GraniteForCausalLM" ] && [ -n "$ARCHITECTURE" ]; then
+          echo "Found architecture '$ARCHITECTURE', replacing with 'GraniteForCausalLM'..."
+          sed -i "s/\"$ARCHITECTURE\"/\"GraniteForCausalLM\"/g" "$CONFIG_FILE"
+          echo "Architecture fixed. Updated config.json:"
+          grep -A 2 '"architectures"' "$CONFIG_FILE"
         else
-          echo "Architecture is not 'GraniteModel', no fix needed"
+          echo "Architecture is already 'GraniteForCausalLM', no fix needed"
         fi
 
     - name: convert-vision-model-llm-to-gguf-bf16
