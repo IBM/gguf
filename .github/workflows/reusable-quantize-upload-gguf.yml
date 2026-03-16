@@ -66,6 +66,8 @@ env:
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
   REPO_NAME: ""  # Set in set-github-env step
+  EXT_PRECISION_GGUF: ""  # Set in set-github-env step
+  BASE_FNAME_CONVERTED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-2 step
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-1 step
@@ -154,17 +156,17 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
-        echo "BASE_FNAME_CONVERTED_GGUF=${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_CONVERTED_GGUF=${{ env.REPO_NAME }}${{ env.EXT_PRECISION_GGUF }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{ inputs.quantization }}${{ env.EXT_GGUF }}" >> $GITHUB_ENV
+        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
     # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
     # or streaming will cause a SIGSEV error
     - name: set-derivative-env-vars-2
       run: |
-        echo "LOCAL_FNAME_CONVERTED_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/$BASE_FNAME_CONVERTED_GGUF" >> $GITHUB_ENV
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_CONVERTED_GGUF=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}/$BASE_FNAME_CONVERTED_GGUF" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{ env.BASE_FNAME_QUANTIZED_GGUF }}" >> $GITHUB_ENV
+        echo "TARGET_REPO_ID=${{ inputs.target_repo_owner }}/${{ env.REPO_NAME }}${{ inputs.target_repo_name_ext }}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
@@ -252,7 +254,7 @@ jobs:
     - name: print-llamacpp
       if: inputs.debug == true
       run: |
-        echo "PATH: '{{$PATH}}'"
+        echo "PATH: '$PATH'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
 

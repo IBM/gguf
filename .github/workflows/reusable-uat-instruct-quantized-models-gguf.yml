@@ -129,7 +129,7 @@ on:
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
-  DEBUG: ${{inputs.debug}}
+  DEBUG: ${{ inputs.debug }}
   # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   # LLAMA_REQUEST_SEED: 647063347
@@ -155,6 +155,17 @@ env:
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
   MAX_WORKERS: 1
   MAX_TESTS: 10
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  DOCKER_TESTS_RAN: ""  # Set in Run Docker image for testing step
 
 jobs:
   test-quantized-model:
@@ -216,18 +227,18 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
+        echo "TARGET_REPO_ID=${{ inputs.target_repo_owner }}/${{ env.REPO_NAME }}${{ inputs.target_repo_name_ext }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{ inputs.quantization }}${{ env.EXT_GGUF }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{ env.REPO_NAME }}-${{ inputs.quantization }}-${{ env.LLAMA_CLI_TOOL }}${{ inputs.ext_log }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{ env.REPO_NAME }}-${{ inputs.quantization }}-${{ env.LLAMA_CLI_TOOL }}${{ inputs.ext_response }}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
+        echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-3
       run: |
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{ env.LOCAL_MODEL_PATH }}/${{ env.BASE_FNAME_QUANTIZED_GGUF }}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |

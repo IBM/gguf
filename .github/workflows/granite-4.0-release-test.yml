@@ -298,7 +298,7 @@ jobs:
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
-    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'false' }}
+    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -322,8 +322,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   language-uat-quantized-gguf-models:
-    needs: [ environment-setup, language-quantize-upload-gguf ]
-    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
+    needs: [ environment-setup, language-bvt-quantized-gguf-models ]
+    if: ${{ always() && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
