@@ -1,0 +1,330 @@
+name: Build llama.cpp Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      llama_cpp_version:
+        description: 'llama.cpp version (commit hash or tag)'
+        required: true
+        default: 'b6808'
+        type: string
+      release_tag:
+        description: 'Optional: Release tag to upload binaries as release assets'
+        required: false
+        type: string
+      debug:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
+      minimize_acceleration:
+        description: 'Disable all hardware acceleration for maximum compatibility'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
+  ARTIFACT_RETENTION_DAYS: 90
+
+jobs:
+  build-binaries:
+    name: Build llama.cpp Binaries
+    runs-on: macos-latest
+
+    steps:
+      - name: Print CMake version
+        run: |
+          set -e
+          echo "CMake version:"
+          cmake --version || { echo "ERROR: CMake not found or failed to execute"; exit 1; }
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set llama.cpp version
+        id: set_version
+        run: |
+          VERSION="${{ inputs.llama_cpp_version }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using llama.cpp version: $VERSION"
+
+      - name: Verify environment
+        run: |
+          echo "CMake version:"
+          cmake --version
+          echo "System architecture:"
+          uname -m
+
+      - name: Clone llama.cpp
+        run: |
+          git clone --depth 1 --branch ${{ steps.set_version.outputs.version }} ${{ env.LLAMA_CPP_REPO }}
+          cd llama.cpp
+          echo "Cloned llama.cpp at version: ${{ steps.set_version.outputs.version }}"
+          git log -1 --oneline
+
+      - name: Configure CMake
+        run: |
+          cd llama.cpp
+          # Configure for ARM64 cross-compilation
+          # - Cross-compile from x86_64 macOS to ARM64 target
+          # - Target macOS 15 (Sequoia) as minimum deployment version
+          # - Use baseline ARMv8-A architecture for compatibility with all ARM64 CPUs
+
+          # Base flags (always applied)
+          CMAKE_FLAGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=ON"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
+          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+
+          # Additional acceleration-disabling flags (only when minimize_acceleration is true)
+          if [ "${{ inputs.minimize_acceleration }}" = "true" ]; then
+            echo "Applying additional acceleration-disabling flags for maximum compatibility..."
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL_EMBED_LIBRARY=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_ACCELERATE=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_BLAS=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_CUDA=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_VULKAN=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_KOMPUTE=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SYCL=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
+          fi
+
+          # Save CMAKE_FLAGS for later use in README (save before creating build dir)
+          echo "$CMAKE_FLAGS" > cmake_flags.txt
+
+          # Execute cmake with all flags
+          eval cmake -B build $CMAKE_FLAGS
+
+          # Compiler flag explanation:
+          # -march=armv8-a: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
+          # -mtune=generic: Optimize for generic ARM processors (not chip-specific like M1/M2)
+          # Result: Binaries work on any ARMv8-A system (M1/M2/M3/M4, Graviton, etc.) with reasonable performance
+
+      - name: Build binaries
+        run: |
+          cd llama.cpp
+          cmake --build build --config Release -j $(nproc 2>/dev/null || sysctl -n hw.ncpu)
+
+      - name: Verify binaries exist
+        run: |
+          cd llama.cpp/build/bin
+          echo "Built binaries:"
+          ls -lh
+          echo ""
+          echo "Checking for required binaries..."
+          for binary in llama-cli llama-quantize llama-server llama-run llama-mtmd-cli; do
+            if [ -f "$binary" ]; then
+              echo "✓ $binary found"
+            else
+              echo "✗ $binary NOT FOUND"
+              exit 1
+            fi
+          done
+
+      - name: Run smoke tests
+        run: |
+          cd llama.cpp/build/bin
+          echo "Running smoke tests..."
+
+          # Test llama-cli
+          ./llama-cli --version || ./llama-cli --help | head -5
+
+          # Test llama-quantize
+          ./llama-quantize --help | head -5
+
+          # Test llama-server
+          ./llama-server --version || ./llama-server --help | head -5
+
+          # Test llama-run
+          ./llama-run --version || ./llama-run --help | head -5
+
+          # Test llama-mtmd-cli
+          ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
+
+          echo "All smoke tests passed!"
+
+      - name: Create build information README
+        run: |
+          cd llama.cpp/build/bin
+
+          # Read the actual CMAKE_FLAGS that were used
+          CMAKE_FLAGS_USED=$(cat ../../cmake_flags.txt)
+
+          # Format flags for better readability (one per line)
+          CMAKE_FLAGS_FORMATTED=$(echo "$CMAKE_FLAGS_USED" | sed 's/ -D/\n-D/g' | sed 's/^-D/  -D/')
+
+          cat > BUILD_INFO.md << EOF
+          # llama.cpp Build Information
+
+          ## Build Details
+          - **llama.cpp Version**: ${{ steps.set_version.outputs.version }}
+          - **Build Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - **Platform**: macOS (darwin-arm64)
+          - **Architecture**: ARM64 (Apple Silicon compatible)
+          - **Minimum macOS Version**: 15.0 (Sequoia)
+
+          ## Input Parameters
+          - **llama_cpp_version**: \`${{ inputs.llama_cpp_version }}\`
+          - **minimize_acceleration**: \`${{ inputs.minimize_acceleration }}\`
+          - **debug**: \`${{ inputs.debug }}\`
+
+          ## CMake Compiler Flags Used
+          \`\`\`
+          $CMAKE_FLAGS_FORMATTED
+          \`\`\`
+
+          ## Compiler Flag Explanation
+          - **-march=armv8-a**: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
+          - **-mtune=generic**: Optimize for generic ARM processors (not chip-specific like M1/M2/M3/M4)
+          - **Result**: Binaries work on any ARMv8-A system (Apple Silicon, AWS Graviton, etc.) with reasonable performance
+
+          ## Included Binaries
+          - **llama-cli**: Main command-line inference tool
+          - **llama-quantize**: Model quantization tool
+          - **llama-server**: HTTP server for model inference
+          - **llama-run**: Simple inference runner
+          - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
+
+          ## Usage
+          All binaries are statically linked and should run on any macOS 15.0+ ARM64 system without additional dependencies.
+
+          ## Build Configuration Summary
+          - Cross-compiled from x86_64 macOS to ARM64 target
+          - Software-only operations (hardware acceleration settings per minimize_acceleration flag)
+          - Maximum compatibility across ARM64 platforms
+          - Static linking for portability
+
+          ---
+          Built with GitHub Actions workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+          echo "Created BUILD_INFO.md"
+          cat BUILD_INFO.md
+
+      - name: Create zip archive
+        run: |
+          cd llama.cpp/build/bin
+          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
+          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-run llama-mtmd-cli BUILD_INFO.md
+          echo "Created archive: $ZIP_NAME"
+          ls -lh "$ZIP_NAME"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}-darwin-arm64
+          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+          if-no-files-found: error
+
+      - name: Debug output
+        if: inputs.debug == true
+        run: |
+          echo "=== Environment ==="
+          uname -a
+          echo ""
+          echo "=== CMake version ==="
+          cmake --version
+          echo ""
+          echo "=== Compiler version ==="
+          gcc --version
+          echo ""
+          echo "=== Build directory contents ==="
+          find llama.cpp/build -type f -name "llama-*" -o -name "*.zip"
+
+  upload-release-assets:
+    name: Upload Release Assets
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'workflow_dispatch' && inputs.release_tag != '') ||
+      github.event_name == 'release'
+
+    steps:
+      - name: Set release tag
+        id: set_tag
+        run: |
+          # Always create release tag as "llama.cpp-{release_tag}"
+          if [ -n "${{ inputs.release_tag }}" ]; then
+            TAG="llama.cpp-${{ inputs.release_tag }}"
+          else
+            echo "ERROR: release_tag input is required for release uploads"
+            exit 1
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Using release tag: $TAG"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display artifact structure
+        run: |
+          echo "Downloaded artifacts:"
+          ls -R artifacts/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          # Find and copy zip files
+          find artifacts -name "*.zip" -exec cp {} release-assets/ \;
+          echo "Release assets prepared:"
+          ls -lh release-assets/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.set_tag.outputs.tag }}
+          files: release-assets/*.zip
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  summary:
+    name: Build Summary
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# llama.cpp Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ inputs.llama_cpp_version || 'b6808' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-server" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-run" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Platform" >> $GITHUB_STEP_SUMMARY
+          echo "- Ubuntu (latest)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "Zip files are available as workflow artifacts (90-day retention) and can be downloaded from the Actions tab." >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.build-binaries.result }}" = "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **All builds completed successfully!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Some builds failed. Check the logs above.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+# Made with Bob

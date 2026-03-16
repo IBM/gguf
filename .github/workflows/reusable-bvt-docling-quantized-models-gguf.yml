@@ -59,12 +59,25 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   TEST_LLAMA_CLI: true
+  GH_ARTIFACT_RETENTION: 2
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   LLAMA_REQUEST_TEST_IMAGE_GH_SS: "test/images/sample-text-screenshot.png"
   LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER: "test/images/old_newspaper.png"
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_CLI_REPEAT_PENALTY: 1.05
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LOCAL_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
 
 jobs:
   test-quantized-model:
@@ -78,7 +91,7 @@ jobs:
         echo "[INFO] >> run_id: '${{ github.run_id }}'"
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> event_type: '${{ github.event_type }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
@@ -145,6 +158,7 @@ jobs:
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+        echo "LOCAL_FNAME_MMPROJ_F16_GGUF='$LOCAL_FNAME_MMPROJ_F16_GGUF' (${{ env.LOCAL_FNAME_MMPROJ_F16_GGUF }})"
 
     - name: test-quantized-model-exists
       run: |
@@ -189,7 +203,6 @@ jobs:
       run: |
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
-        echo "env.LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
@@ -210,7 +223,7 @@ jobs:
         echo "[SUCCESS] llama-mtmd-cli succeeded:"
         echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     - name: test-llama-mtmd-cli-old-newspaper
       if: env.TEST_LLAMA_CLI == 'true'
@@ -219,7 +232,6 @@ jobs:
       run: |
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
-        echo "env.LOCAL_FNAME_MMPROJ_BF16_GGUF=${{env.LOCAL_FNAME_MMPROJ_BF16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
@@ -239,7 +251,7 @@ jobs:
         echo "[SUCCESS] llama-mtmd-cli succeeded:"
         echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
         echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.LLAMA_CLI_RESPONSE_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     # ========================= Upload log as artifact ======================================
 

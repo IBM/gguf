@@ -29,15 +29,15 @@ env:
   # 'mrutkows/granite-3.1-1b-a400m-instruct',
   # 'mrutkows/granite-3.1-3b-a800m-instruct'
   SOURCE_INSTRUCT_REPOS: "[
-    'mrutkows/granite-3.1-2b-base',
-    'mrutkows/granite-3.1-8b-base',
-    'mrutkows/granite-3.1-1b-a400m-base',
-    'mrutkows/granite-3.1-3b-a800m-base',
-    'mrutkows/granite-3.1-2b-instruct',
-    'mrutkows/granite-3.1-8b-instruct',
-    'mrutkows/granite-3.1-1b-a400m-instruct',
-    'mrutkows/granite-3.1-3b-a800m-instruct'
-  ]"
+      'mrutkows/granite-3.1-2b-base',
+      'mrutkows/granite-3.1-8b-base',
+      'mrutkows/granite-3.1-1b-a400m-base',
+      'mrutkows/granite-3.1-3b-a800m-base',
+      'mrutkows/granite-3.1-2b-instruct',
+      'mrutkows/granite-3.1-8b-instruct',
+      'mrutkows/granite-3.1-1b-a400m-instruct',
+      'mrutkows/granite-3.1-3b-a800m-instruct'
+    ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
@@ -45,42 +45,42 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_INSTRUCT_QUANTIZATIONS: "[
-    'Q2_K',
-    'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-    'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-    'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-    'Q6_K',
-    'Q8_0'
-  ]"
+      'Q2_K',
+      'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+      'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+      'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+      'Q6_K',
+      'Q8_0'
+    ]"
   # 'ibm-granite/granite-guardian-3.1-2b',
   # 'ibm-granite/granite-guardian-3.1-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'mrutkows/granite-guardian-3.1-2b',
-    'mrutkows/granite-guardian-3.1-8b'
-  ]"
+      'mrutkows/granite-guardian-3.1-2b',
+      'mrutkows/granite-guardian-3.1-8b'
+    ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'Q4_K_M',
-    'Q5_K_M',
-    'Q6_K',
-    'Q8_0'
-  ]"
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
+    ]"
   SOURCE_VISION_REPOS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   TARGET_VISION_QUANTIZATIONS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: false

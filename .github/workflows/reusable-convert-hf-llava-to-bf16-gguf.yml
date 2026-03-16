@@ -45,7 +45,7 @@ on:
 # TODO: VISION_CONFIG is not currently used in this workflow (currently the config file loc. is hardcoded)
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # "f16"
+  DEF_PRECISION: "bf16" # use bf16 as f16 has some issues we have not been able to discern
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   EXT_NAME_BF16: "-bf16.gguf"
@@ -56,15 +56,27 @@ env:
   VISION_CONFIG: resources/json/granite-3.3/vision_config.json
   LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  LOCAL_MODEL_PATH: ""  # Set in set-github-env step
+  ENCODER_PATH: ""  # Set in set-github-env step
+  LLM_EXPORT_PATH: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_VISUAL_GGUF_F16: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_BF16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+
 jobs:
   convert-f16:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     timeout-minutes: 30
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_TRANSFORMERS_VERSION: "4.51.3" # xv4.52.1 (x == does not work any longer)
+      HF_TRANSFORMERS_VERSION: "4.52.1" # "4.51.3" (good), xv4.52.1 (x == does not work any longer)
+      HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1" # Version where LlavaNextModel class initialization changed (last good version 4.51.3)
       LLAMA_CPP_VERSION: b7951 # Previously: b7951, *b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
     - uses: actions/checkout@v4
@@ -93,7 +105,7 @@ jobs:
         echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
         echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
         echo "[INFO] >> run_id: '${{ github.run_id }}'"
-        echo "[INFO] >> event_type: '${{ github.event_type }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
         echo "[INFO] >> event.: action: '${{ github.event.action }}'"
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
@@ -181,7 +193,7 @@ jobs:
 
     - name: print-llamacpp
       run: |
-        echo "PATH: '{{$PATH}}'"
+        echo "PATH: '$PATH'"
         ls -al llama.cpp
         find llama.cpp ${{env.FIND_ARGS}}
 
@@ -253,6 +265,49 @@ jobs:
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
         ls -al ${{ env.LLM_EXPORT_PATH }}
+
+    - name: fix-granite-architecture-in-config
+      if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
+      run: |
+        CONFIG_FILE="${{ env.LLM_EXPORT_PATH }}/config.json"
+
+        # Check if config.json exists
+        if [ ! -f "$CONFIG_FILE" ]; then
+          echo "Config file not found: $CONFIG_FILE"
+          exit 0
+        fi
+
+        echo "Transformers version ${{ env.HF_TRANSFORMERS_VERSION }} is >= ${{ env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}, checking architecture..."
+
+        # Print config.json contents before any logic
+        echo "=== Contents of config.json before fix ==="
+        cat "$CONFIG_FILE"
+        echo "=========================================="
+
+        # Extract architecture from config.json
+        # Force no color and strip any ANSI codes that might be present
+        ARCHITECTURE=$(GREP_COLORS='' grep --color=never -A 1 '"architectures"' "$CONFIG_FILE" | grep --color=never -o '"[^"]*"' | tail -1 | tr -d '"' | sed $'s/\x1b\\[[0-9;]*m//g' | sed $'s/\x1b\\[K//g')
+        echo "Extracted architecture: '$ARCHITECTURE'"
+        echo "Architecture length: ${#ARCHITECTURE}"
+
+        # Debug: show the raw grep output
+        echo "Debug - raw architectures section:"
+        grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
+
+        # Check if architecture needs fixing
+        if [ "$ARCHITECTURE" = "GraniteModel" ]; then
+          echo "Found incorrect architecture 'GraniteModel', fixing to 'GraniteForCausalLM'..."
+          sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
+          echo "Architecture fixed. Updated config.json:"
+          grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
+        elif [ "$ARCHITECTURE" != "GraniteForCausalLM" ] && [ -n "$ARCHITECTURE" ]; then
+          echo "Found architecture '$ARCHITECTURE', replacing with 'GraniteForCausalLM'..."
+          sed -i "s/\"$ARCHITECTURE\"/\"GraniteForCausalLM\"/g" "$CONFIG_FILE"
+          echo "Architecture fixed. Updated config.json:"
+          grep --color=never -A 2 '"architectures"' "$CONFIG_FILE"
+        else
+          echo "Architecture is already 'GraniteForCausalLM', no fix needed"
+        fi
 
     - name: convert-vision-model-llm-to-gguf-bf16
       run: |

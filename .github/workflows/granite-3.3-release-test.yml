@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
- contents: write
+ contents: read
  packages: read
 
 env:
@@ -36,10 +36,8 @@ env:
   # 'ibm-granite/granite-3.3-2b-instruct',
   # 'ibm-granite/granite-3.3-8b-instruct',
   SOURCE_LANGUAGE_REPOS: "[
-    'ibm-granite/granite-3.3-2b-base',
-    'ibm-granite/granite-3.3-2b-instruct',
-    'ibm-granite/granite-3.3-8b-instruct'
-  ]"
+      'None'
+    ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
@@ -48,48 +46,48 @@ env:
   # 'Q8_0',
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-    'F16'
-  ]"
+      'None'
+    ]"
   # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   # 'Q4_K_M',
   # 'Q5_K_M',
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   # 'ibm-granite/granite-vision-3.3-2b'
   # 'ibm-granite/granite-vision-3.3-2b-chart2csv-preview'
   SOURCE_VISION_REPOS: "[
-    'ibm-granite/granite-vision-3.3-2b'
-  ]"
-  # 'Q8_0',
-  # 'F16'
+      'ibm-granite/granite-vision-3.3-2b'
+    ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-    'Q5_K_M',
-    'Q6_K',
-    'Q8_0',
-    'f16'
-  ]"
+      'Q4_K_M',
+      'Q8_0'
+    ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
   # 'ibm-granite/granite-vision-3.3-2b-embedding'
   SOURCE_EMBEDDING_REPOS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   SOURCE_DOCLING_REPOS: "[
-    'None'
-  ]"
+      'None'
+    ]"
   TARGET_DOCLING_QUANTIZATIONS: "[
-    'None'
-  ]"
+      'None'
+    ]"
 
 jobs:
   # ===========================================================================
@@ -98,7 +96,7 @@ jobs:
   # TODO: use conditionals for skipping jobs: if: ${{ false }} such as TEST_ONLY
   # TODO: figure out why we cannot pass api_token to secrets.token on a workflow_call:
   environment-setup:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     # Note: declaration of these outputs is essential to pass to the next job
     outputs:
       debug: ${{ steps.set-vars.outputs.debug }}

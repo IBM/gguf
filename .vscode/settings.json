@@ -51,5 +51,12 @@
         "modelrepo",
         "mymodel",
         "outtype"
-    ]
+    ],
+  // "yaml.schemas": {
+  //   "https://json.schemastore.org/github-workflow.json": [
+  //     ".github/workflows/*.{yml,yaml}"
+  //   ]
+  // },
+  "yaml.validate": false,
+  "yaml.schemaStore.enable": false
 }
