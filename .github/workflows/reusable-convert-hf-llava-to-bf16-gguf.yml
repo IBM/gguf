@@ -1,11 +1,13 @@
-# This workflow
-# - Downloads the source HF (safetensors) llava model from the Hugging Face hub.
-# - Separates the "vision" portion of a llava (granite vision) model from HF (in safetensors format)
-# - Converts the vision (projector) model to an f16 GGUF format vision encoder model.
-# - Uploads the f16 vision encoder model to Hugging Face Hub for the 'repo_id' (from the build matrix).
-# - Uses HF Transformers to save just the LLM portion of the llava model to an bf16 GGUF
-# - Convert the LLM model to an bf16 GGUF
-# - Uploads the bf16 GGUF to target 'repo_id'.
+# This workflow converts HF LLaVA (vision) models to GGUF format:
+# - Downloads the source HF (safetensors) llava model from Hugging Face hub.
+# - Separates CLIP and projector tensors from the vision model using llava_surgery_v2.py.
+# - Validates the separated tensors to ensure proper extraction.
+# - Converts the image encoder (CLIP + projector) to f16 GGUF format.
+# - Uploads the f16 mmproj GGUF model to target Hugging Face repository.
+# - Separates and exports the LLM portion from the vision model.
+# - Fixes Granite architecture in config.json (for HF Transformers v4.52.1+).
+# - Converts the LLM model to bf16 GGUF format.
+# - Uploads the bf16 LLM GGUF to target repository.
 
 name: convert-hf-llava-to-f16-gguf-reusable
 
@@ -75,7 +77,7 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_TRANSFORMERS_VERSION: "4.52.1" # "4.51.3" (good), xv4.52.1 (x == does not work any longer)
+      HF_TRANSFORMERS_VERSION: "4.52.1" # "4.51.3" (good), xv4.52.1 (x == broken/needs sed to rename model class (see below))
       HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1" # Version where LlavaNextModel class initialization changed (last good version 4.51.3)
       LLAMA_CPP_VERSION: b7951 # Previously: b7951, *b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
@@ -266,6 +268,11 @@ jobs:
         python ./scripts/torch_llava_save_llm.py ${{ env.LOCAL_MODEL_PATH }} ${{ env.LLM_EXPORT_PATH }}
         ls -al ${{ env.LLM_EXPORT_PATH }}
 
+    # HF Transformers v4.52.1+ changed LlavaNextModel class initialization to use AutoModel
+    # instead of AutoModelForCausalLM, which causes the config.json for the text model to have
+    # the generic "GraniteModel" architecture instead of "GraniteForCausalLM" class.
+    # This step fixes the architecture in config.json to ensure proper model conversion and loading for GGUF format.
+    # Last working version without this issue: v4.51.3
     - name: fix-granite-architecture-in-config
       if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
       run: |
