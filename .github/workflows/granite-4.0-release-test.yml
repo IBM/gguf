@@ -15,7 +15,7 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LANGUAGE_JOBS: true
-  ENABLE_VISION_JOBS: false
+  ENABLE_VISION_JOBS: true
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
@@ -79,11 +79,11 @@ env:
     ]"
   # 'ibm-granite/granite-vision-3.3-2b'
   SOURCE_VISION_REPOS: "[
-      'None'
+      'ibm-granite/granite-4.0-3b-vision'
     ]"
   # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
     ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   SOURCE_EMBEDDING_REPOS: "[

@@ -49,7 +49,6 @@ env:
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
-  VISION_CONFIG: resources/json/granite-3.3/vision_config.json
   LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
   HF_HUB_DISABLE_XET: 1
   HF_HUB_ENABLE_HF_TRANSFER: 0
@@ -139,7 +138,8 @@ jobs:
             scripts/torch_llava_validate_tensors.py
             scripts/torch_llava_save_llm.py
             scripts/hf_model_upload.py
-            resources/json/granite-3.3/vision_config.json
+            scripts/get_vision_config_path.py
+            resources/json/
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
@@ -198,12 +198,27 @@ jobs:
           python ./scripts/torch_llava_validate_tensors.py ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
           cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
 
+      - name: get-vision-config-path
+        run: |
+          VISION_CONFIG=$(python ./scripts/get_vision_config_path.py resources/json/latest/hf_collection_mapping_gguf.json ${{ inputs.repo_id }})
+          echo "VISION_CONFIG=$VISION_CONFIG" >> $GITHUB_ENV
+          if [ -n "$VISION_CONFIG" ]; then
+            echo "✅ Using vision_config: $VISION_CONFIG"
+          else
+            echo "⚠️ No vision_config found in collection mapping"
+          fi
+
       - name: convert-image-encoder-to-gguf
         run: |
           mkdir ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
           cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector
           cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/pytorch_model.bin
-          cp ./${{env.VISION_CONFIG}} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/config.json
+          if [ -n "$VISION_CONFIG" ] && [ -f "./$VISION_CONFIG" ]; then
+            cp ./$VISION_CONFIG ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/config.json
+            echo "✅ Successfully copied vision config: $VISION_CONFIG"
+          else
+            echo "⚠️ Warning: vision_config not found or not specified, skipping config.json copy"
+          fi
           python ./llama.cpp/tools/mtmd/legacy-models/convert_image_encoder_to_gguf.py \
             -m ${{ needs.detect-and-setup.outputs.visual_encoder_path }} \
             --llava-projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector \
