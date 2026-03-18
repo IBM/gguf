@@ -252,7 +252,6 @@ jobs:
           ls -al $PWD/granite_vision_llm
 
       - name: fix-granite-architecture-in-config
-        if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
         run: |
           CONFIG_FILE="$PWD/granite_vision_llm/config.json"
           if [ ! -f "$CONFIG_FILE" ]; then
