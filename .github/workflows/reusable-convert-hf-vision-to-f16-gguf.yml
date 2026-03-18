@@ -196,13 +196,13 @@ jobs:
 
       - name: separate-llm-from-vision-model
         run: |
-          python ./scripts/torch_llava_save_llm.py ${{ needs.detect-and-setup.outputs.local_model_path }} granite_vision_llm
-          ls -al granite_vision_llm
+          python ./scripts/torch_llava_save_llm.py ${{ needs.detect-and-setup.outputs.local_model_path }} $PWD/granite_vision_llm
+          ls -al $PWD/granite_vision_llm
 
       - name: fix-granite-architecture-in-config
         if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
         run: |
-          CONFIG_FILE="granite_vision_llm/config.json"
+          CONFIG_FILE="$PWD/granite_vision_llm/config.json"
           if [ ! -f "$CONFIG_FILE" ]; then
             echo "Config file not found: $CONFIG_FILE"
             exit 0
@@ -218,7 +218,7 @@ jobs:
 
       - name: convert-vision-model-llm-to-gguf-bf16
         run: |
-          python ./llama.cpp/convert_hf_to_gguf.py granite_vision_llm \
+          python ./llama.cpp/convert_hf_to_gguf.py $PWD/granite_vision_llm \
             --outfile ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
             --outtype ${{env.DEF_PRECISION}} \
             --verbose
