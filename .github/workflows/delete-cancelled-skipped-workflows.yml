@@ -9,7 +9,7 @@ jobs:
   delete_runs_to_delete:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # https://api.github.com/repos/IBM/gguf/actions/runs
       - name: List workflow runs

@@ -84,7 +84,7 @@ jobs:
     runs-on: macos-latest
     if: ${{ inputs.enable_docling_jobs == true }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"

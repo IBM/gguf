@@ -57,7 +57,7 @@ jobs:
           GH_CONTEXT: ${{ toJson(github) }}
         run: echo "$GH_CONTEXT"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             scripts/
@@ -68,7 +68,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download log artifacts
         id: artifact-download-logs
         uses: actions/download-artifact@v4

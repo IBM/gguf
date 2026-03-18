@@ -83,7 +83,7 @@ jobs:
       HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1" # Version where LlavaNextModel class initialization changed (last good version 4.51.3)
       LLAMA_CPP_VERSION: b7951 # Previously: b7951, *b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Dump GitHub inputs
       env:
@@ -193,7 +193,7 @@ jobs:
     # specify only the scripts and requirements files we need (sparse).
     # Note: we include LICENSE for future BOM generation
     - name: shallow-clone-llamacpp
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'

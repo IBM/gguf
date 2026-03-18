@@ -64,7 +64,7 @@ jobs:
       HF_HUB_DISABLE_XET: 0
       HF_HUB_ENABLE_HF_TRANSFER: 0
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             scripts/

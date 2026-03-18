@@ -131,14 +131,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: shallow-clone-llamacpp
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ${{ env.LLAMACPP_DIR }}
           repository: 'ggerganov/llama.cpp'
@@ -250,14 +250,14 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: shallow-clone-llamacpp
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ${{ env.LLAMACPP_DIR }}
           repository: 'ggerganov/llama.cpp'

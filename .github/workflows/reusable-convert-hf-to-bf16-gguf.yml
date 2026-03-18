@@ -84,7 +84,7 @@ jobs:
       LLAMA_CPP_VERSION: b7951 # Previously: b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         sparse-checkout: |
           ./requirements.txt
@@ -155,7 +155,7 @@ jobs:
     # convert_lora_to_gguf.py
     # requirements/requirements-convert_lora_to_gguf.txt
     - name: shallow-clone-llamacpp
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'

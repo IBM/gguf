@@ -119,7 +119,7 @@ jobs:
       - name: List all environment variables
         run: env | sort
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             ./requirements.txt

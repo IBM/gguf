@@ -69,7 +69,7 @@ jobs:
       HF_HUB_ENABLE_HF_TRANSFER: 0
       LLAMA_CPP_VERSION: "b6569" # 'b5717', # 'b6050'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"

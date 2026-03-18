@@ -58,7 +58,7 @@ jobs:
     runs-on: macos-latest
     if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - run: |
         echo "[INFO] github.env:"
         echo "[INFO] >> run_id: '${{ github.run_id }}'"

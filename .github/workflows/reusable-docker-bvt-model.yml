@@ -60,7 +60,7 @@ jobs:
       HF_HUB_ENABLE_HF_TRANSFER: 0
       DOCKER_REQUEST_PROMPT: "Why is the sky blue according to science?"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             scripts/
