@@ -213,12 +213,22 @@ jobs:
           mkdir ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
           cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector
           cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/pytorch_model.bin
-          if [ -n "$VISION_CONFIG" ] && [ -f "./$VISION_CONFIG" ]; then
-            cp ./$VISION_CONFIG ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/config.json
-            echo "✅ Successfully copied vision config: $VISION_CONFIG"
+
+          # Copy vision config if specified
+          if [ -n "$VISION_CONFIG" ]; then
+            if [ -f "./$VISION_CONFIG" ]; then
+              cp ./$VISION_CONFIG ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/config.json
+              echo "✅ Successfully copied vision config: $VISION_CONFIG"
+            else
+              echo "❌ Error: vision_config specified but file not found: $VISION_CONFIG"
+              exit 1
+            fi
           else
-            echo "⚠️ Warning: vision_config not found or not specified, skipping config.json copy"
+            echo "⚠️ Warning: No vision_config specified in collection mapping"
+            echo "⚠️ Skipping convert_image_encoder_to_gguf.py step"
+            exit 0
           fi
+          # Run the conversion
           python ./llama.cpp/tools/mtmd/legacy-models/convert_image_encoder_to_gguf.py \
             -m ${{ needs.detect-and-setup.outputs.visual_encoder_path }} \
             --llava-projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector \
