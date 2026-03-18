@@ -133,6 +133,11 @@ jobs:
       artifact_responses_name: "${{ steps.set-vars.outputs.artifact_responses_name }}"
       ext_log: "${{ steps.set-vars.outputs.ext_log }}"
       ext_response: "${{ steps.set-vars.outputs.ext_response }}"
+      transformers_version_language: "${{ steps.set-vars.outputs.transformers_version_language }}"
+      transformers_version_vision: "${{ steps.set-vars.outputs.transformers_version_vision }}"
+      transformers_version_guardian: "${{ steps.set-vars.outputs.transformers_version_guardian }}"
+      transformers_version_embedding: "${{ steps.set-vars.outputs.transformers_version_embedding }}"
+      transformers_version_docling: "${{ steps.set-vars.outputs.transformers_version_docling }}"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -168,6 +173,11 @@ jobs:
             echo "artifact_responses_name=$ARTIFACT_RESPONSES_NAME" >> "$GITHUB_OUTPUT"
             echo "ext_log=$EXT_LOG" >> "$GITHUB_OUTPUT"
             echo "ext_response=$EXT_RESPONSE" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_language=$TRANSFORMERS_VERSION_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_vision=$TRANSFORMERS_VERSION_VISION" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_guardian=$TRANSFORMERS_VERSION_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_embedding=$TRANSFORMERS_VERSION_EMBEDDING" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_docling=$TRANSFORMERS_VERSION_DOCLING" >> "$GITHUB_OUTPUT"
 
       - name: Confirm GitHub output values were set
         run: |
@@ -254,6 +264,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_language }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -387,6 +398,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_vision }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -494,6 +506,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_guardian }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -601,6 +614,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}

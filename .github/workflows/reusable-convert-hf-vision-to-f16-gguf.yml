@@ -31,8 +31,9 @@ on:
         required: true
       transformers_version:
         type: string
-        required: true
-        description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3')"
+        required: false
+        default: "4.52.1"
+        description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3'). Defaults to 4.52.1 for Granite 3.x models."
       debug:
         type: boolean
         required: true
