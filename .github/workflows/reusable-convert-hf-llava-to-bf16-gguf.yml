@@ -62,8 +62,10 @@ env:
   REPO_ORG: ""  # Set in set-github-env step
   REPO_NAME: ""  # Set in set-github-env step
   LOCAL_MODEL_PATH: ""  # Set in set-github-env step
-  ENCODER_PATH: ""  # Set in set-github-env step
+  VISUAL_ENCODER_PATH: ""  # Set in set-github-env step
+  ENCODER_PATH: ""  # Set in set-github-env step (derived from VISUAL_ENCODER_PATH)
   LLM_EXPORT_PATH: ""  # Set in set-github-env step
+  USE_CONVERT_SCRIPT_WITH_MMPROJ: ""  # Set in detect-conversion-tooling step
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_VISUAL_GGUF_F16: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_BF16_GGUF: ""  # Set in set-derivative-env-vars-1 step
@@ -151,8 +153,21 @@ jobs:
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+        echo "VISUAL_ENCODER_PATH=visual_encoder" >> $GITHUB_ENV
         echo "ENCODER_PATH=$PWD/visual_encoder" >> $GITHUB_ENV
         echo "LLM_EXPORT_PATH=$PWD/granite_vision_llm" >> $GITHUB_ENV
+
+    - name: detect-conversion-tooling
+      run: |
+        # Granite 4+ vision models use convert_hf_to_gguf.py with --mmproj flag
+        # Granite 3 and earlier use llava_surgery_v2.py for tensor separation
+        if [[ "${{ env.REPO_NAME }}" =~ granite-([4-9]|[1-9][0-9]+)\. ]]; then
+          echo "USE_CONVERT_SCRIPT_WITH_MMPROJ=true" >> $GITHUB_ENV
+          echo "Detected Granite 4+ vision model: using convert_hf_to_gguf.py with --mmproj"
+        else
+          echo "USE_CONVERT_SCRIPT_WITH_MMPROJ=false" >> $GITHUB_ENV
+          echo "Detected Granite 3 or earlier: using llava_surgery_v2.py tooling"
+        fi
 
     - name: set-derivative-env-vars-1
       run: |
@@ -165,7 +180,9 @@ jobs:
       run: |
         echo "REPO_ORG=$REPO_ORG"
         echo "REPO_NAME=$REPO_NAME"
+        echo "USE_CONVERT_SCRIPT_WITH_MMPROJ=$USE_CONVERT_SCRIPT_WITH_MMPROJ"
         echo "LOCAL_MODEL_PATH=$LOCAL_MODEL_PATH"
+        echo "VISUAL_ENCODER_PATH=$VISUAL_ENCODER_PATH"
         echo "ENCODER_PATH=$ENCODER_PATH"
         echo "TARGET_REPO_ID=$TARGET_REPO_ID"
         echo "LOCAL_VISUAL_GGUF_F16=$LOCAL_VISUAL_GGUF_F16"
@@ -223,18 +240,21 @@ jobs:
 
     # python ./llama.cpp/examples/llava/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
     - name: separate-clip-and-projector-tensors
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
       run: |
         echo "Separating CLIP and projector tensors... (llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }})"
         python ./llama.cpp/tools/mtmd/legacy-models/llava_surgery_v2.py -C -m ${{ env.LOCAL_MODEL_PATH }}
         ls -al ${{ env.LOCAL_MODEL_PATH }}
 
     - name: validate-clip-and-projector-tensors
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
       run: |
         python ./scripts/torch_llava_validate_tensors.py ${{ env.LOCAL_MODEL_PATH }}/llava.clip ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
         cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
 
     # python ./llama.cpp/examples/llava/convert_image_encoder_to_gguf.py \
     - name: convert-image-encoder-to-gguf
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
       run: |
         mkdir ${{ env.ENCODER_PATH }}
         cp ${{ env.LOCAL_MODEL_PATH }}/llava.projector ${{ env.ENCODER_PATH }}/llava.projector
@@ -255,6 +275,17 @@ jobs:
         find . -name \*.gguf -type f
         echo "--------------------"
 
+    # Granite 4+ path: Use convert_hf_to_gguf.py with --mmproj flag
+    - name: convert-mmproj-with-convert-script
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ == 'true' }}
+      run: |
+        mkdir -p ${{ env.ENCODER_PATH }}
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} \
+          --outfile ${{ env.LOCAL_VISUAL_GGUF_F16 }} \
+          --mmproj \
+          --verbose
+        ls -al ${{ env.ENCODER_PATH }}
+
     - name: upload-mmproj-f16-gguf-to-target-repo
       run: |
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
@@ -262,6 +293,7 @@ jobs:
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
     - name: separate-llm-from-vision-model
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
       run: |
         echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
@@ -273,8 +305,21 @@ jobs:
     # the generic "GraniteModel" architecture instead of "GraniteForCausalLM" class.
     # This step fixes the architecture in config.json to ensure proper model conversion and loading for GGUF format.
     # Last working version without this issue: v4.51.3
+    # Granite 4+ path: Convert LLM directly without separation
+    - name: convert-vision-model-llm-to-gguf-bf16-granite4
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ == 'true' }}
+      run: |
+        echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
+        echo "LOCAL_MODEL_PATH=${{env.LOCAL_MODEL_PATH}}"
+        echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} \
+          --outfile ${{ env.BASE_FNAME_BF16_GGUF }} \
+          --outtype ${{env.DEF_PRECISION}} \
+          --verbose
+        ls -al *.gguf
+
     - name: fix-granite-architecture-in-config
-      if: ${{ env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' && env.HF_TRANSFORMERS_VERSION >= env.HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE }}
       run: |
         CONFIG_FILE="${{ env.LLM_EXPORT_PATH }}/config.json"
 
@@ -317,6 +362,7 @@ jobs:
         fi
 
     - name: convert-vision-model-llm-to-gguf-bf16
+      if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
       run: |
         echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
         echo "LLM_EXPORT_PATH=${{env.LLM_EXPORT_PATH}}"
