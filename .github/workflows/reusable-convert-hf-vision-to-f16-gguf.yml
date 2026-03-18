@@ -260,8 +260,12 @@ jobs:
           ARCHITECTURE=$(GREP_COLORS='' grep --color=never -A 1 '"architectures"' "$CONFIG_FILE" | grep --color=never -o '"[^"]*"' | tail -1 | tr -d '"' | sed $'s/\x1b\\[[0-9;]*m//g' | sed $'s/\x1b\\[K//g')
 
           if [ "$ARCHITECTURE" = "GraniteModel" ]; then
-            echo "Fixing architecture from 'GraniteModel' to 'GraniteForCausalLM'..."
+            echo "✏️ Fixing architecture from 'GraniteModel' to 'GraniteForCausalLM'..."
             sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
+            echo "✅ Updated config.json:"
+            cat "$CONFIG_FILE"
+          else
+            echo "✅ Architecture is already correct: $ARCHITECTURE"
           fi
 
       - name: convert-vision-model-llm-to-gguf-bf16
