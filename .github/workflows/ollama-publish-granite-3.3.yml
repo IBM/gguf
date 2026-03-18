@@ -77,9 +77,9 @@ env:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
       'None'
     ]"
-  TARGET_HF_REPO_NAME_EXT: -GGUF
-  TARGET_HF_REPO_OWNER: mrutkows
-  TARGET_HF_REPO_PRIVATE: false
+  SOURCE_HF_REPO_NAME_EXT: -GGUF
+  SOURCE_HF_REPO_OWNER: mrutkows
+  SOURCE_HF_REPO_PRIVATE: false
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
   # ibm | mrutkows
   TARGET_OLLAMA_ORG: ibm
@@ -99,9 +99,9 @@ jobs:
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
-      target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
-      target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
+      source_repo_private: ${{ steps.set-vars.outputs.source_repo_private }}
+      source_repo_owner: ${{ steps.set-vars.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ steps.set-vars.outputs.source_repo_name_ext }}
       source_instruct_repos: "${{ steps.set-vars.outputs.source_instruct_repos }}"
       target_instruct_quantizations: "${{ steps.set-vars.outputs.target_instruct_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
@@ -175,11 +175,11 @@ jobs:
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
-            echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
-            echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
+            echo "source_repo_owner=$SOURCE_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
+            echo "source_repo_name_ext=$SOURCE_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
             echo "source_instruct_repos=$SOURCE_INSTRUCT_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_instruct_quantizations=$TARGET_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
+            echo "source_repo_private=$SOURCE_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
@@ -207,9 +207,9 @@ jobs:
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
-            echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
-            echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
-            echo "target_repo_private: '${{ steps.set-vars.outputs.target_repo_private }}'"
+            echo "source_repo_owner: '${{ steps.set-vars.outputs.source_repo_owner }}'"
+            echo "source_repo_name_ext: '${{ steps.set-vars.outputs.source_repo_name_ext }}'"
+            echo "source_repo_private: '${{ steps.set-vars.outputs.source_repo_private }}'"
             echo "source_instruct_repos: '${{ steps.set-vars.outputs.source_instruct_repos }}'"
             echo "target_instruct_quantizations: '${{ steps.set-vars.outputs.target_instruct_quantizations }}'"
             echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
@@ -254,8 +254,8 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
@@ -282,8 +282,8 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
@@ -310,8 +310,8 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
@@ -337,9 +337,9 @@ jobs:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
-      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
-      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
-      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
       repo_id: ${{ matrix.repo_id }}
       quantization: ${{ matrix.quantization }}
