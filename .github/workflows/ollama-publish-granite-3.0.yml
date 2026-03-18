@@ -80,6 +80,9 @@ env:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
       'None'
     ]"
+  # NOTE: The mrutkows private org repos are used as source repos for older Granite models
+  # that have been deleted from the ibm-granite org because they were replaced with newer versions.
+  # These archived repos allow the Ollama publish workflows to continue functioning for legacy models.
   SOURCE_HF_REPO_NAME_EXT: -GGUF
   SOURCE_HF_REPO_OWNER: mrutkows
   SOURCE_HF_REPO_PRIVATE: false
