@@ -39,6 +39,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      transformers_version:
+        type: string
+        required: true
+        description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3')"
       debug:
         type: boolean
         required: true
@@ -80,7 +84,6 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      HF_TRANSFORMERS_VERSION: "v4.57.6" # previous versions: "4.52.4"
       LLAMA_CPP_VERSION: b7951 # Previously: b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
 
@@ -203,7 +206,8 @@ jobs:
       run: |
         pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
         pip uninstall --yes transformers
-        pip install transformers==${{ env.HF_TRANSFORMERS_VERSION }}
+        pip install transformers==${{ inputs.transformers_version }}
+        echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
         pip list
 
     - name: debug-dynamic-environment
