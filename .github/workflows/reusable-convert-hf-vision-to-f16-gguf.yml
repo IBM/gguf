@@ -155,7 +155,7 @@ jobs:
             tools/mtmd/requirements.txt
             tools/mtmd/legacy-models
 
-      - name: print-llamacpp
+      - name: print-llamacpp-clone
         run: |
           echo "PATH: '$PATH'"
           ls -al llama.cpp
@@ -173,7 +173,7 @@ jobs:
         run: |
           python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{secrets.ibm_granite_token}}
 
-      - name: print-models
+      - name: print-model-snapshot
         run: |
           find models ${{env.FIND_ARGS}}
 
