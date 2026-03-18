@@ -94,7 +94,7 @@ env:
     ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-      'ibm-granite/granite-vision-3.3-2b'
+      'None'
     ]"
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
