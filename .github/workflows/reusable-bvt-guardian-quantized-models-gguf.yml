@@ -82,6 +82,15 @@ jobs:
     if: ${{ inputs.enable_guardian_jobs == true }}
     steps:
     - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_regex_match_file.py
+          bin/llama-cli
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
     - name: confirm-environment
       run: |
         uname -a

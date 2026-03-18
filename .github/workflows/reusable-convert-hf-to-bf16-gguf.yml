@@ -87,9 +87,11 @@ jobs:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          ./requirements.txt
+          requirements.txt
           scripts/hf_model_upload.py
           scripts/hf_model_download_snapshot.py
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
 
     - name: Dump GitHub inputs
       env:

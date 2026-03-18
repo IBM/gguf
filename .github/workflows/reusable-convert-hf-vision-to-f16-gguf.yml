@@ -132,6 +132,16 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            requirements.txt
+            scripts/hf_model_download_snapshot.py
+            scripts/torch_llava_validate_tensors.py
+            scripts/torch_llava_save_llm.py
+            scripts/hf_model_upload.py
+            resources/json/granite-3.3/vision_config.json
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:
@@ -251,6 +261,13 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            requirements.txt
+            scripts/hf_model_download_snapshot.py
+            scripts/hf_model_upload.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
 
       - uses: actions/setup-python@v5
         with:

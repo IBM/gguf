@@ -84,6 +84,17 @@ jobs:
       LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/hf_model_upload.py
+          scripts/hf_model_download_snapshot.py
+          scripts/hf_file_delete.py
+          bin/llama-quantize
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
 
     - run: |
         echo "[INFO] github.env:"

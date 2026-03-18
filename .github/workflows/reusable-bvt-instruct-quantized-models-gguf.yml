@@ -87,6 +87,18 @@ jobs:
       LLAMA_CPP_VERSION: "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_regex_match_file_2.py
+          bin/llama-cli
+          bin/llama-run
+          bin/llama-gguf-hash
+          bin/llama-server
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
