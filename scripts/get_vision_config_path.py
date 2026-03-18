@@ -18,13 +18,13 @@ import json
 import sys
 
 
-def get_vision_config_path(collection_mapping_file, repo_name, default_path=""):
+def get_vision_config_path(collection_mapping_file, repo_id, default_path=""):
     """
-    Extract the vision_config path for a given repo_name from the collection mapping.
+    Extract the vision_config path for a given repo_id from the collection mapping.
 
     Args:
         collection_mapping_file: Path to the JSON file
-        repo_name: Repository name to search for
+        repo_id: Repository ID (can be "org/repo" or just "repo")
         default_path: Default path to return if not found
 
     Returns:
@@ -33,6 +33,9 @@ def get_vision_config_path(collection_mapping_file, repo_name, default_path=""):
     try:
         with open(collection_mapping_file, 'r') as f:
             data = json.load(f)
+
+        # Extract just the repo name from repo_id (e.g., "ibm-granite/granite-vision-3.3-2b" -> "granite-vision-3.3-2b")
+        repo_name = repo_id.split('/')[-1] if '/' in repo_id else repo_id
 
         # Search through all collections and items
         for collection in data.get('collections', []):
@@ -60,14 +63,14 @@ def get_vision_config_path(collection_mapping_file, repo_name, default_path=""):
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python get_vision_config_path.py <collection_mapping_file> <repo_name> [default_path]", file=sys.stderr)
+        print("Usage: python get_vision_config_path.py <collection_mapping_file> <repo_id> [default_path]", file=sys.stderr)
         sys.exit(1)
 
     collection_mapping_file = sys.argv[1]
-    repo_name = sys.argv[2]
+    repo_id = sys.argv[2]
     default_path = sys.argv[3] if len(sys.argv) > 3 else ""
 
-    vision_config_path = get_vision_config_path(collection_mapping_file, repo_name, default_path)
+    vision_config_path = get_vision_config_path(collection_mapping_file, repo_id, default_path)
     print(vision_config_path)
 
 
