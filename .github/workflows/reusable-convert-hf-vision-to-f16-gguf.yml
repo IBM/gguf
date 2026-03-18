@@ -147,10 +147,19 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             convert_hf_to_gguf.py
+            convert_lora_to_gguf.py
             requirements/requirements-convert_hf_to_gguf.txt
+            requirements/requirements-convert_lora_to_gguf.txt
+            requirements/requirements-convert_legacy_llama.txt
             gguf-py
             tools/mtmd/requirements.txt
             tools/mtmd/legacy-models
+
+      - name: print-llamacpp
+        run: |
+          echo "PATH: '$PATH'"
+          ls -al llama.cpp
+          find llama.cpp ${{env.FIND_ARGS}}
 
       - name: install-dependencies
         run: |
