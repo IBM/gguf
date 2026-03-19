@@ -342,10 +342,16 @@ jobs:
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "visual_encoder_path=${{ needs.detect-and-setup.outputs.visual_encoder_path }}"
           mkdir -p ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
+          # Granite 4 vision models include custom Python code in their HuggingFace repository
+          # that must be executed to properly load the model architecture. The --trust-remote-code
+          # flag allows the HuggingFace transformers library to execute this custom code.
+          # Without this flag, the conversion fails with:
+          # "The repository contains custom code which must be executed to correctly load the model"
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/mmproj-model-f16.gguf \
             --outtype ${{env.DEF_MMPROJ_PRECISION}} \
             --mmproj \
+            --trust-remote-code \
             --verbose
           ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
 
@@ -358,9 +364,12 @@ jobs:
           echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "base_fname_bf16_gguf=${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }}"
+          # Granite 4 vision models require --trust-remote-code to load custom model architecture code
+          # from the HuggingFace repository. This applies to both mmproj and LLM conversion steps.
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
             --outtype ${{env.DEF_PRECISION}} \
+            --trust-remote-code \
             --verbose
           ls -al *.gguf
 
