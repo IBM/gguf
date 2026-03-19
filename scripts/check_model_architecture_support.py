@@ -92,27 +92,26 @@ def check_architecture_support(model_path: str, debug: bool = False) -> tuple[bo
                 f"   Model path: {model_path}\n"
             )
 
-            # Only show full list in debug mode
+            # Only show filtered list in debug mode
             if debug:
                 supported = get_supported_architectures()
                 if supported:
-                    supported_list = "\n      - ".join(supported[:50])  # Show first 50
-                    more_count = len(supported) - 50 if len(supported) > 50 else 0
+                    # Filter to architectures starting with the same letter
+                    first_letter = architecture[0].upper()
+                    filtered = [arch for arch in supported if arch[0].upper() == first_letter]
 
-                    message += (
-                        f"\n"
-                        f"   Supported architectures (showing {min(50, len(supported))} of {len(supported)}):\n"
-                        f"      - {supported_list}"
-                    )
-
-                    if more_count > 0:
-                        message += f"\n      ... and {more_count} more"
-
-            message += (
-                f"\n\n"
-                f"   Full list available at:\n"
-                f"   https://huggingface.co/docs/transformers/v{transformers_version}/en/model_doc/auto"
-            )
+                    if filtered:
+                        filtered_list = "\n      - ".join(filtered)
+                        message += (
+                            f"\n"
+                            f"   Supported architectures starting with '{first_letter}' ({len(filtered)} found):\n"
+                            f"      - {filtered_list}"
+                        )
+                    else:
+                        message += (
+                            f"\n"
+                            f"   No supported architectures found starting with '{first_letter}'"
+                        )
 
             return False, architecture, message
     except ImportError as e:
