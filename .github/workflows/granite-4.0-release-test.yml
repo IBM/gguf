@@ -33,7 +33,7 @@ env:
   EXT_RESPONSE: '.response.txt'
 
   # HuggingFace Transformers versions
-  # Granite 4.0 models use transformers 4.57.3
+  # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
   TRANSFORMERS_VERSION_LANGUAGE: "4.57.3"
   TRANSFORMERS_VERSION_VISION: "4.57.3"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
