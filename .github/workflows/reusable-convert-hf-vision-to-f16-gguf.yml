@@ -78,11 +78,67 @@ jobs:
       base_fname_mmproj_f16_gguf: ${{ steps.setup.outputs.base_fname_mmproj_f16_gguf }}
       visual_encoder_path: ${{ steps.setup.outputs.visual_encoder_path }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            scripts/hf_model_download_snapshot.py
+            scripts/check_model_architecture_support.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install huggingface-hub transformers==${{ inputs.transformers_version }}
+          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
       - name: Dump GitHub inputs
         if: ${{ inputs.debug }}
         env:
           GITHUB_INPUTS: ${{ toJson(inputs) }}
         run: echo "$GITHUB_INPUTS"
+
+      - name: setup-shared-variables
+        id: setup
+        run: |
+          REPO_ORG=$(dirname '${{ inputs.repo_id }}')
+          REPO_NAME=$(basename '${{ inputs.repo_id }}')
+
+          echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
+          echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
+          echo "base_fname_bf16_gguf=${REPO_NAME}${{env.EXT_NAME_BF16}}" >> $GITHUB_OUTPUT
+          echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_OUTPUT
+          echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
+
+      - name: download-model-snapshot
+        run: |
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ steps.setup.outputs.repo_org }} ${{ steps.setup.outputs.repo_name }} ${{secrets.ibm_granite_token}}
+
+      - name: validate-model-architecture-support
+        id: validate-arch
+        run: |
+          echo "🔍 Checking model architecture: ${{ steps.setup.outputs.repo_name }}"
+
+          DEBUG_FLAG=""
+          if [ "${{ inputs.debug }}" = "true" ]; then
+            DEBUG_FLAG="--debug"
+            echo "Debug mode enabled - will show full architecture list on failure"
+          fi
+
+          if python ./scripts/check_model_architecture_support.py ${{ steps.setup.outputs.local_model_path }} $DEBUG_FLAG; then
+            echo "✅ Model architecture validation PASSED"
+          else
+            echo "❌ Model architecture validation FAILED"
+            echo "::error::Model architecture is not supported by transformers version ${{ inputs.transformers_version }}"
+            echo "::error::The model cannot be converted with the current transformers version"
+            echo "::error::Consider updating transformers_version input parameter"
+            exit 1
+          fi
 
       - name: detect-granite-version
         id: detect
@@ -99,20 +155,6 @@ jobs:
             echo "use_convert_script_with_mmproj=false" >> $GITHUB_OUTPUT
             echo "Detected Granite 3 or earlier: will use llava_surgery_v2.py tooling"
           fi
-
-      - name: setup-shared-variables
-        id: setup
-        run: |
-          REPO_ORG=$(dirname '${{ inputs.repo_id }}')
-          REPO_NAME=$(basename '${{ inputs.repo_id }}')
-
-          echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
-          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
-          echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
-          echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
-          echo "base_fname_bf16_gguf=${REPO_NAME}${{env.EXT_NAME_BF16}}" >> $GITHUB_OUTPUT
-          echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_OUTPUT
-          echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
 
       - name: verify-outputs
         run: |
@@ -342,16 +384,13 @@ jobs:
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "visual_encoder_path=${{ needs.detect-and-setup.outputs.visual_encoder_path }}"
           mkdir -p ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
-          # Granite 4 vision models include custom Python code in their HuggingFace repository
-          # that must be executed to properly load the model architecture. The --trust-remote-code
-          # flag allows the HuggingFace transformers library to execute this custom code.
-          # Without this flag, the conversion fails with:
-          # "The repository contains custom code which must be executed to correctly load the model"
+          # Convert the visual encoder (mmproj) component
+          # The convert_hf_to_gguf.py script will use transformers AutoModel classes
+          # to load the model architecture if it's not directly supported by the script
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/mmproj-model-f16.gguf \
             --outtype ${{env.DEF_MMPROJ_PRECISION}} \
             --mmproj \
-            --trust-remote-code \
             --verbose
           ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
 
@@ -364,12 +403,12 @@ jobs:
           echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "base_fname_bf16_gguf=${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }}"
-          # Granite 4 vision models require --trust-remote-code to load custom model architecture code
-          # from the HuggingFace repository. This applies to both mmproj and LLM conversion steps.
+          # Convert the language model (LLM) component
+          # The convert_hf_to_gguf.py script will use transformers AutoModel classes
+          # to load the model architecture if it's not directly supported by the script
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
             --outtype ${{env.DEF_PRECISION}} \
-            --trust-remote-code \
             --verbose
           ls -al *.gguf
 

@@ -28,64 +28,37 @@ Granite 3.x vision models use the **llava surgery tooling** approach:
 
 ### Granite 4.x+ Vision Models
 
-Granite 4.x and later vision models use the **direct conversion with --mmproj flag** approach:
+**Important Note**: Granite 4 vision models use the `Granite4VisionForConditionalGeneration` architecture, which requires custom code found in the model repository. This architecture is not currently supported by llama.cpp's conversion script or HuggingFace Transformers' standard AutoModel classes.
 
-1. **mmproj Conversion**: Converts the visual encoder directly using `convert_hf_to_gguf.py --mmproj`
-2. **LLM Conversion**: Converts the language model using `convert_hf_to_gguf.py`
+**Current Status**:
+- ❌ Conversion is **not currently possible** with the existing llama.cpp tooling
+- 🔄 Built-in support may be added to both llama.cpp and HuggingFace Transformers in the future (no specific dates available)
+- ✅ The workflow includes architecture validation to detect this issue early and provide clear error messages
 
-## Custom Code Requirement (Granite 4.x+)
-
-### The Problem
-
-Granite 4 vision models include custom Python code in their HuggingFace repository that defines the model architecture. This custom code must be executed to properly load the model. Without allowing this code to run, the conversion fails with:
-
-```
-WARNING:hf-to-gguf:Failed to load model config from models/ibm-granite/granite-4.0-3b-vision:
-The repository models/ibm-granite/granite-4.0-3b-vision contains custom code which must be
-executed to correctly load the model. You can inspect the repository content at
-https://hf.co/models/ibm-granite/granite-4.0-3b-vision.
-Please pass the argument `trust_remote_code=True` to allow custom code to be run.
-```
-
-### The Solution
-
-The `--trust-remote-code` flag must be passed to `convert_hf_to_gguf.py` for Granite 4+ vision models:
-
-```bash
-python convert_hf_to_gguf.py /path/to/model \
-  --outfile output.gguf \
-  --outtype f16 \
-  --mmproj \
-  --trust-remote-code \
-  --verbose
-```
-
-### Security Considerations
-
-The `--trust-remote-code` flag allows execution of arbitrary Python code from the model repository. This is safe for official IBM Granite models but should be used with caution for untrusted sources:
-
-- ✅ **Safe**: Official IBM Granite models from `ibm-granite` organization
-- ⚠️ **Caution**: Third-party or community models
-- ❌ **Avoid**: Unknown or untrusted sources
-
-Always inspect the repository content before enabling `trust_remote_code` for non-official models.
+The workflow will:
+1. **Architecture Validation**: Check if the model architecture is supported by the installed transformers version
+2. **Early Failure**: Stop processing if the architecture is not supported, saving time and resources
+3. **Clear Messaging**: Provide detailed error messages explaining the compatibility issue
 
 ## Workflow Configuration
 
 ### Input Parameters
 
-- `repo_id`: HuggingFace repository ID (e.g., `ibm-granite/granite-4.0-3b-vision`)
+- `repo_id`: HuggingFace repository ID (e.g., `ibm-granite/granite-3.2-2b-vision`)
 - `transformers_version`: HuggingFace Transformers version (default: `4.52.1`)
 - `enable_vision_jobs`: Must be set to `true` to run vision conversion jobs
+- `debug`: Enable debug mode to show detailed architecture information on validation failure
 
 ### Output Files
 
-The workflow produces two GGUF files:
+For **Granite 3.x models**, the workflow produces two GGUF files:
 
 1. **mmproj-model-f16.gguf**: Visual encoder in F16 precision
 2. **{model-name}-bf16.gguf**: Language model in BF16 precision
 
 Both files are uploaded to the target HuggingFace repository.
+
+For **Granite 4.x models**, the workflow will fail during architecture validation with a clear error message.
 
 ## Version Detection
 
@@ -102,28 +75,6 @@ fi
 ```
 
 ## Manual Conversion
-
-### Granite 4+ Vision Models
-
-```bash
-# 1. Download the model
-python scripts/hf_model_download_snapshot.py models ibm-granite granite-4.0-3b-vision $HF_TOKEN
-
-# 2. Convert visual encoder (mmproj)
-python llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-4.0-3b-vision \
-  --outfile mmproj-model-f16.gguf \
-  --outtype f16 \
-  --mmproj \
-  --trust-remote-code \
-  --verbose
-
-# 3. Convert language model
-python llama.cpp/convert_hf_to_gguf.py models/ibm-granite/granite-4.0-3b-vision \
-  --outfile granite-4.0-3b-vision-bf16.gguf \
-  --outtype bf16 \
-  --trust-remote-code \
-  --verbose
-```
 
 ### Granite 3.x Vision Models
 
@@ -161,23 +112,34 @@ python llama.cpp/convert_hf_to_gguf.py granite_vision_llm \
   --verbose
 ```
 
+### Granite 4.x+ Vision Models
+
+**Manual conversion is not currently possible** for Granite 4 vision models due to the custom architecture requirements. The workflow will automatically detect this and fail with a clear error message during the architecture validation step.
+
+## Architecture Validation
+
+The workflow includes a validation step that checks if the model's architecture is supported before attempting conversion:
+
+```bash
+python scripts/check_model_architecture_support.py <model_path> [--debug]
+```
+
+This script:
+- Reads the model's `config.json` to identify the architecture
+- Checks if the architecture class exists in the installed transformers library
+- Provides detailed error messages with architecture name and transformers version
+- In debug mode, lists all supported architectures to help identify alternatives
+
 ## Troubleshooting
-
-### Error: "contains custom code which must be executed"
-
-**Solution**: Add `--trust-remote-code` flag to the conversion command.
 
 ### Error: "Model architecture not supported"
 
-**Possible causes**:
-1. Missing `--trust-remote-code` flag (Granite 4+)
-2. Incorrect transformers version
-3. Model architecture not yet supported by llama.cpp
+**For Granite 4 vision models**: This is expected. The `Granite4VisionForConditionalGeneration` architecture is not currently supported by llama.cpp or standard HuggingFace Transformers AutoModel classes.
 
-**Solution**:
-- Ensure `--trust-remote-code` is used for Granite 4+ models
-- Check transformers version compatibility
-- Verify llama.cpp version supports the model architecture
+**For other models**:
+1. Check if you're using the correct transformers version
+2. Update the `transformers_version` input parameter to a newer version
+3. Consult the [HuggingFace transformers documentation](https://huggingface.co/docs/transformers/en/model_doc/auto) for architecture support
 
 ### Error: "Tensor dimensions not divisible by 32"
 
@@ -192,6 +154,7 @@ This occurs when trying to quantize the visual encoder. Granite vision models us
 3. **Verify transformers version**: Use the version specified in the workflow (default: 4.52.1)
 4. **Test converted models**: Always validate converted models work correctly before deployment
 5. **Keep both files together**: The mmproj and LLM files must be used together
+6. **Enable debug mode**: Use `debug: true` in workflow inputs to see detailed architecture information on failures
 
 ## Related Documentation
 
