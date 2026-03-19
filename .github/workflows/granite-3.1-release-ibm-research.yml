@@ -58,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     # Note: declaration of these outputs is essential to pass to the next job
     outputs:
+      debug: ${{ steps.set-vars.outputs.debug }}
+      trace: ${{ steps.set-vars.outputs.trace }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
@@ -69,10 +71,12 @@ jobs:
         id: set-vars
         run: |
             echo "DEBUG: $DEBUG"
+            echo "TRACE: $TRACE"
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_REPO_OWNER: $TARGET_REPO_OWNER"
             echo "TARGET_REPO_NAME_EXT: $TARGET_REPO_NAME_EXT"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
+            echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -82,6 +86,7 @@ jobs:
       - name: Confirm GitHub output values were set
         run: |
             echo "debug: ${{ steps.set-vars.outputs.debug }}"
+            echo "trace: ${{ steps.set-vars.outputs.trace }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
@@ -113,7 +118,10 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      granite_family: "instruct"
+      enable_language_jobs: true
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_instruct_repos }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
@@ -131,6 +139,8 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: true
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
@@ -150,6 +160,8 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      enable_language_jobs: true
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
@@ -161,7 +173,9 @@ jobs:
     needs: [ call-quantize-upload-gguf, environment-setup ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
+      granite_family: "instruct"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_language_jobs: true
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
