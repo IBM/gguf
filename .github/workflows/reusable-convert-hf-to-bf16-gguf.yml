@@ -94,6 +94,7 @@ jobs:
           requirements.txt
           scripts/hf_model_upload.py
           scripts/hf_model_download_snapshot.py
+          scripts/check_model_architecture_support.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -210,6 +211,27 @@ jobs:
         pip install transformers==${{ inputs.transformers_version }}
         echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
         pip list
+
+    - name: validate-model-architecture-support
+      id: validate-arch
+      run: |
+        echo "🔍 Checking model architecture: ${{ env.REPO_NAME }}"
+
+        DEBUG_FLAG=""
+        if [ "${{ inputs.debug }}" = "true" ]; then
+          DEBUG_FLAG="--debug"
+          echo "Debug mode enabled - will show filtered architecture list on failure"
+        fi
+
+        if python ./scripts/check_model_architecture_support.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} $DEBUG_FLAG; then
+          echo "✅ Model architecture validation PASSED"
+        else
+          echo "❌ Model architecture validation FAILED"
+          echo "::error::Model architecture is not supported by transformers version ${{ inputs.transformers_version }}"
+          echo "::error::The model cannot be converted with the current transformers version"
+          echo "::error::Consider updating transformers_version input parameter"
+          exit 1
+        fi
 
     - name: debug-dynamic-environment
       run: |
