@@ -271,6 +271,27 @@
                 },
                 {
                     "type": "model",
+                    "family": "embedding",
+                    "version": "3.3",
+                    "repo_name": "granite-embedding-english-r2",
+                    "default_quant": "bf16"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "version": "3.3",
+                    "repo_name": "granite-embedding-multilingual-r2",
+                    "default_quant": "bf16"
+                },
+                {
+                    "type": "model",
+                    "family": "embedding",
+                    "version": "3.3",
+                    "repo_name": "granite-embedding-code-r2",
+                    "default_quant": "bf16"
+                },
+                {
+                    "type": "model",
                     "family": "instruct",
                     "repo_name": "granite-4.0-micro",
                     "default_quant": "q4_K_M"
