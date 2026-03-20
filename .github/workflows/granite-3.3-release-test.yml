@@ -15,9 +15,9 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
-  ENABLE_VISION_JOBS: true
+  ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
   ENABLE_DOCLING_JOBS: false
 
   TARGET_HF_REPO_NAME_EXT: -GGUF
@@ -83,12 +83,15 @@ env:
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
   # 'ibm-granite/granite-vision-3.3-2b-embedding'
+  # 'ibm-granite/granite-embedding-english-r2'
+  # 'ibm-granite/granite-embedding-multilingual-r2'
+  # 'ibm-granite/granite-embedding-code-r2'
   SOURCE_EMBEDDING_REPOS: "[
-      'None'
+      'ibm-granite/granite-embedding-english-r2'
     ]"
   # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
     ]"
   SOURCE_DOCLING_REPOS: "[
       'None'

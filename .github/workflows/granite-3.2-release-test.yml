@@ -17,7 +17,7 @@ env:
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: true
+  ENABLE_EMBEDDING_JOBS: false
 
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
@@ -78,11 +78,11 @@ env:
   # 'ibm-granite/granite-vision-3.2-2b-embedding'
   # 'ibm-granite/granite-embedding-english-r2'
   SOURCE_EMBEDDING_REPOS: "[
-      'ibm-granite/granite-embedding-english-r2'
+      'None'
     ]"
   # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-      'Q8_0'
+      'None'
     ]"
 
 jobs:

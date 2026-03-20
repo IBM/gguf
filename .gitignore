@@ -12,13 +12,22 @@
 /models
 *.gguf
 
-# Test input
-test/
-temp*/
+# Test directories - exclude everything by default
+test/*
 
-# Test output
+# Test directories - include specific subdirectories
+!test/images/
+!test/messages/
+!test/prompts/
+!test/responses/
+!test/scripts/
+!test/templates/
+
+# Test directories - exclude temp and output folders anywhere
 **/temp/
 **/tmp/
+**/output/
+temp*/
 
 # Misc
 Modelfile
