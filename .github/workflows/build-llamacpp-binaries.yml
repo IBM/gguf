@@ -297,23 +297,21 @@ jobs:
     name: Upload Release Assets
     needs: build-binaries
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'workflow_dispatch' && inputs.release_tag != '') ||
-      github.event_name == 'release'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
 
     steps:
       - name: Set release tag
         id: set_tag
         run: |
-          # Always create release tag as "llama.cpp-{release_tag}"
+          # Use release_tag if provided, otherwise use llama_cpp_version
           if [ -n "${{ inputs.release_tag }}" ]; then
             TAG="llama.cpp-${{ inputs.release_tag }}"
+            echo "Using provided release tag: $TAG"
           else
-            echo "ERROR: release_tag input is required for release uploads"
-            exit 1
+            TAG="llama.cpp-${{ inputs.llama_cpp_version }}"
+            echo "Using llama.cpp version as release tag: $TAG"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Using release tag: $TAG"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
