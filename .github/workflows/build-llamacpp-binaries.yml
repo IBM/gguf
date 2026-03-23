@@ -7,7 +7,7 @@ on:
       llama_cpp_version:
         description: 'llama.cpp version (commit hash or tag)'
         required: true
-        default: 'b6808'
+        default: 'b8100'
         type: string
       release_tag:
         description: 'Optional: Release tag to upload binaries as release assets'
