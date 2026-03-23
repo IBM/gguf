@@ -91,7 +91,6 @@ jobs:
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           bin/llama-mtmd-cli
-          bin/llama-run
         sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment

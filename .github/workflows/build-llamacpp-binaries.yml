@@ -195,6 +195,20 @@ jobs:
           # Format flags for better readability (one per line)
           CMAKE_FLAGS_FORMATTED=$(echo "$CMAKE_FLAGS_USED" | sed 's/ -D/\n-D/g' | sed 's/^-D/  -D/')
 
+          # Determine if llama-run is included
+          VERSION="${{ steps.set_version.outputs.version }}"
+          LLAMA_RUN_NOTE=""
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le 6808 ]; then
+              LLAMA_RUN_BINARY="- **llama-run**: Simple inference runner"
+            else
+              LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (removed after b6808)"
+            fi
+          else
+            LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (version-dependent)"
+          fi
+
           cat > BUILD_INFO.md << EOF
           # llama.cpp Build Information
 
@@ -224,7 +238,7 @@ jobs:
           - **llama-cli**: Main command-line inference tool
           - **llama-quantize**: Model quantization tool
           - **llama-server**: HTTP server for model inference
-          - **llama-run**: Simple inference runner
+          $LLAMA_RUN_BINARY
           - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
 
           ## Usage
@@ -247,7 +261,23 @@ jobs:
         run: |
           cd llama.cpp/build/bin
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
-          zip -r "$ZIP_NAME" llama-cli llama-quantize llama-server llama-run llama-mtmd-cli BUILD_INFO.md
+
+          # Base binaries (always included)
+          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli BUILD_INFO.md"
+
+          # Add llama-run only for b6808 and older
+          VERSION="${{ steps.set_version.outputs.version }}"
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le 6808 ] && [ -f "llama-run" ]; then
+              BINARIES="$BINARIES llama-run"
+              echo "Including llama-run in archive (version $VERSION)"
+            else
+              echo "Excluding llama-run from archive (version $VERSION)"
+            fi
+          fi
+
+          zip -r "$ZIP_NAME" $BINARIES
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
 
@@ -332,22 +362,36 @@ jobs:
     steps:
       - name: Generate summary
         run: |
+          VERSION="${{ inputs.llama_cpp_version || 'b8100' }}"
+
           echo "# llama.cpp Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Build Information" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ inputs.llama_cpp_version || 'b6808' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
           echo "- **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY
           echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
           echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
-          echo "- llama-run" >> $GITHUB_STEP_SUMMARY
+
+          # Check if llama-run should be included
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le 6808 ]; then
+              echo "- llama-run" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ~~llama-run~~ (not built in $VERSION)" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- llama-run (version-dependent)" >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platform" >> $GITHUB_STEP_SUMMARY
-          echo "- Ubuntu (latest)" >> $GITHUB_STEP_SUMMARY
+          echo "- macOS (darwin-arm64)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "Zip files are available as workflow artifacts (90-day retention) and can be downloaded from the Actions tab." >> $GITHUB_STEP_SUMMARY
