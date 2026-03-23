@@ -46,9 +46,7 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   TEST_SENTENCE: "Artificial intelligence was founded as an academic discipline in 1956."
-  POOLING_METHOD: "mean"
-  NORMALIZE_METHOD: "2"
-  OUTPUT_FORMAT: "array" # "json"
+  OUTPUT_FORMAT: "json"
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
@@ -181,22 +179,17 @@ jobs:
         echo "[INFO] =========================================="
         echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
         echo "[INFO] Test sentence: ${{env.TEST_SENTENCE}}"
-        echo "[INFO] Pooling method: ${{env.POOLING_METHOD}}"
-        echo "[INFO] Normalization: ${{env.NORMALIZE_METHOD}}"
         echo "[INFO] Output format: ${{env.OUTPUT_FORMAT}}"
         echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
         echo "[INFO] =========================================="
         echo ""
 
-        # Run llama-embedding and capture output
+        # Run llama-embedding with simplified parameters
         echo "[INFO] Running llama-embedding..."
         ${{env.LLAMA_EMBEDDING_BIN}} \
           -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
-          --pooling "${{env.POOLING_METHOD}}" \
-          --embd-normalize "${{env.NORMALIZE_METHOD}}" \
           --embd-output-format "${{env.OUTPUT_FORMAT}}" \
           -p "${{env.TEST_SENTENCE}}" \
-          --log-disable \
           2>&1 | tee ${{env.BASE_FNAME_LOG_FILE}}
 
         exit_code=${PIPESTATUS[0]}
@@ -208,8 +201,16 @@ jobs:
           echo "[SUCCESS] Embedding generation completed successfully!"
 
           # Extract embedding output to response file
+          # JSON output appears after "batch_decode: n_tokens" line
           if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
-            grep -A 1000 "{" ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}} || cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
+            # Extract from "batch_decode" marker to end of file
+            sed -n '/batch_decode: n_tokens/,$p' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+            # If extraction failed or file is empty, use full log
+            if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+              echo "[WARN] Could not extract JSON from log, using full log file"
+              cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
+            fi
           else
             cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
           fi
