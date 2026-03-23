@@ -122,7 +122,9 @@ jobs:
           ls -lh
           echo ""
           echo "Checking for required binaries..."
-          for binary in llama-cli llama-quantize llama-server llama-run llama-mtmd-cli; do
+
+          # Core binaries (always required)
+          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -130,6 +132,25 @@ jobs:
               exit 1
             fi
           done
+
+          # llama-run only exists in b6808 and older
+          # Compare version: if it's b6808 or starts with b and number <= 6808
+          VERSION="${{ steps.set_version.outputs.version }}"
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le 6808 ]; then
+              if [ -f "llama-run" ]; then
+                echo "✓ llama-run found (version $VERSION)"
+              else
+                echo "✗ llama-run NOT FOUND (expected for version $VERSION)"
+                exit 1
+              fi
+            else
+              echo "ℹ llama-run not checked (not built in version $VERSION)"
+            fi
+          else
+            echo "ℹ llama-run not checked (version format: $VERSION)"
+          fi
 
       - name: Run smoke tests
         run: |
@@ -145,8 +166,19 @@ jobs:
           # Test llama-server
           ./llama-server --version || ./llama-server --help | head -5
 
-          # Test llama-run
-          ./llama-run --version || ./llama-run --help | head -5
+          # Test llama-run (only for b6808 and older)
+          VERSION="${{ steps.set_version.outputs.version }}"
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le 6808 ]; then
+              echo "Testing llama-run (version $VERSION)..."
+              ./llama-run --version || ./llama-run --help | head -5
+            else
+              echo "Skipping llama-run test (not built in version $VERSION)"
+            fi
+          else
+            echo "Skipping llama-run test (version format: $VERSION)"
+          fi
 
           # Test llama-mtmd-cli
           ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
