@@ -7,11 +7,12 @@ This script implements a sparse sentence transformer for testing embedding model
 import sys
 import json
 import torch
-from transformers import AutoModelForMaskedLM, AutoTokenizer
+from transformers.models.auto.modeling_auto import AutoModelForMaskedLM
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 
 class SparseSentenceTransformer:
-    def __init__(self, model_name_or_path, device: str = 'cpu', config_path: str = None):
+    def __init__(self, model_name_or_path, device: str = 'cpu', config_path: str | None = None):
         # If config_path is provided, load it to get model_type
         if config_path:
             print(f"[INFO] Loading config from: {config_path}")

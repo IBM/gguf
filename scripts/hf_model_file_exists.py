@@ -2,7 +2,7 @@ import os
 import sys
 
 from huggingface_hub import file_exists
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 ###########################################
 # Files

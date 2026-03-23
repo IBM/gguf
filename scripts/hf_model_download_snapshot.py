@@ -1,15 +1,16 @@
 import os
 import sys
+from typing import Optional
 from huggingface_hub import snapshot_download
 
-def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:str=None, hf_token:str=None) -> str:
+def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:Optional[str]=None, hf_token:Optional[str]=None) -> str:
     print(f">>> models_dir='{models_dir}', repo_id='{repo_id}'")
     if models_dir == "":
         print("models_dir is empty")
-        return
+        return ""
     if repo_id == "":
         print("repo_id is empty")
-        return
+        return ""
     local_dir = models_dir + "/" + repo_id
     print(f"local_dir: {local_dir}")
 
