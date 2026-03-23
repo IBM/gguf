@@ -67,7 +67,7 @@ env:
 
 jobs:
   test-quantized-embedding-model:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     if: ${{ inputs.enable_embedding_jobs == true }}
     steps:
     - uses: actions/checkout@v6
