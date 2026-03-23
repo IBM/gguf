@@ -9,9 +9,9 @@ on:
         required: true
         default: 'b8100'
         type: string
-      release_tag:
-        description: 'Optional: Release tag to upload binaries as release assets'
-        required: false
+      release_tag_extension:
+        description: 'Release tag extension (added after release version tag)'
+        required: true
         type: string
       debug:
         description: 'Enable debug output'
@@ -26,7 +26,7 @@ on:
       openssl_static:
         description: 'Force static linking of OpenSSL (avoids runtime dependencies on libssl/libcrypto)'
         required: false
-        default: false
+        default: true
         type: boolean
 
 env:
@@ -326,14 +326,9 @@ jobs:
       - name: Set release tag
         id: set_tag
         run: |
-          # Use release_tag if provided, otherwise use llama_cpp_version
-          if [ -n "${{ inputs.release_tag }}" ]; then
-            TAG="llama.cpp-${{ inputs.release_tag }}"
-            echo "Using provided release tag: $TAG"
-          else
-            TAG="llama.cpp-${{ inputs.llama_cpp_version }}"
-            echo "Using llama.cpp version as release tag: $TAG"
-          fi
+          # Always use llama_cpp_version with release_tag_extension
+          TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${{ inputs.release_tag_extension }}"
+          echo "Using release tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
