@@ -1,0 +1,245 @@
+# This workflow runs Build Verification Tests (BVT) on the quantized embedding models
+# using Hugging Face transformers library.
+name: bvt-hf-embedding-quantized-models-gguf
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+    inputs:
+      enable_embedding_jobs:
+        type: boolean
+        required: false
+        default: false
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+      debug:
+        type: boolean
+        required: true
+        default: false
+      trace:
+        type: boolean
+        required: false
+        default: false
+
+env:
+  DEBUG: ${{inputs.debug}}
+  EXT_GGUF: .gguf
+  TEST_SENTENCE: "Artificial intelligence was founded as an academic discipline in 1956."
+  MAX_TOKENS: 20
+  MODEL_DOWNLOAD_DIR: models
+  QUANTIZED_MODEL_EXISTS: false
+  GH_ARTIFACT_RETENTION: 2
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+
+jobs:
+  test-quantized-embedding-model:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable_embedding_jobs == true }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_embedding_model.py
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: confirm-environment
+      run: |
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Install dependencies including transformers and torch
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        python -m pip install torch transformers
+        pip list
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-embedding-30m-sparse
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test${{inputs.ext_response}}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV
+
+    - name: verify-github-env
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
+        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-gguf-hf-hub-download
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}..."
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: test-embedding-model
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |
+        echo "Testing embedding model with transformers library..."
+        echo "Model path: ${{env.LOCAL_MODEL_PATH}}"
+        echo "Test sentence: ${{env.TEST_SENTENCE}}"
+        echo "Max tokens: ${{env.MAX_TOKENS}}"
+
+        # Run the embedding test and capture output
+        python ./scripts/test_embedding_model.py \
+          "${{env.LOCAL_MODEL_PATH}}" \
+          "${{env.TEST_SENTENCE}}" \
+          "${{env.MAX_TOKENS}}" \
+          "cpu" \
+          2>&1 | tee ${{env.BASE_FNAME_LOG_FILE}}
+
+        exit_code=${PIPESTATUS[0]}
+
+        if [ $exit_code -eq 0 ]; then
+          echo "[SUCCESS] Embedding model test succeeded"
+          # Extract the result section from the log
+          grep -A 100 "\[RESULT\]" ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}} || true
+        else
+          echo "[ERROR] Embedding model test failed with exit code: $exit_code"
+          cat ${{env.BASE_FNAME_LOG_FILE}}
+          exit 1
+        fi
+
+    - name: show-response
+      run: |
+        echo "================== Test Results =================="
+        cat ${{env.BASE_FNAME_RESPONSE_FILE}}
+        echo "=================================================="
+
+    - name: validate-output-format
+      run: |
+        echo "Validating output format..."
+
+        # Check if the response file contains expected patterns
+        if grep -q "Top-k expansion results" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
+          echo "[SUCCESS] Output contains expected format"
+        else
+          echo "[ERROR] Output format validation failed"
+          exit 1
+        fi
+
+        # Check if we have tuple-like results
+        if grep -q "(" ${{env.BASE_FNAME_RESPONSE_FILE}} && grep -q ")" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
+          echo "[SUCCESS] Output contains tuple results"
+        else
+          echo "[ERROR] Output does not contain expected tuple format"
+          exit 1
+        fi
+
+    # ========================= Upload log as artifact ======================================
+
+    - name: Upload log artifact
+      id: artifact-upload-log
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test-log
+        path: ${{env.BASE_FNAME_LOG_FILE}}
+
+    - name: Show log artifact ID
+      id: show-artifact-id-log
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    # ========================= Upload response as artifact ======================================
+
+    - name: Upload response artifact
+      id: artifact-upload-response
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test-response
+        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: Show response artifact ID
+      id: show-artifact-id-response
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+
+# Made with Bob
