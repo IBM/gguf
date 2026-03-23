@@ -23,6 +23,11 @@ on:
         required: false
         default: false
         type: boolean
+      openssl_static:
+        description: 'Force static linking of OpenSSL (avoids runtime dependencies on libssl/libcrypto)'
+        required: false
+        default: false
+        type: boolean
 
 env:
   LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
@@ -91,7 +96,6 @@ jobs:
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
           CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DOPENSSL_USE_STATIC_LIBS=ON"
           CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
           CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
@@ -100,6 +104,12 @@ jobs:
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
           CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+
+          # Optional OpenSSL static linking (only when openssl_static is true)
+          if [ "${{ inputs.openssl_static }}" = "true" ]; then
+            echo "Forcing static linking of OpenSSL..."
+            CMAKE_FLAGS="$CMAKE_FLAGS -DOPENSSL_USE_STATIC_LIBS=ON"
+          fi
 
           # Additional acceleration-disabling flags (only when minimize_acceleration is true)
           if [ "${{ inputs.minimize_acceleration }}" = "true" ]; then
@@ -221,6 +231,7 @@ jobs:
           ## Input Parameters
           - **llama_cpp_version**: \`${{ inputs.llama_cpp_version }}\`
           - **minimize_acceleration**: \`${{ inputs.minimize_acceleration }}\`
+          - **openssl_static**: \`${{ inputs.openssl_static }}\`
           - **debug**: \`${{ inputs.debug }}\`
 
           ## CMake Compiler Flags Used

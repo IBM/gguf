@@ -16,9 +16,11 @@ This document outlines the plan for creating a GitHub Actions workflow to build 
 
 ### Trigger Options
 - **Manual dispatch** (`workflow_dispatch`) with inputs:
-  - `llama_cpp_version`: Git commit hash or tag (default: `b8216` or later)
+  - `llama_cpp_version`: Git commit hash or tag (default: `b8100` or later)
   - `release_tag`: Optional release tag to upload binaries as release assets
   - `debug`: Boolean to enable verbose output (default: `false`)
+  - `minimize_acceleration`: Disable all hardware acceleration for maximum compatibility (default: `false`)
+  - `openssl_static`: Force static linking of OpenSSL to avoid runtime dependencies (default: `false`)
 - **On release**: Automatically build when a new release is created
 - **Scheduled** (optional): Weekly builds to keep binaries up-to-date
 
@@ -31,6 +33,9 @@ Build on a single platform:
 2. `llama-quantize` - Model quantization tool
 3. `llama-server` - HTTP server for model serving
 4. `llama-mtmd-cli` - Multimodal (MTMD) interface
+5. `llama-gguf` - GGUF file inspection and manipulation tool (useful for debugging)
+
+**Note:** `llama-run` was deprecated after llama.cpp release b6808 and is only built for versions b6808 and older.
 
 ### CMake Build Configuration
 
@@ -38,12 +43,14 @@ Build on a single platform:
 ```bash
 cmake -B build \
   -DBUILD_SHARED_LIBS=OFF \
+  -DOPENSSL_USE_STATIC_LIBS=ON \  # Optional, controlled by openssl_static input
   -DCMAKE_CROSSCOMPILING=TRUE \
   -DGGML_NO_ACCELERATE=ON
 ```
 
 **Flag Explanations:**
 - `-DBUILD_SHARED_LIBS=OFF`: Build static libraries for portability
+- `-DOPENSSL_USE_STATIC_LIBS=ON`: Force static linking of OpenSSL (optional, avoids runtime dependencies on libssl/libcrypto)
 - `-DCMAKE_CROSSCOMPILING=TRUE`: Treat as cross-compilation for maximum compatibility
 - `-DGGML_NO_ACCELERATE=ON`: Disable platform-specific accelerations for consistency
 
