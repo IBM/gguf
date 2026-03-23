@@ -74,6 +74,7 @@ jobs:
           bin/llama-embedding
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
+          scripts/validate_embedding_json.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -203,8 +204,9 @@ jobs:
           # Extract embedding output to response file
           # JSON output appears after "batch_decode: n_tokens" line
           if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
-            # Extract from "batch_decode" marker to end of file
-            sed -n '/batch_decode: n_tokens/,$p' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
+            # Extract only the JSON content between { and }
+            # Use sed to find first { and last }, capturing everything in between
+            sed -n '/{/,/}/p' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
 
             # If extraction failed or file is empty, use full log
             if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
@@ -240,20 +242,17 @@ jobs:
           exit 1
         fi
 
-        # For JSON output, validate JSON structure
+        # For JSON output, validate JSON structure using Python script
         if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
-          if grep -q "embedding" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
-            echo "[SUCCESS] Output contains embedding data"
-          else
-            echo "[ERROR] Output does not contain expected embedding field"
-            exit 1
-          fi
+          echo "[INFO] Validating JSON embedding format..."
+          python3 ./scripts/validate_embedding_json.py ${{env.BASE_FNAME_RESPONSE_FILE}}
 
-          # Check for valid JSON array structure
-          if grep -q "\[" ${{env.BASE_FNAME_RESPONSE_FILE}} && grep -q "\]" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
-            echo "[SUCCESS] Output contains valid array structure"
+          if [ $? -eq 0 ]; then
+            echo "[SUCCESS] JSON validation passed!"
           else
-            echo "[ERROR] Output does not contain expected array format"
+            echo "[ERROR] JSON validation failed"
+            echo "[INFO] Response file contents:"
+            cat ${{env.BASE_FNAME_RESPONSE_FILE}}
             exit 1
           fi
         else
