@@ -54,11 +54,13 @@ env:
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
   REPO_NAME: ""  # Set in set-github-env step
-  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  SOURCE_REPO_ID: ""  # Set in set-derivative-env-vars-1 step (original repo with config.json)
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step (GGUF repo)
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
-  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (GGUF model path)
+  SOURCE_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (source repo for config.json)
 
 jobs:
   test-quantized-embedding-model:
@@ -71,6 +73,7 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
+          scripts/hf_model_download_snapshot.py
           scripts/test_embedding_model.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
@@ -117,6 +120,7 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
+        echo "SOURCE_REPO_ID=${{ inputs.repo_id }}" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test${{inputs.ext_log}}" >> $GITHUB_ENV
@@ -125,16 +129,19 @@ jobs:
     - name: set-derivative-env-vars-2
       run: |
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV
+        echo "SOURCE_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.SOURCE_REPO_ID}}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
         echo "================== Derivative Environment Variables 1 =================="
+        echo "SOURCE_REPO_ID='$SOURCE_REPO_ID' (${{ env.SOURCE_REPO_ID }})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
         echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "SOURCE_MODEL_PATH='$SOURCE_MODEL_PATH' (${{ env.SOURCE_MODEL_PATH }})"
 
     - name: test-quantized-model-exists
       run: |
@@ -152,17 +159,32 @@ jobs:
     - name: download-quantized-gguf-hf-hub-download
       if: env.QUANTIZED_MODEL_EXISTS == 'true'
       run: |
-        echo "Downloading model to: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}..."
+        echo "Downloading GGUF model to: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: download-config-json-from-source
+      run: |
+        echo "Downloading config.json from source repo: ${{env.SOURCE_REPO_ID}}..."
+        echo "This is needed because GGUF repos don't have config.json required by transformers"
+        echo "--------------------"
+        mkdir -p ${{env.SOURCE_MODEL_PATH}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_REPO_ID }} config.json ${{secrets.hf_token}}
+        echo "--------------------"
+        echo "Verifying config.json was downloaded:"
+        ls -la ${{env.SOURCE_MODEL_PATH}}/config.json
+        echo "--------------------"
+        echo "Config.json content:"
+        cat ${{env.SOURCE_MODEL_PATH}}/config.json
 
     - name: test-embedding-model
       timeout-minutes: 10
       continue-on-error: true
       run: |
         echo "Testing embedding model with transformers library..."
-        echo "Model path: ${{env.LOCAL_MODEL_PATH}}"
+        echo "GGUF Model path: ${{env.LOCAL_MODEL_PATH}}"
+        echo "Config.json path: ${{env.SOURCE_MODEL_PATH}}/config.json"
         echo "Test sentence: ${{env.TEST_SENTENCE}}"
         echo "Max tokens: ${{env.MAX_TOKENS}}"
 
@@ -172,6 +194,7 @@ jobs:
           "${{env.TEST_SENTENCE}}" \
           "${{env.MAX_TOKENS}}" \
           "cpu" \
+          "${{env.SOURCE_MODEL_PATH}}/config.json" \
           2>&1 | tee ${{env.BASE_FNAME_LOG_FILE}}
 
         exit_code=${PIPESTATUS[0]}

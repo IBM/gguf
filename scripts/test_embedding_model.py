@@ -5,12 +5,21 @@ This script implements a sparse sentence transformer for testing embedding model
 """
 
 import sys
+import json
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
 
 class SparseSentenceTransformer:
-    def __init__(self, model_name_or_path, device: str = 'cpu'):
+    def __init__(self, model_name_or_path, device: str = 'cpu', config_path: str = None):
+        # If config_path is provided, load it to get model_type
+        if config_path:
+            print(f"[INFO] Loading config from: {config_path}")
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+            model_type = config.get('model_type', None)
+            print(f"[INFO] Model type from config: {model_type}")
+
         self.model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
         self.device = device
@@ -50,23 +59,26 @@ class SparseSentenceTransformer:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python test_embedding_model.py <model_name_or_path> [test_sentence] [max_tokens] [device]")
+        print("Usage: python test_embedding_model.py <model_name_or_path> [test_sentence] [max_tokens] [device] [config_path]")
         sys.exit(1)
 
     model_name_or_path = sys.argv[1]
     test_sentence = sys.argv[2] if len(sys.argv) > 2 else "Artificial intelligence was founded as an academic discipline in 1956."
     max_tokens = int(sys.argv[3]) if len(sys.argv) > 3 else 20
     device = sys.argv[4] if len(sys.argv) > 4 else "cpu"
+    config_path = sys.argv[5] if len(sys.argv) > 5 else None
 
     print(f"[INFO] Testing embedding model: {model_name_or_path}")
     print(f"[INFO] Device: {device}")
     print(f"[INFO] Test sentence: {test_sentence}")
     print(f"[INFO] Max tokens: {max_tokens}")
+    if config_path:
+        print(f"[INFO] Config path: {config_path}")
     print()
 
     try:
         # Initialize the sparse sentence transformer
-        sparse_model = SparseSentenceTransformer(model_name_or_path, device=device)
+        sparse_model = SparseSentenceTransformer(model_name_or_path, device=device, config_path=config_path)
 
         # Encode the test sentence
         print("[INFO] Encoding sentence...")
