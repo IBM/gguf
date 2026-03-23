@@ -42,7 +42,7 @@ on:
       transformers_version:
         type: string
         required: false
-        default: "4.52.1"
+        default: "4.53.0" # "4.52.1"
         description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3'). Defaults to 4.52.1 for Granite 3.x models."
       debug:
         type: boolean
@@ -85,7 +85,7 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_CPP_VERSION: b7951 # Previously: b6808, b6791,"b6569", 'b5717', 'b6050'
+      LLAMA_CPP_VERSION: b8100 # Previously: b7951, b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
 
     - uses: actions/checkout@v6
