@@ -1,14 +1,14 @@
 # llama.cpp Build Information
 
 ## Build Details
-- **llama.cpp Version**: b6808
-- **Build Date**: 2026-03-12 17:23:58 UTC
+- **llama.cpp Version**: b8100
+- **Build Date**: 2026-03-23 16:58:58 UTC
 - **Platform**: macOS (darwin-arm64)
 - **Architecture**: ARM64 (Apple Silicon compatible)
 - **Minimum macOS Version**: 15.0 (Sequoia)
 
 ## Input Parameters
-- **llama_cpp_version**: `b6808`
+- **llama_cpp_version**: `b8100`
 - **minimize_acceleration**: `false`
 - **debug**: `true`
 
@@ -37,7 +37,7 @@
 - **llama-cli**: Main command-line inference tool
 - **llama-quantize**: Model quantization tool
 - **llama-server**: HTTP server for model inference
-- **llama-run**: Simple inference runner
+- **llama-run**: ⚠️ Not included (removed after b6808)
 - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
 
 ## Usage
@@ -50,4 +50,4 @@ All binaries are statically linked and should run on any macOS 15.0+ ARM64 syste
 - Static linking for portability
 
 ---
-Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/23014842143
+Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/23449463845

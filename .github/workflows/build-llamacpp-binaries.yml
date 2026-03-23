@@ -91,6 +91,7 @@ jobs:
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
           CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DOPENSSL_USE_STATIC_LIBS=ON"
           CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
           CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
@@ -98,6 +99,7 @@ jobs:
           CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
           CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+          CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
 
           # Additional acceleration-disabling flags (only when minimize_acceleration is true)
           if [ "${{ inputs.minimize_acceleration }}" = "true" ]; then
@@ -137,7 +139,7 @@ jobs:
           echo "Checking for required binaries..."
 
           # Core binaries (always required)
-          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli; do
+          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -182,6 +184,10 @@ jobs:
 
           # Test llama-mtmd-cli
           ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
+
+          # Test llama-gguf
+          echo "Testing llama-gguf..."
+          ./llama-gguf 2>&1 | head -10 || echo "llama-gguf requires arguments"
 
           echo "All smoke tests passed!"
 
@@ -233,6 +239,7 @@ jobs:
           - **llama-server**: HTTP server for model inference
           $LLAMA_RUN_BINARY
           - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
+          - **llama-gguf**: GGUF file inspection and manipulation tool
 
           ## Usage
           All binaries are statically linked and should run on any macOS 15.0+ ARM64 system without additional dependencies.
@@ -256,7 +263,7 @@ jobs:
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
 
           # Base binaries (always included)
-          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli BUILD_INFO.md"
+          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf BUILD_INFO.md"
 
           # Add llama-run only for b6808 and older
           if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ] && [ -f "llama-run" ]; then
@@ -380,6 +387,7 @@ jobs:
           fi
 
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-gguf" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platform" >> $GITHUB_STEP_SUMMARY
           echo "- macOS (darwin-arm64)" >> $GITHUB_STEP_SUMMARY
