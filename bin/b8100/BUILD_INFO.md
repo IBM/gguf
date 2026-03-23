@@ -2,7 +2,7 @@
 
 ## Build Details
 - **llama.cpp Version**: b8100
-- **Build Date**: 2026-03-23 16:58:58 UTC
+- **Build Date**: 2026-03-23 17:40:40 UTC
 - **Platform**: macOS (darwin-arm64)
 - **Architecture**: ARM64 (Apple Silicon compatible)
 - **Minimum macOS Version**: 15.0 (Sequoia)
@@ -19,6 +19,7 @@
   -DCMAKE_SYSTEM_NAME=Darwin
   -DCMAKE_SYSTEM_PROCESSOR=arm64
   -DBUILD_SHARED_LIBS=OFF
+  -DOPENSSL_USE_STATIC_LIBS=ON
   -DGGML_METAL=OFF
   -DGGML_NATIVE_DEFAULT=OFF
   -DCMAKE_CROSSCOMPILING=TRUE
@@ -26,6 +27,7 @@
   -DGGML_SVE=OFF
   -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic"
   -DCMAKE_BUILD_TYPE=Release
+  -DLLAMA_BUILD_EXAMPLES=ON
 ```
 
 ## Compiler Flag Explanation
@@ -39,6 +41,7 @@
 - **llama-server**: HTTP server for model inference
 - **llama-run**: ⚠️ Not included (removed after b6808)
 - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
+- **llama-gguf**: GGUF file inspection and manipulation tool
 
 ## Usage
 All binaries are statically linked and should run on any macOS 15.0+ ARM64 system without additional dependencies.
@@ -50,4 +53,4 @@ All binaries are statically linked and should run on any macOS 15.0+ ARM64 syste
 - Static linking for portability
 
 ---
-Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/23449463845
+Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/23451368972
