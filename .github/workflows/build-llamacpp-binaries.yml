@@ -149,7 +149,7 @@ jobs:
           echo "Checking for required binaries..."
 
           # Core binaries (always required)
-          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf; do
+          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -198,6 +198,10 @@ jobs:
           # Test llama-gguf
           echo "Testing llama-gguf..."
           ./llama-gguf 2>&1 | head -10 || echo "llama-gguf requires arguments"
+
+          # Test llama-embedding
+          echo "Testing llama-embedding..."
+          ./llama-embedding --help | head -10
 
           echo "All smoke tests passed!"
 
@@ -251,6 +255,7 @@ jobs:
           $LLAMA_RUN_BINARY
           - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
           - **llama-gguf**: GGUF file inspection and manipulation tool
+          - **llama-embedding**: Embedding generation tool for text embeddings
 
           ## Usage
           All binaries are statically linked and should run on any macOS 15.0+ ARM64 system without additional dependencies.
@@ -274,7 +279,7 @@ jobs:
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-darwin-arm64.zip"
 
           # Base binaries (always included)
-          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf BUILD_INFO.md"
+          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding BUILD_INFO.md"
 
           # Add llama-run only for b6808 and older
           if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ] && [ -f "llama-run" ]; then
@@ -399,6 +404,7 @@ jobs:
 
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
           echo "- llama-gguf" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-embedding" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platform" >> $GITHUB_STEP_SUMMARY
           echo "- macOS (darwin-arm64)" >> $GITHUB_STEP_SUMMARY

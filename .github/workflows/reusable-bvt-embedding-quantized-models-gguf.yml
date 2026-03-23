@@ -1,6 +1,6 @@
 # This workflow runs Build Verification Tests (BVT) on the quantized embedding models
-# using Hugging Face transformers library.
-name: bvt-hf-embedding-quantized-models-gguf
+# using llama-embedding binary from llama.cpp.
+name: bvt-embedding-quantized-models-gguf
 
 on:
   workflow_dispatch:
@@ -46,10 +46,13 @@ env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
   TEST_SENTENCE: "Artificial intelligence was founded as an academic discipline in 1956."
-  MAX_TOKENS: 20
+  POOLING_METHOD: "mean"
+  NORMALIZE_METHOD: "2"
+  OUTPUT_FORMAT: "json"
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
+  LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
 
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
@@ -70,11 +73,9 @@ jobs:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          requirements.txt
+          bin/llama-embedding
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
-          scripts/hf_model_download_snapshot.py
-          scripts/test_embedding_model.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -95,17 +96,14 @@ jobs:
         GITHUB_INPUTS: ${{ toJson(inputs) }}
       run: echo "$GITHUB_INPUTS"
 
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    # Install dependencies including transformers and torch
+    # Install minimal dependencies for HF file operations
     - name: install-dependencies
       run: |
-        python -m pip install -r ./requirements.txt
-        python -m pip install torch transformers
+        python -m pip install huggingface_hub requests
         pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
@@ -164,47 +162,63 @@ jobs:
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
-    - name: download-config-json-from-source
+    - name: verify-llama-embedding-binary
       run: |
-        echo "Downloading config.json from source repo: ${{env.SOURCE_REPO_ID}}..."
-        echo "This is needed because GGUF repos don't have config.json required by transformers"
-        echo "--------------------"
-        mkdir -p ${{env.SOURCE_MODEL_PATH}}
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.SOURCE_REPO_ID }} config.json ${{secrets.hf_token}}
-        echo "--------------------"
-        echo "Verifying config.json was downloaded:"
-        ls -la ${{env.SOURCE_MODEL_PATH}}/config.json
-        echo "--------------------"
-        echo "Config.json content:"
-        cat ${{env.SOURCE_MODEL_PATH}}/config.json
+        echo "Verifying llama-embedding binary..."
+        if [ ! -f "${{env.LLAMA_EMBEDDING_BIN}}" ]; then
+          echo "[ERROR] llama-embedding binary not found at: ${{env.LLAMA_EMBEDDING_BIN}}"
+          exit 1
+        fi
+        echo "[SUCCESS] llama-embedding binary found"
+        echo "Testing binary..."
+        ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
 
-    - name: test-embedding-model
+    - name: test-embedding-model-with-llama-embedding
       timeout-minutes: 10
-      continue-on-error: true
       run: |
-        echo "Testing embedding model with transformers library..."
-        echo "GGUF Model path: ${{env.LOCAL_MODEL_PATH}}"
-        echo "Config.json path: ${{env.SOURCE_MODEL_PATH}}/config.json"
-        echo "Test sentence: ${{env.TEST_SENTENCE}}"
-        echo "Max tokens: ${{env.MAX_TOKENS}}"
+        echo "[INFO] =========================================="
+        echo "[INFO] Granite Embedding Model GGUF Test"
+        echo "[INFO] =========================================="
+        echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
+        echo "[INFO] Test sentence: ${{env.TEST_SENTENCE}}"
+        echo "[INFO] Pooling method: ${{env.POOLING_METHOD}}"
+        echo "[INFO] Normalization: ${{env.NORMALIZE_METHOD}}"
+        echo "[INFO] Output format: ${{env.OUTPUT_FORMAT}}"
+        echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "[INFO] =========================================="
+        echo ""
 
-        # Run the embedding test and capture output
-        python ./scripts/test_embedding_model.py \
-          "${{env.LOCAL_MODEL_PATH}}" \
-          "${{env.TEST_SENTENCE}}" \
-          "${{env.MAX_TOKENS}}" \
-          "cpu" \
-          "${{env.SOURCE_MODEL_PATH}}/config.json" \
+        # Run llama-embedding and capture output
+        echo "[INFO] Running llama-embedding..."
+        ${{env.LLAMA_EMBEDDING_BIN}} \
+          -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
+          --pooling "${{env.POOLING_METHOD}}" \
+          --embd-normalize "${{env.NORMALIZE_METHOD}}" \
+          --embd-output-format "${{env.OUTPUT_FORMAT}}" \
+          -p "${{env.TEST_SENTENCE}}" \
+          --log-disable \
           2>&1 | tee ${{env.BASE_FNAME_LOG_FILE}}
 
         exit_code=${PIPESTATUS[0]}
 
+        echo ""
+        echo "[INFO] =========================================="
+
         if [ $exit_code -eq 0 ]; then
-          echo "[SUCCESS] Embedding model test succeeded"
-          # Extract the result section from the log
-          grep -A 100 "\[RESULT\]" ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}} || true
+          echo "[SUCCESS] Embedding generation completed successfully!"
+
+          # Extract embedding output to response file
+          if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
+            grep -A 1000 "{" ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}} || cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
+          else
+            cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
+          fi
+
+          echo "[INFO] Response saved to: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+          echo "[INFO] =========================================="
         else
-          echo "[ERROR] Embedding model test failed with exit code: $exit_code"
+          echo "[ERROR] Embedding generation failed with exit code: $exit_code"
+          echo "[INFO] =========================================="
           cat ${{env.BASE_FNAME_LOG_FILE}}
           exit 1
         fi
@@ -219,21 +233,39 @@ jobs:
       run: |
         echo "Validating output format..."
 
-        # Check if the response file contains expected patterns
-        if grep -q "Top-k expansion results" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
-          echo "[SUCCESS] Output contains expected format"
-        else
-          echo "[ERROR] Output format validation failed"
+        # Check if the response file exists and has content
+        if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Response file is empty or does not exist"
           exit 1
         fi
 
-        # Check if we have tuple-like results
-        if grep -q "(" ${{env.BASE_FNAME_RESPONSE_FILE}} && grep -q ")" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
-          echo "[SUCCESS] Output contains tuple results"
+        # For JSON output, validate JSON structure
+        if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
+          if grep -q "embedding" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
+            echo "[SUCCESS] Output contains embedding data"
+          else
+            echo "[ERROR] Output does not contain expected embedding field"
+            exit 1
+          fi
+
+          # Check for valid JSON array structure
+          if grep -q "\[" ${{env.BASE_FNAME_RESPONSE_FILE}} && grep -q "\]" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
+            echo "[SUCCESS] Output contains valid array structure"
+          else
+            echo "[ERROR] Output does not contain expected array format"
+            exit 1
+          fi
         else
-          echo "[ERROR] Output does not contain expected tuple format"
-          exit 1
+          # For other formats, just check that we have numeric output
+          if grep -qE "[0-9]+\.[0-9]+" ${{env.BASE_FNAME_RESPONSE_FILE}}; then
+            echo "[SUCCESS] Output contains numeric embedding values"
+          else
+            echo "[ERROR] Output does not contain expected numeric values"
+            exit 1
+          fi
         fi
+
+        echo "[SUCCESS] Output format validation passed!"
 
     # ========================= Upload log as artifact ======================================
 
