@@ -87,6 +87,7 @@ env:
   # 'ibm-granite/granite-embedding-multilingual-r2'
   # 'ibm-granite/granite-embedding-code-r2'
   SOURCE_EMBEDDING_REPOS: "[
+      'ibm-granite/granite-embedding-30m-english',
       'ibm-granite/granite-embedding-english-r2'
     ]"
   # 'Q4_K_M', 'Q8_0'

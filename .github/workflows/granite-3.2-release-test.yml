@@ -75,8 +75,6 @@ env:
   # 'ibm-granite/granite-embedding-125m-english',
   # 'ibm-granite/granite-embedding-107m-multilingual',
   # 'ibm-granite/granite-embedding-278m-multilingual'
-  # 'ibm-granite/granite-vision-3.2-2b-embedding'
-  # 'ibm-granite/granite-embedding-english-r2'
   SOURCE_EMBEDDING_REPOS: "[
       'None'
     ]"

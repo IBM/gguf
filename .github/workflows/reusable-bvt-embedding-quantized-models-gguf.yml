@@ -48,7 +48,7 @@ env:
   TEST_SENTENCE: "Artificial intelligence was founded as an academic discipline in 1956."
   POOLING_METHOD: "mean"
   NORMALIZE_METHOD: "2"
-  OUTPUT_FORMAT: "json"
+  OUTPUT_FORMAT: "array" # "json"
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
