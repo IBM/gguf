@@ -204,9 +204,9 @@ jobs:
           # Extract embedding output to response file
           # JSON output appears after "batch_decode: n_tokens" line
           if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
-            # Extract only the JSON content between { and }
-            # Use sed to find first { and last }, capturing everything in between
-            sed -n '/{/,/}/p' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
+            # Extract complete JSON content from first { to end of file
+            # This captures the entire nested JSON structure including closing braces
+            awk '/^{/,0' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
 
             # If extraction failed or file is empty, use full log
             if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
