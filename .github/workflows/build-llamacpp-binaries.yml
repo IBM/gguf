@@ -27,6 +27,8 @@ on:
 env:
   LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
   ARTIFACT_RETENTION_DAYS: 90
+  # llama-run was removed (at some point) after b6808, so only build it for this version and older
+  LLAMA_RUN_LAST_VERSION: 6808
 
 jobs:
   build-binaries:
@@ -49,6 +51,17 @@ jobs:
           VERSION="${{ inputs.llama_cpp_version }}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using llama.cpp version: $VERSION"
+
+          # Determine if llama-run should be built (only for b$LLAMA_RUN_LAST_VERSION and older)
+          INCLUDE_LLAMA_RUN="false"
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le ${{ env.LLAMA_RUN_LAST_VERSION }} ]; then
+              INCLUDE_LLAMA_RUN="true"
+            fi
+          fi
+          echo "include_llama_run=$INCLUDE_LLAMA_RUN" >> $GITHUB_OUTPUT
+          echo "Include llama-run in build: $INCLUDE_LLAMA_RUN (threshold: b${{ env.LLAMA_RUN_LAST_VERSION }})"
 
       - name: Verify environment
         run: |
@@ -133,23 +146,16 @@ jobs:
             fi
           done
 
-          # llama-run only exists in b6808 and older
-          # Compare version: if it's b6808 or starts with b and number <= 6808
-          VERSION="${{ steps.set_version.outputs.version }}"
-          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            if [ "$VERSION_NUM" -le 6808 ]; then
-              if [ -f "llama-run" ]; then
-                echo "✓ llama-run found (version $VERSION)"
-              else
-                echo "✗ llama-run NOT FOUND (expected for version $VERSION)"
-                exit 1
-              fi
+          # See if llama-run is supported based upon the last version that was known to support it
+          if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ]; then
+            if [ -f "llama-run" ]; then
+              echo "✓ llama-run found (version ${{ steps.set_version.outputs.version }})"
             else
-              echo "ℹ llama-run not checked (not built in version $VERSION)"
+              echo "✗ llama-run NOT FOUND (expected for version ${{ steps.set_version.outputs.version }})"
+              exit 1
             fi
           else
-            echo "ℹ llama-run not checked (version format: $VERSION)"
+            echo "ℹ llama-run not checked (not built in version ${{ steps.set_version.outputs.version }})"
           fi
 
       - name: Run smoke tests
@@ -167,17 +173,11 @@ jobs:
           ./llama-server --version || ./llama-server --help | head -5
 
           # Test llama-run (only for b6808 and older)
-          VERSION="${{ steps.set_version.outputs.version }}"
-          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            if [ "$VERSION_NUM" -le 6808 ]; then
-              echo "Testing llama-run (version $VERSION)..."
-              ./llama-run --version || ./llama-run --help | head -5
-            else
-              echo "Skipping llama-run test (not built in version $VERSION)"
-            fi
+          if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ]; then
+            echo "Testing llama-run (version ${{ steps.set_version.outputs.version }})..."
+            ./llama-run --version || ./llama-run --help | head -5
           else
-            echo "Skipping llama-run test (version format: $VERSION)"
+            echo "Skipping llama-run test (not built in version ${{ steps.set_version.outputs.version }})"
           fi
 
           # Test llama-mtmd-cli
@@ -196,17 +196,10 @@ jobs:
           CMAKE_FLAGS_FORMATTED=$(echo "$CMAKE_FLAGS_USED" | sed 's/ -D/\n-D/g' | sed 's/^-D/  -D/')
 
           # Determine if llama-run is included
-          VERSION="${{ steps.set_version.outputs.version }}"
-          LLAMA_RUN_NOTE=""
-          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            if [ "$VERSION_NUM" -le 6808 ]; then
-              LLAMA_RUN_BINARY="- **llama-run**: Simple inference runner"
-            else
-              LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (removed after b6808)"
-            fi
+          if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ]; then
+            LLAMA_RUN_BINARY="- **llama-run**: Simple inference runner"
           else
-            LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (version-dependent)"
+            LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (removed after b${{ env.LLAMA_RUN_LAST_VERSION }})"
           fi
 
           cat > BUILD_INFO.md << EOF
@@ -266,15 +259,11 @@ jobs:
           BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli BUILD_INFO.md"
 
           # Add llama-run only for b6808 and older
-          VERSION="${{ steps.set_version.outputs.version }}"
-          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            if [ "$VERSION_NUM" -le 6808 ] && [ -f "llama-run" ]; then
-              BINARIES="$BINARIES llama-run"
-              echo "Including llama-run in archive (version $VERSION)"
-            else
-              echo "Excluding llama-run from archive (version $VERSION)"
-            fi
+          if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ] && [ -f "llama-run" ]; then
+            BINARIES="$BINARIES llama-run"
+            echo "Including llama-run in archive (version ${{ steps.set_version.outputs.version }})"
+          else
+            echo "Excluding llama-run from archive (version ${{ steps.set_version.outputs.version }})"
           fi
 
           zip -r "$ZIP_NAME" $BINARIES
@@ -364,6 +353,15 @@ jobs:
         run: |
           VERSION="${{ inputs.llama_cpp_version || 'b8100' }}"
 
+          # Determine if llama-run was included (re-calculate for summary job)
+          INCLUDE_LLAMA_RUN="false"
+          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
+            VERSION_NUM="${BASH_REMATCH[1]}"
+            if [ "$VERSION_NUM" -le ${{ env.LLAMA_RUN_LAST_VERSION }} ]; then
+              INCLUDE_LLAMA_RUN="true"
+            fi
+          fi
+
           echo "# llama.cpp Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Build Information" >> $GITHUB_STEP_SUMMARY
@@ -377,15 +375,10 @@ jobs:
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
 
           # Check if llama-run should be included
-          if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
-            VERSION_NUM="${BASH_REMATCH[1]}"
-            if [ "$VERSION_NUM" -le 6808 ]; then
-              echo "- llama-run" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "- ~~llama-run~~ (not built in $VERSION)" >> $GITHUB_STEP_SUMMARY
-            fi
+          if [ "$INCLUDE_LLAMA_RUN" = "true" ]; then
+            echo "- llama-run" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- llama-run (version-dependent)" >> $GITHUB_STEP_SUMMARY
+            echo "- ~~llama-run~~ (not built in $VERSION)" >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
