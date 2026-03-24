@@ -9,10 +9,17 @@ import json
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python validate_embedding_json.py <json_file>")
+        print("[ERROR] Usage: python validate_embedding_json.py <json_file>")
         sys.exit(1)
 
     json_file = sys.argv[1]
+
+    # Validate that filename is not empty
+    if not json_file or json_file.strip() == "":
+        print("[ERROR] Filename argument is empty")
+        sys.exit(1)
+
+    print(f"[INFO] Validating JSON file: {json_file}")
 
     try:
         # Load JSON file
