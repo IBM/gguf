@@ -77,6 +77,7 @@ jobs:
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py
           scripts/analyze_embedding_tensors.py
+          scripts/extract_embedding_keywords.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -104,7 +105,7 @@ jobs:
     # Install minimal dependencies for HF file operations and tensor analysis
     - name: install-dependencies
       run: |
-        python -m pip install huggingface_hub requests torch
+        python -m pip install huggingface_hub requests torch transformers
         pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
@@ -311,6 +312,36 @@ jobs:
         else
           echo ""
           echo "[ERROR] Tensor analysis failed"
+          exit 1
+        fi
+
+    - name: extract-embedding-keywords
+      run: |
+        echo "[INFO] Extracting keywords from embedding tensors..."
+        echo "[INFO] Source model repo: ${{env.SOURCE_REPO_ID}}"
+        echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        echo "=================================================="
+
+        # Check if the processed response file exists
+        if [ ! -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Processed response file not found: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+          exit 1
+        fi
+
+        # Run the keyword extraction script
+        # Use the SOURCE_REPO_ID to load the tokenizer from HuggingFace
+        python3 ./scripts/extract_embedding_keywords.py \
+          "${{env.BASE_FNAME_RESPONSE_FILE}}" \
+          "${{env.SOURCE_REPO_ID}}" \
+          --max-tokens 30 \
+          --hf-token "${{secrets.hf_token}}"
+
+        if [ $? -eq 0 ]; then
+          echo ""
+          echo "[SUCCESS] Keyword extraction completed successfully!"
+        else
+          echo ""
+          echo "[ERROR] Keyword extraction failed"
           exit 1
         fi
 
