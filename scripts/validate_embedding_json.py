@@ -2,10 +2,12 @@
 """
 Validate and display embedding data from llama-embedding JSON output.
 Handles raw llama-embedding output by extracting JSON from the log.
+Supports extracting tensor array data to a separate output file.
 """
 
 import sys
 import json
+import argparse
 
 
 def extract_json_from_log(content):
@@ -59,12 +61,36 @@ def extract_json_from_log(content):
     return None
 
 
-def validate_embedding_structure(data):
+def extract_embedding_arrays(data):
     """
-    Validate the structure of embedding JSON data.
+    Extract all embedding arrays from the JSON data.
 
     Args:
         data: Parsed JSON object
+
+    Returns:
+        list: List of embedding arrays
+    """
+    embeddings = []
+
+    if 'data' not in data or not isinstance(data['data'], list):
+        return embeddings
+
+    for item in data['data']:
+        if 'embedding' in item and isinstance(item['embedding'], list):
+            embeddings.append(item['embedding'])
+
+    return embeddings
+
+
+def validate_embedding_structure(data, output_file=None):
+    """
+    Validate the structure of embedding JSON data.
+    Optionally write extracted embedding arrays to output file.
+
+    Args:
+        data: Parsed JSON object
+        output_file: Optional path to write extracted embedding arrays
 
     Returns:
         int: 0 if valid, 1 if invalid
@@ -121,26 +147,56 @@ def validate_embedding_structure(data):
         print()
 
     print("[SUCCESS] All embeddings validated successfully")
+
+    # If output file is specified, write extracted embedding arrays
+    if output_file:
+        embeddings = extract_embedding_arrays(data)
+        if embeddings:
+            print(f"[INFO] Writing {len(embeddings)} embedding array(s) to: {output_file}")
+            try:
+                with open(output_file, 'w') as f:
+                    json.dump(embeddings, f, indent=2)
+                print(f"[SUCCESS] Embedding arrays written to: {output_file}")
+            except Exception as e:
+                print(f"[ERROR] Failed to write output file: {e}")
+                return 1
+        else:
+            print("[WARNING] No embedding arrays found to write")
+
     return 0
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("[ERROR] Usage: python validate_embedding_json.py <json_file>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description='Validate and display embedding data from llama-embedding JSON output.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Validate only
+  python validate_embedding_json.py input.json
 
-    json_file = sys.argv[1]
+  # Validate and extract embedding arrays to output file
+  python validate_embedding_json.py input.json -o output.json
+        """
+    )
+    parser.add_argument('json_file', help='Input JSON file from llama-embedding')
+    parser.add_argument('-o', '--output', dest='output_file',
+                        help='Output file for extracted embedding arrays (tensor data only)')
+
+    args = parser.parse_args()
 
     # Validate that filename is not empty
-    if not json_file or json_file.strip() == "":
+    if not args.json_file or args.json_file.strip() == "":
         print("[ERROR] Filename argument is empty")
         sys.exit(1)
 
-    print(f"[INFO] Validating JSON file: {json_file}")
+    print(f"[INFO] Validating JSON file: {args.json_file}")
+    if args.output_file:
+        print(f"[INFO] Output file for embedding arrays: {args.output_file}")
 
     try:
         # Read the file content
-        with open(json_file, 'r') as f:
+        with open(args.json_file, 'r') as f:
             content = f.read()
 
         if not content.strip():
@@ -166,15 +222,15 @@ def main():
             data = json.loads(json_str)
             print("[INFO] Extracted JSON is valid")
 
-        # Validate the embedding structure
-        result = validate_embedding_structure(data)
+        # Validate the embedding structure and optionally write output
+        result = validate_embedding_structure(data, args.output_file)
         sys.exit(result)
 
     except json.JSONDecodeError as e:
         print(f"[ERROR] Invalid JSON format: {e}")
         sys.exit(1)
     except FileNotFoundError:
-        print(f"[ERROR] File not found: {json_file}")
+        print(f"[ERROR] File not found: {args.json_file}")
         sys.exit(1)
     except Exception as e:
         print(f"[ERROR] Unexpected error: {e}")
