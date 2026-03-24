@@ -201,23 +201,20 @@ jobs:
         if [ $exit_code -eq 0 ]; then
           echo "[SUCCESS] Embedding generation completed successfully!"
 
-          # Extract embedding output to response file
-          # JSON output appears after "batch_decode: n_tokens" line
-          if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
-            # Extract complete JSON content from first { to end of file
-            # This captures the entire nested JSON structure including closing braces
-            awk '/^{/,0' ${{env.BASE_FNAME_LOG_FILE}} > ${{env.BASE_FNAME_RESPONSE_FILE}}
+          # Copy log file to response file
+          # The Python validation script will handle JSON extraction if needed
+          echo "[INFO] Saving response to: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+          cp "${{env.BASE_FNAME_LOG_FILE}}" "${{env.BASE_FNAME_RESPONSE_FILE}}"
 
-            # If extraction failed or file is empty, use full log
-            if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
-              echo "[WARN] Could not extract JSON from log, using full log file"
-              cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
-            fi
+          # Verify file was created
+          if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+            echo "[SUCCESS] Response file created"
+            ls -lh "${{env.BASE_FNAME_RESPONSE_FILE}}"
           else
-            cp ${{env.BASE_FNAME_LOG_FILE}} ${{env.BASE_FNAME_RESPONSE_FILE}}
+            echo "[ERROR] Failed to create response file"
+            exit 1
           fi
 
-          echo "[INFO] Response saved to: ${{env.BASE_FNAME_RESPONSE_FILE}}"
           echo "[INFO] =========================================="
         else
           echo "[ERROR] Embedding generation failed with exit code: $exit_code"
@@ -236,6 +233,8 @@ jobs:
       run: |
         echo "Validating output format..."
         echo "[INFO] Response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        cat ${{env.BASE_FNAME_RESPONSE_FILE}}
+        echo "=================================================="
 
         # Check if the response file exists and has content
         if [ ! -s "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
