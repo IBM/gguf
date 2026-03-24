@@ -76,6 +76,7 @@ jobs:
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py
+          scripts/analyze_embedding_tensors.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -100,10 +101,10 @@ jobs:
       with:
         python-version: '3.11'
 
-    # Install minimal dependencies for HF file operations
+    # Install minimal dependencies for HF file operations and tensor analysis
     - name: install-dependencies
       run: |
-        python -m pip install huggingface_hub requests
+        python -m pip install huggingface_hub requests torch
         pip list
 
     # Use this step to set values to the github context (shared across jobs/steps)
@@ -288,6 +289,30 @@ jobs:
         fi
 
         echo "[SUCCESS] Output format validation passed!"
+
+    - name: analyze-embedding-tensors
+      run: |
+        echo "[INFO] Analyzing embedding tensors with PyTorch..."
+        echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        echo "=================================================="
+
+        # Check if the processed response file exists
+        if [ ! -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Processed response file not found: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+          exit 1
+        fi
+
+        # Run the tensor analysis script
+        python3 ./scripts/analyze_embedding_tensors.py "${{env.BASE_FNAME_RESPONSE_FILE}}" --num-rows 10
+
+        if [ $? -eq 0 ]; then
+          echo ""
+          echo "[SUCCESS] Tensor analysis completed successfully!"
+        else
+          echo ""
+          echo "[ERROR] Tensor analysis failed"
+          exit 1
+        fi
 
     # ========================= Upload log as artifact ======================================
 
