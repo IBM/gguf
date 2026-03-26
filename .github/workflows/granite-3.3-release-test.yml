@@ -20,6 +20,9 @@ env:
   ENABLE_EMBEDDING_JOBS: true
   ENABLE_DOCLING_JOBS: false
 
+  # Enable appending the converted format (BF16/F16) to BVT test matrix
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: false
@@ -118,20 +121,26 @@ jobs:
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
+      enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
       source_language_repos: "${{ steps.set-vars.outputs.source_language_repos }}"
       target_language_quantizations: "${{ steps.set-vars.outputs.target_language_quantizations }}"
+      target_language_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_language_quantizations_bvt }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
+      target_vision_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_vision_quantizations_bvt }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
+      target_guardian_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_guardian_quantizations_bvt }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
+      target_embedding_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_embedding_quantizations_bvt }}"
       source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
       target_docling_quantizations: "${{ steps.set-vars.outputs.target_docling_quantizations }}"
+      target_docling_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_docling_quantizations_bvt }}"
       default_artifacts_dir: "${{ steps.set-vars.outputs.default_artifacts_dir }}"
       artifact_logs_name: "${{ steps.set-vars.outputs.artifact_logs_name }}"
       artifact_responses_name: "${{ steps.set-vars.outputs.artifact_responses_name }}"
@@ -142,6 +151,13 @@ jobs:
       transformers_version_guardian: "${{ steps.set-vars.outputs.transformers_version_guardian }}"
       transformers_version_embedding: "${{ steps.set-vars.outputs.transformers_version_embedding }}"
       transformers_version_docling: "${{ steps.set-vars.outputs.transformers_version_docling }}"
+    env:
+      ARRAY_SEP: "','"
+      DEF_CONVERTED_QUANT_LANGUAGE: "BF16"
+      DEF_CONVERTED_QUANT_VISION: "F16"
+      DEF_CONVERTED_QUANT_GUARDIAN: "BF16"
+      DEF_CONVERTED_QUANT_EMBEDDING: "BF16"
+      DEF_CONVERTED_QUANT_DOCLING: "F16"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -158,6 +174,7 @@ jobs:
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -182,6 +199,72 @@ jobs:
             echo "transformers_version_guardian=$TRANSFORMERS_VERSION_GUARDIAN" >> "$GITHUB_OUTPUT"
             echo "transformers_version_embedding=$TRANSFORMERS_VERSION_EMBEDDING" >> "$GITHUB_OUTPUT"
             echo "transformers_version_docling=$TRANSFORMERS_VERSION_DOCLING" >> "$GITHUB_OUTPUT"
+
+      - name: Append converted format to BVT test matrices
+        id: append-converted-format
+        run: |
+            echo "ENABLE_BVT_TEST_CONVERTED_FORMAT: $ENABLE_BVT_TEST_CONVERTED_FORMAT"
+
+            if [ "$ENABLE_BVT_TEST_CONVERTED_FORMAT" = "true" ]; then
+              echo "✅ Appending converted formats to BVT test matrices"
+
+              # Language models (BF16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_LANGUAGE}} to TARGET_LANGUAGE_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_LANGUAGE_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_LANGUAGE_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_LANGUAGE}}']"
+              else
+                TARGET_LANGUAGE_QUANTIZATIONS_BVT="$TARGET_LANGUAGE_QUANTIZATIONS"
+              fi
+              echo "target_language_quantizations_bvt=$TARGET_LANGUAGE_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Vision models (F16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_VISION}} to TARGET_VISION_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_VISION_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_VISION_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_VISION}}']"
+              else
+                TARGET_VISION_QUANTIZATIONS_BVT="$TARGET_VISION_QUANTIZATIONS"
+              fi
+              echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Guardian models (BF16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+              else
+                TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+              fi
+              echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Embedding models (BF16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_EMBEDDING}} to TARGET_EMBEDDING_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_EMBEDDING_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_EMBEDDING}}']"
+              else
+                TARGET_EMBEDDING_QUANTIZATIONS_BVT="$TARGET_EMBEDDING_QUANTIZATIONS"
+              fi
+              echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Docling models (F16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_DOCLING}} to TARGET_DOCLING_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_DOCLING_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_DOCLING_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_DOCLING}}']"
+              else
+                TARGET_DOCLING_QUANTIZATIONS_BVT="$TARGET_DOCLING_QUANTIZATIONS"
+              fi
+              echo "target_docling_quantizations_bvt=$TARGET_DOCLING_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+            else
+              echo "ℹ️  Skipping append of converted formats (ENABLE_BVT_TEST_CONVERTED_FORMAT=false)"
+              echo "target_language_quantizations_bvt=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_docling_quantizations_bvt=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            fi
 
       - name: Confirm GitHub output values were set
         run: |
@@ -308,7 +391,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -442,7 +525,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -550,7 +633,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -658,7 +741,7 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}

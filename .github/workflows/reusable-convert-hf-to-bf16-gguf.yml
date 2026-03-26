@@ -262,6 +262,17 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "FNAME_CONVERTED_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
 
+    - name: display-gguf-header
+      run: |
+        echo "🔍 Checking for llama-gguf tool..."
+        if command -v llama-gguf &> /dev/null; then
+          echo "✅ llama-gguf found, displaying GGUF header for converted model:"
+          echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
+          llama-gguf "$FNAME_CONVERTED_GGUF"
+        else
+          echo "ℹ️  llama-gguf tool not found, skipping GGUF header display"
+        fi
+
     - name: upload-converted-gguf-to-target-repo
       run: |
         echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
