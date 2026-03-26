@@ -153,11 +153,11 @@ jobs:
       transformers_version_docling: "${{ steps.set-vars.outputs.transformers_version_docling }}"
     env:
       ARRAY_SEP: "','"
-      DEF_CONVERTED_QUANT_LANGUAGE: "BF16"
-      DEF_CONVERTED_QUANT_VISION: "F16"
-      DEF_CONVERTED_QUANT_GUARDIAN: "BF16"
-      DEF_CONVERTED_QUANT_EMBEDDING: "BF16"
-      DEF_CONVERTED_QUANT_DOCLING: "F16"
+      DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
+      DEF_CONVERTED_QUANT_VISION: "f16"
+      DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
+      DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
+      DEF_CONVERTED_QUANT_DOCLING: "f16"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
