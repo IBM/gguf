@@ -292,9 +292,8 @@ jobs:
           embedding_1.json \
           embedding_2.json \
           --threshold ${{env.SIMILARITY_THRESHOLD_HIGH}} \
-          --expect-similar \
-          --label1 "AI academic discipline 1956" \
-          --label2 "AI academic field 1950s"
+          --similar \
+          --labels "AI academic discipline 1956" "AI academic field 1950s"
 
         if [ $? -ne 0 ]; then
           echo "[ERROR] Similarity test 1 failed"
@@ -314,9 +313,8 @@ jobs:
           embedding_1.json \
           embedding_3.json \
           --threshold ${{env.SIMILARITY_THRESHOLD_LOW}} \
-          --expect-dissimilar \
-          --label1 "AI academic discipline 1956" \
-          --label2 "Pizza for dinner"
+          --dissimilar \
+          --labels "AI academic discipline 1956" "Pizza for dinner"
 
         if [ $? -ne 0 ]; then
           echo "[ERROR] Similarity test 2 failed"
