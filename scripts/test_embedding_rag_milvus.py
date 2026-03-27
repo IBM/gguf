@@ -108,6 +108,7 @@ TEST_QUERIES = [
 
 def generate_embedding(model_path: str, text: str, llama_bin: str, output_format: str = "json") -> List[float]:
     """Generate embedding for text using llama-embedding binary."""
+    result = None
     try:
         # Run llama-embedding
         result = subprocess.run(
@@ -133,7 +134,8 @@ def generate_embedding(model_path: str, text: str, llama_bin: str, output_format
         raise
     except json.JSONDecodeError as e:
         print(f"ERROR: Failed to parse JSON output: {e}")
-        print(f"Output: {result.stdout[:500]}")
+        if result is not None:
+            print(f"Output: {result.stdout[:500]}")
         raise
 
 

@@ -1,0 +1,6 @@
+# RAG Testing Dependencies
+# Used by: .github/workflows/reusable-rag-test-embedding-models-gguf.yml
+# Install with: pip install -r requirements-rag.txt
+
+huggingface_hub
+pymilvus
