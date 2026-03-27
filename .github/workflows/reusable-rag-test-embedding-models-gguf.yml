@@ -71,6 +71,7 @@ jobs:
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/test_embedding_rag_milvus.py
+          requirements/requirements-rag.txt
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -131,7 +132,7 @@ jobs:
       run: |
         echo "Installing Python dependencies..."
         pip install --upgrade pip
-        pip install huggingface_hub pymilvus
+        pip install -r requirements/requirements-rag.txt
         echo "Dependencies installed successfully"
 
     - name: test-quantized-model-exists
