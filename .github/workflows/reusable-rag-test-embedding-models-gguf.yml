@@ -1,0 +1,214 @@
+# This workflow runs RAG (Retrieval-Augmented Generation) tests on quantized embedding models
+# using Milvus for semantic search validation. This provides human-readable results showing
+# how well the embeddings would perform in real-world RAG applications.
+name: rag-test-embedding-models-gguf
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+    inputs:
+      enable_rag_testing:
+        type: boolean
+        required: false
+        default: false
+        description: "Enable RAG testing (requires successful BVT)"
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      top_k:
+        type: number
+        required: false
+        default: 3
+        description: "Number of documents to retrieve in semantic search"
+      min_score:
+        type: number
+        required: false
+        default: 0.5
+        description: "Minimum similarity score for retrieved documents"
+      debug:
+        type: boolean
+        required: true
+        default: false
+
+env:
+  DEBUG: ${{inputs.debug}}
+  EXT_GGUF: .gguf
+  MODEL_DOWNLOAD_DIR: models
+  QUANTIZED_MODEL_EXISTS: false
+  LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
+  TOP_K: ${{inputs.top_k}}
+  MIN_SCORE: ${{inputs.min_score}}
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  SOURCE_REPO_ID: ""  # Set in set-derivative-env-vars-1 step (original repo with config.json)
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step (GGUF repo)
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (GGUF model path)
+
+jobs:
+  rag-test-embedding-model:
+    runs-on: macos-latest
+    if: ${{ inputs.enable_rag_testing == true }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          bin/llama-embedding
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_embedding_rag_milvus.py
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: confirm-environment
+      run: |
+        echo "=================================="
+        echo "Environment Variables"
+        echo "=================================="
+        echo "DEBUG: ${{env.DEBUG}}"
+        echo "REPO_ID: ${{inputs.repo_id}}"
+        echo "QUANTIZATION: ${{inputs.quantization}}"
+        echo "TARGET_REPO_OWNER: ${{inputs.target_repo_owner}}"
+        echo "TARGET_REPO_NAME_EXT: ${{inputs.target_repo_name_ext}}"
+        echo "TOP_K: ${{env.TOP_K}}"
+        echo "MIN_SCORE: ${{env.MIN_SCORE}}"
+        echo "=================================="
+
+    - name: set-github-env
+      run: |
+        echo "Setting GitHub environment variables..."
+        REPO_ORG=$(echo "${{inputs.repo_id}}" | cut -d'/' -f1)
+        REPO_NAME=$(echo "${{inputs.repo_id}}" | cut -d'/' -f2)
+        echo "REPO_ORG=$REPO_ORG" >> $GITHUB_ENV
+        echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+        echo "REPO_ORG: $REPO_ORG"
+        echo "REPO_NAME: $REPO_NAME"
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "Setting derivative environment variables (part 1)..."
+        SOURCE_REPO_ID="${{inputs.repo_id}}"
+        TARGET_REPO_ID="${{inputs.target_repo_owner}}/${{env.REPO_NAME}}-${{inputs.target_repo_name_ext}}"
+        BASE_FNAME_QUANTIZED_GGUF="${{env.REPO_NAME}}-${{inputs.quantization}}${{env.EXT_GGUF}}"
+
+        echo "SOURCE_REPO_ID=$SOURCE_REPO_ID" >> $GITHUB_ENV
+        echo "TARGET_REPO_ID=$TARGET_REPO_ID" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=$BASE_FNAME_QUANTIZED_GGUF" >> $GITHUB_ENV
+
+        echo "SOURCE_REPO_ID: $SOURCE_REPO_ID"
+        echo "TARGET_REPO_ID: $TARGET_REPO_ID"
+        echo "BASE_FNAME_QUANTIZED_GGUF: $BASE_FNAME_QUANTIZED_GGUF"
+
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "Setting derivative environment variables (part 2)..."
+        LOCAL_MODEL_PATH="${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}"
+
+        echo "LOCAL_MODEL_PATH=$LOCAL_MODEL_PATH" >> $GITHUB_ENV
+
+        echo "LOCAL_MODEL_PATH: $LOCAL_MODEL_PATH"
+
+    - name: setup-python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: install-dependencies
+      run: |
+        echo "Installing Python dependencies..."
+        pip install --upgrade pip
+        pip install huggingface_hub pymilvus
+        echo "Dependencies installed successfully"
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-gguf-hf-hub-download
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        echo "Downloading GGUF model to: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}..."
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: verify-llama-embedding-binary
+      run: |
+        echo "Verifying llama-embedding binary..."
+        if [ ! -f "${{env.LLAMA_EMBEDDING_BIN}}" ]; then
+          echo "[ERROR] llama-embedding binary not found at: ${{env.LLAMA_EMBEDDING_BIN}}"
+          exit 1
+        fi
+        echo "[SUCCESS] llama-embedding binary found"
+        echo "Testing binary..."
+        ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
+
+    - name: run-milvus-rag-test
+      timeout-minutes: 15
+      run: |
+        echo "[INFO] =========================================="
+        echo "[INFO] Milvus RAG Testing for Embedding Model"
+        echo "[INFO] =========================================="
+        echo "[INFO] Model: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
+        echo "[INFO] Top-K: ${{env.TOP_K}}"
+        echo "[INFO] Min Score: ${{env.MIN_SCORE}}"
+        echo "[INFO] =========================================="
+        echo ""
+
+        python3 ./scripts/test_embedding_rag_milvus.py \
+          "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
+          --llama-embedding-bin "${{env.LLAMA_EMBEDDING_BIN}}" \
+          --top-k ${{env.TOP_K}} \
+          --min-score ${{env.MIN_SCORE}}
+
+        exit_code=$?
+
+        echo ""
+        echo "[INFO] =========================================="
+
+        if [ $exit_code -eq 0 ]; then
+          echo "[SUCCESS] RAG testing completed successfully!"
+          echo "[INFO] The embedding model is suitable for RAG applications."
+        else
+          echo "[ERROR] RAG testing failed with exit code: $exit_code"
+          echo "[INFO] The embedding model may not perform well in RAG scenarios."
+          exit 1
+        fi
+
+    - name: test-summary
+      if: always()
+      run: |
+        echo "=========================================="
+        echo "RAG Test Summary"
+        echo "=========================================="
+        echo "Model: ${{inputs.repo_id}}"
+        echo "Quantization: ${{inputs.quantization}}"
+        echo "Target Repo: ${{env.TARGET_REPO_ID}}"
+        echo "Top-K: ${{env.TOP_K}}"
+        echo "Min Score: ${{env.MIN_SCORE}}"
+        echo "=========================================="
+
+# Made with Bob

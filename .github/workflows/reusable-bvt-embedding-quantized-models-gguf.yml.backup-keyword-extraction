@@ -45,17 +45,12 @@ on:
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
-  # Test sentences for similarity testing
-  TEST_SENTENCE_1: "Artificial intelligence was founded as an academic discipline in 1956."
-  TEST_SENTENCE_2: "AI started as an academic field in the 1950s."
-  TEST_SENTENCE_3: "I enjoy eating pizza for dinner."
+  TEST_SENTENCE: "Artificial intelligence was founded as an academic discipline in 1956."
   OUTPUT_FORMAT: "json"
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
   LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
-  SIMILARITY_THRESHOLD_HIGH: 0.6  # Threshold for similar sentences
-  SIMILARITY_THRESHOLD_LOW: 0.4   # Threshold for dissimilar sentences
 
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
@@ -82,7 +77,7 @@ jobs:
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py
           scripts/analyze_embedding_tensors.py
-          scripts/test_embedding_similarity.py
+          scripts/extract_embedding_keywords.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -182,151 +177,173 @@ jobs:
         echo "Testing binary..."
         ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
 
-    - name: generate-embeddings-for-similarity-test
+    - name: test-embedding-model-with-llama-embedding
       timeout-minutes: 10
       run: |
         echo "[INFO] =========================================="
         echo "[INFO] Granite Embedding Model GGUF Test"
         echo "[INFO] =========================================="
         echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
+        echo "[INFO] Test sentence: ${{env.TEST_SENTENCE}}"
         echo "[INFO] Output format: ${{env.OUTPUT_FORMAT}}"
         echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
         echo "[INFO] =========================================="
         echo ""
 
-        # Generate embedding for sentence 1
-        echo "[INFO] Generating embedding for sentence 1: ${{env.TEST_SENTENCE_1}}"
+        # Run llama-embedding with simplified parameters
+        echo "[INFO] Running llama-embedding..."
         ${{env.LLAMA_EMBEDDING_BIN}} \
           -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
           --embd-output-format "${{env.OUTPUT_FORMAT}}" \
-          -p "${{env.TEST_SENTENCE_1}}" \
-          2>&1 | tee embedding_1.log
+          -p "${{env.TEST_SENTENCE}}" \
+          2>&1 | tee ${{env.BASE_FNAME_LOG_FILE}}
 
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "[ERROR] Embedding generation failed for sentence 1"
-          cat embedding_1.log
-          exit 1
-        fi
-        echo "[SUCCESS] Embedding 1 generated"
-
-        # Generate embedding for sentence 2
-        echo ""
-        echo "[INFO] Generating embedding for sentence 2: ${{env.TEST_SENTENCE_2}}"
-        ${{env.LLAMA_EMBEDDING_BIN}} \
-          -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
-          --embd-output-format "${{env.OUTPUT_FORMAT}}" \
-          -p "${{env.TEST_SENTENCE_2}}" \
-          2>&1 | tee embedding_2.log
-
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "[ERROR] Embedding generation failed for sentence 2"
-          cat embedding_2.log
-          exit 1
-        fi
-        echo "[SUCCESS] Embedding 2 generated"
-
-        # Generate embedding for sentence 3
-        echo ""
-        echo "[INFO] Generating embedding for sentence 3: ${{env.TEST_SENTENCE_3}}"
-        ${{env.LLAMA_EMBEDDING_BIN}} \
-          -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
-          --embd-output-format "${{env.OUTPUT_FORMAT}}" \
-          -p "${{env.TEST_SENTENCE_3}}" \
-          2>&1 | tee embedding_3.log
-
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "[ERROR] Embedding generation failed for sentence 3"
-          cat embedding_3.log
-          exit 1
-        fi
-        echo "[SUCCESS] Embedding 3 generated"
+        exit_code=${PIPESTATUS[0]}
 
         echo ""
-        echo "[SUCCESS] All embeddings generated successfully!"
+        echo "[INFO] =========================================="
 
-    - name: validate-and-extract-embeddings
+        if [ $exit_code -eq 0 ]; then
+          echo "[SUCCESS] Embedding generation completed successfully!"
+
+          # Save raw output to RAW response file
+          echo "[INFO] Saving raw output to: ${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
+          cp "${{env.BASE_FNAME_LOG_FILE}}" "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
+
+          # Verify raw file was created
+          if [ -f "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}" ]; then
+            echo "[SUCCESS] Raw response file created"
+            ls -lh "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
+          else
+            echo "[ERROR] Failed to create raw response file"
+            exit 1
+          fi
+
+          echo "[INFO] =========================================="
+        else
+          echo "[ERROR] Embedding generation failed with exit code: $exit_code"
+          echo "[INFO] =========================================="
+          cat ${{env.BASE_FNAME_LOG_FILE}}
+          exit 1
+        fi
+
+    - name: show-raw-response
       run: |
-        echo "[INFO] Validating and extracting embeddings from log files..."
+        echo "================== Raw Test Results =================="
+        cat ${{env.BASE_FNAME_RAW_RESPONSE_FILE}}
+        echo "======================================================"
+
+    - name: validate-output-format
+      run: |
+        echo "Validating output format..."
+        echo "[INFO] Raw response file: ${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
+        echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
         echo "=================================================="
 
-        # Process each embedding log file
-        for i in 1 2 3; do
-          log_file="embedding_${i}.log"
-          output_file="embedding_${i}.json"
+        # Check if the raw response file exists and has content
+        if [ ! -s "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Raw response file is empty or does not exist: ${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
+          echo "[INFO] Listing current directory files:"
+          ls -la *.txt 2>/dev/null || echo "[INFO] No .txt files found"
+          exit 1
+        fi
 
-          echo "[INFO] Processing $log_file..."
+        echo "[SUCCESS] Raw response file exists and has content"
 
-          # Check if log file exists
-          if [ ! -f "$log_file" ]; then
-            echo "[ERROR] Log file not found: $log_file"
+        # For JSON output, validate JSON structure and extract tensor arrays using Python script
+        if [ "${{env.OUTPUT_FORMAT}}" = "json" ] || [ "${{env.OUTPUT_FORMAT}}" = "json+" ]; then
+          echo "[INFO] Validating JSON embedding format and extracting tensor arrays..."
+          python3 ./scripts/validate_embedding_json.py "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}" -o "${{env.BASE_FNAME_RESPONSE_FILE}}"
+
+          if [ $? -eq 0 ]; then
+            echo "[SUCCESS] JSON validation passed and tensor arrays extracted!"
+
+            # Verify the processed output file was created
+            if [ -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+              echo "[SUCCESS] Processed response file created"
+              ls -lh "${{env.BASE_FNAME_RESPONSE_FILE}}"
+              echo ""
+              echo "================== Processed Output (Tensor Arrays Only) =================="
+              head -20 "${{env.BASE_FNAME_RESPONSE_FILE}}"
+              echo "..."
+              echo "============================================================================"
+            else
+              echo "[ERROR] Failed to create processed response file"
+              exit 1
+            fi
+          else
+            echo "[ERROR] JSON validation failed"
+            echo "[INFO] Raw response file contents:"
+            cat "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"
             exit 1
           fi
-
-          # Validate JSON and extract tensor arrays
-          python3 ./scripts/validate_embedding_json.py "$log_file" -o "$output_file"
-
-          if [ $? -ne 0 ]; then
-            echo "[ERROR] Failed to validate/extract embedding from $log_file"
+        else
+          # For other formats, just check that we have numeric output
+          if grep -qE "[0-9]+\.[0-9]+" "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}"; then
+            echo "[SUCCESS] Output contains numeric embedding values"
+            # Copy raw to processed for non-JSON formats
+            cp "${{env.BASE_FNAME_RAW_RESPONSE_FILE}}" "${{env.BASE_FNAME_RESPONSE_FILE}}"
+          else
+            echo "[ERROR] Output does not contain expected numeric values"
             exit 1
           fi
+        fi
 
-          echo "[SUCCESS] Extracted embedding to $output_file"
-        done
+        echo "[SUCCESS] Output format validation passed!"
 
-        echo ""
-        echo "[SUCCESS] All embeddings validated and extracted!"
-
-    - name: test-embedding-similarity
+    - name: analyze-embedding-tensors
       run: |
-        echo "[INFO] =========================================="
-        echo "[INFO] Testing Embedding Similarity"
-        echo "[INFO] =========================================="
-        echo "[INFO] Test 1: Similar sentences (1 vs 2)"
-        echo "[INFO] Sentence 1: ${{env.TEST_SENTENCE_1}}"
-        echo "[INFO] Sentence 2: ${{env.TEST_SENTENCE_2}}"
-        echo "[INFO] Expected: High similarity (>= ${{env.SIMILARITY_THRESHOLD_HIGH}})"
-        echo ""
+        echo "[INFO] Analyzing embedding tensors with PyTorch..."
+        echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        echo "=================================================="
 
-        # Test 1: Similar sentences should have high similarity
-        python3 ./scripts/test_embedding_similarity.py \
-          embedding_1.json \
-          embedding_2.json \
-          --threshold ${{env.SIMILARITY_THRESHOLD_HIGH}} \
-          --expect-similar \
-          --label1 "AI academic discipline 1956" \
-          --label2 "AI academic field 1950s"
-
-        if [ $? -ne 0 ]; then
-          echo "[ERROR] Similarity test 1 failed"
+        # Check if the processed response file exists
+        if [ ! -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Processed response file not found: ${{env.BASE_FNAME_RESPONSE_FILE}}"
           exit 1
         fi
 
-        echo ""
-        echo "[INFO] =========================================="
-        echo "[INFO] Test 2: Dissimilar sentences (1 vs 3)"
-        echo "[INFO] Sentence 1: ${{env.TEST_SENTENCE_1}}"
-        echo "[INFO] Sentence 3: ${{env.TEST_SENTENCE_3}}"
-        echo "[INFO] Expected: Low similarity (< ${{env.SIMILARITY_THRESHOLD_LOW}})"
-        echo ""
+        # Run the tensor analysis script
+        python3 ./scripts/analyze_embedding_tensors.py "${{env.BASE_FNAME_RESPONSE_FILE}}" --num-rows 10
 
-        # Test 2: Dissimilar sentences should have low similarity
-        python3 ./scripts/test_embedding_similarity.py \
-          embedding_1.json \
-          embedding_3.json \
-          --threshold ${{env.SIMILARITY_THRESHOLD_LOW}} \
-          --expect-dissimilar \
-          --label1 "AI academic discipline 1956" \
-          --label2 "Pizza for dinner"
-
-        if [ $? -ne 0 ]; then
-          echo "[ERROR] Similarity test 2 failed"
+        if [ $? -eq 0 ]; then
+          echo ""
+          echo "[SUCCESS] Tensor analysis completed successfully!"
+        else
+          echo ""
+          echo "[ERROR] Tensor analysis failed"
           exit 1
         fi
 
-        echo ""
-        echo "[SUCCESS] =========================================="
-        echo "[SUCCESS] All similarity tests passed!"
-        echo "[SUCCESS] =========================================="
+    - name: extract-embedding-keywords
+      run: |
+        echo "[INFO] Extracting keywords from embedding tensors..."
+        echo "[INFO] Source model repo: ${{env.SOURCE_REPO_ID}}"
+        echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        echo "=================================================="
+
+        # Check if the processed response file exists
+        if [ ! -f "${{env.BASE_FNAME_RESPONSE_FILE}}" ]; then
+          echo "[ERROR] Processed response file not found: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+          exit 1
+        fi
+
+        # Run the keyword extraction script
+        # Use the SOURCE_REPO_ID to load the tokenizer from HuggingFace
+        python3 ./scripts/extract_embedding_keywords.py \
+          "${{env.BASE_FNAME_RESPONSE_FILE}}" \
+          "${{env.SOURCE_REPO_ID}}" \
+          --max-tokens 30 \
+          --hf-token "${{secrets.hf_token}}"
+
+        if [ $? -eq 0 ]; then
+          echo ""
+          echo "[SUCCESS] Keyword extraction completed successfully!"
+        else
+          echo ""
+          echo "[ERROR] Keyword extraction failed"
+          exit 1
+        fi
 
     # ========================= Upload log as artifact ======================================
 
