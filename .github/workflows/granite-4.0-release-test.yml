@@ -69,7 +69,20 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-1b'
+      'ibm-granite/granite-4.0-tiny-preview',
+      'ibm-granite/granite-4.0-tiny-base-preview'
+      'ibm-granite/granite-4.0-350m',
+      'ibm-granite/granite-4.0-350m-base',
+      'ibm-granite/granite-4.0-h-350m',
+      'ibm-granite/granite-4.0-h-350m-base',
+      'ibm-granite/granite-4.0-1b',
+      'ibm-granite/granite-4.0-1b-base',
+      'ibm-granite/granite-4.0-h-1b',
+      'ibm-granite/granite-4.0-h-1b-base',
+      'ibm-granite/granite-4.0-micro',
+      'ibm-granite/granite-4.0-micro-base',
+      'ibm-granite/granite-4.0-h-micro',
+      'ibm-granite/granite-4.0-h-micro-base'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
