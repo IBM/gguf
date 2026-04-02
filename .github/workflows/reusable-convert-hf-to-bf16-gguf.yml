@@ -246,6 +246,21 @@ jobs:
     - name: check-disk-space-3
       run: df -h
 
+    - name: remove-extraneous-safetensors-index
+      if: contains(env.REPO_NAME, 'granite-4.0-1b-base') || contains(env.REPO_NAME, 'granite-4.0-h-1b-base')
+      run: |
+        INDEX_FILE="${MODEL_DOWNLOAD_DIR}/${{ inputs.repo_id }}/model.safetensors.index.json"
+        if [ -f "$INDEX_FILE" ]; then
+          echo "⚠️  Found extraneous model.safetensors.index.json file for ${{ env.REPO_NAME }}"
+          echo "🗑️  Removing file to prevent llama.cpp conversion script confusion..."
+          rm -f "$INDEX_FILE"
+          echo "✅ Removed: $INDEX_FILE"
+          echo "📋 Remaining files in model directory:"
+          ls -al "${MODEL_DOWNLOAD_DIR}/${{ inputs.repo_id }}"
+        else
+          echo "ℹ️  No model.safetensors.index.json file found (expected for this model)"
+        fi
+
     - name: download-safetensors-convert-to-gguf
       run: |
         if [[ "${{env.REPO_NAME}}" == *"docling"* || "${{env.REPO_NAME}}" == *"vision"* ]]; then
