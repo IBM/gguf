@@ -249,6 +249,23 @@ jobs:
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
+    - name: show-response
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        cat ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: test-llama-cli-response-with-regex
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}})
+        echo "matched: '$matched'"
+        if [[ "$matched" == "False" ]]; then
+          echo "[FAILURE] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` NOT matched in llama-cli response."
+          exit 1
+        else
+          echo "[SUCCESS] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` matched in llama-cli response."
+        fi
+
     # - name: test-print-llama-cli-generated-log
     #   if: env.TEST_LLAMA_CLI == 'true' && env.DEBUG == 'true'
     #   continue-on-error: true
