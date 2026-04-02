@@ -1,0 +1,379 @@
+# This workflow converts an original EMBEDDING model from HF (in safetensors format) to a bf16 GGUF format model.
+# It includes baseline similarity testing before conversion to establish performance metrics.
+# It then uploads the bf16 model and baseline results to Hugging Face Hub for the 'repo_id' (from the build matrix).
+
+name: convert-hf-embedding-safetensors-to-gguf-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      ibm_granite_token:
+        required: true
+    inputs:
+      enable_embedding_jobs:
+        type: boolean
+        required: false
+        default: true
+        description: "Enable embedding model conversion (should always be true for this workflow)"
+      repo_id:
+        type: string
+        required: true
+      hf_collection_config:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      transformers_version:
+        type: string
+        required: false
+        default: "4.53.0" # "4.52.1"
+        description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3'). Defaults to 4.52.1 for Granite 3.x models."
+      debug:
+        type: boolean
+        required: true
+        default: false
+      trace:
+        type: boolean
+        required: true
+        default: false
+
+env:
+  DEF_SEP: "-"
+  DEF_PRECISION: "bf16" # "f16"
+  DEF_MMPROJ_PRECISION: "f16"
+  EXT_GGUF: .gguf
+  MMPROJ_MODEL_BASE_FILENAME: mmproj-model
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+
+  # Baseline testing configuration
+  BASELINE_RESULTS_DIR: baseline_results
+  TEST_SENTENCE_1: "Artificial intelligence was founded as an academic discipline in 1956."
+  TEST_SENTENCE_2: "AI started as an academic field in the 1950s."
+  TEST_SENTENCE_3: "I enjoy eating pizza for dinner."
+
+  LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
+  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  EXT_PRECISION_GGUF: ""  # Set in confirm-environment step
+  EXT_PRECISION_MMPROJ_GGUF: ""  # Set in confirm-environment step
+  BASE_FNAME_MMPROJ_GGUF: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in download-safetensors-convert-to-gguf step
+  FNAME_CONVERTED_GGUF: ""  # Set in download-safetensors-convert-to-gguf step
+  HAS_PROJECTOR_MODEL: ""  # Set in download-safetensors-convert-to-gguf and convert-and-extract-mmproj-model steps
+  FNAME_MMPROJ_GGUF: ""  # Set in convert-and-extract-mmproj-model step
+  BASELINE_RESULTS_FILE: ""  # Set in test-embedding-baseline step
+
+jobs:
+  convert-embedding-safetensor-to-gguf:
+    runs-on: macos-latest
+    if: ${{ inputs.enable_embedding_jobs == true }}
+    timeout-minutes: 30
+    env:
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
+      LLAMA_CPP_VERSION: b8100 # Previously: b7951, b6808, b6791,"b6569", 'b5717', 'b6050'
+    steps:
+
+    - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_upload.py
+          scripts/hf_model_download_snapshot.py
+          scripts/check_model_architecture_support.py
+          scripts/test_embedding_baseline_hf.py
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      if: ${{ github.event.inputs.debug }}
+      run: echo "$GITHUB_INPUTS"
+
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    - run: |
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+
+    - name: confirm-environment
+      run: |
+        uname -a
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace }}"
+        echo "inputs.repo_id: ${{ inputs.repo_id }}"
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+        echo "env.DEF_SEP: ${{ env.DEF_SEP }}"
+        echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
+        echo "env.DEF_MMPROJ_PRECISION: ${{ env.DEF_MMPROJ_PRECISION }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{env.DEF_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "EXT_PRECISION_MMPROJ_GGUF=${{ env.DEF_SEP }}${{env.DEF_MMPROJ_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+
+    # alias tree="find . -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+    # To allow `alias` in the default, non-interactive shell override using `shopt`.
+    - name: create-aliases
+      if: runner.os == 'macOS'
+      run: |
+        shopt -s expand_aliases
+        alias tree="find"
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_GGUF=${{ env.MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_PRECISION_MMPROJ_GGUF}}" >> $GITHUB_ENV
+
+    # for GGUF conversion, we only need a shallow copy (depth=1) and
+    # specify only the scripts and requirements files we need (sparse).
+    # Note: we include LICENSE for future BOM generation
+    # TODO: LoRA
+    # convert_lora_to_gguf.py
+    # requirements/requirements-convert_lora_to_gguf.txt
+    - name: shallow-clone-llamacpp
+      uses: actions/checkout@v6
+      with:
+        path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
+        repository: 'ggerganov/llama.cpp'
+        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
+        fetch-depth: 1
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          convert_hf_to_gguf.py
+          requirements/requirements-convert_legacy_llama.txt
+          requirements/requirements-convert_hf_to_gguf.txt
+          gguf-py/gguf
+          scripts
+
+    # find llama.cpp ${{env.FIND_ARGS}}
+    - name: print-llamacpp
+      run: |
+        echo "PATH: '$PATH'"
+        ls -al llama.cpp
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    # Note: primarily `huggingface_hub` package and its deps.
+    - name: install-general-dependencies
+      run: |
+        df -h
+        pip install -r ./requirements.txt
+        pip list
+        df -h
+
+    # TODO: need a "source" and "target" HF_TOKEN
+    # find models ${{env.FIND_ARGS}}
+    - name: download-model-snapshot
+      run: |
+        python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ env.REPO_ORG }} ${{ env.REPO_NAME }} ${{secrets.ibm_granite_token}}
+
+    # Note: we need a later version of transformers lib. to work for IBM Vision (llava)
+    # TODO: python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+    - name: install-llama-cpp-dependencies
+      run: |
+        pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+        pip uninstall --yes transformers
+        pip install transformers==${{ inputs.transformers_version }}
+        echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+        pip list
+
+    - name: validate-model-architecture-support
+      id: validate-arch
+      run: |
+        echo "🔍 Checking model architecture: ${{ env.REPO_NAME }}"
+
+        DEBUG_FLAG=""
+        if [ "${{ inputs.debug }}" = "true" ]; then
+          DEBUG_FLAG="--debug"
+          echo "Debug mode enabled - will show filtered architecture list on failure"
+        fi
+
+        if python ./scripts/check_model_architecture_support.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} $DEBUG_FLAG; then
+          echo "✅ Model architecture validation PASSED"
+        else
+          echo "❌ Model architecture validation FAILED"
+          echo "::error::Model architecture is not supported by transformers version ${{ inputs.transformers_version }}"
+          echo "::error::The model cannot be converted with the current transformers version"
+          echo "::error::Consider updating transformers_version input parameter"
+          exit 1
+        fi
+
+    - name: test-embedding-baseline
+      if: ${{ inputs.enable_embedding_jobs == true }}
+      timeout-minutes: 10
+      run: |
+        echo "[INFO] =========================================="
+        echo "[INFO] Baseline Embedding Test (HuggingFace)"
+        echo "[INFO] =========================================="
+        echo "[INFO] Model: ${{ inputs.repo_id }}"
+        echo "[INFO] Testing original HF model before GGUF conversion"
+        echo "[INFO] =========================================="
+        echo ""
+
+        # Create baseline results directory
+        mkdir -p ${{ env.BASELINE_RESULTS_DIR }}
+
+        # Set baseline results filename
+        BASELINE_RESULTS_FILE="${{ env.BASELINE_RESULTS_DIR }}/${{ env.REPO_NAME }}-baseline-hf.json"
+        echo "BASELINE_RESULTS_FILE=$BASELINE_RESULTS_FILE" >> $GITHUB_ENV
+
+        # Run baseline test
+        python3 ./scripts/test_embedding_baseline_hf.py \
+          "${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" \
+          --sentences \
+            "${{ env.TEST_SENTENCE_1 }}" \
+            "${{ env.TEST_SENTENCE_2 }}" \
+            "${{ env.TEST_SENTENCE_3 }}" \
+          --output "$BASELINE_RESULTS_FILE"
+
+        if [ $? -eq 0 ]; then
+          echo ""
+          echo "[SUCCESS] Baseline test completed successfully!"
+          echo "[INFO] Results saved to: $BASELINE_RESULTS_FILE"
+
+          # Display summary
+          echo ""
+          echo "[INFO] Baseline Summary:"
+          cat "$BASELINE_RESULTS_FILE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(f\"  Embedding Dimension: {data['embedding_dimension']}\"); print(f\"  Avg Similarity: {data['summary']['avg_similarity']:.4f}\"); print(f\"  Min Similarity: {data['summary']['min_similarity']:.4f}\"); print(f\"  Max Similarity: {data['summary']['max_similarity']:.4f}\")"
+        else
+          echo "[ERROR] Baseline test failed"
+          exit 1
+        fi
+
+    - name: debug-dynamic-environment
+      run: |
+        echo "MODEL_DOWNLOAD_DIR (env)=$MODEL_DOWNLOAD_DIR (${{ env.MODEL_DOWNLOAD_DIR }})"
+        echo "REPO_ORG (env)=$REPO_ORG (${{ env.REPO_ORG }})"
+        echo "REPO_NAME (env)=$REPO_NAME (${{ env.REPO_NAME }})"
+        echo "EXT_PRECISION_GGUF (env)=$EXT_PRECISION_GGUF (${{ env.EXT_PRECISION_GGUF }})"
+        echo "EXT_PRECISION_MMPROJ_GGUF (env)=$EXT_PRECISION_MMPROJ_GGUF (${{ env.EXT_PRECISION_MMPROJ_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_GGUF (env)=$BASE_FNAME_MMPROJ_GGUF (${{env.BASE_FNAME_MMPROJ_GGUF}})"
+        ls -al $MODEL_DOWNLOAD_DIR
+
+    - name: check-disk-space-3
+      run: df -h
+
+    - name: download-safetensors-convert-to-gguf
+      run: |
+        if [[ "${{env.REPO_NAME}}" == *"docling"* || "${{env.REPO_NAME}}" == *"vision"* ]]; then
+          echo "'docling' model."
+          echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
+        else
+          echo "Does not have a projector model."
+        fi
+        python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
+            --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}} \
+            --outtype ${{env.DEF_PRECISION}} \
+            --verbose
+        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "FNAME_CONVERTED_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
+
+    - name: display-gguf-header
+      run: |
+        echo "🔍 Checking for llama-gguf tool..."
+        if command -v llama-gguf &> /dev/null; then
+          echo "✅ llama-gguf found, displaying GGUF header for converted model:"
+          echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
+          llama-gguf "$FNAME_CONVERTED_GGUF"
+        else
+          echo "ℹ️  llama-gguf tool not found, skipping GGUF header display"
+        fi
+
+    - name: upload-converted-gguf-to-target-repo
+      run: |
+        echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
+        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_CONVERTED_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+    # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
+    - name: convert-and-extract-mmproj-model
+      run: |
+        if [[ "${{env.REPO_NAME}}" == *"docling"* || "${{env.REPO_NAME}}" == *"vision"* ]]; then
+          echo "'docling' model."
+          echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
+          echo "HAS_PROJECTOR_MODEL: '${{env.HAS_PROJECTOR_MODEL}}' ('$HAS_PROJECTOR_MODEL')"
+          python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
+              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}} \
+              --mmproj \
+              --verbose
+          ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+          echo "FNAME_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}}" >> $GITHUB_ENV
+        else
+          echo "NOT a 'docling' model."
+        fi
+
+    # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
+    - name: upload-mmproj-model-to-target-repo
+      run: |
+        if [[ "${{env.REPO_NAME}}" == *"docling"* || "${{env.REPO_NAME}}" == *"vision"* ]]; then
+          printenv | sort
+          ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+          echo "FNAME_MMPROJ_GGUF='$FNAME_MMPROJ_GGUF' (${{ env.FNAME_MMPROJ_GGUF}})"
+          python ./scripts/hf_model_upload.py $TARGET_REPO_ID ${{env.FNAME_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        else
+          echo "NOT a 'docling' model."
+        fi
+
+    # Upload baseline results as GitHub artifact
+    - name: upload-baseline-results-artifact
+      if: ${{ inputs.enable_embedding_jobs == true && env.BASELINE_RESULTS_FILE != '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.REPO_NAME }}-baseline-results
+        path: ${{ env.BASELINE_RESULTS_FILE }}
+        retention-days: 90
+        if-no-files-found: warn
+
+    # Upload baseline results to HuggingFace repo
+    - name: upload-baseline-results-to-hf
+      if: ${{ inputs.enable_embedding_jobs == true && env.BASELINE_RESULTS_FILE != '' }}
+      run: |
+        echo "[INFO] Uploading baseline results to HuggingFace repo"
+        echo "[INFO] Target repo: $TARGET_REPO_ID"
+        echo "[INFO] Baseline file: ${{ env.BASELINE_RESULTS_FILE }}"
+
+        if [ -f "${{ env.BASELINE_RESULTS_FILE }}" ]; then
+          python ./scripts/hf_model_upload.py \
+            $TARGET_REPO_ID \
+            ${{ env.BASELINE_RESULTS_FILE }} \
+            ${{secrets.hf_token}} \
+            ${{github.workflow_ref}} \
+            ${{github.run_id}}
+          echo "[SUCCESS] Baseline results uploaded to HuggingFace"
+        else
+          echo "[WARNING] Baseline results file not found, skipping upload"
+        fi

@@ -692,9 +692,10 @@ jobs:
   # - Non-r2 models (e.g., granite-embedding-30m-english): RoBERTa architecture
   # - R2 models (e.g., granite-embedding-english-r2): ModernBERT architecture
   #   ModernBERT support was added in llama.cpp PR: https://github.com/ggml-org/llama.cpp/pull/18330
+  # This workflow includes baseline similarity testing before GGUF conversion
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write

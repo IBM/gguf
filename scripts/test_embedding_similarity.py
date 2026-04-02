@@ -152,14 +152,14 @@ def test_similarity_pairs(embedding_files, labels=None, expected_similar=True, t
                 print("[INFO] Expected similar sentences to have high similarity")
     else:
         # Embeddings should be dissimilar (low similarity)
-        dissimilar_threshold = 1.0 - threshold  # Invert threshold for dissimilarity
-        passed = avg_similarity <= dissimilar_threshold
+        # For dissimilar test, threshold represents the maximum acceptable similarity
+        passed = avg_similarity < threshold
         if verbose:
             if passed:
-                print(f"[SUCCESS] ✓ Embeddings are dissimilar (avg: {avg_similarity:.4f} <= {dissimilar_threshold})")
+                print(f"[SUCCESS] ✓ Embeddings are dissimilar (avg: {avg_similarity:.4f} < {threshold})")
                 print("[INFO] This indicates the model correctly distinguishes different topics")
             else:
-                print(f"[FAILURE] ✗ Embeddings are too similar (avg: {avg_similarity:.4f} > {dissimilar_threshold})")
+                print(f"[FAILURE] ✗ Embeddings are too similar (avg: {avg_similarity:.4f} >= {threshold})")
                 print("[INFO] Expected dissimilar sentences to have low similarity")
 
     return passed, avg_similarity, similarities
