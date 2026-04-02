@@ -470,9 +470,36 @@ jobs:
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
+  check-vision-llama-cpp-support:
+    needs: [ environment-setup, vision-create-hf-repos ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            scripts/is_model_llama_cpp_supported.py
+            resources/json/
+
+      - name: Check llama.cpp support for ${{ matrix.repo_id }}
+        id: check-support
+        run: |
+          SUPPORTED=$(python ./scripts/is_model_llama_cpp_supported.py ${{ needs.environment-setup.outputs.hf_collection_config }} ${{ matrix.repo_id }})
+
+          if [ "$SUPPORTED" = "true" ]; then
+            echo "✅ Model ${{ matrix.repo_id }} is supported by llama.cpp - BVT/UAT testing will be enabled"
+          else
+            echo "⚠️ Model ${{ matrix.repo_id }} is NOT supported by llama.cpp - BVT/UAT testing will be skipped"
+            echo "   Conversion and quantization will proceed, but inference testing requires llama.cpp support"
+          fi
+
 
   convert-hf-llava-to-f16-gguf:
-    needs: [ environment-setup, vision-create-hf-repos ]
+    needs: [ environment-setup, vision-create-hf-repos, check-vision-llama-cpp-support ]
     # OLD: uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-f16-gguf.yml@main
     permissions:
