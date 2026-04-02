@@ -19,7 +19,7 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
-  USE_UAT_WORKFLOW: false
+  USE_UAT_WORKFLOW: true
 
   # Enable appending the converted format (BF16/F16) to BVT test matrix
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
@@ -69,7 +69,7 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-1b'
+      'ibm-granite/granite-4.0-350m-base'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
