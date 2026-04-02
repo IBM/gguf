@@ -70,7 +70,7 @@ env:
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
       'ibm-granite/granite-4.0-tiny-preview',
-      'ibm-granite/granite-4.0-tiny-base-preview'
+      'ibm-granite/granite-4.0-tiny-base-preview',
       'ibm-granite/granite-4.0-350m',
       'ibm-granite/granite-4.0-350m-base',
       'ibm-granite/granite-4.0-h-350m',
