@@ -69,7 +69,7 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-8b'
+      'ibm-granite/granite-4.0-1b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -79,7 +79,7 @@ env:
   # 'Q8_0',
   # 'F16'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-      'Q4_K_M',
+      'Q8_0',
     ]"
   # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
