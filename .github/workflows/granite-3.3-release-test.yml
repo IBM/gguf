@@ -458,6 +458,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
