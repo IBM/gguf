@@ -253,6 +253,7 @@ jobs:
     - name: check-disk-space-3
       run: df -h
 
+    # HACK, HACK - bug. PR submitted to delete bad file from HF ibm-granite
     - name: remove-extraneous-safetensors-index
       if: contains(env.REPO_NAME, 'granite-4.0-1b-base') || contains(env.REPO_NAME, 'granite-4.0-h-1b-base')
       run: |

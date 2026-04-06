@@ -214,7 +214,7 @@ jobs:
        cat ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}}
 
     - name: test-granite-guardian-risk-harm
-      timeout-minutes: 30
+      timeout-minutes: 20
       continue-on-error: false
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
@@ -226,7 +226,6 @@ jobs:
           --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
           --temp ${{env.LLAMA_REQUEST_TEMP}} \
           -no-cnv \
-          --verbose \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-cli failed:"

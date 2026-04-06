@@ -178,7 +178,7 @@ jobs:
 
     - name: download-bf16-gguf-hf-hub-download
       run: |
-        echo "Downloading bf16 GGUF using hf_file_download..."
+        echo "Downloading ${{ inputs.converted_quantization }} GGUF using hf_file_download..."
         echo "--------------------"
         echo "MODEL_DOWNLOAD_DIR=${{env.MODEL_DOWNLOAD_DIR}}"
         echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
