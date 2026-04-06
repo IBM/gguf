@@ -44,6 +44,14 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
+      converted_quantization:
+        type: string
+        required: true
+        description: "Base quantization format of the converted model (e.g., 'f16', 'bf16'). Used to construct the filename of the base model to download."
       debug:
         type: boolean
         required: true
@@ -55,7 +63,6 @@ on:
 
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
   CONVERTED_FILE_EXISTS: "0"
   UPLOAD_CONVERTED_ENABLED: true
@@ -81,7 +88,6 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v6
       with:
@@ -92,7 +98,7 @@ jobs:
           scripts/hf_model_upload.py
           scripts/hf_model_download_snapshot.py
           scripts/hf_file_delete.py
-          bin/llama-quantize
+          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -114,6 +120,7 @@ jobs:
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
+        echo "llamacpp_build_tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.UPLOAD_CONVERTED_ENABLED: ${{ env.UPLOAD_CONVERTED_ENABLED }}"
         echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
@@ -163,7 +170,7 @@ jobs:
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-        echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{env.DEF_PRECISION}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "EXT_PRECISION_GGUF=${{ env.DEF_SEP }}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-1
       run: |
@@ -249,7 +256,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
+        ref: ${{ inputs.llamacpp_build_tag }}
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -313,10 +320,11 @@ jobs:
     - name: quantize-gguf
       run: |
         echo "--------------------"
+        echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "LOCAL_FNAME_CONVERTED_GGUF='$LOCAL_FNAME_CONVERTED_GGUF' (${{ env.LOCAL_FNAME_CONVERTED_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+        sudo ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
 
     - name: find-gguf-files
       if: inputs.debug == true

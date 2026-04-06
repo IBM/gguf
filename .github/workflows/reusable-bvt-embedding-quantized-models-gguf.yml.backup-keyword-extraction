@@ -9,6 +9,10 @@ on:
       hf_token:
         required: true
     inputs:
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       enable_embedding_jobs:
         type: boolean
         required: false
@@ -50,7 +54,7 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
-  LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
+  LLAMA_EMBEDDING_BIN: ""  # Set dynamically in job env
 
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
@@ -68,11 +72,13 @@ jobs:
   test-quantized-embedding-model:
     runs-on: macos-latest
     if: ${{ inputs.enable_embedding_jobs == true }}
+    env:
+      LLAMA_EMBEDDING_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
     steps:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          bin/llama-embedding
+          bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py

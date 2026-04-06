@@ -32,6 +32,14 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
+      converted_quantization:
+        type: string
+        required: true
+        description: "Base quantization format of the converted model (e.g., 'f16', 'bf16'). Used to construct the filename of the base model to download."
       debug:
         type: boolean
         required: true
@@ -43,9 +51,7 @@ on:
 
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # "f16"
   EXT_GGUF: .gguf
-  EXT_NAME_BF16: "-bf16.gguf"
   BF16_FILE_EXISTS: "0"
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
@@ -67,7 +73,6 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_CPP_VERSION: b6808 # b6791 # "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v6
 
@@ -89,6 +94,7 @@ jobs:
         echo "runner.os: ${{ runner.os }}"
         echo "runner.arch: ${{ runner.arch }}"
         echo "github.workspace: ${{ github.workspace }}"
+        echo "llamacpp_build_tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
         echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
         echo "env.BF16_FILE_EXISTS: ${{ env.BF16_FILE_EXISTS }}"
@@ -114,7 +120,7 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
-        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_BF16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{ env.DEF_SEP }}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
 
@@ -195,50 +201,34 @@ jobs:
           exit 1
         fi
 
-    # for GGUF conversion, we only need a shallow copy (depth=1) and
-    # specify only the scripts and requirements files we need (sparse).
-    # Note: we include LICENSE for future BOM generation
-    # OLD: ref: 'master'  # default to master branch
-    - name: shallow-clone-llamacpp
+    # Sparse checkout llama-quantize binary from GGUF repo based on build tag
+    - name: sparse-checkout-llama-quantize-binary
       uses: actions/checkout@v6
       with:
-        path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
-        repository: 'ggerganov/llama.cpp'
-        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
-        fetch-depth: 1
-        sparse-checkout-cone-mode: false
         sparse-checkout: |
-          convert_hf_to_gguf.py
-          convert_lora_to_gguf.py
-          requirements/requirements-convert_hf_to_gguf.txt
-          requirements/requirements-convert_lora_to_gguf.txt
-          requirements/requirements-convert_legacy_llama.txt
-          gguf-py
-          tools/mtmd/requirements.txt
-          tools/mtmd/legacy-models
+          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
 
-    - name: print-llamacpp
-      if: inputs.debug == true
+    - name: verify-llama-quantize-binary
       run: |
-        echo "PATH: '{{$PATH}}'"
-        ls -al llama.cpp
-        find llama.cpp ${{env.FIND_ARGS}}
-
-    - name: install-llama-cpp-dependencies
-      run: |
-        python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
-        python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
-        pip uninstall --yes transformers
-        pip install transformers==4.49.0
-        pip list
+        echo "Verifying llama-quantize binary from build tag: ${{ inputs.llamacpp_build_tag }}"
+        ls -al ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        if [ ! -f "./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize" ]; then
+          echo "[ERROR] llama-quantize binary not found at ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize"
+          exit 1
+        fi
+        chmod +x ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        echo "[SUCCESS] llama-quantize binary found and made executable"
 
     - name: quantize-gguf
       run: |
         echo "--------------------"
+        echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
-        sudo ./bin/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+        sudo ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
 
     - name: find-gguf-files
       if: inputs.debug == true

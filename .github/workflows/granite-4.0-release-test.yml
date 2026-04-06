@@ -16,7 +16,7 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
   USE_UAT_WORKFLOW: true
@@ -42,6 +42,14 @@ env:
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
   TRANSFORMERS_VERSION_EMBEDDING: "4.57.3"
   TRANSFORMERS_VERSION_DOCLING: "4.57.3"
+
+  # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
+  # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
+  LLAMACPP_BUILD_TAG_LANGUAGE: b6569
+  LLAMACPP_BUILD_TAG_VISION: b6569
+  LLAMACPP_BUILD_TAG_GUARDIAN: b6569
+  LLAMACPP_BUILD_TAG_EMBEDDING: b6569
+  LLAMACPP_BUILD_TAG_DOCLING: b6569
 
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
@@ -177,6 +185,16 @@ jobs:
       transformers_version_guardian: "${{ steps.set-vars.outputs.transformers_version_guardian }}"
       transformers_version_embedding: "${{ steps.set-vars.outputs.transformers_version_embedding }}"
       transformers_version_docling: "${{ steps.set-vars.outputs.transformers_version_docling }}"
+      llamacpp_build_tag_language: "${{ steps.set-vars.outputs.llamacpp_build_tag_language }}"
+      llamacpp_build_tag_vision: "${{ steps.set-vars.outputs.llamacpp_build_tag_vision }}"
+      llamacpp_build_tag_guardian: "${{ steps.set-vars.outputs.llamacpp_build_tag_guardian }}"
+      llamacpp_build_tag_embedding: "${{ steps.set-vars.outputs.llamacpp_build_tag_embedding }}"
+      llamacpp_build_tag_docling: "${{ steps.set-vars.outputs.llamacpp_build_tag_docling }}"
+      def_converted_quant_language: "${{ steps.set-vars.outputs.def_converted_quant_language }}"
+      def_converted_quant_vision: "${{ steps.set-vars.outputs.def_converted_quant_vision }}"
+      def_converted_quant_guardian: "${{ steps.set-vars.outputs.def_converted_quant_guardian }}"
+      def_converted_quant_embedding: "${{ steps.set-vars.outputs.def_converted_quant_embedding }}"
+      def_converted_quant_docling: "${{ steps.set-vars.outputs.def_converted_quant_docling }}"
     env:
       ARRAY_SEP: "','"
       DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
@@ -227,6 +245,16 @@ jobs:
             echo "transformers_version_guardian=$TRANSFORMERS_VERSION_GUARDIAN" >> "$GITHUB_OUTPUT"
             echo "transformers_version_embedding=$TRANSFORMERS_VERSION_EMBEDDING" >> "$GITHUB_OUTPUT"
             echo "transformers_version_docling=$TRANSFORMERS_VERSION_DOCLING" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_language=$LLAMACPP_BUILD_TAG_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_vision=$LLAMACPP_BUILD_TAG_VISION" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_guardian=$LLAMACPP_BUILD_TAG_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_embedding=$LLAMACPP_BUILD_TAG_EMBEDDING" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_docling=$LLAMACPP_BUILD_TAG_DOCLING" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_language=$DEF_CONVERTED_QUANT_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_vision=$DEF_CONVERTED_QUANT_VISION" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_guardian=$DEF_CONVERTED_QUANT_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_embedding=$DEF_CONVERTED_QUANT_EMBEDDING" >> "$GITHUB_OUTPUT"
+            echo "converted_quant_docling=$DEF_CONVERTED_QUANT_DOCLING" >> "$GITHUB_OUTPUT"
 
       - name: Append converted format to BVT test matrices
         id: append-converted-format
@@ -380,6 +408,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_language }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
@@ -400,12 +429,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -575,6 +606,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_vision }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
@@ -595,12 +627,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_vision }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -624,6 +658,7 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: "${{ needs.environment-setup.outputs.def_converted_quant_vision }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
@@ -683,6 +718,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_guardian }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
@@ -703,12 +739,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_guardian }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -732,6 +770,7 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: "${{ needs.environment-setup.outputs.def_converted_quant_guardian }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
@@ -796,6 +835,7 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
@@ -816,12 +856,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -922,12 +964,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_docling }}
       enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_docling }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -952,6 +996,7 @@ jobs:
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: "${{ needs.environment-setup.outputs.def_converted_quant_docling }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:

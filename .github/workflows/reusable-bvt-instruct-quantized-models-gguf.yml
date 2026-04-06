@@ -25,6 +25,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       ext_log:
         type: string
         required: false
@@ -84,7 +88,6 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_CPP_VERSION: "b6569" # 'b5717', # 'b6050'
     steps:
     - uses: actions/checkout@v6
       with:
@@ -94,9 +97,9 @@ jobs:
           scripts/hf_file_download.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
-          bin/llama-cli
-          bin/llama-gguf-hash
-          bin/llama-server
+          bin/${{ inputs.llamacpp_build_tag }}/llama-cli
+          bin/${{ inputs.llamacpp_build_tag }}/llama-gguf-hash
+          bin/${{ inputs.llamacpp_build_tag }}/llama-server
         sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment
@@ -110,6 +113,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
 
     - name: Dump GitHub context
       env:
@@ -228,9 +232,9 @@ jobs:
       timeout-minutes: 10
       continue-on-error: true
       run: |
-        echo "invoking llama-cli to test inference (generation)..."
+        echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli \
+        ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \

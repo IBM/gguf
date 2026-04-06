@@ -9,6 +9,9 @@ on:
       hf_token:
         required: true
     inputs:
+      llamacpp_build_tag:
+        type: string
+        required: true
       enable_language_jobs:
         type: boolean
         required: false
@@ -67,9 +70,15 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_CPP_VERSION: "b6569" # 'b5717', # 'b6050'
+      LLAMA_SERVER_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-server
     steps:
     - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          bin/${{ inputs.llamacpp_build_tag }}/llama-server
+          scripts
+          requirements.txt
+        sparse-checkout-cone-mode: false
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
@@ -186,7 +195,7 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
         echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
-        nohup ./bin/llama-server -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} --temp ${{env.LLAMA_SERVER_TEMP}} --verbose --log-file ${{env.BASE_FNAME_LOG_FILE}} &
+        nohup ${{env.LLAMA_SERVER_BIN}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} --temp ${{env.LLAMA_SERVER_TEMP}} --verbose --log-file ${{env.BASE_FNAME_LOG_FILE}} &
         echo "Llama server started in the background."
         echo waiting for llama-server to start...
         retry_count=0

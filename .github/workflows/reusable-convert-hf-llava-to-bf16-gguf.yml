@@ -19,6 +19,10 @@ on:
       ibm_granite_token:
         required: true
     inputs:
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which llama.cpp version to clone."
       enable_vision_jobs:
         type: boolean
         required: false
@@ -43,11 +47,15 @@ on:
         type: boolean
         required: true
         default: false
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted model (e.g., 'f16', 'bf16')"
 
 # TODO: VISION_CONFIG is not currently used in this workflow (currently the config file loc. is hardcoded)
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16" # use bf16 as f16 has some issues we have not been able to discern
+  DEF_PRECISION: "${{ inputs.converted_quantization }}"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   EXT_NAME_BF16: "-bf16.gguf"
@@ -81,7 +89,6 @@ jobs:
       HF_HUB_ENABLE_HF_TRANSFER: 0
       HF_TRANSFORMERS_VERSION: "4.52.1" # "4.51.3" (good), xv4.52.1 (x == broken/needs sed to rename model class (see below))
       HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1" # Version where LlavaNextModel class initialization changed (last good version 4.51.3)
-      LLAMA_CPP_VERSION: b7951 # Previously: b7951, *b6808, b6791,"b6569", 'b5717', 'b6050'
     steps:
     - uses: actions/checkout@v6
       with:
@@ -208,7 +215,7 @@ jobs:
       with:
         path: ${{ env.LLAMACPP_DIR }} # checkout under this directory
         repository: 'ggerganov/llama.cpp'
-        ref: ${{env.LLAMA_CPP_VERSION}} # default to 'master' branch
+        ref: ${{ inputs.llamacpp_build_tag }}
         fetch-depth: 1
         sparse-checkout-cone-mode: false
         sparse-checkout: |

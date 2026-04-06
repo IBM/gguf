@@ -9,6 +9,10 @@ on:
       hf_token:
         required: true
     inputs:
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       enable_docling_jobs:
         type: boolean
         required: false
@@ -41,13 +45,18 @@ on:
         type: boolean
         required: false
         default: false
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted docling model (e.g., 'f16', 'bf16')"
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_F16: "-${{ inputs.converted_quantization }}.gguf"
   LLAMA_CLI_TOOL: llama-mtmd-cli
+  LLAMA_MTMD_CLI_BIN: ""  # Set dynamically in job env
   LLAMA_REQUEST_SEED: 647063347
   LLAMA_REQUEST_PROMPT_USER: "<__media__>Convert this image to markdown."
   LLAMA_REQUEST_N_PREDICT: 128
@@ -83,6 +92,8 @@ jobs:
   test-quantized-model:
     runs-on: macos-latest
     if: ${{ inputs.enable_docling_jobs == true }}
+    env:
+      LLAMA_MTMD_CLI_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
     steps:
     - uses: actions/checkout@v6
       with:
@@ -90,7 +101,8 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
-          bin/llama-mtmd-cli
+          bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
+          test/images
         sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment
@@ -212,7 +224,7 @@ jobs:
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        ${{env.LLAMA_MTMD_CLI_BIN}}  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_GH_SS}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
@@ -241,7 +253,7 @@ jobs:
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-mtmd-cli  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        ${{env.LLAMA_MTMD_CLI_BIN}}  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \

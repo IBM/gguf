@@ -25,6 +25,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       ext_log:
         type: string
         required: false
@@ -41,6 +45,10 @@ on:
         type: boolean
         required: false
         default: false
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted embedding model (e.g., 'f16', 'bf16'). Used for consistency with conversion workflow."
 
 env:
   DEBUG: ${{inputs.debug}}
@@ -53,7 +61,6 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
-  LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
   SIMILARITY_THRESHOLD_HIGH: 0.6  # Threshold for similar sentences
   SIMILARITY_THRESHOLD_LOW: 0.4   # Threshold for dissimilar sentences
 
@@ -77,7 +84,7 @@ jobs:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          bin/llama-embedding
+          bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py
@@ -97,6 +104,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
 
     - name: Dump GitHub inputs
       env:
@@ -173,14 +181,17 @@ jobs:
 
     - name: verify-llama-embedding-binary
       run: |
-        echo "Verifying llama-embedding binary..."
-        if [ ! -f "${{env.LLAMA_EMBEDDING_BIN}}" ]; then
-          echo "[ERROR] llama-embedding binary not found at: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "Verifying llama-embedding binary from build tag: ${{ inputs.llamacpp_build_tag }}"
+        LLAMA_EMBEDDING_BIN="./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding"
+        if [ ! -f "$LLAMA_EMBEDDING_BIN" ]; then
+          echo "[ERROR] llama-embedding binary not found at: $LLAMA_EMBEDDING_BIN"
           exit 1
         fi
+        chmod +x "$LLAMA_EMBEDDING_BIN"
         echo "[SUCCESS] llama-embedding binary found"
         echo "Testing binary..."
-        ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
+        $LLAMA_EMBEDDING_BIN --help | head -20
+        echo "LLAMA_EMBEDDING_BIN=$LLAMA_EMBEDDING_BIN" >> $GITHUB_ENV
 
     - name: generate-embeddings-for-similarity-test
       timeout-minutes: 10
@@ -191,6 +202,7 @@ jobs:
         echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
         echo "[INFO] Output format: ${{env.OUTPUT_FORMAT}}"
         echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "[INFO] Build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "[INFO] =========================================="
         echo ""
 

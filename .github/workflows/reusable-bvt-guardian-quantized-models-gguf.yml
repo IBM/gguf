@@ -25,6 +25,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       ext_log:
         type: string
         required: false
@@ -41,6 +45,10 @@ on:
         type: boolean
         required: false
         default: false
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted guardian model (e.g., 'f16', 'bf16'). Used for consistency with conversion workflow."
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
@@ -88,7 +96,9 @@ jobs:
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/test_regex_match_file.py
-          bin/llama-cli
+          test/prompts/
+          test/scripts/
+          bin/${{ inputs.llamacpp_build_tag }}/llama-cli
         sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment
@@ -103,6 +113,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
 
     - name: Dump GitHub inputs
       env:
@@ -206,9 +217,9 @@ jobs:
       timeout-minutes: 30
       continue-on-error: false
       run: |
-        echo "invoking llama-cli to test inference (generation)..."
+        echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/llama-cli \
+        ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --n-gpu-layers ${{ env.LLAMA_REQUEST_NUM_GPU_LAYERS }} \

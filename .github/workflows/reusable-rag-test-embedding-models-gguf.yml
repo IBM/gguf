@@ -27,6 +27,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       top_k:
         type: number
         required: false
@@ -47,7 +51,6 @@ env:
   EXT_GGUF: .gguf
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
-  LLAMA_EMBEDDING_BIN: "./bin/llama-embedding"
   TOP_K: ${{inputs.top_k}}
   MIN_SCORE: ${{inputs.min_score}}
 
@@ -67,7 +70,7 @@ jobs:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          bin/llama-embedding
+          bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/test_embedding_rag_milvus.py
@@ -85,6 +88,7 @@ jobs:
         echo "QUANTIZATION: ${{inputs.quantization}}"
         echo "TARGET_REPO_OWNER: ${{inputs.target_repo_owner}}"
         echo "TARGET_REPO_NAME_EXT: ${{inputs.target_repo_name_ext}}"
+        echo "LLAMACPP_BUILD_TAG: ${{inputs.llamacpp_build_tag}}"
         echo "TOP_K: ${{env.TOP_K}}"
         echo "MIN_SCORE: ${{env.MIN_SCORE}}"
         echo "=================================="
@@ -158,14 +162,17 @@ jobs:
 
     - name: verify-llama-embedding-binary
       run: |
-        echo "Verifying llama-embedding binary..."
-        if [ ! -f "${{env.LLAMA_EMBEDDING_BIN}}" ]; then
-          echo "[ERROR] llama-embedding binary not found at: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "Verifying llama-embedding binary from build tag: ${{ inputs.llamacpp_build_tag }}"
+        LLAMA_EMBEDDING_BIN="./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding"
+        if [ ! -f "$LLAMA_EMBEDDING_BIN" ]; then
+          echo "[ERROR] llama-embedding binary not found at: $LLAMA_EMBEDDING_BIN"
           exit 1
         fi
+        chmod +x "$LLAMA_EMBEDDING_BIN"
         echo "[SUCCESS] llama-embedding binary found"
         echo "Testing binary..."
-        ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
+        $LLAMA_EMBEDDING_BIN --help | head -20
+        echo "LLAMA_EMBEDDING_BIN=$LLAMA_EMBEDDING_BIN" >> $GITHUB_ENV
 
     - name: run-milvus-rag-test
       timeout-minutes: 15
@@ -174,6 +181,8 @@ jobs:
         echo "[INFO] Milvus RAG Testing for Embedding Model"
         echo "[INFO] =========================================="
         echo "[INFO] Model: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
+        echo "[INFO] Build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
         echo "[INFO] Top-K: ${{env.TOP_K}}"
         echo "[INFO] Min Score: ${{env.MIN_SCORE}}"
         echo "[INFO] =========================================="

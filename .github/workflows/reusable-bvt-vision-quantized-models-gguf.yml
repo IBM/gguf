@@ -25,6 +25,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       ext_log:
         type: string
         required: false
@@ -45,13 +49,17 @@ on:
         type: boolean
         required: false
         default: true
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted vision model (e.g., 'f16', 'bf16')"
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
   VERIFY_RUNTIME: ${{inputs.verify_runtime}}
   EXT_GGUF: .gguf
-  EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_F16: "-${{ inputs.converted_quantization }}.gguf"
   # LLAMA_CLI_RESPONSE_FILE: .llama-cli.response.txt
   # LLAMA_CLI_LOG_FILE: .llama-cli.log.txt
   LLAMA_CLI_TOOL: llama-mtmd-cli # llama-llava-cli
@@ -94,7 +102,8 @@ jobs:
           scripts/hf_file_download.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
-          bin/llama-mtmd-cli
+          test/images/
+          bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
         sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment
@@ -108,6 +117,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
 
     # - name: Dump GitHub context
     #   env:
@@ -175,31 +185,34 @@ jobs:
       if: env.VERIFY_RUNTIME == 'true'
       continue-on-error: false
       run: |
-        echo "Verifying llama-mtmd-cli runtime on ${{ runner.os }}..."
-        if [ ! -f "./bin/${{env.LLAMA_CLI_TOOL}}" ]; then
-          echo "[ERROR] llama-mtmd-cli binary not found at ./bin/${{env.LLAMA_CLI_TOOL}}"
+        echo "Verifying llama-mtmd-cli runtime on ${{ runner.os }} using build tag: ${{ inputs.llamacpp_build_tag }}"
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        if [ ! -f "$LLAMA_CLI_PATH" ]; then
+          echo "[ERROR] llama-mtmd-cli binary not found at $LLAMA_CLI_PATH"
           exit 1
         fi
 
         # Check if binary is executable
-        if [ ! -x "./bin/${{env.LLAMA_CLI_TOOL}}" ]; then
+        if [ ! -x "$LLAMA_CLI_PATH" ]; then
           echo "[ERROR] llama-mtmd-cli binary is not executable"
-          exit 1
+          chmod +x "$LLAMA_CLI_PATH"
+          echo "[INFO] Made binary executable"
         fi
 
         # Test basic execution (help/version)
         echo "Testing llama-mtmd-cli execution..."
-        ./bin/${{env.LLAMA_CLI_TOOL}} --version || ./bin/${{env.LLAMA_CLI_TOOL}} --help || true
+        $LLAMA_CLI_PATH --version || $LLAMA_CLI_PATH --help || true
 
         if [ $? -ne 0 ]; then
           echo "[WARNING] llama-mtmd-cli execution test returned non-zero exit code"
           echo "Checking for dynamic library dependencies..."
           if command -v otool &> /dev/null; then
             echo "macOS: Checking dynamic libraries with otool..."
-            otool -L ./bin/${{env.LLAMA_CLI_TOOL}}
+            otool -L $LLAMA_CLI_PATH
           elif command -v ldd &> /dev/null; then
             echo "Linux: Checking dynamic libraries with ldd..."
-            ldd ./bin/${{env.LLAMA_CLI_TOOL}}
+            ldd $LLAMA_CLI_PATH
           fi
         else
           echo "[SUCCESS] llama-mtmd-cli runtime verification passed"
@@ -242,10 +255,12 @@ jobs:
       timeout-minutes: 10
       continue-on-error: true
       run: |
-        echo "invoking ${{env.LLAMA_CLI_TOOL}} to test inference..."
+        echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ./bin/${{env.LLAMA_CLI_TOOL}} -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
@@ -254,7 +269,7 @@ jobs:
             --verbose \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
-          echo "[ERROR] ${{env.LLAMA_CLI_TOOL}}  failed:"
+          echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
           ls -al
           echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
           echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"

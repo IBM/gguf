@@ -34,6 +34,14 @@ on:
         required: false
         default: "4.52.1"
         description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3'). Defaults to 4.52.1 for Granite 3.x models."
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which llama.cpp version to clone."
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted vision model LLM (e.g., 'f16' or 'bf16')"
       debug:
         type: boolean
         required: true
@@ -45,7 +53,7 @@ on:
 
 env:
   DEF_SEP: "-"
-  DEF_PRECISION: "bf16"
+  DEF_PRECISION: "${{ inputs.converted_quantization }}"
   DEF_MMPROJ_PRECISION: "f16"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
@@ -58,7 +66,6 @@ env:
   HF_HUB_DISABLE_XET: 1
   HF_HUB_ENABLE_HF_TRANSFER: 0
   HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1"
-  LLAMA_CPP_VERSION: b7951
 
 jobs:
   # ===========================================================================
@@ -107,11 +114,18 @@ jobs:
           REPO_ORG=$(dirname '${{ inputs.repo_id }}')
           REPO_NAME=$(basename '${{ inputs.repo_id }}')
 
+          # Determine file extension based on converted_quantization
+          if [ "${{ inputs.converted_quantization }}" = "f16" ]; then
+            EXT_NAME="${{env.EXT_NAME_F16}}"
+          else
+            EXT_NAME="${{env.EXT_NAME_BF16}}"
+          fi
+
           echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
           echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
-          echo "base_fname_bf16_gguf=${REPO_NAME}${{env.EXT_NAME_BF16}}" >> $GITHUB_OUTPUT
+          echo "base_fname_bf16_gguf=${REPO_NAME}${EXT_NAME}" >> $GITHUB_OUTPUT
           echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_OUTPUT
           echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
 
@@ -198,7 +212,7 @@ jobs:
         with:
           path: ${{ env.LLAMACPP_DIR }}
           repository: 'ggerganov/llama.cpp'
-          ref: ${{env.LLAMA_CPP_VERSION}}
+          ref: ${{ inputs.llamacpp_build_tag }}
           fetch-depth: 1
           sparse-checkout-cone-mode: false
           sparse-checkout: |
@@ -356,7 +370,7 @@ jobs:
         with:
           path: ${{ env.LLAMACPP_DIR }}
           repository: 'ggerganov/llama.cpp'
-          ref: ${{env.LLAMA_CPP_VERSION}}
+          ref: ${{ inputs.llamacpp_build_tag }}
           fetch-depth: 1
           sparse-checkout-cone-mode: false
           sparse-checkout: |
