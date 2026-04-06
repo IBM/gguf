@@ -118,14 +118,18 @@ Typically, this model category includes "base" and "instruct" models.
 
 #### Vision
 
-| Source Repo. ID | Architecture (HF) | Architecture Description |
-| --- | --- | --- |
-| ibm-granite/granite-vision-3.2-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) |
-| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) |
-| ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) |
-| ibm-granite/granite-4.0-3b-vision ⚠️ | Granite4VisionForConditionalGeneration (custom model) (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | ❌ **Not currently supported** - Requires custom code not available in llama.cpp or HF Transformers. See [Converting Vision Models](docs/convert-vision-models.md) for details. |
+| Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
+| --- | --- | --- | --- | --- |
+| ibm-granite/granite-vision-3.2-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
+| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
+| ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
+| ibm-granite/granite-4.0-3b-vision ⚠️ | Granite4VisionForConditionalGeneration (custom model) (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | ❌ **Not currently supported** - Requires custom code not available in llama.cpp or HF Transformers. See [Converting Vision Models](docs/convert-vision-models.md) for details. | | |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
+
+**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
+
+**† Architecture fix required:** HF Transformers v4.52.1+ requires a config.json architecture fix during conversion. The LlavaNextModel class initialization changed in v4.52.1 to use `AutoModel` instead of `AutoModelForCausalLM`, causing the exported LLM config.json to incorrectly specify `"GraniteModel"` instead of `"GraniteForCausalLM"`. The conversion workflow automatically renames the architecture class from `GraniteModel` → `GraniteForCausalLM` in config.json before GGUF conversion.
 
 #### Embedding (dense)
 
