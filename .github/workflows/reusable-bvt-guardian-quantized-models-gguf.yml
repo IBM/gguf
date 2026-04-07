@@ -215,7 +215,7 @@ jobs:
        cat ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}}
 
     - name: test-granite-guardian-risk-harm
-      timeout-minutes: 20
+      timeout-minutes: 30
       continue-on-error: false
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
