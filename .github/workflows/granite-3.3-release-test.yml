@@ -40,7 +40,7 @@ env:
   # HuggingFace Transformers versions
   # V4.52.1 is the last well-tested version we know the CI can support for Granite 3.3 & 3.2
   TRANSFORMERS_VERSION_LANGUAGE: "4.52.1"
-  TRANSFORMERS_VERSION_VISION: "4.52.1"
+  TRANSFORMERS_VERSION_VISION: "4.52.1" # granite-vision-3.3-2b w/ config.json model arch. rename hack
   TRANSFORMERS_VERSION_GUARDIAN: "4.52.1"
   TRANSFORMERS_VERSION_EMBEDDING: "4.52.1"
   TRANSFORMERS_VERSION_DOCLING: "4.52.1"
@@ -48,9 +48,9 @@ env:
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
   LLAMACPP_BUILD_TAG_LANGUAGE: b6569
-  LLAMACPP_BUILD_TAG_VISION: b6569
+  LLAMACPP_BUILD_TAG_VISION: b6808 # mtmd support for granite-vision-3.3-2b vision model
   LLAMACPP_BUILD_TAG_GUARDIAN: b6569
-  LLAMACPP_BUILD_TAG_EMBEDDING: b6569
+  LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
   LLAMACPP_BUILD_TAG_DOCLING: b6569
 
   # 'ibm-granite/granite-3.3-2b-base',
@@ -114,7 +114,6 @@ env:
   # 'ibm-granite/granite-embedding-multilingual-r2',
   # 'ibm-granite/granite-embedding-code-r2'
   SOURCE_EMBEDDING_REPOS: "[
-    'ibm-granite/granite-vision-3.3-2b-embedding',
     'ibm-granite/granite-embedding-english-r2',
     'ibm-granite/granite-embedding-multilingual-r2',
     'ibm-granite/granite-embedding-code-r2'
