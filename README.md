@@ -121,8 +121,8 @@ Typically, this model category includes "base" and "instruct" models.
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
 | ibm-granite/granite-vision-3.2-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
-| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
-| ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
+| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b6808‡ |
+| ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | not yet successfully tested | not yet successfully tested. |
 | ibm-granite/granite-4.0-3b-vision ⚠️ | Granite4VisionForConditionalGeneration (custom model) (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | ❌ **Not currently supported** - Requires custom code not available in llama.cpp or HF Transformers. See [Converting Vision Models](docs/convert-vision-models.md) for details. | | |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
@@ -131,26 +131,35 @@ Typically, this model category includes "base" and "instruct" models.
 
 **† Architecture fix required:** HF Transformers v4.52.1+ requires a config.json architecture fix during conversion. The LlavaNextModel class initialization changed in v4.52.1 to use `AutoModel` instead of `AutoModelForCausalLM`, causing the exported LLM config.json to incorrectly specify `"GraniteModel"` instead of `"GraniteForCausalLM"`. The conversion workflow automatically renames the architecture class from `GraniteModel` → `GraniteForCausalLM` in config.json before GGUF conversion.
 
+**‡ Alternative version:** llama.cpp build b7951 may also work for this model.
+
 #### Embedding (dense)
 
-| Source Repo. ID | Architecture (HF) | Architecture Description |
-| --- | --- | --- |
-| ibm-granite/granite-embedding-30m-english | Roberta | roberta-bpe |
-| ibm-granite/granite-embedding-125m-english | Roberta | roberta-bpe |
-| ibm-granite/granite-embedding-107m-multilingual | Roberta | roberta-bpe |
-| ibm-granite/granite-embedding-278m-multilingual | Roberta | roberta-bpe |
+| Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
+| --- | --- | --- | --- | --- |
+| ibm-granite/granite-embedding-30m-english | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-125m-english | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-107m-multilingual | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-278m-multilingual | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-small-english-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
+| ibm-granite/granite-embedding-english-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
+| ibm-granite/granite-embedding-multilingual-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
 
 - Supported quantizations: `f16`, `Q8_0`
+
+**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 **Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
 
 #### Docling
 
-| Source Repo. ID | Architecture (HF) | Architecture Description |
-| --- | --- | --- |
-| ibm-granite/granite-docling-258M | Idefics3ForConditionalGeneration (text: LlamaForCausalLM, vision: idefics3_vision) | idefics3 (text: llama, vision: idefics3_vision) |
+| Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
+| --- | --- | --- | --- | --- |
+| ibm-granite/granite-docling-258M | Idefics3ForConditionalGeneration (text: LlamaForCausalLM, vision: idefics3_vision) | idefics3 (text: llama, vision: idefics3_vision) | | |
 
 - Supported quantizations: `bf16`
+
+**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 ###### RAG LoRA support**
 
