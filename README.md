@@ -513,6 +513,72 @@ Common quantization formats (from highest to lowest quality/size):
 - The `COLLECTION_CONFIG` file must exist and contain valid JSON mapping
 - Set `ENABLE_*_JOBS` to `false` to skip processing that model family entirely
 
+#### Advanced Configuration Flags
+
+Beyond the basic model family and quantization settings, the release workflows support additional configuration flags to control the conversion toolchain and output formats. These flags are set per model family to allow fine-grained control over different model types.
+
+**HuggingFace Transformers Version**
+
+You can specify which version of the HuggingFace Transformers library to use during model conversion for each model family:
+
+```yaml
+  # HuggingFace Transformers versions per model family
+  TRANSFORMERS_VERSION_LANGUAGE: "4.52.1"
+  TRANSFORMERS_VERSION_VISION: "4.52.1"
+  TRANSFORMERS_VERSION_GUARDIAN: "4.52.1"
+  TRANSFORMERS_VERSION_EMBEDDING: "4.52.1"
+  TRANSFORMERS_VERSION_DOCLING: "4.52.1"
+```
+
+**Why specify a version?**
+- Different Granite model architectures may require specific Transformers versions for proper conversion
+- Ensures reproducible builds across different workflow runs
+- Allows testing new Transformers releases on specific model families before adopting them broadly
+- See the model architecture tables above for last known successful versions per model
+
+**llama.cpp Build Release Version**
+
+You can specify which llama.cpp build (by commit hash or tag) to use for conversion and quantization for each model family:
+
+```yaml
+  # llama.cpp build tags per model family
+  # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
+  LLAMACPP_BUILD_TAG_LANGUAGE: b6569
+  LLAMACPP_BUILD_TAG_VISION: b6569
+  LLAMACPP_BUILD_TAG_GUARDIAN: b6569
+  LLAMACPP_BUILD_TAG_EMBEDDING: b6569
+  LLAMACPP_BUILD_TAG_DOCLING: b6569
+```
+
+**Why specify a version?**
+- Different llama.cpp builds may have varying support for model architectures
+- Ensures consistent conversion behavior across workflow runs
+- Allows testing new llama.cpp features on specific model families before broad adoption
+- The specified version must have pre-built binaries available in the `bin/{tag}/` directory
+- See the model architecture tables above for last known successful versions per model
+
+**Default Converted Quantization Format**
+
+For models that support multiple initial conversion formats, you can specify whether to use `bf16` (bfloat16) or `f16` (float16) as the default converted format for each model family:
+
+```yaml
+  # Default converted quantization per model family
+  DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
+  DEF_CONVERTED_QUANT_VISION: "f16"
+  DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
+  DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
+  DEF_CONVERTED_QUANT_DOCLING: "f16"
+```
+
+**Why use bf16?**
+- **Better numerical stability**: bfloat16 has the same exponent range as float32, reducing overflow/underflow risks
+- **Improved accuracy**: Maintains better precision for large values compared to float16
+- **Modern hardware support**: Optimized for newer GPUs and accelerators (e.g., NVIDIA Ampere, AMD MI200)
+- **Recommended for newer models**: Granite 3.3+ and 4.0+ models benefit from bf16's improved range
+
+**Note**: The conversion workflow will automatically fall back to f16 if bf16 conversion fails or is not supported by the model architecture.
+
+
 ### Updating Tools
 
 #### llama.cpp
