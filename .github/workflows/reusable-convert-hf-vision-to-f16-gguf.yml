@@ -114,18 +114,15 @@ jobs:
           REPO_ORG=$(dirname '${{ inputs.repo_id }}')
           REPO_NAME=$(basename '${{ inputs.repo_id }}')
 
-          # Determine file extension based on converted_quantization
-          if [ "${{ inputs.converted_quantization }}" = "f16" ]; then
-            EXT_NAME="${{env.EXT_NAME_F16}}"
-          else
-            EXT_NAME="${{env.EXT_NAME_BF16}}"
-          fi
+          # Dynamically construct filename using converted_quantization parameter
+          # This matches the construction method in reusable-quantize-llava-upload-gguf.yml
+          BASE_FNAME_CONVERTED_GGUF="${REPO_NAME}${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
 
           echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
           echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
-          echo "base_fname_bf16_gguf=${REPO_NAME}${EXT_NAME}" >> $GITHUB_OUTPUT
+          echo "base_fname_bf16_gguf=${BASE_FNAME_CONVERTED_GGUF}" >> $GITHUB_OUTPUT
           echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_OUTPUT
           echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
 
