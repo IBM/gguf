@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: true
-  ENABLE_GUARDIAN_JOBS: true
+  ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: true
   ENABLE_DOCLING_JOBS: false
 
