@@ -165,6 +165,8 @@ jobs:
         clean: false
         sparse-checkout: |
           bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+          requirements.txt
+          scripts/
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
