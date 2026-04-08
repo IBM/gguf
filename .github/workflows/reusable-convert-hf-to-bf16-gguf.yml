@@ -183,9 +183,11 @@ jobs:
           gguf-py/gguf
           scripts
 
-    # find llama.cpp ${{env.FIND_ARGS}}
     - name: print-llamacpp
       run: |
+        echo "=========================================="
+        echo "llama.cpp cloned from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "=========================================="
         echo "PATH: '$PATH'"
         ls -al llama.cpp
 

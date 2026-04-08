@@ -157,6 +157,30 @@ jobs:
       with:
         python-version: '3.11'
 
+    # Sparse checkout llama-quantize binary from GGUF repo based on build tag
+    # IMPORTANT: clean: false preserves files from the initial checkout and any downloaded files
+    - name: sparse-checkout-llama-quantize-binary
+      uses: actions/checkout@v6
+      with:
+        clean: false
+        sparse-checkout: |
+          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: verify-llama-quantize-binary
+      run: |
+        echo "=========================================="
+        echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "=========================================="
+        ls -al ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        if [ ! -f "./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize" ]; then
+          echo "[ERROR] llama-quantize binary not found at ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize"
+          exit 1
+        fi
+        chmod +x ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        echo "[SUCCESS] llama-quantize binary found and made executable"
+
     - name: install-general-dependencies
       run: |
         python -m pip install -r ./requirements.txt
@@ -200,26 +224,6 @@ jobs:
           echo "File does not exist. env.LOCAL_FNAME_BF16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
           exit 1
         fi
-
-    # Sparse checkout llama-quantize binary from GGUF repo based on build tag
-    - name: sparse-checkout-llama-quantize-binary
-      uses: actions/checkout@v6
-      with:
-        sparse-checkout: |
-          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
-        sparse-checkout-cone-mode: false
-        fetch-depth: 1
-
-    - name: verify-llama-quantize-binary
-      run: |
-        echo "Verifying llama-quantize binary from build tag: ${{ inputs.llamacpp_build_tag }}"
-        ls -al ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
-        if [ ! -f "./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize" ]; then
-          echo "[ERROR] llama-quantize binary not found at ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize"
-          exit 1
-        fi
-        chmod +x ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
-        echo "[SUCCESS] llama-quantize binary found and made executable"
 
     - name: quantize-gguf
       run: |

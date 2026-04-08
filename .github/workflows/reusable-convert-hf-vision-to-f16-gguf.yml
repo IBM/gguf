@@ -224,6 +224,9 @@ jobs:
 
       - name: print-llamacpp-clone
         run: |
+          echo "=========================================="
+          echo "llama.cpp cloned from build tag: ${{ inputs.llamacpp_build_tag }}"
+          echo "=========================================="
           echo "PATH: '$PATH'"
           ls -al llama.cpp
           find llama.cpp ${{env.FIND_ARGS}}
@@ -376,6 +379,13 @@ jobs:
             requirements/requirements-convert_legacy_llama.txt
             gguf-py/gguf
             scripts
+
+      - name: print-llamacpp-clone
+        run: |
+          echo "=========================================="
+          echo "llama.cpp cloned from build tag: ${{ inputs.llamacpp_build_tag }}"
+          echo "=========================================="
+          ls -al llama.cpp
 
       - name: install-dependencies
         run: |
