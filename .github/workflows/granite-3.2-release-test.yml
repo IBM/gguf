@@ -19,6 +19,12 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
 
+  # Enable appending the converted format (BF16/F16) to BVT test matrix
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+
+  # Enable RAG testing for embedding models (runs after successful BVT)
+  ENABLE_RAG_TESTING: false
+
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: false
@@ -29,6 +35,20 @@ env:
   ARTIFACT_RESPONSES_NAME: 'bvt-responses'
   EXT_LOG: '.log.txt'
   EXT_RESPONSE: '.response.txt'
+
+  # HuggingFace Transformers versions
+  # V4.52.1 is the last well-tested version we know the CI can support for Granite 3.2
+  TRANSFORMERS_VERSION_LANGUAGE: "4.52.1"
+  TRANSFORMERS_VERSION_VISION: "4.52.1"
+  TRANSFORMERS_VERSION_GUARDIAN: "4.52.1"
+  TRANSFORMERS_VERSION_EMBEDDING: "4.52.1"
+
+  # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
+  # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
+  LLAMACPP_BUILD_TAG_LANGUAGE: b6569
+  LLAMACPP_BUILD_TAG_VISION: b6569
+  LLAMACPP_BUILD_TAG_GUARDIAN: b6569
+  LLAMACPP_BUILD_TAG_EMBEDDING: b6569
 
   # 'ibm-granite/granite-3.2-2b-instruct',
   # 'ibm-granite/granite-3.2-8b-instruct'
@@ -98,23 +118,47 @@ jobs:
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
+      enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
+      enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ steps.set-vars.outputs.target_repo_name_ext }}
       source_language_repos: "${{ steps.set-vars.outputs.source_language_repos }}"
       target_language_quantizations: "${{ steps.set-vars.outputs.target_language_quantizations }}"
+      target_language_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_language_quantizations_bvt }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
+      target_vision_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_vision_quantizations_bvt }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
+      target_guardian_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_guardian_quantizations_bvt }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
       target_embedding_quantizations: "${{ steps.set-vars.outputs.target_embedding_quantizations }}"
+      target_embedding_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_embedding_quantizations_bvt }}"
       default_artifacts_dir: "${{ steps.set-vars.outputs.default_artifacts_dir }}"
       artifact_logs_name: "${{ steps.set-vars.outputs.artifact_logs_name }}"
       artifact_responses_name: "${{ steps.set-vars.outputs.artifact_responses_name }}"
       ext_log: "${{ steps.set-vars.outputs.ext_log }}"
       ext_response: "${{ steps.set-vars.outputs.ext_response }}"
+      transformers_version_language: "${{ steps.set-vars.outputs.transformers_version_language }}"
+      transformers_version_vision: "${{ steps.set-vars.outputs.transformers_version_vision }}"
+      transformers_version_guardian: "${{ steps.set-vars.outputs.transformers_version_guardian }}"
+      transformers_version_embedding: "${{ steps.set-vars.outputs.transformers_version_embedding }}"
+      llamacpp_build_tag_language: "${{ steps.set-vars.outputs.llamacpp_build_tag_language }}"
+      llamacpp_build_tag_vision: "${{ steps.set-vars.outputs.llamacpp_build_tag_vision }}"
+      llamacpp_build_tag_guardian: "${{ steps.set-vars.outputs.llamacpp_build_tag_guardian }}"
+      llamacpp_build_tag_embedding: "${{ steps.set-vars.outputs.llamacpp_build_tag_embedding }}"
+      def_converted_quant_language: "${{ steps.set-vars.outputs.def_converted_quant_language }}"
+      def_converted_quant_vision: "${{ steps.set-vars.outputs.def_converted_quant_vision }}"
+      def_converted_quant_guardian: "${{ steps.set-vars.outputs.def_converted_quant_guardian }}"
+      def_converted_quant_embedding: "${{ steps.set-vars.outputs.def_converted_quant_embedding }}"
+    env:
+      ARRAY_SEP: "','"
+      DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
+      DEF_CONVERTED_QUANT_VISION: "f16"
+      DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
+      DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
     steps:
       - name: Set environment variables in GitHub output
         id: set-vars
@@ -130,6 +174,8 @@ jobs:
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
+            echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -147,6 +193,67 @@ jobs:
             echo "artifact_responses_name=$ARTIFACT_RESPONSES_NAME" >> "$GITHUB_OUTPUT"
             echo "ext_log=$EXT_LOG" >> "$GITHUB_OUTPUT"
             echo "ext_response=$EXT_RESPONSE" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_language=$TRANSFORMERS_VERSION_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_vision=$TRANSFORMERS_VERSION_VISION" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_guardian=$TRANSFORMERS_VERSION_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_embedding=$TRANSFORMERS_VERSION_EMBEDDING" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_language=$LLAMACPP_BUILD_TAG_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_vision=$LLAMACPP_BUILD_TAG_VISION" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_guardian=$LLAMACPP_BUILD_TAG_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_embedding=$LLAMACPP_BUILD_TAG_EMBEDDING" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_language=$DEF_CONVERTED_QUANT_LANGUAGE" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_vision=$DEF_CONVERTED_QUANT_VISION" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_guardian=$DEF_CONVERTED_QUANT_GUARDIAN" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_embedding=$DEF_CONVERTED_QUANT_EMBEDDING" >> "$GITHUB_OUTPUT"
+
+      - name: Append converted format to BVT test matrices
+        id: append-converted-format
+        run: |
+            echo "ENABLE_BVT_TEST_CONVERTED_FORMAT: $ENABLE_BVT_TEST_CONVERTED_FORMAT"
+
+            if [ "$ENABLE_BVT_TEST_CONVERTED_FORMAT" = "true" ]; then
+              echo "✅ Appending converted formats to BVT test matrices"
+
+              # Language models (BF16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_LANGUAGE}} to TARGET_LANGUAGE_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_LANGUAGE_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_LANGUAGE_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_LANGUAGE}}']"
+              else
+                TARGET_LANGUAGE_QUANTIZATIONS_BVT="$TARGET_LANGUAGE_QUANTIZATIONS"
+              fi
+              echo "target_language_quantizations_bvt=$TARGET_LANGUAGE_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Vision models (F16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_VISION}} to TARGET_VISION_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_VISION_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_VISION_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_VISION}}']"
+              else
+                TARGET_VISION_QUANTIZATIONS_BVT="$TARGET_VISION_QUANTIZATIONS"
+              fi
+              echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Guardian models (BF16)
+              TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+              echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Embedding models (BF16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_EMBEDDING}} to TARGET_EMBEDDING_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_EMBEDDING_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                TARGET_EMBEDDING_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_EMBEDDING}}']"
+              else
+                TARGET_EMBEDDING_QUANTIZATIONS_BVT="$TARGET_EMBEDDING_QUANTIZATIONS"
+              fi
+              echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+            else
+              echo "ℹ️  Skipping append of converted formats (ENABLE_BVT_TEST_CONVERTED_FORMAT=false)"
+              echo "target_language_quantizations_bvt=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            fi
 
       - name: Confirm GitHub output values were set
         run: |
@@ -225,11 +332,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_language }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -249,12 +359,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -269,10 +381,11 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
@@ -333,11 +446,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_vision }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_vision }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -357,12 +473,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_vision }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -377,15 +495,17 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_vision_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_vision_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_vision }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: "${{ needs.environment-setup.outputs.def_converted_quant_vision }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
@@ -440,11 +560,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_guardian }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_guardian }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -464,12 +587,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_guardian }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -484,15 +609,17 @@ jobs:
       fail-fast: false
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations_bvt) }}
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_guardian }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: "${{ needs.environment-setup.outputs.def_converted_quant_guardian }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
@@ -536,7 +663,7 @@ jobs:
 
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -547,11 +674,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
@@ -571,12 +701,14 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
       target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
       target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
       repo_id: "${{ matrix.repo_id }}"
       quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
