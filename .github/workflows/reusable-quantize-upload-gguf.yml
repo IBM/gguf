@@ -126,7 +126,6 @@ jobs:
         echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
         echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
         echo "env.DEF_SEP: ${{ env.DEF_SEP }}"
-        echo "env.DEF_PRECISION: ${{ env.DEF_PRECISION }}"
         echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
 
     # - name: Dump runner context

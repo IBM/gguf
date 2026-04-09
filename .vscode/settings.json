@@ -40,6 +40,7 @@
         "safetensor",
         "Safetensors",
         "shopt",
+        "SIGSEV",
         "starcoder",
         "tagname",
         "tojson"
