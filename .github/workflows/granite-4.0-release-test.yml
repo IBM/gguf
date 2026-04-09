@@ -212,6 +212,36 @@ jobs:
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
       DEF_CONVERTED_QUANT_DOCLING: "f16"
     steps:
+      - name: Normalize language and guardian build inputs
+        run: |
+            NORMALIZED_SOURCE_LANGUAGE_REPOS="$(echo "$SOURCE_LANGUAGE_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_GUARDIAN_REPOS="$(echo "$SOURCE_GUARDIAN_REPOS" | tr -d '[:space:]')"
+
+            EFFECTIVE_ENABLE_LANGUAGE_JOBS="$ENABLE_LANGUAGE_JOBS"
+            EFFECTIVE_ENABLE_GUARDIAN_JOBS="$ENABLE_GUARDIAN_JOBS"
+
+            if [ "$ENABLE_LANGUAGE_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_LANGUAGE_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_LANGUAGE_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_LANGUAGE_REPOS is empty/None; overriding ENABLE_LANGUAGE_JOBS=false"
+              EFFECTIVE_ENABLE_LANGUAGE_JOBS=false
+              SOURCE_LANGUAGE_REPOS="[]"
+              TARGET_LANGUAGE_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_GUARDIAN_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_GUARDIAN_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_GUARDIAN_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_GUARDIAN_REPOS is empty/None; overriding ENABLE_GUARDIAN_JOBS=false"
+              EFFECTIVE_ENABLE_GUARDIAN_JOBS=false
+              SOURCE_GUARDIAN_REPOS="[]"
+              TARGET_GUARDIAN_QUANTIZATIONS="[]"
+            fi
+
+            echo "ENABLE_LANGUAGE_JOBS=$EFFECTIVE_ENABLE_LANGUAGE_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_LANGUAGE_REPOS=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_LANGUAGE_QUANTIZATIONS=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_ENV"
+
+            echo "ENABLE_GUARDIAN_JOBS=$EFFECTIVE_ENABLE_GUARDIAN_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_GUARDIAN_REPOS=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_GUARDIAN_QUANTIZATIONS=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_ENV"
+
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
