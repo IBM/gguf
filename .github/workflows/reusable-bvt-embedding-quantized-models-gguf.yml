@@ -87,6 +87,8 @@ jobs:
           scripts/validate_embedding_json.py
           scripts/analyze_embedding_tensors.py
           scripts/test_embedding_similarity.py
+          scripts/get_similarity_thresholds.py
+          resources/json/latest/hf_collection_mapping_gguf.json
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -292,6 +294,34 @@ jobs:
 
         echo ""
         echo "[SUCCESS] All embeddings validated and extracted!"
+
+    - name: set-similarity-thresholds
+      run: |
+        echo "[INFO] =========================================="
+        echo "[INFO] Getting Model-Specific Similarity Thresholds"
+        echo "[INFO] =========================================="
+        echo "[INFO] Repository: ${{ inputs.repo_id }}"
+        echo ""
+
+        # Get thresholds from configuration file
+        THRESHOLDS=$(python3 ./scripts/get_similarity_thresholds.py "${{ inputs.repo_id }}" --verbose)
+
+        if [ $? -ne 0 ]; then
+          echo "[ERROR] Failed to get similarity thresholds"
+          exit 1
+        fi
+
+        # Parse the output (format: "threshold_high threshold_low")
+        THRESHOLD_HIGH=$(echo $THRESHOLDS | awk '{print $1}')
+        THRESHOLD_LOW=$(echo $THRESHOLDS | awk '{print $2}')
+
+        echo "[INFO] Similarity Threshold (High/Similar): $THRESHOLD_HIGH"
+        echo "[INFO] Similarity Threshold (Low/Dissimilar): $THRESHOLD_LOW"
+        echo ""
+
+        # Set as environment variables for subsequent steps
+        echo "SIMILARITY_THRESHOLD_HIGH=$THRESHOLD_HIGH" >> $GITHUB_ENV
+        echo "SIMILARITY_THRESHOLD_LOW=$THRESHOLD_LOW" >> $GITHUB_ENV
 
     - name: test-embedding-similarity
       run: |

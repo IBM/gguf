@@ -239,70 +239,90 @@
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-30m-english",
-                    "default_quant": "f16"
+                    "default_quant": "f16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.5
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-125m-english",
-                    "default_quant": "f16"
+                    "default_quant": "f16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-107m-multilingual",
-                    "default_quant": "f16"
+                    "default_quant": "f16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-278m-multilingual",
-                    "default_quant": "f16"
+                    "default_quant": "f16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-vision-3.3-2b-embedding",
-                    "default_quant": "f16"
+                    "default_quant": "f16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-embedding-small-english-r2",
-                    "default_quant": "bf16"
+                    "default_quant": "bf16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-embedding-english-r2",
-                    "default_quant": "bf16"
+                    "default_quant": "bf16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-embedding-multilingual-r2",
-                    "default_quant": "bf16"
+                    "default_quant": "bf16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-embedding-reranker-english-r2",
-                    "default_quant": "bf16"
+                    "default_quant": "bf16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
                     "family": "embedding",
                     "version": "3.3",
                     "repo_name": "granite-embedding-code-r2",
-                    "default_quant": "bf16"
+                    "default_quant": "bf16",
+                    "similarity_threshold_high": 0.6,
+                    "similarity_threshold_low": 0.4
                 },
                 {
                     "type": "model",
