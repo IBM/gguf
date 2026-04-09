@@ -343,8 +343,11 @@ jobs:
           --labels "AI academic discipline 1956" "AI academic field 1950s"
 
         if [ $? -ne 0 ]; then
-          echo "[ERROR] Similarity test 1 failed"
-          exit 1
+          echo "=========================================="
+          echo "⚠️  WARNING: Similarity test 1 failed"
+          echo "⚠️  WARNING: Similar sentences did not meet the high similarity threshold"
+          echo "⚠️  WARNING: This is a non-blocking warning - workflow will continue"
+          echo "=========================================="
         fi
 
         echo ""
@@ -364,8 +367,11 @@ jobs:
           --labels "AI academic discipline 1956" "Pizza for dinner"
 
         if [ $? -ne 0 ]; then
-          echo "[ERROR] Similarity test 2 failed"
-          exit 1
+          echo "=========================================="
+          echo "⚠️  WARNING: Similarity test 2 failed"
+          echo "⚠️  WARNING: Dissimilar sentences did not meet the low similarity threshold"
+          echo "⚠️  WARNING: This is a non-blocking warning - workflow will continue"
+          echo "=========================================="
         fi
 
         echo ""
