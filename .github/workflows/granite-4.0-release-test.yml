@@ -24,6 +24,9 @@ env:
   # Enable appending the converted format (BF16/F16) to BVT test matrix
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
+  # Enable RAG testing for embedding models (runs after successful BVT)
+  ENABLE_RAG_TESTING: false
+
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: true
@@ -155,6 +158,7 @@ jobs:
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
+      enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
@@ -873,34 +877,63 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  # embedding-bvt-quantized-gguf-models:
-  #   needs: [ environment-setup, embedding-quantize-upload-gguf ]
-  #   uses: IBM/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
-  #   permissions:
-  #     contents: write
-  #     packages: write
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
-  #       quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
-  #   with:
-  #     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-  #     trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-  #     enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
-  #     target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
-  #     target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-  #     repo_id: "${{ matrix.repo_id }}"
-  #     quantization: "${{ matrix.quantization }}"
-  #   secrets:
-  #     hf_token: ${{ secrets.HF_TOKEN_TEST }}
+  embedding-bvt-quantized-gguf-models:
+    needs: [ environment-setup, embedding-quantize-upload-gguf ]
+    if: ${{ always() && (needs.embedding-quantize-upload-gguf.result == 'success' || needs.embedding-quantize-upload-gguf.result == 'skipped') }}
+    uses: IBM/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations_bvt) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
+      enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  embedding-rag-test-quantized-gguf-models:
+    needs: [ environment-setup, embedding-bvt-quantized-gguf-models ]
+    if: ${{ always() && needs.embedding-bvt-quantized-gguf-models.result == 'success' && needs.environment-setup.outputs.enable_rag_testing == 'true' }}
+    uses: IBM/gguf/.github/workflows/reusable-rag-test-embedding-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations_bvt) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
+      enable_rag_testing: ${{ needs.environment-setup.outputs.enable_rag_testing == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      top_k: 3
+      min_score: 0.5
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # TODO: change collection from private to public (on success)
-  # TODO: needs: [ embedding-quantize-upload-gguf -> embedding-bvt-quantized-gguf-models ]
   embedding-create-hf-collections:
     needs: [
       environment-setup,
-      embedding-quantize-upload-gguf,
+      embedding-bvt-quantized-gguf-models,
+      embedding-rag-test-quantized-gguf-models,
     ]
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
