@@ -63,6 +63,16 @@ env:
   RUN_LM_EVAL: true
   GH_ARTIFACT_RETENTION: 2
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
+
 jobs:
   test-quantized-model:
     runs-on: macos-latest
@@ -187,6 +197,7 @@ jobs:
 
     # NOTE: pgrep: -o returns most recent process if multiple started; -o requires an exact name match
     - name: start-llama-server
+      id: start-llama-server
       if: ${{ env.TEST_LLAMA_SERVER == 'true' || env.RUN_LM_EVAL == 'true' }}
       timeout-minutes: 10
       continue-on-error: true
