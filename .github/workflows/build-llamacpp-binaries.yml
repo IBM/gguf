@@ -1,5 +1,5 @@
 name: Build llama.cpp Binaries
-run-name: "[RELEASE] Build llama.cpp Binaries [${{ inputs.llama_cpp_version }}]"
+run-name: "[RELEASE] Build llama.cpp Binaries [${{ inputs.llama_cpp_version }}] - ${{ inputs.target_platform }}"
 
 on:
   workflow_dispatch:
@@ -10,9 +10,17 @@ on:
         default: 'b8100'
         type: string
       release_tag_extension:
-        description: 'Release tag extension (added after release version tag)'
-        required: true
+        description: 'Release tag extension (added after release version tag). Defaults to build date (YYYYMMDD) if not provided.'
+        required: false
         type: string
+      target_platform:
+        description: 'Target platform for binaries'
+        required: false
+        default: 'macos-arm64'
+        type: choice
+        options:
+          - macos-arm64
+          - linux-x86_64
       debug:
         description: 'Enable debug output'
         required: false
@@ -38,7 +46,7 @@ env:
 jobs:
   build-binaries:
     name: Build llama.cpp Binaries
-    runs-on: macos-latest
+    runs-on: ${{ inputs.target_platform == 'linux-x86_64' && 'ubuntu-latest' || 'macos-latest' }}
 
     steps:
       - name: Print CMake version
@@ -85,25 +93,43 @@ jobs:
       - name: Configure CMake
         run: |
           cd llama.cpp
-          # Configure for ARM64 cross-compilation
-          # - Cross-compile from x86_64 macOS to ARM64 target
-          # - Target macOS 15 (Sequoia) as minimum deployment version
-          # - Use baseline ARMv8-A architecture for compatibility with all ARM64 CPUs
 
-          # Base flags (always applied)
-          CMAKE_FLAGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=ON"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
-          CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
-          CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+          # Platform-specific configuration
+          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
+            echo "Configuring for Linux x86_64..."
+            # Base flags for Linux x86_64
+            CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=Linux"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=x86_64"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=x86-64 -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=x86-64 -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+
+            # Enable x86_64 SIMD optimizations (unless minimize_acceleration is true)
+            if [ "${{ inputs.minimize_acceleration }}" != "true" ]; then
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX=ON"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX2=ON"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=ON"
+            fi
+          else
+            echo "Configuring for macOS ARM64..."
+            # Base flags for macOS ARM64 (cross-compilation)
+            CMAKE_FLAGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_NAME=Darwin"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=arm64"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CROSSCOMPILING=TRUE"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=ON"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+          fi
 
           # Optional OpenSSL static linking (only when openssl_static is true)
           if [ "${{ inputs.openssl_static }}" = "true" ]; then
@@ -121,7 +147,14 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_VULKAN=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_KOMPUTE=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SYCL=OFF"
-            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX2=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=OFF"
+            if [ "${{ inputs.target_platform }}" = "macos-arm64" ]; then
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
+            else
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=x86-64 -mtune=generic\""
+            fi
           fi
 
           # Save CMAKE_FLAGS for later use in README (save before creating build dir)
@@ -130,10 +163,18 @@ jobs:
           # Execute cmake with all flags
           eval cmake -B build $CMAKE_FLAGS
 
-          # Compiler flag explanation:
-          # -march=armv8-a: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
-          # -mtune=generic: Optimize for generic ARM processors (not chip-specific like M1/M2)
-          # Result: Binaries work on any ARMv8-A system (M1/M2/M3/M4, Graviton, etc.) with reasonable performance
+          # Platform-specific compiler flag explanation
+          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
+            echo "Compiler flags for Linux x86_64:"
+            echo "  -march=x86-64: Target baseline x86-64 instruction set"
+            echo "  -mtune=generic: Optimize for generic x86_64 processors"
+            echo "  Result: Binaries work on any x86_64 system with reasonable performance"
+          else
+            echo "Compiler flags for macOS ARM64:"
+            echo "  -march=armv8-a: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)"
+            echo "  -mtune=generic: Optimize for generic ARM processors (not chip-specific like M1/M2)"
+            echo "  Result: Binaries work on any ARMv8-A system (M1/M2/M3/M4, Graviton, etc.) with reasonable performance"
+          fi
 
       - name: Build binaries
         run: |
@@ -326,8 +367,14 @@ jobs:
       - name: Set release tag
         id: set_tag
         run: |
-          # Always use llama_cpp_version with release_tag_extension
-          TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${{ inputs.release_tag_extension }}"
+          # Use release_tag_extension if provided, otherwise use build date (YYYYMMDD)
+          if [ -n "${{ inputs.release_tag_extension }}" ]; then
+            EXTENSION="${{ inputs.release_tag_extension }}"
+          else
+            EXTENSION=$(date -u +"%Y%m%d")
+          fi
+
+          TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${EXTENSION}"
           echo "Using release tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
