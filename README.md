@@ -112,7 +112,7 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-guardian-3.1-8b | GraniteForCausalLM | Dense Transformer | | |
 | ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
 | ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
+| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6569 |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
@@ -121,7 +121,7 @@ Typically, this model category includes "base" and "instruct" models.
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
 | ibm-granite/granite-vision-3.2-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
-| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b8100‡ |
+| ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.57.3† | b8100‡ |
 | ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | not yet successfully tested | not yet successfully tested. |
 | ibm-granite/granite-4.0-3b-vision ⚠️ | Granite4VisionForConditionalGeneration (custom model) (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | ❌ **Not currently supported** - Requires custom code not available in llama.cpp or HF Transformers. See [Converting Vision Models](docs/convert-vision-models.md) for details. | | |
 
@@ -137,13 +137,13 @@ Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-embedding-30m-english | Roberta | roberta-bpe | | |
-| ibm-granite/granite-embedding-125m-english | Roberta | roberta-bpe | | |
-| ibm-granite/granite-embedding-107m-multilingual | Roberta | roberta-bpe | | |
-| ibm-granite/granite-embedding-278m-multilingual | Roberta | roberta-bpe | | |
-| ibm-granite/granite-embedding-small-english-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
-| ibm-granite/granite-embedding-english-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
-| ibm-granite/granite-embedding-reranker-english-r2 | ModernBert | ModernBERT | 4.52.1 | b8100 |
+| ibm-granite/granite-embedding-30m-english (3.3) | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-125m-english (3.3) | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-107m-multilingual (3.3) | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-278m-multilingual (3.3) | Roberta | roberta-bpe | | |
+| ibm-granite/granite-embedding-small-english-r2 (4.0) | ModernBert | ModernBERT | 4.57.3 | b8100 |
+| ibm-granite/granite-embedding-english-r2 (4.0) | ModernBert | ModernBERT | 4.57.3 | b8100 |
+| ibm-granite/granite-embedding-reranker-english-r2 (4.0) | ModernBert | ModernBERT | 4.57.3 | b8100 |
 
 - Supported quantizations: `f16`, `Q8_0`
 
