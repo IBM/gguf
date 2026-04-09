@@ -65,7 +65,7 @@ env:
   BASELINE_RESULTS_DIR: baseline_results
   TEST_SENTENCE_1: "Artificial intelligence was founded as an academic discipline in 1956."
   TEST_SENTENCE_2: "AI started as an academic field in the 1950s."
-  TEST_SENTENCE_3: "I enjoy eating pizza for dinner."
+  TEST_SENTENCE_3: "Delicious pepperoni pizza with extra cheese and mushrooms makes my favorite weekend meal."
 
   LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
