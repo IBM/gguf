@@ -49,10 +49,6 @@ on:
         type: boolean
         required: false
         default: true
-      converted_quantization:
-        type: string
-        required: true
-        description: "Quantization format for converted vision model (e.g., 'f16', 'bf16')"
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:

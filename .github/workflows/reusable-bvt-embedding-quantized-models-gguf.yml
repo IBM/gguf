@@ -45,10 +45,6 @@ on:
         type: boolean
         required: false
         default: false
-      converted_quantization:
-        type: string
-        required: true
-        description: "Quantization format for converted embedding model (e.g., 'f16', 'bf16'). Used for consistency with conversion workflow."
 
 env:
   DEBUG: ${{inputs.debug}}
