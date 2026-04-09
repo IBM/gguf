@@ -126,12 +126,12 @@ env:
   # 'ibm-granite/granite-embedding-english-r2',
   # 'ibm-granite/granite-embedding-reranker-english-r2'
   SOURCE_EMBEDDING_REPOS: "[
-      'None'
+      'ibm-granite/granite-embedding-small-english-r2'
     ]"
   # 'Q4_K_M',
   # 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
     ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
