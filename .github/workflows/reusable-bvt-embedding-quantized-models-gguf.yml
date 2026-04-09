@@ -75,6 +75,7 @@ env:
   BASE_FNAME_RAW_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step (raw llama-embedding output)
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (GGUF model path)
   SOURCE_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (source repo for config.json)
+  LLAMA_EMBEDDING_BIN: ""  # Set in verify-llama-embedding-binary step
 
 jobs:
   test-quantized-embedding-model:
@@ -214,6 +215,12 @@ jobs:
           -p "${{env.TEST_SENTENCE_1}}" \
           2>&1 | tee embedding_1.log
 
+        # Check if the embedding generation command (first command in pipeline) failed
+        # PIPESTATUS is a bash built-in array variable that stores exit status of each command in a pipeline
+        # ${PIPESTATUS[0]} = exit status of llama-embedding (first command before pipe)
+        # ${PIPESTATUS[1]} = exit status of tee (second command after pipe)
+        # We check [0] because we care if llama-embedding failed, not if tee succeeded
+        # Note: PIPESTATUS is bash-specific and not available in POSIX sh
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "[ERROR] Embedding generation failed for sentence 1"
           cat embedding_1.log
@@ -230,6 +237,7 @@ jobs:
           -p "${{env.TEST_SENTENCE_2}}" \
           2>&1 | tee embedding_2.log
 
+        # Check pipeline status (see comment above for PIPESTATUS explanation)
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "[ERROR] Embedding generation failed for sentence 2"
           cat embedding_2.log
@@ -246,6 +254,7 @@ jobs:
           -p "${{env.TEST_SENTENCE_3}}" \
           2>&1 | tee embedding_3.log
 
+        # Check pipeline status (see comment above for PIPESTATUS explanation)
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "[ERROR] Embedding generation failed for sentence 3"
           cat embedding_3.log
