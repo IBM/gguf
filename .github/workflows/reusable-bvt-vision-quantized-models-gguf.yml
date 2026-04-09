@@ -89,7 +89,7 @@ env:
 
 jobs:
   test-quantized-model:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v6
