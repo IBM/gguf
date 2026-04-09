@@ -828,7 +828,6 @@ jobs:
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       repo_id: ${{ matrix.repo_id }}
-      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
