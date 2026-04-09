@@ -80,8 +80,10 @@ env:
   # 'ibm-granite/granite-4.0-8b',
   # 'ibm-granite/granite-4.0-8b-base'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-8b',
-      'ibm-granite/granite-4.0-8b-base'
+      'ibm-granite/granite-4.0-micro',
+      'ibm-granite/granite-4.0-h-micro',
+      'ibm-granite/granite-4.0-1b',
+      'ibm-granite/granite-4.0-h-1b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -105,8 +107,9 @@ env:
   TARGET_GUARDIAN_QUANTIZATIONS: "[
       'None'
     ]"
+  # 'ibm-granite/granite-4.0-3b-vision'
   SOURCE_VISION_REPOS: "[
-      'None'
+      'ibm-granite/granite-4.0-3b-vision'
     ]"
   TARGET_VISION_QUANTIZATIONS: "[
       'None'

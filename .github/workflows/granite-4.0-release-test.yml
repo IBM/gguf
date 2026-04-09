@@ -17,7 +17,7 @@ env:
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
   ENABLE_DOCLING_JOBS: false
   USE_UAT_WORKFLOW: true
 
@@ -105,14 +105,13 @@ env:
   TARGET_LANGUAGE_QUANTIZATIONS: "[
       'Q8_0',
     ]"
-  # 'ibm-granite/granite-guardian-3.3-8b'
   SOURCE_GUARDIAN_REPOS: "[
       'None'
     ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
       'None'
     ]"
-  # 'ibm-granite/granite-vision-3.3-2b'
+  # 'ibm-granite/granite-4.0-3b-vision'
   SOURCE_VISION_REPOS: "[
       'ibm-granite/granite-4.0-3b-vision'
     ]"
@@ -135,7 +134,7 @@ env:
     ]"
   # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-      'None'
+      'ibm-granite/granite-docling-258M'
     ]"
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
