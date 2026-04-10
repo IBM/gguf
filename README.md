@@ -100,7 +100,7 @@ Typically, this model category includes "base" and "instruct" models.
 
 - Supported quantizations: `F16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
-**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 #### Guardian
 
@@ -127,7 +127,7 @@ Typically, this model category includes "base" and "instruct" models.
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
 
-**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 **† Architecture fix required:** HF Transformers v4.52.1+ requires a config.json architecture fix during conversion. The LlavaNextModel class initialization changed in v4.52.1 to use `AutoModel` instead of `AutoModelForCausalLM`, causing the exported LLM config.json to incorrectly specify `"GraniteModel"` instead of `"GraniteForCausalLM"`. The conversion workflow automatically renames the architecture class from `GraniteModel` → `GraniteForCausalLM` in config.json before GGUF conversion.
 
@@ -147,7 +147,7 @@ Typically, this model category includes "base" and "instruct" models.
 
 - Supported quantizations: `f16`, `Q8_0`
 
-**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 **Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
 
@@ -159,7 +159,7 @@ Typically, this model category includes "base" and "instruct" models.
 
 - Supported quantizations: `bf16`
 
-**\* Last known successful build versions:** The HF Transformers and llama.cpp columns indicate the last versions used to successfully convert, quantize, and test these models in the full release workflow.
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 ###### RAG LoRA support**
 
