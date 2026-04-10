@@ -205,7 +205,8 @@ jobs:
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
       DEF_CONVERTED_QUANT_DOCLING: "f16"
     steps:
-      - name: Normalize language and guardian build inputs
+      - name: Determine valid model build paths
+        id: determine-valid-model-build-paths
         run: |
             NORMALIZED_SOURCE_LANGUAGE_REPOS="$(echo "$SOURCE_LANGUAGE_REPOS" | tr -d '[:space:]')"
             NORMALIZED_SOURCE_GUARDIAN_REPOS="$(echo "$SOURCE_GUARDIAN_REPOS" | tr -d '[:space:]')"
