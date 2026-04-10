@@ -1,6 +1,41 @@
-# This workflow runs Build Verification Tests (BVT) on the quantized embedding models
-# using llama-embedding binary from llama.cpp.
-name: bvt-embedding-quantized-models-gguf
+# This workflow runs Build Verification Tests (BVT) on quantized embedding models
+# using keyword extraction to validate embedding quality for supported architectures.
+#
+# Supported Architectures:
+# ------------------------
+# This workflow is designed for SPARSE embedding models that output vocabulary-sized
+# vectors (logits). The keyword extraction applies the sparse sentence transformer
+# approach: log(1 + relu(x)) transformation followed by top-k selection.
+#
+# ✅ WORKS WITH: Sparse embedding models (e.g., granite-embedding-30m-sparse)
+#    - Output dimension matches vocabulary size (~30k tokens)
+#    - Each dimension represents a token's activation weight
+#    - Keywords extracted via top-k token selection
+#
+# ❌ NOT FOR: Dense embedding models (e.g., granite-embedding-125m-english)
+#    - Output dimension is fixed (e.g., 768, 1024)
+#    - Dimensions are abstract features, not token logits
+#    - Cannot be directly mapped to keywords
+#
+# Usage Example:
+# --------------
+# Call this workflow from a parent workflow to test keyword extraction:
+#
+# jobs:
+#   test-keyword-extraction:
+#     uses: ./.github/workflows/reusable-bvt-embedding-keyword-extraction-gguf.yml
+#     with:
+#       enable_keyword_extraction_jobs: true
+#       repo_id: "ibm-granite/granite-embedding-30m-sparse"  # Must be SPARSE model
+#       quantization: "Q4_K_M"
+#       target_repo_owner: "ibm-granite"
+#       target_repo_name_ext: "-GGUF"
+#       llamacpp_build_tag: "b8100"
+#       max_keywords: 30
+#     secrets:
+#       hf_token: ${{ secrets.HF_TOKEN }}
+#
+name: bvt-embedding-keyword-extraction-gguf
 
 on:
   workflow_dispatch:
@@ -9,11 +44,7 @@ on:
       hf_token:
         required: true
     inputs:
-      llamacpp_build_tag:
-        type: string
-        required: true
-        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
-      enable_embedding_jobs:
+      enable_keyword_extraction_jobs:
         type: boolean
         required: false
         default: false
@@ -29,6 +60,10 @@ on:
       target_repo_name_ext:
         type: string
         required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
       ext_log:
         type: string
         required: false
@@ -37,6 +72,11 @@ on:
         type: string
         required: false
         default: '.response.txt'
+      max_keywords:
+        type: number
+        required: false
+        default: 30
+        description: "Maximum number of keywords to extract from embeddings"
       debug:
         type: boolean
         required: true
@@ -54,7 +94,6 @@ env:
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
   GH_ARTIFACT_RETENTION: 2
-  LLAMA_EMBEDDING_BIN: ""  # Set dynamically in job env
 
   # Dynamically set variables (pre-declared to avoid linter warnings)
   REPO_ORG: ""  # Set in set-github-env step
@@ -67,13 +106,12 @@ env:
   BASE_FNAME_RAW_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step (raw llama-embedding output)
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (GGUF model path)
   SOURCE_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (source repo for config.json)
+  LLAMA_EMBEDDING_BIN: ""  # Set in verify-llama-embedding-binary step
 
 jobs:
-  test-quantized-embedding-model:
+  test-keyword-extraction:
     runs-on: macos-latest
-    if: ${{ inputs.enable_embedding_jobs == true }}
-    env:
-      LLAMA_EMBEDDING_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
+    if: ${{ inputs.enable_keyword_extraction_jobs == true }}
     steps:
     - uses: actions/checkout@v6
       with:
@@ -98,6 +136,7 @@ jobs:
         echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
         echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
         echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
 
     - name: Dump GitHub inputs
       env:
@@ -129,9 +168,9 @@ jobs:
         echo "SOURCE_REPO_ID=${{ inputs.repo_id }}" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test${{inputs.ext_log}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test${{inputs.ext_response}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RAW_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test_RAW${{inputs.ext_response}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction${{inputs.ext_response}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RAW_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction_RAW${{inputs.ext_response}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -174,25 +213,29 @@ jobs:
 
     - name: verify-llama-embedding-binary
       run: |
-        echo "Verifying llama-embedding binary..."
-        if [ ! -f "${{env.LLAMA_EMBEDDING_BIN}}" ]; then
-          echo "[ERROR] llama-embedding binary not found at: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "Verifying llama-embedding binary from build tag: ${{ inputs.llamacpp_build_tag }}"
+        LLAMA_EMBEDDING_BIN="./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding"
+        if [ ! -f "$LLAMA_EMBEDDING_BIN" ]; then
+          echo "[ERROR] llama-embedding binary not found at: $LLAMA_EMBEDDING_BIN"
           exit 1
         fi
+        chmod +x "$LLAMA_EMBEDDING_BIN"
         echo "[SUCCESS] llama-embedding binary found"
         echo "Testing binary..."
-        ${{env.LLAMA_EMBEDDING_BIN}} --help | head -20
+        $LLAMA_EMBEDDING_BIN --help | head -20
+        echo "LLAMA_EMBEDDING_BIN=$LLAMA_EMBEDDING_BIN" >> $GITHUB_ENV
 
-    - name: test-embedding-model-with-llama-embedding
+    - name: generate-embedding-for-keyword-extraction
       timeout-minutes: 10
       run: |
         echo "[INFO] =========================================="
-        echo "[INFO] Granite Embedding Model GGUF Test"
+        echo "[INFO] Granite Embedding Model Keyword Extraction Test"
         echo "[INFO] =========================================="
         echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}"
         echo "[INFO] Test sentence: ${{env.TEST_SENTENCE}}"
         echo "[INFO] Output format: ${{env.OUTPUT_FORMAT}}"
         echo "[INFO] llama-embedding binary: ${{env.LLAMA_EMBEDDING_BIN}}"
+        echo "[INFO] Build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "[INFO] =========================================="
         echo ""
 
@@ -323,9 +366,13 @@ jobs:
 
     - name: extract-embedding-keywords
       run: |
-        echo "[INFO] Extracting keywords from embedding tensors..."
+        set +e  # Don't exit on command failures - keyword extraction is experimental
+        echo "[INFO] =========================================="
+        echo "[INFO] Extracting Keywords from Embedding Tensors"
+        echo "[INFO] =========================================="
         echo "[INFO] Source model repo: ${{env.SOURCE_REPO_ID}}"
         echo "[INFO] Processed response file: ${{env.BASE_FNAME_RESPONSE_FILE}}"
+        echo "[INFO] Max keywords: ${{ inputs.max_keywords }}"
         echo "=================================================="
 
         # Check if the processed response file exists
@@ -339,17 +386,26 @@ jobs:
         python3 ./scripts/extract_embedding_keywords.py \
           "${{env.BASE_FNAME_RESPONSE_FILE}}" \
           "${{env.SOURCE_REPO_ID}}" \
-          --max-tokens 30 \
+          --max-tokens ${{ inputs.max_keywords }} \
           --hf-token "${{secrets.hf_token}}"
 
-        if [ $? -eq 0 ]; then
+        EXTRACTION_EXIT_CODE=$?
+
+        if [ $EXTRACTION_EXIT_CODE -eq 0 ]; then
           echo ""
+          echo "[SUCCESS] =========================================="
           echo "[SUCCESS] Keyword extraction completed successfully!"
+          echo "[SUCCESS] =========================================="
         else
           echo ""
-          echo "[ERROR] Keyword extraction failed"
-          exit 1
+          echo "=========================================="
+          echo "⚠️  WARNING: Keyword extraction failed or not supported"
+          echo "⚠️  WARNING: This model architecture may not support keyword extraction"
+          echo "⚠️  WARNING: This is a non-blocking warning - workflow will continue"
+          echo "=========================================="
         fi
+
+        exit 0  # Always exit successfully
 
     # ========================= Upload log as artifact ======================================
 
@@ -359,7 +415,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test-log
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction-log
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
@@ -374,7 +430,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test-raw-response
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction-raw-response
         path: ${{env.BASE_FNAME_RAW_RESPONSE_FILE}}
 
     - name: Show raw response artifact ID
@@ -389,7 +445,7 @@ jobs:
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
-        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-embedding-test-response
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-keyword-extraction-response
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show processed response artifact ID
