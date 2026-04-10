@@ -124,8 +124,8 @@ def ollama_append_attribute(current_model_name: str, attribute: str) -> str:
 #         return value
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
     try:
-        parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
         parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
         parser.add_argument('--default-quant',  default=False, action='store_true', help='Model selected as the default quantization')
@@ -260,6 +260,7 @@ if __name__ == "__main__":
 
         # TODO: support "sparse" for embedding models (if we ever publish them) and also:
         # NOTE: "dense" is default and is not currently included in the model name
+        partner_model_name = ""
         if (args.partner == SUPPORTED_PARTNERS.OLLAMA or args.partner == SUPPORTED_PARTNERS.DOCKER):
 
             partner_model_base = ""
@@ -357,7 +358,7 @@ if __name__ == "__main__":
         print(partner_model_name)
     except SystemExit as se:
         print(f"Usage: {parser.format_usage()}", file=sys.stderr)
-        exit(se)
+        exit(se.code if se.code is not None else 1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         print(f"Usage: {parser.format_usage()}", file=sys.stderr)
