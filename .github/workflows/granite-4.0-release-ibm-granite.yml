@@ -48,7 +48,7 @@ env:
 
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
-  LLAMACPP_BUILD_TAG_LANGUAGE: b6569
+  LLAMACPP_BUILD_TAG_LANGUAGE: b8100
   LLAMACPP_BUILD_TAG_VISION: b8100 # b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_GUARDIAN: b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330

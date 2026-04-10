@@ -44,6 +44,35 @@ Select quantizations of a model will only be made available when:
 - **Performance** provides significant benefit without compromising on accuracy (or enabling hallucination).
 
 ---
+### Release Workflow Coverage by Granite Version
+
+The following table shows which model types are supported by each Granite release workflow:
+
+| Workflow Version | Language | Guardian | Vision | Embedding | Docling |
+|------------------|:--------:|:--------:|:------:|:---------:|:-------:|
+| **Granite 3.0** | ✅ | ✅ | — | — | — |
+| **Granite 3.1** | ✅ | ✅ | — | — | — |
+| **Granite 3.2** | ✅ | ✅ | ✅ | ✅ | — |
+| **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Granite 4.0** | ✅ | ✅ | ❌ | ✅ | ✅ |
+
+**Legend:**
+- ✅ = Workflow supports this model type with full CI/CD pipeline
+- ❌ = Model architecture not yet supported by llama.cpp (workflow exists but untested)
+- — = Not applicable (model type not available for this Granite version)
+
+**Key Features by Version:**
+- **Granite 3.0/3.1**: Basic language and guardian model support
+- **Granite 3.2**: Added vision and embedding model support
+- **Granite 3.3**: Added docling models, RAG testing for embeddings, llama.cpp validation for vision
+- **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, vision architecture pending llama.cpp support
+
+**Workflow Files:**
+- Test workflows: `.github/workflows/granite-{version}-release-test.yml`
+- Production workflows: `.github/workflows/granite-{version}-release-ibm-granite.yml` (3.3+ only)
+
+---
+
 
 ### Supported IBM Granite models (GGUF)
 
