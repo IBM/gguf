@@ -61,10 +61,12 @@ env:
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step (GGUF repo)
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step (GGUF model path)
+  LLAMA_EMBEDDING_BIN: ""  # Set in verify-llama-embedding-binary step
 
 jobs:
   rag-test-embedding-model:
     runs-on: macos-latest
+    timeout-minutes: 30
     if: ${{ inputs.enable_rag_testing == true }}
     steps:
     - uses: actions/checkout@v6
