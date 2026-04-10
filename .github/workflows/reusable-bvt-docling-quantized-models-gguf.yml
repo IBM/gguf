@@ -87,6 +87,7 @@ env:
 jobs:
   test-quantized-model:
     runs-on: macos-latest
+    timeout-minutes: 30
     if: ${{ inputs.enable_docling_jobs == true }}
     env:
       LLAMA_MTMD_CLI_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli

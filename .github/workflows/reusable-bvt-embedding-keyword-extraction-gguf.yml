@@ -111,6 +111,7 @@ env:
 jobs:
   test-keyword-extraction:
     runs-on: macos-latest
+    timeout-minutes: 30
     if: ${{ inputs.enable_keyword_extraction_jobs == true }}
     steps:
     - uses: actions/checkout@v6
