@@ -206,6 +206,7 @@ jobs:
         echo ""
 
         # Generate embedding for sentence 1
+        # Note: Using default --embd-normalize=2 (Euclidean/L2 normalization) for optimal cosine similarity
         echo "[INFO] Generating embedding for sentence 1: ${{env.TEST_SENTENCE_1}}"
         ${{env.LLAMA_EMBEDDING_BIN}} \
           -m "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
@@ -227,6 +228,7 @@ jobs:
         echo "[SUCCESS] Embedding 1 generated"
 
         # Generate embedding for sentence 2
+        # Note: Using default --embd-normalize=2 (Euclidean/L2 normalization) for optimal cosine similarity
         echo ""
         echo "[INFO] Generating embedding for sentence 2: ${{env.TEST_SENTENCE_2}}"
         ${{env.LLAMA_EMBEDDING_BIN}} \

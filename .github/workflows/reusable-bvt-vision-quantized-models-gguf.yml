@@ -260,6 +260,7 @@ jobs:
             -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            --single-turn \
             --verbose \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then

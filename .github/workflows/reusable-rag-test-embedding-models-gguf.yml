@@ -188,6 +188,7 @@ jobs:
         echo "[INFO] =========================================="
         echo ""
 
+        # Note: llama-embedding uses default --embd-normalize=2 (Euclidean/L2 normalization) for optimal cosine similarity
         python3 ./scripts/test_embedding_rag_milvus.py \
           "${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" \
           --llama-embedding-bin "${{env.LLAMA_EMBEDDING_BIN}}" \
