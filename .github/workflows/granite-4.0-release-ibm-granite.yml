@@ -203,6 +203,76 @@ jobs:
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
       DEF_CONVERTED_QUANT_DOCLING: "f16"
     steps:
+      - name: Determine valid model build paths
+        id: determine-valid-model-build-paths
+        run: |
+            NORMALIZED_SOURCE_LANGUAGE_REPOS="$(echo "$SOURCE_LANGUAGE_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_GUARDIAN_REPOS="$(echo "$SOURCE_GUARDIAN_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_VISION_REPOS="$(echo "$SOURCE_VISION_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_EMBEDDING_REPOS="$(echo "$SOURCE_EMBEDDING_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_DOCLING_REPOS="$(echo "$SOURCE_DOCLING_REPOS" | tr -d '[:space:]')"
+
+            EFFECTIVE_ENABLE_LANGUAGE_JOBS="$ENABLE_LANGUAGE_JOBS"
+            EFFECTIVE_ENABLE_GUARDIAN_JOBS="$ENABLE_GUARDIAN_JOBS"
+            EFFECTIVE_ENABLE_VISION_JOBS="$ENABLE_VISION_JOBS"
+            EFFECTIVE_ENABLE_EMBEDDING_JOBS="$ENABLE_EMBEDDING_JOBS"
+            EFFECTIVE_ENABLE_DOCLING_JOBS="$ENABLE_DOCLING_JOBS"
+
+            if [ "$ENABLE_LANGUAGE_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_LANGUAGE_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_LANGUAGE_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_LANGUAGE_REPOS is empty/None; overriding ENABLE_LANGUAGE_JOBS=false"
+              EFFECTIVE_ENABLE_LANGUAGE_JOBS=false
+              SOURCE_LANGUAGE_REPOS="[]"
+              TARGET_LANGUAGE_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_GUARDIAN_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_GUARDIAN_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_GUARDIAN_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_GUARDIAN_REPOS is empty/None; overriding ENABLE_GUARDIAN_JOBS=false"
+              EFFECTIVE_ENABLE_GUARDIAN_JOBS=false
+              SOURCE_GUARDIAN_REPOS="[]"
+              TARGET_GUARDIAN_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_VISION_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_VISION_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_VISION_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_VISION_REPOS is empty/None; overriding ENABLE_VISION_JOBS=false"
+              EFFECTIVE_ENABLE_VISION_JOBS=false
+              SOURCE_VISION_REPOS="[]"
+              TARGET_VISION_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_EMBEDDING_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_EMBEDDING_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_EMBEDDING_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_EMBEDDING_REPOS is empty/None; overriding ENABLE_EMBEDDING_JOBS=false"
+              EFFECTIVE_ENABLE_EMBEDDING_JOBS=false
+              SOURCE_EMBEDDING_REPOS="[]"
+              TARGET_EMBEDDING_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_DOCLING_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_DOCLING_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_DOCLING_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_DOCLING_REPOS is empty/None; overriding ENABLE_DOCLING_JOBS=false"
+              EFFECTIVE_ENABLE_DOCLING_JOBS=false
+              SOURCE_DOCLING_REPOS="[]"
+              TARGET_DOCLING_QUANTIZATIONS="[]"
+            fi
+
+            echo "ENABLE_LANGUAGE_JOBS=$EFFECTIVE_ENABLE_LANGUAGE_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_LANGUAGE_REPOS=$SOURCE_LANGUAGE_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_LANGUAGE_QUANTIZATIONS=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_ENV"
+
+            echo "ENABLE_GUARDIAN_JOBS=$EFFECTIVE_ENABLE_GUARDIAN_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_GUARDIAN_REPOS=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_GUARDIAN_QUANTIZATIONS=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_ENV"
+
+            echo "ENABLE_VISION_JOBS=$EFFECTIVE_ENABLE_VISION_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_VISION_REPOS=$SOURCE_VISION_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_VISION_QUANTIZATIONS=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_ENV"
+
+            echo "ENABLE_EMBEDDING_JOBS=$EFFECTIVE_ENABLE_EMBEDDING_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_EMBEDDING_REPOS=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_EMBEDDING_QUANTIZATIONS=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_ENV"
+
+            echo "ENABLE_DOCLING_JOBS=$EFFECTIVE_ENABLE_DOCLING_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_DOCLING_REPOS=$SOURCE_DOCLING_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_DOCLING_QUANTIZATIONS=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_ENV"
+
       - name: Set environment variables in GitHub output
         id: set-vars
         run: |
