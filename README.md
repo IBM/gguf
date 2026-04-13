@@ -250,6 +250,10 @@ As a baseline, each converted model MUST successfully be run in the following pr
 
 [Ollama](https://github.com/ollama/ollama) - As a key model service provider supported by higher level frameworks and platforms (e.g., [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm), [LM Studio](https://github.com/lmstudio-ai) etc.), testing the ability to `pull` and `run` the model is essential.
 
+##### Mode of Testing
+- BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime. 
+- UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request. 
+
 **Notes**
 
 - *The official Ollama Docker image [ollama/ollama](https://hub.docker.com/r/ollama/ollama) is available on Docker Hub.*
@@ -286,6 +290,20 @@ Secrets are used to authenticate with Github and Huggingface (HF) and are alread
 
 For "test" (or private) builds, users can fork the repo. and add a repository secret named `HF_TOKEN_TEST` with a token (value) created on their test (personal, private) HF organization account with appropriate privileges to allow write access to repos. and collections.
 
+##### Note:
+To run UAT tests, the following secrets have to be configured:
+```
+IBM_CLOUD_API_KEY
+
+UAT_IMAGE_NAME
+UAT_IMAGE_TAG
+UAT_REGISTRY_NAMESPACE
+
+IBM_COS_API_KEY
+IBM_COS_BUCKET_NAME
+IBM_COS_ENDPOINT_URL
+IBM_COS_INSTANCE_ID
+```
 ##### Base64 encoding
 
 If you need to encode information for project CI GitHub workflows, please use the following macos command and assure there are no line breaks:
