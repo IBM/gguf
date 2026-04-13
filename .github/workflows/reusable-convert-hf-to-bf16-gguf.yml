@@ -102,6 +102,7 @@ jobs:
           scripts/hf_model_upload.py
           scripts/hf_model_download_snapshot.py
           scripts/check_model_architecture_support.py
+          bin/${{ inputs.llamacpp_build_tag }}/llama-gguf
         sparse-checkout-cone-mode: false
         fetch-depth: 1
 
@@ -193,7 +194,7 @@ jobs:
 
     # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
     # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.11'
 
@@ -290,12 +291,14 @@ jobs:
     - name: display-gguf-header
       run: |
         echo "🔍 Checking for llama-gguf tool..."
-        if command -v llama-gguf &> /dev/null; then
-          echo "✅ llama-gguf found, displaying GGUF header for converted model:"
+        LLAMA_GGUF_PATH="./bin/${{ inputs.llamacpp_build_tag }}/llama-gguf"
+        if [ -f "$LLAMA_GGUF_PATH" ]; then
+          echo "✅ llama-gguf found at $LLAMA_GGUF_PATH, displaying GGUF header for converted model:"
+          echo "Using llama-gguf from build tag: ${{ inputs.llamacpp_build_tag }}"
           echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
-          llama-gguf "$FNAME_CONVERTED_GGUF"
+          "$LLAMA_GGUF_PATH" "$FNAME_CONVERTED_GGUF"
         else
-          echo "ℹ️  llama-gguf tool not found, skipping GGUF header display"
+          echo "ℹ️  llama-gguf tool not found at $LLAMA_GGUF_PATH, skipping GGUF header display"
         fi
 
     - name: upload-converted-gguf-to-target-repo

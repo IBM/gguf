@@ -122,7 +122,7 @@ jobs:
           ./model-cli pull ai/qwen3:0.6B-Q4_0
           ./model-cli pull ibmcom/granite4-test-2:8B-Q4_K_M
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 

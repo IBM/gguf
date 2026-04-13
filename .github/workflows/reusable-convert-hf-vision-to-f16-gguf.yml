@@ -93,7 +93,7 @@ jobs:
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -200,7 +200,7 @@ jobs:
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -361,7 +361,7 @@ jobs:
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 

@@ -110,7 +110,7 @@ jobs:
           echo "HF_TOKEN_IBM_GRANITE: ${{ secrets.hf_token }}"
           echo "OLLAMA_TOKEN: ${{ secrets.ollama_token }}"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
