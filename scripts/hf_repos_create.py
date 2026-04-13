@@ -3,12 +3,12 @@ import argparse
 import json
 
 from huggingface_hub import create_repo, RepoUrl
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 # Constants
 HF_COLLECTION_DESC_MAX_LEN = 150
 
-def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:str=None) -> RepoUrl:
+def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:str="") -> RepoUrl | None:
     if repo_id == "":
         print("Please provide a repo_id")
         return None
@@ -44,11 +44,12 @@ def is_repo_name_in_list(repo_name, repo_list) -> bool:
     return False
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
+    private = True  # Initialize with default value
     try:
         print(f"argv: {sys.argv}")
 
         # TODO: change 'private' arg. (i.e., a positional, string) to a boolean flag (i.e., --private)
-        parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("target_owner", type=test_empty_string, help="Target HF organization owner for repo. create")
         parser.add_argument("collection_config", help="The input text to search within")
         parser.add_argument('include', type=str, help='A string representation of a list of repo. names to include')
@@ -82,6 +83,8 @@ if __name__ == "__main__":
                 private = True
             else:
                 private = False
+        else:
+            private = args.private
 
         # read the HF collection config. file
         with open(args.collection_config, "r") as file:
@@ -134,11 +137,11 @@ if __name__ == "__main__":
     except SystemExit as se:
         if se.code != 0:
             print(f"Usage: {parser.format_usage()}")
-            exit(se)
+            sys.exit(se.code if se.code is not None else 1)
     except Exception as e:
         print(f"Error: {e}")
         print(f"Usage: {parser.format_usage()}")
-        exit(2)
+        sys.exit(2)
 
     # Exit successfully
     sys.exit(0)

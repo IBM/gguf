@@ -2,7 +2,7 @@ import os
 import sys
 
 from huggingface_hub import upload_file, CommitInfo
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 ###########################################
 # Files
@@ -12,20 +12,20 @@ def safe_upload_file(
     repo_id:str="",
     model_file:str="",
     hf_token:str="",
-    commit_msg:str=None,
-    commit_desc:str=None,
+    commit_msg:str="",
+    commit_desc:str="",
     workflow_ref="",
     run_id="",
-) -> CommitInfo:
+) -> CommitInfo | None:
     if repo_id == "":
         print("Please provide a repo_id")
-        return False
+        return None
     if model_file == "":
         print("Please provide a model_file")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     try:
         target_file_name = os.path.basename(model_file)

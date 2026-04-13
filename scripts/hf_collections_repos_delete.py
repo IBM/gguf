@@ -1,9 +1,10 @@
 import os
 import sys
+import requests
 
 from huggingface_hub import list_collections, delete_collection, Collection
 from huggingface_hub import delete_repo
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 ###########################################
 # Collections
@@ -37,46 +38,48 @@ def safe_delete_repo(repo_id:str="", repo_type:str="model", hf_token:str="") -> 
     return None
 
 
-def get_collections_in_namespace(hf_owner:str="", hf_token:str="") -> None:
+def get_collections_in_namespace(hf_owner:str="", hf_token:str=""):
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     collections = list_collections(owner=hf_owner, token=hf_token)
     return collections
 
 
-def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> Collection:
+def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> Collection | None:
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if title == "":
         print("Please provide a title for the new collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     collections = get_collections_in_namespace(hf_owner=hf_owner, hf_token=hf_token)
+    if collections is None:
+        return None
     for c in collections:
         if c.title == title:
             return c
     return None
 
 
-def safe_delete_collection_in_namespace(hf_owner:str="", title:str="", hf_token:str="") -> Collection:
+def safe_delete_collection_in_namespace(hf_owner:str="", title:str="", hf_token:str="") -> Collection | None:
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if title == "":
         print("Please provide a title for the collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     try:
         # We want to test if the collection already exists before creating it (and not rely on exceptions)

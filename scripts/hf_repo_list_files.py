@@ -3,7 +3,7 @@ import sys
 
 from typing import List
 from huggingface_hub import list_repo_files
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 ###########################################
 # Files
@@ -13,13 +13,13 @@ def list_model_files(
     repo_id:str="",
     test_filename:str="",
     hf_token:str="",
-) -> List[str]:
+) -> List[str] | None:
     if repo_id == "":
         print("Please provide a repo_id")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     try:
         return list_repo_files(
@@ -30,7 +30,7 @@ def list_model_files(
 
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
-        return False
+        return None
     except Exception as exc:
         print(f"Exception: {exc}")
     return None

@@ -1,9 +1,10 @@
 import os
 import sys
 import argparse
+import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 # Constants
 HF_COLLECTION_DESC_MAX_LEN = 150
@@ -12,49 +13,50 @@ HF_COLLECTION_DESC_MAX_LEN = 150
 # Collections
 ###########################################
 
-def get_collections_in_namespace(hf_owner:str="", hf_token:str="") -> None:
+def get_collections_in_namespace(hf_owner:str="", hf_token:str=""):
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     collections = list_collections(owner=hf_owner, token=hf_token)
     return collections
 
 
-def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> Collection:
+def get_collection_by_title(hf_owner:str="", title:str="", hf_token:str="") -> Collection | None:
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if title == "":
         print("Please provide a title for the new collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     collections = get_collections_in_namespace(hf_owner=hf_owner, hf_token=hf_token)
+    if collections is None:
+        return None
     for c in collections:
         if c.title == title:
             return c
     return None
 
 
-def list_collection_attributes(collections:Collection=None, list_items:bool=False) -> None:
-    if collections is None:
-        print("Please provide a valid collections iterator")
+def list_collection_attributes(collection: Collection | None = None, list_items:bool=False) -> None:
+    if collection is None:
+        print("Please provide a valid collection")
         return
-    # for collection in collections:
     print(f"---")
     print(f"title: `{collection.title}`, private: {collection.private}, description: `{collection.description}`, slug: `{collection.slug}`")
     print(f"list_items: {list_items} ({type(list_items)})")
-    if list_items is not None:
+    if list_items:
         list_collection_items(collection=collection)
 
 
-def list_collection_items(collection:Collection=None) -> None:
+def list_collection_items(collection: Collection | None = None) -> None:
     if collection is None:
         print("Please provide a valid collection")
         return
@@ -68,19 +70,19 @@ def list_collection_items(collection:Collection=None) -> None:
         print(f"(no items)")
 
 
-def safe_create_collection_in_namespace(hf_owner:str="", title:str="", description:str="", private:bool=True, hf_token:str="") -> Collection:
+def safe_create_collection_in_namespace(hf_owner:str="", title:str="", description:str="", private:bool=True, hf_token:str="") -> Collection | None:
     if hf_owner == "":
         print("Please provide an owner (username or organization) for the collection")
-        return False
+        return None
     if title == "":
         print("Please provide a title for the collection")
-        return False
+        return None
     if description == "":
         print("Please provide a description for the collection")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     try:
         # We want to test if the collection already exists before creating it (and not rely on exceptions)
@@ -105,16 +107,18 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
     return None
 
 
-def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type:str="model", hf_token:str="") -> Collection:
+from typing import Literal
+
+def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type:Literal["model", "dataset", "space", "paper"]="model", hf_token:str="") -> Collection | None:
     if collection_slug == "":
         print("Please provide a slug (ID) for the collection item.")
-        return False
+        return None
     if repo_id == "":
         print("Please provide a repo_id for the collection item.")
-        return False
+        return None
     if hf_token == "":
         print("Please provide a token")
-        return False
+        return None
 
     # If an item already exists in a collection (same item_id/item_type pair),
     # an HTTP 409 error will be raised.

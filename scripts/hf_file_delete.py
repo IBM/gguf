@@ -2,7 +2,7 @@ import os
 import sys
 
 from huggingface_hub import delete_file
-from huggingface_hub.utils import HfHubHTTPError
+from huggingface_hub.errors import HfHubHTTPError
 
 
 def safe_delete_file(
