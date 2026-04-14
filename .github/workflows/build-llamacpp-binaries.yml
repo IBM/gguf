@@ -256,6 +256,94 @@ jobs:
 
           echo "All smoke tests passed!"
 
+      - name: Setup Python for model download
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install huggingface_hub
+        run: |
+          pip install huggingface_hub
+
+      - name: Download test model from HuggingFace
+        run: |
+          cd llama.cpp/build/bin
+          echo "Downloading small GGUF model for inference test..."
+          python3 << 'EOF'
+          from huggingface_hub import hf_hub_download
+          import os
+
+          # Download a small quantized model for testing
+          repo_id = "mrutkows/granite-4.0-1b-GGUF"
+          filename = "granite-4.0-1b-Q4_K_M.gguf"
+
+          print(f"Downloading {filename} from {repo_id}...")
+          model_path = hf_hub_download(
+              repo_id=repo_id,
+              filename=filename,
+              local_dir=".",
+              local_dir_use_symlinks=False
+          )
+          print(f"Model downloaded to: {model_path}")
+          print(f"File size: {os.path.getsize(filename) / (1024*1024):.2f} MB")
+          EOF
+
+          ls -lh granite-4.0-1b-Q4_K_M.gguf
+
+      - name: Test llama-cli with real model inference
+        timeout-minutes: 10
+        run: |
+          cd llama.cpp/build/bin
+          echo "Testing llama-cli with actual inference on macos-latest runner..."
+          echo "This verifies the binary works with the build flags in GitHub Actions environment"
+          echo ""
+
+          # Run a simple inference test with verbose output and log file
+          ./llama-cli \
+            -m granite-4.0-1b-Q4_K_M.gguf \
+            -p "Why is the sky blue according to science?" \
+            -n 128 \
+            --temp 0.0 \
+            --single-turn \
+            -v \
+            --log-file inference_test_error.log 2>&1 | tee inference_test.log
+
+          EXIT_CODE=$?
+
+          # Always display the full output
+          echo ""
+          echo "=== Full Inference Output ==="
+          cat inference_test.log
+
+          # Display error log if it exists
+          if [ -f inference_test_error.log ]; then
+            echo ""
+            echo "=== Error Log (inference_test_error.log) ==="
+            cat inference_test_error.log
+          fi
+
+          # Check if inference completed successfully
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo ""
+            echo "✅ SUCCESS: llama-cli inference test passed!"
+            echo "Binary is confirmed working on macos-latest (M1) with current build flags"
+          else
+            echo ""
+            echo "❌ FAILURE: llama-cli inference test failed with exit code $EXIT_CODE"
+            echo "Build flags may not be compatible with macos-latest runners"
+            exit 1
+          fi
+
+      - name: Display inference performance metrics
+        if: always()
+        run: |
+          cd llama.cpp/build/bin
+          if [ -f inference_test.log ]; then
+            echo "=== Inference Performance Metrics ==="
+            # Extract timing information from llama-cli output
+            grep -E "(llama_perf|tokens per second|generated|prompt)" inference_test.log || echo "No performance metrics found"
+          fi
+
       - name: Create build information README
         run: |
           cd llama.cpp/build/bin
