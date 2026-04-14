@@ -288,18 +288,19 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "FNAME_CONVERTED_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
 
-    - name: display-gguf-header
-      run: |
-        echo "🔍 Checking for llama-gguf tool..."
-        LLAMA_GGUF_PATH="./bin/${{ inputs.llamacpp_build_tag }}/llama-gguf"
-        if [ -f "$LLAMA_GGUF_PATH" ]; then
-          echo "✅ llama-gguf found at $LLAMA_GGUF_PATH, displaying GGUF header for converted model:"
-          echo "Using llama-gguf from build tag: ${{ inputs.llamacpp_build_tag }}"
-          echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
-          "$LLAMA_GGUF_PATH" "$FNAME_CONVERTED_GGUF" r
-        else
-          echo "ℹ️  llama-gguf tool not found at $LLAMA_GGUF_PATH, skipping GGUF header display"
-        fi
+    # Disabled: display-gguf-header step errors when reading large GGUF files
+    # - name: display-gguf-header
+    #   run: |
+    #     echo "🔍 Checking for llama-gguf tool..."
+    #     LLAMA_GGUF_PATH="./bin/${{ inputs.llamacpp_build_tag }}/llama-gguf"
+    #     if [ -f "$LLAMA_GGUF_PATH" ]; then
+    #       echo "✅ llama-gguf found at $LLAMA_GGUF_PATH, displaying GGUF header for converted model:"
+    #       echo "Using llama-gguf from build tag: ${{ inputs.llamacpp_build_tag }}"
+    #       echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
+    #       "$LLAMA_GGUF_PATH" "$FNAME_CONVERTED_GGUF" r
+    #     else
+    #       echo "ℹ️  llama-gguf tool not found at $LLAMA_GGUF_PATH, skipping GGUF header display"
+    #     fi
 
     - name: upload-converted-gguf-to-target-repo
       run: |
