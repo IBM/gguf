@@ -23,6 +23,7 @@
         "groundedness",
         "huggingface",
         "ibmcom",
+        "ipynb",
         "Langchain",
         "llamacpp",
         "LLAVA",

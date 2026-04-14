@@ -120,6 +120,27 @@ jobs:
             echo "zip_file_exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Delete existing asset if present
+        id: delete-existing-asset
+        if: steps.verify-zip-exists.outputs.zip_file_exists == 'true'
+        continue-on-error: true
+        env:
+          ZIP_FNAME: ${{ env.ZIP_ARTIFACT_FNAME }}
+        run: |
+          echo "Checking if asset ${ZIP_FNAME} already exists..."
+          ASSET_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+            | jq -r --arg fname "${ZIP_FNAME}" '.assets[] | select(.name==$fname) | .id')
+
+          if [ -n "$ASSET_ID" ] && [ "$ASSET_ID" != "null" ]; then
+            echo "Asset exists with ID: $ASSET_ID, deleting..."
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$ASSET_ID"
+            echo "✅ Deleted existing asset"
+          else
+            echo "ℹ️  Asset does not exist, proceeding with upload"
+          fi
+
       - name: Upload zip
         id: upload-zip
         if: steps.verify-zip-exists.outputs.zip_file_exists == 'true'
