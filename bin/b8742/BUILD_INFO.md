@@ -2,9 +2,9 @@
 
 ## Build Details
 - **llama.cpp Version**: b8742
-- **Build Date**: 2026-04-10 21:01:34 UTC
+- **Build Date**: 2026-04-14 21:09:41 UTC
 - **Platform**: macOS (darwin-arm64)
-- **Architecture**: ARM64 (Apple Silicon compatible)
+- **Architecture**: ARM64 (Apple Silicon - M1 optimized)
 - **Minimum OS Version**: 15.0 (Sequoia)
 
 ## Input Parameters
@@ -24,18 +24,20 @@
   -DGGML_METAL=OFF
   -DGGML_NATIVE_DEFAULT=OFF
   -DCMAKE_CROSSCOMPILING=TRUE
-  -DGGML_NO_ACCELERATE=ON
+  -DGGML_NO_ACCELERATE=OFF
+  -DGGML_ACCELERATE=ON
+  -DCMAKE_C_FLAGS="-march=armv8.2-a -mtune=apple-m1"
   -DGGML_SVE=OFF
-  -DCMAKE_C_FLAGS="-march=armv8-a -mtune=generic"
   -DCMAKE_BUILD_TYPE=Release
   -DLLAMA_BUILD_EXAMPLES=ON
   -DOPENSSL_USE_STATIC_LIBS=ON
 ```
 
 ## Compiler Flag Explanation
-- **-march=armv8-a**: Target baseline ARMv8-A instruction set (compatible with ALL ARM64 CPUs)
-- **-mtune=generic**: Optimize for generic ARM processors (not chip-specific like M1/M2/M3/M4)
-- **Result**: Binaries work on any ARMv8-A system (Apple Silicon, AWS Graviton, etc.) with reasonable performance
+- **-march=armv8.2-a**: Target ARMv8.2-A instruction set (M1 baseline, compatible with M1/M2/M3/M4)
+- **-mtune=apple-m1**: Optimize for Apple M1 CPU characteristics
+- **GGML_ACCELERATE=ON**: Apple Accelerate framework enabled (CPU-optimized BLAS, 2-4x faster)
+- **Result**: Binaries optimized for GitHub Actions M1 runners with significant performance improvements
 
 ## Included Binaries
 - **llama-cli**: Main command-line inference tool
@@ -47,13 +49,14 @@
 - **llama-embedding**: Embedding generation tool for text embeddings
 
 ## Usage
-All binaries are statically linked and should run on any macOS 15.0+ ARM64 system without additional dependencies.
+All binaries are statically linked and optimized for Apple Silicon M1 (GitHub Actions macos-latest runners). Compatible with all Apple Silicon chips (M1/M2/M3/M4).
 
 ## Build Configuration Summary
 - Cross-compiled from x86_64 macOS to ARM64 target
-- Software-only operations (hardware acceleration settings per minimize_acceleration flag)
-- Maximum compatibility across ARM64 platforms
+- Apple Accelerate framework enabled for optimized CPU operations
+- Optimized for GitHub Actions M1 runners (2026 configuration)
+- Compatible with all Apple Silicon (M1/M2/M3/M4)
 - Static linking for portability
 
 ---
-Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24263806049
+Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24422903902
