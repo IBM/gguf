@@ -84,7 +84,7 @@ env:
 jobs:
   test-quantized-model:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: ${{ inputs.enable_language_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
@@ -228,10 +228,10 @@ jobs:
     #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
     # NOTE: Redirecting stderr (2>) to suppress progress indicators and other non-essential output
-    # Extended timeout to 30 minutes to accommodate larger models (e.g., 8B models)
+    # Extended timeout to 60 minutes to accommodate larger models (e.g., 8B models with Q8_0/bf16 quantizations)
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
-      timeout-minutes: 30
+      timeout-minutes: 45
       continue-on-error: true
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
