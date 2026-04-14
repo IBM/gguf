@@ -27,6 +27,9 @@ env:
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
 
+  # Enable LM Eval workflow (not yet fully functional, default: false)
+  ENABLE_LM_EVAL: false
+
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: true
@@ -139,6 +142,7 @@ jobs:
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
+      enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
       use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
@@ -275,6 +279,7 @@ jobs:
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
+            echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "use_uat_workflow=$USE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
@@ -523,9 +528,9 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  language-uat-quantized-gguf-models:
+  language-lm-eval-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models ]
-    if: ${{ always() && needs.language-bvt-quantized-gguf-models.result == 'success' && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_lm_eval == 'true' && needs.language-bvt-quantized-gguf-models.result == 'success' }}
     uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -556,9 +561,9 @@ jobs:
       IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
       IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
 
-  language-lm-eval-gguf-models:
-    needs: [ environment-setup, language-bvt-quantized-gguf-models, language-uat-quantized-gguf-models ]
-    if: ${{ always() && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-uat-quantized-gguf-models.result == 'success') }}
+  language-uat-quantized-gguf-models:
+    needs: [ environment-setup, language-bvt-quantized-gguf-models, language-lm-eval-gguf-models ]
+    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
     permissions:
       contents: write

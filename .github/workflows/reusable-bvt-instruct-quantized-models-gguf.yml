@@ -227,10 +227,11 @@ jobs:
     #     echo "--------------------"
     #     # ./bin/llama-gguf-hash --sha256 ~/Downloads/granite-3.0-1b-a400m-instruct-Q4_K_M.gguf > sha256.txt
 
-    # NOTE: if we want to ignore stderr use: 2>/dev/null
+    # NOTE: Redirecting stderr (2>) to suppress progress indicators and other non-essential output
+    # Extended timeout to 30 minutes to accommodate larger models (e.g., 8B models)
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
-      timeout-minutes: 10
+      timeout-minutes: 30
       continue-on-error: true
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
@@ -241,9 +242,8 @@ jobs:
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp ${{env.LLAMA_CLI_TEMP}} \
-          -no-cnv \
           --single-turn \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
+          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}} 2>/dev/null
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-cli failed:"
           ls -al
