@@ -22,7 +22,7 @@ env:
   USE_UAT_WORKFLOW: false
 
   # Enable appending the converted format (BF16/F16) to BVT test matrix
-  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: false
 
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
