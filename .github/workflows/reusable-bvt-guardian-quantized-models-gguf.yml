@@ -222,6 +222,7 @@ jobs:
           --n-gpu-layers ${{ env.LLAMA_REQUEST_NUM_GPU_LAYERS }} \
           --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
           --temp ${{env.LLAMA_REQUEST_TEMP}} \
+          --verbose \
           -no-cnv \
           --single-turn \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}

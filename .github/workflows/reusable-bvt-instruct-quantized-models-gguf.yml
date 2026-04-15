@@ -242,8 +242,9 @@ jobs:
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp ${{env.LLAMA_CLI_TEMP}} \
+          --verbose \
           --single-turn \
-          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}} 2>/dev/null
+          --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-cli failed:"
           ls -al

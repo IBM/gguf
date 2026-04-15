@@ -528,6 +528,32 @@ jobs:
   language-lm-eval-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models ]
     if: ${{ always() && needs.environment-setup.outputs.enable_lm_eval == 'true' && (needs.language-bvt-quantized-gguf-models.result == 'success' || needs.language-bvt-quantized-gguf-models.result == 'skipped') }}
+    uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
+      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  language-uat-quantized-gguf-models:
+    needs: [ environment-setup, language-bvt-quantized-gguf-models, language-lm-eval-gguf-models ]
+    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -557,32 +583,6 @@ jobs:
       IBM_COS_INSTANCE_ID: ${{ secrets.IBM_COS_INSTANCE_ID }}
       IBM_COS_ENDPOINT_URL: ${{ secrets.IBM_COS_ENDPOINT_URL }}
       IBM_COS_BUCKET_NAME: ${{ secrets.IBM_COS_BUCKET_NAME }}
-
-  language-uat-quantized-gguf-models:
-    needs: [ environment-setup, language-bvt-quantized-gguf-models, language-lm-eval-gguf-models ]
-    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-lm-eval-gguf.yml@main
-    permissions:
-      contents: write
-      packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
-        quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
-    with:
-      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
-      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
-      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_language }}
-      enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
-      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
-      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
-      repo_id: "${{ matrix.repo_id }}"
-      quantization: "${{ matrix.quantization }}"
-      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
-      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
-    secrets:
-      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   language-create-hf-collections:

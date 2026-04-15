@@ -305,7 +305,7 @@ jobs:
             -n 128 \
             --temp 0.0 \
             --single-turn \
-            -v \
+            --verbose \
             --log-file inference_test_error.log 2>&1 | tee inference_test.log
 
           EXIT_CODE=$?
