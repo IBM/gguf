@@ -202,4 +202,113 @@ Potential improvements:
 For questions or issues with this feature, please refer to:
 - GitHub Issues for bug reports
 - Pull Requests for enhancements
+
+## BVT Instruct Testing
+
+### Overview
+
+The BVT instruct workflow tests language models using two binaries:
+- **llama-cli**: Available in all llama.cpp versions
+- **llama-completion**: Available in llama.cpp b8742 and higher (preferred for cleaner output)
+
+### Test Configuration
+
+**Environment Variables:**
+```yaml
+LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
+LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
+LLAMA_REQUEST_N_PREDICT: 128  # Number of tokens to generate
+LLAMA_CLI_TEMP: 0.8           # Temperature for generation
+LLAMA_RESPONSE_WORDS: "Rayleigh,scatter,atmosphere"  # Words to validate in response
+```
+
+### llama-completion Test (b8742+)
+
+**Command:**
+```bash
+./bin/b8742/llama-completion \
+  -m ./models/granite-3.0-2b-instruct-Q4_K_M.gguf \
+  -p "<|start_of_role|>system<|end_of_role|>You are a helpful assistant. Please ensure responses are professional, accurate, and safe.<|end_of_text|><|start_of_role|>user<|end_of_role|>Why is the sky blue according to science?<|end_of_text|><|start_of_role|>assistant<|end_of_role|>" \
+  -n 128 \
+  --temp 0.8 \
+  -no-cnv \
+  --no-display-prompt \
+  --log-file granite-3.0-2b-instruct-Q4_K_M-llama-completion.log.txt \
+  1>granite-3.0-2b-instruct-Q4_K_M-llama-completion.response.txt
+```
+
+**Flags:**
+- `-m`: Model file path
+- `-p`: Prompt with chat template formatting
+- `-n`: Number of tokens to predict (128 for faster tests)
+- `--temp`: Temperature for generation (0.8 for balanced creativity)
+- `-no-cnv`: Disable conversation mode (no ASCII banner, cleaner output)
+- `--no-display-prompt`: Suppress prompt echo in output
+- `--log-file`: Write verbose logs to separate file
+- `1>`: Redirect stdout (response) to file
+
+**Why these flags:**
+- `-no-cnv`: Prevents conversation mode overhead and ASCII banner display
+- `--no-display-prompt`: Keeps output clean with only the model's response
+- Separate log file: Allows debugging without cluttering response output
+
+### llama-cli Test (all versions)
+
+**Command:**
+```bash
+./bin/b8742/llama-cli \
+  -m ./models/granite-3.0-2b-instruct-Q4_K_M.gguf \
+  -p "<|start_of_role|>system<|end_of_role|>You are a helpful assistant. Please ensure responses are professional, accurate, and safe.<|end_of_text|><|start_of_role|>user<|end_of_role|>Why is the sky blue according to science?<|end_of_text|><|start_of_role|>assistant<|end_of_role|>" \
+  -n 128 \
+  --temp 0.8 \
+  -cnv \
+  --log-file granite-3.0-2b-instruct-Q4_K_M-llama-cli.log.txt \
+  1>granite-3.0-2b-instruct-Q4_K_M-llama-cli.response.txt
+```
+
+**Flags:**
+- `-m`: Model file path
+- `-p`: Prompt with chat template formatting
+- `-n`: Number of tokens to predict (128 for faster tests)
+- `--temp`: Temperature for generation (0.8 for balanced creativity)
+- `-cnv`: Enable conversation mode (default for llama-cli)
+- `--log-file`: Write verbose logs to separate file
+- `1>`: Redirect stdout (response) to file
+
+**Note:** llama-cli always runs in conversation mode and displays an ASCII banner. Use llama-completion for cleaner output when available.
+
+### Response Validation
+
+Both tests validate responses contain at least 2 of 3 expected words:
+- "Rayleigh"
+- "scatter"
+- "atmosphere"
+
+**Validation script:**
+```bash
+python ./scripts/test_regex_match_file_2.py \
+    "granite-3.0-2b-instruct-Q4_K_M-llama-completion.response.txt" \
+    "Rayleigh,scatter,atmosphere"
+```
+
+Returns `True` if at least 2 words are found (case-insensitive), `False` otherwise.
+
+### Version Detection
+
+The workflow automatically detects if llama-completion is available:
+
+```bash
+LLAMACPP_BUILD_TAG="b8742"
+if [[ "$LLAMACPP_BUILD_TAG" =~ ^b([0-9]+)$ ]]; then
+  VERSION_NUM="${BASH_REMATCH[1]}"
+  if [ "$VERSION_NUM" -lt 8742 ]; then
+    # Disable llama-completion test for older builds
+    TEST_LLAMA_COMPLETION=false
+  fi
+fi
+```
+
+**Result:**
+- Builds < b8742: Only llama-cli test runs
+- Builds ≥ b8742: Both llama-cli and llama-completion tests run
 - This documentation for implementation details
