@@ -64,6 +64,7 @@ env:
   LLAMA_REQUEST_N_PREDICT: 128 # Reduced from 256 to speed up tests
   LLAMA_CLI_TOOL: llama-cli
   LLAMA_CLI_TEMP: 0.8
+  LLAMA_COMPLETION_MIN_VERSION: 8742 # llama-completion available from b8742 onwards
   # LLAMA_RUN_BIN: ./bin/llama-run
   # LLAMA_RUN_FLAGS: "-v -n 9"
   LLAMA_RESPONSE_WORDS:  "Rayleigh,scatter,atmosphere"
@@ -74,6 +75,7 @@ env:
   QUANTIZED_MODEL_EXISTS: false
   TEST_LLAMA_SERVER: false
   TEST_LLAMA_CLI: true
+  TEST_LLAMA_COMPLETION: true
   TEST_LLAMA_RUN: false
   GH_ARTIFACT_RETENTION: 2
 
@@ -105,6 +107,7 @@ jobs:
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
           bin/${{ inputs.llamacpp_build_tag }}/llama-cli
+          bin/${{ inputs.llamacpp_build_tag }}/llama-completion
           bin/${{ inputs.llamacpp_build_tag }}/llama-gguf-hash
           bin/${{ inputs.llamacpp_build_tag }}/llama-server
         sparse-checkout-cone-mode: false
@@ -184,6 +187,19 @@ jobs:
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+        # Determine if llama-completion should be tested (b8742 and higher)
+        LLAMACPP_BUILD_TAG="${{ inputs.llamacpp_build_tag }}"
+        if [[ "$LLAMACPP_BUILD_TAG" =~ ^b([0-9]+)$ ]]; then
+          VERSION_NUM="${BASH_REMATCH[1]}"
+          if [ "$VERSION_NUM" -lt ${{ env.LLAMA_COMPLETION_MIN_VERSION }} ]; then
+            echo "TEST_LLAMA_COMPLETION=false" >> $GITHUB_ENV
+          fi
+        else
+          # Non-standard build tag, disable llama-completion test
+          echo "TEST_LLAMA_COMPLETION=false" >> $GITHUB_ENV
+        fi
+        echo "Test llama-completion: $TEST_LLAMA_COMPLETION (build: $LLAMACPP_BUILD_TAG, min version: b${{ env.LLAMA_COMPLETION_MIN_VERSION }})"
 
     - name: test-quantized-model-exists
       run: |
@@ -275,6 +291,80 @@ jobs:
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
+    - name: test-llama-cli-response-with-regex-word-match
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
+        echo "Full Python Output: $python_output"
+
+        # Extract the last line of the output, which contains "True" or "False"
+        return_value=$(echo "$python_output" | tail -n 1)
+
+        # Use the extracted "boolean" string in a conditional
+        # Check for both "True" and "true" for compatibility
+        if [[ "$return_value" == "True" ]] || [[ "$return_value" == "true" ]]; then
+          echo "✅ [SUCCESS]: $python_output"
+        else
+          echo "❌ [FAILURE]: $python_output"
+        fi
+
+    # ========================= llama-completion test (b8742+) ======================================
+
+    - name: test-llama-completion
+      if: env.TEST_LLAMA_COMPLETION == 'true'
+      timeout-minutes: 45
+      continue-on-error: true
+      run: |
+        echo "invoking llama-completion from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "VERBOSE mode: ${{env.VERBOSE}}"
+
+        VERBOSE_FLAG=""
+        if [[ "${{env.VERBOSE}}" == "true" ]]; then
+          VERBOSE_FLAG="--verbose"
+        fi
+
+        # llama-completion uses combined prompt (no separate system prompt)
+        COMBINED_PROMPT="${{env.LLAMA_SYSTEM_PROMPT}} ${{env.LLAMA_REQUEST_PROMPT}}"
+
+        ./bin/${{ inputs.llamacpp_build_tag }}/llama-completion \
+          -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+          -p "$COMBINED_PROMPT" \
+          -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
+          --temp ${{env.LLAMA_CLI_TEMP}} \
+          $VERBOSE_FLAG \
+          -no-cnv \
+          --no-display-prompt \
+          --log-file ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.log.txt 1>${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt
+
+        if [ $? -eq 1 ]; then
+          echo "[ERROR] llama-completion failed:"
+          ls -al
+          echo "llama-completion: log: '$(cat ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.log.txt)'"
+          echo "llama-completion: response: '$(cat ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt)'"
+          exit 1
+        fi
+        echo "[SUCCESS] llama-completion succeeded. Output (stdout):"
+        echo "llama-completion: response ($(wc -w ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt | awk '{print $1}') words):\n'$(cat ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt)'"
+
+    - name: show-llama-completion-response
+      if: env.TEST_LLAMA_COMPLETION == 'true'
+      run: |
+        echo "=== llama-completion Response Output ==="
+        cat ${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt
+
+    - name: test-llama-completion-response-with-regex-word-match
+      if: env.TEST_LLAMA_COMPLETION == 'true'
+      run: |
+        # Run the Python script and capture output
+        if python ./scripts/test_regex_match_file_2.py "${{env.REPO_NAME}}-${{inputs.quantization}}-llama-completion.response.txt" "${{env.LLAMA_RESPONSE_WORDS}}"; then
+          echo "✅ [SUCCESS]: Required words found in llama-completion response"
+        else
+          echo "❌ [FAILURE]: Required words not found in llama-completion response"
+        fi
+
+    # ========================= llama-cli response validation ======================================
+
     - name: show-response
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
@@ -303,23 +393,6 @@ jobs:
     #   if: env.TEST_LLAMA_CLI == 'true'
     #   run: |
     #     echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-
-    - name: test-llama-cli-response-with-regex-word-match
-      if: env.TEST_LLAMA_CLI == 'true'
-      run: |
-        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
-        echo "Full Python Output: $python_output"
-
-        # Extract the last line of the output, which contains "True" or "False"
-        return_value=$(echo "$python_output" | tail -n 1)
-
-        # Use the extracted "boolean" string in a conditional
-        # Check for both "True" and "true" for compatibility
-        if [[ "$return_value" == "True" ]] || [[ "$return_value" == "true" ]]; then
-          echo "✅ [SUCCESS]: $python_output"
-        else
-          echo "❌ [FAILURE]: $python_output"
-        fi
 
     # ========================= Upload log as artifact ======================================
 
