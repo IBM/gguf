@@ -120,6 +120,7 @@ jobs:
             fi
           else
             echo "Configuring for macOS ARM64..."
+
             # Base flags for macOS ARM64 (cross-compilation)
             CMAKE_FLAGS="-DCMAKE_OSX_ARCHITECTURES=arm64"
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
@@ -128,16 +129,12 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
 
             # Metal GPU acceleration (configurable via input parameter)
+            # NOTE: GGML_METAL_EMBED_LIBRARY is NOT used here
+            # Testing showed that embedding Metal shaders (GGML_METAL_EMBED_LIBRARY=ON) caused
+            # significant performance degradation in BVT tests.
             if [ "${{ inputs.enable_metal }}" = "true" ]; then
               echo "Enabling Metal GPU acceleration for Apple Silicon..."
               CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=ON"
-              # NOTE: GGML_METAL_EMBED_LIBRARY is NOT used here
-              # Testing showed that embedding Metal shaders (GGML_METAL_EMBED_LIBRARY=ON) caused
-              # significant performance degradation in BVT tests (5x slower than CPU-only).
-              # This is likely due to cross-compilation issues where embedded shaders compiled on
-              # x86_64 don't work properly on ARM64, causing fallback to software emulation.
-              # Without embedding, Metal shaders are compiled at runtime from .metal files,
-              # which works correctly and provides expected GPU acceleration.
             else
               echo "Metal GPU acceleration disabled (CPU-only mode for maximum compatibility)"
               CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
@@ -148,9 +145,7 @@ jobs:
 
             # Acceleration flags - Optimized for GitHub Actions M1 runners (2026)
             # Original (maximum compatibility, slow):
-            # CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=ON"
-            # CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
-            # New (optimized for M1, 2-4x faster):
+            # - CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NO_ACCELERATE=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_ACCELERATE=ON"
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8.2-a -mtune=apple-m1\""
