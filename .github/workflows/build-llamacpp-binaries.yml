@@ -10,7 +10,7 @@ on:
         default: 'b8100'
         type: string
       release_tag_extension:
-        description: 'Release tag extension (added after release version tag). Defaults to build date (YYYYMMDD) if not provided.'
+        description: 'Optional release tag extension (appended after date with dash). Date (YYYYMMDD) is always included. Example: if extension="metal", tag becomes "llama.cpp-b8100-20260415-metal"'
         required: false
         type: string
       target_platform:
@@ -561,15 +561,18 @@ jobs:
       - name: Set release tag
         id: set_tag
         run: |
-          # Use release_tag_extension if provided, otherwise use build date (YYYYMMDD)
+          # Always include build date (YYYYMMDD)
+          BUILD_DATE=$(date -u +"%Y%m%d")
+
+          # Append optional extension if provided (with dash separator)
           if [ -n "${{ inputs.release_tag_extension }}" ]; then
-            EXTENSION="${{ inputs.release_tag_extension }}"
+            TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${BUILD_DATE}-${{ inputs.release_tag_extension }}"
+            echo "Using release tag with extension: $TAG"
           else
-            EXTENSION=$(date -u +"%Y%m%d")
+            TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${BUILD_DATE}"
+            echo "Using release tag with date only: $TAG"
           fi
 
-          TAG="llama.cpp-${{ inputs.llama_cpp_version }}-${EXTENSION}"
-          echo "Using release tag: $TAG"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
