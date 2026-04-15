@@ -2,7 +2,7 @@
 
 ## Build Details
 - **llama.cpp Version**: b8742
-- **Build Date**: 2026-04-14 21:09:41 UTC
+- **Build Date**: 2026-04-15 07:07:42 UTC
 - **Platform**: macOS (darwin-arm64)
 - **Architecture**: ARM64 (Apple Silicon - M1 optimized)
 - **Minimum OS Version**: 15.0 (Sequoia)
@@ -40,7 +40,8 @@
 - **Result**: Binaries optimized for GitHub Actions M1 runners with significant performance improvements
 
 ## Included Binaries
-- **llama-cli**: Main command-line inference tool
+- **llama-cli**: Main command-line inference tool (conversation mode)
+- **llama-completion**: Simple completion tool (no conversation mode, no banner)
 - **llama-quantize**: Model quantization tool
 - **llama-server**: HTTP server for model inference
 - **llama-run**: ⚠️ Not included (removed after b6808)
@@ -59,4 +60,4 @@ All binaries are statically linked and optimized for Apple Silicon M1 (GitHub Ac
 - Static linking for portability
 
 ---
-Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24422903902
+Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24441031327
