@@ -151,6 +151,15 @@ jobs:
         python -m pip install -r ./requirements.txt
         pip list
 
+    # List available devices (CPU/GPU) that llama.cpp can utilize
+    - name: list-available-devices
+      run: |
+        echo "=========================================="
+        echo "Listing available devices for llama.cpp  "
+        echo "=========================================="
+        ./bin/${{ inputs.llamacpp_build_tag }}/llama-completion --list-devices || echo "Note: --list-devices flag may not be available in build ${{ inputs.llamacpp_build_tag }}"
+        echo "=========================================="
+
     # Use this step to set values to the github context (shared across jobs/steps)
     # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
     # whereas using $GITHUB_ENV sets values in the job's underlying environment.

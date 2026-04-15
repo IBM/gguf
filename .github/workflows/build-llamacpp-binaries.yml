@@ -287,6 +287,19 @@ jobs:
 
           echo "All smoke tests passed!"
 
+      - name: List available devices
+        run: |
+          cd llama.cpp/build/bin
+          echo "=========================================="
+          echo "Listing available devices for llama.cpp"
+          echo "=========================================="
+          ./llama-completion --list-devices || echo "Note: --list-devices flag may not be available in version ${{ steps.set_version.outputs.version }}"
+          echo "=========================================="
+          echo ""
+          echo "This information shows what CPU/GPU devices are visible to llama.cpp"
+          echo "in the GitHub Actions runner environment. This can help inform future"
+          echo "decisions about compiler flags and hardware acceleration options."
+
       - name: Setup Python for model download
         uses: actions/setup-python@v6
         with:
