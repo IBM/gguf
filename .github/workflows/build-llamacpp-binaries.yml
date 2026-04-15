@@ -200,7 +200,7 @@ jobs:
           echo "Checking for required binaries..."
 
           # Core binaries (always required)
-          for binary in llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding; do
+          for binary in llama-cli llama-completion llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -228,6 +228,9 @@ jobs:
 
           # Test llama-cli
           ./llama-cli --version || ./llama-cli --help | head -5
+
+          # Test llama-completion
+          ./llama-completion --version || ./llama-completion --help | head -5
 
           # Test llama-quantize
           ./llama-quantize --help | head -5
@@ -416,7 +419,8 @@ jobs:
           $COMPILER_EXPLANATION
 
           ## Included Binaries
-          - **llama-cli**: Main command-line inference tool
+          - **llama-cli**: Main command-line inference tool (conversation mode)
+          - **llama-completion**: Simple completion tool (no conversation mode, no banner)
           - **llama-quantize**: Model quantization tool
           - **llama-server**: HTTP server for model inference
           $LLAMA_RUN_BINARY
@@ -451,7 +455,7 @@ jobs:
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${PLATFORM_SUFFIX}.zip"
 
           # Base binaries (always included)
-          BINARIES="llama-cli llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding BUILD_INFO.md"
+          BINARIES="llama-cli llama-completion llama-quantize llama-server llama-mtmd-cli llama-gguf llama-embedding BUILD_INFO.md"
 
           # Add llama-run only for b6808 and older
           if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ] && [ -f "llama-run" ]; then
@@ -582,6 +586,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY
           echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
+          echo "- llama-completion" >> $GITHUB_STEP_SUMMARY
           echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
 
