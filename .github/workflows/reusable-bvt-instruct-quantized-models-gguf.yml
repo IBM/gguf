@@ -45,17 +45,23 @@ on:
         type: boolean
         required: false
         default: false
+      verbose:
+        type: boolean
+        required: false
+        default: true
+        description: "Enable verbose output for llama-cli (can cause slowdowns with per-token logging)"
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
+  VERBOSE: ${{inputs.verbose}}
   # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
   # LLAMA_REQUEST_SEED: 647063347
   # LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
   LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
-  LLAMA_REQUEST_N_PREDICT: 256 # 128
+  LLAMA_REQUEST_N_PREDICT: 128 # Reduced from 256 to speed up tests
   LLAMA_CLI_TOOL: llama-cli
   LLAMA_CLI_TEMP: 0.8
   # LLAMA_RUN_BIN: ./bin/llama-run
@@ -229,6 +235,9 @@ jobs:
 
     # NOTE: Redirecting stderr (2>) to suppress progress indicators and other non-essential output
     # Extended timeout to 60 minutes to accommodate larger models (e.g., 8B models with Q8_0/bf16 quantizations)
+    # OPTIMIZATION: Verbose flag is now configurable via inputs.verbose (default: true)
+    # Verbose mode causes per-token parsing overhead; disable if tests timeout
+    # Added --no-display-prompt and --simple-io to suppress ASCII art and progress indicators
     - name: test-llama-cli
       if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 45
@@ -236,14 +245,23 @@ jobs:
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "VERBOSE mode: ${{env.VERBOSE}}"
+
+        VERBOSE_FLAG=""
+        if [[ "${{env.VERBOSE}}" == "true" ]]; then
+          VERBOSE_FLAG="--verbose"
+        fi
+
         ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
           -p '${{env.LLAMA_REQUEST_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --temp ${{env.LLAMA_CLI_TEMP}} \
-          --verbose \
+          $VERBOSE_FLAG \
           --single-turn \
+          --no-display-prompt \
+          --simple-io \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] llama-cli failed:"
@@ -292,14 +310,14 @@ jobs:
         python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
         echo "Full Python Output: $python_output"
 
-        # Extract the last line of the output, which contains "true" or "false"
+        # Extract the last line of the output, which contains "True" or "False"
         return_value=$(echo "$python_output" | tail -n 1)
 
-        # Use the extracted "boolean" string in a conditional
-        if [ "$return_value" = "true" ]; then
-          echo "[SUCCESS]: $python_output"
+        # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
+        if [[ "${return_value,,}" == "true" ]]; then
+          echo "✅ [SUCCESS]: $python_output"
         else
-          echo "[FAILURE]: $python_output"
+          echo "❌ [FAILURE]: $python_output"
         fi
 
     # ========================= Upload log as artifact ======================================
