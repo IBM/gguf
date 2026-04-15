@@ -131,7 +131,13 @@ jobs:
             if [ "${{ inputs.enable_metal }}" = "true" ]; then
               echo "Enabling Metal GPU acceleration for Apple Silicon..."
               CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=ON"
-              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL_EMBED_LIBRARY=ON"
+              # NOTE: GGML_METAL_EMBED_LIBRARY is NOT used here
+              # Testing showed that embedding Metal shaders (GGML_METAL_EMBED_LIBRARY=ON) caused
+              # significant performance degradation in BVT tests (5x slower than CPU-only).
+              # This is likely due to cross-compilation issues where embedded shaders compiled on
+              # x86_64 don't work properly on ARM64, causing fallback to software emulation.
+              # Without embedding, Metal shaders are compiled at runtime from .metal files,
+              # which works correctly and provides expected GPU acceleration.
             else
               echo "Metal GPU acceleration disabled (CPU-only mode for maximum compatibility)"
               CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_METAL=OFF"
@@ -408,16 +414,17 @@ jobs:
           - **-mtune=apple-m1**: Optimize for Apple M1 CPU characteristics
           - **GGML_ACCELERATE=ON**: Apple Accelerate framework enabled (CPU-optimized BLAS, 2-4x faster)
           - **GGML_METAL=ON**: Metal GPU acceleration enabled (10-50x faster on Apple Silicon)
-          - **GGML_METAL_EMBED_LIBRARY=ON**: Metal shaders embedded in binary (self-contained, no external files)
-          - **Result**: GPU-accelerated binaries with automatic runtime detection and fallback"
-              USAGE_NOTE="All binaries are statically linked and GPU-accelerated for Apple Silicon. Metal acceleration is automatically detected at runtime - uses GPU on M1/M2/M3/M4, falls back to CPU on other platforms."
+          - **Note**: Metal shaders are NOT embedded (GGML_METAL_EMBED_LIBRARY not used due to cross-compilation issues)
+          - **Result**: GPU-accelerated binaries with runtime Metal shader compilation"
+              USAGE_NOTE="All binaries are statically linked and GPU-accelerated for Apple Silicon. Metal acceleration is automatically detected at runtime - uses GPU on M1/M2/M3/M4, falls back to CPU on other platforms. Requires .metal shader files to be present at runtime."
               BUILD_SUMMARY="- Cross-compiled from x86_64 macOS to ARM64 target
-          - Metal GPU acceleration enabled with embedded shaders
+          - Metal GPU acceleration enabled (shaders compiled at runtime, not embedded)
           - Apple Accelerate framework enabled for CPU operations
           - Automatic runtime detection (GPU on Apple Silicon, CPU fallback elsewhere)
           - Optimized for GitHub Actions M1 runners (2026 configuration)
           - Compatible with all Apple Silicon (M1/M2/M3/M4)
-          - Static linking for portability"
+          - Static linking for portability
+          - Note: Requires .metal files for GPU acceleration (not self-contained)"
             else
               COMPILER_EXPLANATION="- **-march=armv8.2-a**: Target ARMv8.2-A instruction set (M1 baseline, compatible with M1/M2/M3/M4)
           - **-mtune=apple-m1**: Optimize for Apple M1 CPU characteristics
