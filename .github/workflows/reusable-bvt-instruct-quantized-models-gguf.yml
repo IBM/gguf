@@ -313,8 +313,9 @@ jobs:
         # Extract the last line of the output, which contains "True" or "False"
         return_value=$(echo "$python_output" | tail -n 1)
 
-        # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
-        if [[ "${return_value,,}" == "true" ]]; then
+        # Use the extracted "boolean" string in a conditional
+        # Check for both "True" and "true" for compatibility
+        if [[ "$return_value" == "True" ]] || [[ "$return_value" == "true" ]]; then
           echo "✅ [SUCCESS]: $python_output"
         else
           echo "❌ [FAILURE]: $python_output"
