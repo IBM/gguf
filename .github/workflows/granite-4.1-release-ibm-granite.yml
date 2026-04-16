@@ -69,8 +69,8 @@ env:
   # 'ibm-granite/granite-4.1-30b-base',
   # 'ibm-granite/granite-4.1-30b'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.1-3b',
-      'ibm-granite/granite-4.1-3b-base'
+      'ibm-granite/granite-4.1-8b-base',
+      'ibm-granite/granite-4.1-8b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
