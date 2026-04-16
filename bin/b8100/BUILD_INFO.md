@@ -2,7 +2,7 @@
 
 ## Build Details
 - **llama.cpp Version**: b8100
-- **Build Date**: 2026-04-15 13:29:55 UTC
+- **Build Date**: 2026-04-15 19:42:20 UTC
 - **Platform**: macOS (darwin-arm64)
 - **Architecture**: ARM64 (Apple Silicon - M1 optimized)
 - **Minimum OS Version**: 15.0 (Sequoia)
@@ -11,6 +11,7 @@
 - **llama_cpp_version**: `b8100`
 - **target_platform**: `macos-arm64`
 - **minimize_acceleration**: `false`
+- **enable_metal**: `false`
 - **openssl_static**: `true`
 - **debug**: `true`
 
@@ -37,7 +38,8 @@
 - **-march=armv8.2-a**: Target ARMv8.2-A instruction set (M1 baseline, compatible with M1/M2/M3/M4)
 - **-mtune=apple-m1**: Optimize for Apple M1 CPU characteristics
 - **GGML_ACCELERATE=ON**: Apple Accelerate framework enabled (CPU-optimized BLAS, 2-4x faster)
-- **Result**: Binaries optimized for GitHub Actions M1 runners with significant performance improvements
+- **GGML_METAL=OFF**: Metal GPU acceleration disabled (CPU-only mode)
+- **Result**: CPU-only binaries optimized for GitHub Actions M1 runners
 
 ## Included Binaries
 - **llama-cli**: Main command-line inference tool (conversation mode)
@@ -50,14 +52,15 @@
 - **llama-embedding**: Embedding generation tool for text embeddings
 
 ## Usage
-All binaries are statically linked and optimized for Apple Silicon M1 (GitHub Actions macos-latest runners). Compatible with all Apple Silicon chips (M1/M2/M3/M4).
+All binaries are statically linked and optimized for Apple Silicon M1 (GitHub Actions macos-latest runners). CPU-only mode for maximum compatibility. Compatible with all Apple Silicon chips (M1/M2/M3/M4).
 
 ## Build Configuration Summary
 - Cross-compiled from x86_64 macOS to ARM64 target
 - Apple Accelerate framework enabled for optimized CPU operations
+- CPU-only mode (Metal disabled for maximum compatibility)
 - Optimized for GitHub Actions M1 runners (2026 configuration)
 - Compatible with all Apple Silicon (M1/M2/M3/M4)
 - Static linking for portability
 
 ---
-Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24457055904
+Built with GitHub Actions workflow: https://github.com/IBM/gguf/actions/runs/24474413273
