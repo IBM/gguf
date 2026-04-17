@@ -26,7 +26,9 @@ def test_regex_match(test_file:str, words_list:list[str]) -> bool:
 
     # Create the regex pattern: \b(word1|word2|word3)\b
     # The '|' acts as an OR operator.
-    pattern = r'\b(' + '|'.join(re.escape(word) for word in words_list) + r')\b'
+    # Note: no need to match whole word boundaries, perhaps make an optional flag?
+    # pattern = r'\b(' + '|'.join(re.escape(word) for word in words_list) + r')\b'
+    pattern = '|'.join(re.escape(word) for word in words_list)
 
     # re.findall() returns a list of all non-overlapping matches
     matches = re.findall(pattern, test_string,flags=re.IGNORECASE)
