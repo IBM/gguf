@@ -250,6 +250,12 @@ jobs:
 
         DMF_COMMENTS='{"stack":"","instance_profile":"","served_model_name":"${{env.TARGET_REPO_ID}}/*${{env.EXT_GGUF}}","metadata":[{"supplemental_arguments":[]}]}'
 
+        cat > lh-conf.yaml <<EOF
+        lakehouse:
+          environment: PROD
+          token: ${{ secrets.IBM_DMF_TOKEN }}
+        EOF
+
         dmf model push \
           -n granite_gguf \
           -t model \
