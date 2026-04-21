@@ -209,7 +209,7 @@ jobs:
     - name: install-dmf-library
       run: |
         echo "[INFO] Installing dmf-lib from Artifactory..."
-        pip install dmf-lib \
+        pip install "dmf-lib==1.9.8" \
           --index-url https://${{ secrets.ARTIFACTORY_USER }}:${{ secrets.ARTIFACTORY_API_KEY }}@na.artifactory.swg-devops.com/artifactory/api/pypi/res-data-model-factory-team-pypi-local/simple \
           --trusted-host na.artifactory.swg-devops.com
         echo "[INFO] Verifying dmf-lib installation..."
