@@ -18,6 +18,10 @@ on:
         type: string
         required: true
         description: 'Quantization type (e.g., Q4_K_M)'
+      model_size:
+        type: string
+        required: true
+        description: 'Model size (e.g.,1b, 3b, 13b, 20b)'
       target_repo_owner:
         type: string
         required: true
@@ -52,6 +56,10 @@ on:
         required: true
       IBM_DMF_TOKEN:
         required: true
+      ARTIFACTORY_USER:
+        required: true
+      ARTIFACTORY_API_KEY:
+        required: true
     inputs:
       enable_language_jobs:
         type: boolean
@@ -61,6 +69,9 @@ on:
         type: string
         required: true
       quantization:
+        type: string
+        required: true
+      model_size:
         type: string
         required: true
       target_repo_owner:
@@ -194,5 +205,58 @@ jobs:
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: install-dmf-library
+      run: |
+        echo "[INFO] Installing dmf-lib from Artifactory..."
+        pip install dmf-lib \
+          --index-url https://${{ secrets.ARTIFACTORY_USER }}:${{ secrets.ARTIFACTORY_API_KEY }}@na.artifactory.swg-devops.com/artifactory/api/pypi/res-data-model-factory-team-pypi-local/simple \
+          --trusted-host na.artifactory.swg-devops.com
+        echo "[INFO] Verifying dmf-lib installation..."
+        pip show dmf-lib
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-gguf-from-huggingface
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: push-model-to-dmf
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        DMF_TOKEN: ${{ secrets.IBM_DMF_TOKEN }}
+      run: |
+        echo "[INFO] Pushing model to Data Model Factory..."
+        echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}"
+        echo "[INFO] Target repo: ${{env.TARGET_REPO_ID}}"
+        echo "[INFO] Using DMF namespace: granite_gguf"
+        echo "[INFO] Using DMF table: model"
+
+        DMF_COMMENTS='{"stack":"","instance_profile":"","served_model_name":"${{env.TARGET_REPO_ID}}/*${{env.EXT_GGUF}}","metadata":[{"supplemental_arguments":[]}]}'
+
+        dmf model push \
+          -n granite_gguf \
+          -t model \
+          --dir "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}" \
+          --base-model "${{ env.REPO_NAME }}" \
+          --type granite \
+          --size "${{ inputs.model_size }}" \
+          --variant "${{ inputs.quantization }}" \
+          --comments "$DMF_COMMENTS"
 
     
