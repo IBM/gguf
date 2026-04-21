@@ -14,7 +14,8 @@ LIGHT_GRAY='\033[0;90m'
 RESET='\033[0m'
 
 # Run matrix
-RUN_G4_TESTS=1
+RUN_G4_1_TESTS=1
+RUN_G4_TESTS=0
 RUN_G4_PREVIEW_TESTS=0
 RUN_G3_3_TESTS=0
 RUN_G3_2_TESTS=0
@@ -51,7 +52,41 @@ test() {
 }
 
 ##############
-# G4
+# G4.1
+##############
+
+if [[ $RUN_G4_1_TESTS -eq 1 ]]; then
+echo -e "${YELLOW}Running Granite 4.1 tests..."
+
+# 3B
+input="granite-4.1-3b-Q8_0.gguf"
+expected="granite4.1:3b-q8_0"
+test "$input" "$expected"
+
+input="granite-4.1-base-3b-Q4_K_M.gguf"
+expected="granite4.1:3b-base-q4_K_M"
+test "$input" "$expected"
+
+# 8B
+input="granite-4.1-8b-bf16.gguf"
+expected="granite4.1:8b-bf16"
+test "$input" "$expected"
+
+input="granite-4.1-base-8b-Q4_K_M.gguf"
+expected="granite4.1:8b-base-q4_K_M"
+test "$input" "$expected"
+
+# 30B
+input="granite-4.1-30b-Q5_K_M.gguf"
+expected="granite4.1:30b-q5_K_M"
+test "$input" "$expected"
+
+input="granite-4.1-base-30b-Q4_1.gguf"
+expected="granite4.1:30b-base-q4_1"
+test "$input" "$expected"
+
+##############
+# G4 (i.e. 4.0)
 ##############
 
 if [[ $RUN_G4_TESTS -eq 1 ]]; then
@@ -194,6 +229,8 @@ test "$input" "$expected"
 input=" granite-vision-3.3-2b-Q8_0.gguf"
 expected="granite3.3-vision:2b-q8_0"
 test "$input" "$expected"
+
+fi
 
 # FUTURE: TODO: vision embedding (needs llama.cpp/gguf support)
 # input="granite-vision-3.3-2b-embedding"
