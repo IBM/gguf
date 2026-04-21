@@ -120,12 +120,21 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-4.0-micro-base | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-h-micro | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-h-micro-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | | |
-| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | | |
+| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808 |
+| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
 | ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
-| ibm-granite/granite-4.0-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-4.0-8b-base | GraniteForCausalLM | Dense Transformer | | |
+
+<!--
+| ibm-granite/granite-4.0-3b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-3b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-30b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-30b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+-->
 
 - Supported quantizations: `F16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
@@ -251,8 +260,8 @@ As a baseline, each converted model MUST successfully be run in the following pr
 [Ollama](https://github.com/ollama/ollama) - As a key model service provider supported by higher level frameworks and platforms (e.g., [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm), [LM Studio](https://github.com/lmstudio-ai) etc.), testing the ability to `pull` and `run` the model is essential.
 
 ##### Mode of Testing
-- BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime. 
-- UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request. 
+- BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime.
+- UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request.
 
 **Notes**
 
