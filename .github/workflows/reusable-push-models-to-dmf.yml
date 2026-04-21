@@ -253,13 +253,16 @@ jobs:
         cat > lh-conf.yaml <<EOF
         lakehouse:
           environment: PROD
-          token: ${{ secrets.IBM_DMF_TOKEN }}
+          token: ${DMF_TOKEN}
         EOF
+
+        echo "[INFO] Verifying local model directory contents..."
+        ls -al "${{ env.LOCAL_MODEL_PATH }}"
 
         dmf model push \
           -n granite_gguf \
           -t model \
-          --dir "${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}" \
+          --dir "${{ env.LOCAL_MODEL_PATH }}" \
           --base-model "${{ env.REPO_NAME }}" \
           --type granite \
           --size "${{ inputs.model_size }}" \
