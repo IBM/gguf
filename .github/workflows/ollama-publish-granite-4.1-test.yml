@@ -14,7 +14,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_OLLAMA_PUSH: false
+  ENABLE_OLLAMA_PUSH: true
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
