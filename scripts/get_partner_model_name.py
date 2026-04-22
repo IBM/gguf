@@ -128,12 +128,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
     try:
         parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
-        parser.add_argument("--family-override", type=str, default='', required=False, help="Model family (override)")
         parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
         parser.add_argument('--default-quant',  default=False, action='store_true', help='Model selected as the default quantization')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         parser.add_argument('--tag-only', default=False, action='store_true', help='Return only the tag portion of the model name')
+
+        parser.add_argument("--override-family", type=str, default='', required=False, help="Model family (override)")
+        parser.add_argument("--override-version", type=str, default='', required=False, help="Model family (override)")
+
         args = parser.parse_args()
 
         if(args.debug):
@@ -149,15 +152,10 @@ if __name__ == "__main__":
 
         # verify model family name
         normalized_model_name = args.hf_model_name.lower()
-        if args.family_override == '':
-            if MODEL_FAMILY not in normalized_model_name:
-                raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
-            else:
-                model_family = MODEL_FAMILY.lower()
+        if MODEL_FAMILY not in normalized_model_name:
+            raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
         else:
-            model_family = args.family_override.lower()
-            if args.debug:
-                print(f"DEBUG: Model family override; skipping validation: `{args.family_override}`")
+            model_family = MODEL_FAMILY.lower()
 
         # strip model format (if present)
         normalized_model_name = normalized_model_name.replace(MODEL_ATTRIBUTE_SEP+MODEL_FORMAT_GGUF, "")
@@ -251,6 +249,16 @@ if __name__ == "__main__":
         if model_release_stage != "":
             if args.debug:
                 print(f"DEBUG: Model stage found in model name: `{normalized_model_name}`")
+
+        if args.override_family != '':
+            model_family = args.override_family.lower()
+            if args.debug:
+                print(f"DEBUG: Model family override; skipping validation: `{args.override_family}`")
+
+        if args.override_version != '':
+            model_version = args.override_version.lower()
+            if args.debug:
+                print(f"DEBUG: Model version override; skipping validation: `{args.override_version}`")
 
         if args.debug:
             print(f"model_family='{model_family}'\n \
