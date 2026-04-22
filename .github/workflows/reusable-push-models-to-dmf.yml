@@ -5,11 +5,11 @@ name: push-models-to-dmf
 on:
   workflow_dispatch:
     inputs:
-      enable_language_jobs:
+      enable_dmf_push:
         type: boolean
         required: false
         default: false
-        description: 'Enable language jobs to run tests'
+        description: 'Enable dmf push job'
       repo_id:
         type: string
         required: true
@@ -61,7 +61,7 @@ on:
       ARTIFACTORY_API_KEY:
         required: true
     inputs:
-      enable_language_jobs:
+      enable_dmf_push:
         type: boolean
         required: false
         default: false
