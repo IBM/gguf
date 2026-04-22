@@ -161,6 +161,7 @@ jobs:
           echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
           echo "LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF='$LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF }})"
 
+
       - name: ollama-generate-model-name
         run: |
           if [[ ${{ inputs.obfuscate_model == true }} ]]; then
