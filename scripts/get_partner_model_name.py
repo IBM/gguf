@@ -94,6 +94,7 @@ class MODEL_ARCH_DESCRIPTIVE_TYPES(StrEnum):
 class SUPPORTED_MODEL_LANGUAGES(StrEnum):
     ENGLISH = "english"
     CHINESE = "chinese"
+    JAPANESE = "japaneses"
     MULTILINGUAL = "multilingual"
 
 class SUPPORTED_RELEASE_STAGES(StrEnum):
@@ -127,6 +128,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
     try:
         parser.add_argument("--hf-model-name", "-m", type=str, required=True, help="IBM Hugging face model name pattern (e.g., 'granite-3.2-2b-instruct')")
+        parser.add_argument("--family-override", type=str, default='', required=False, help="Model family (override)")
         parser.add_argument("--partner", "-p", type=str, required=True, help="Partner name (e.g., 'ollama')")
         parser.add_argument('--default-quant',  default=False, action='store_true', help='Model selected as the default quantization')
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
@@ -141,20 +143,25 @@ if __name__ == "__main__":
         if args.partner == SUPPORTED_PARTNERS.DOCKER:
             args.tag_only = True
 
-        normalized_model_name = args.hf_model_name.lower()
-
         # verify partner (output format) is known
         if args.partner not in SUPPORTED_PARTNERS.__members__.values():
             raise ValueError(f"invalid --partner. Model family '{SUPPORTED_PARTNERS}' not found.")
 
         # verify model family name
-        if MODEL_FAMILY not in normalized_model_name:
-            raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
+        normalized_model_name = args.hf_model_name.lower()
+        if args.family_override == '':
+            if MODEL_FAMILY not in normalized_model_name:
+                raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
+            else:
+                model_family = MODEL_FAMILY.lower()
+        else:
+            model_family = args.family_override.lower()
+            if args.debug:
+                print(f"DEBUG: Model family override; skipping validation: `{args.family_override}`")
 
         # strip model format (if present)
         normalized_model_name = normalized_model_name.replace(MODEL_ATTRIBUTE_SEP+MODEL_FORMAT_GGUF, "")
 
-        model_family = MODEL_FAMILY.lower()
         model_version = ""
         model_layer_desc = "" # e.g., "dense", "moe" (only used for 3.0, 3.1 legacy)
         model_arch_desc = "" # e.g., "hybrid" or "h"
@@ -247,6 +254,7 @@ if __name__ == "__main__":
 
         if args.debug:
             print(f"model_family='{model_family}'\n \
+                family-override='{args.family_override}'\n \
                 model_layer_desc='{model_layer_desc}'\n \
                 model_arch_desc='{model_arch_desc}'\n \
                 model_modality='{model_modality}'\n \

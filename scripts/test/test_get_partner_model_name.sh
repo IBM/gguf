@@ -15,18 +15,21 @@ RESET='\033[0m'
 
 # Run matrix
 RUN_G4_1_TESTS=1
-RUN_G4_TESTS=0
+RUN_G4_TESTS=1
 RUN_G4_PREVIEW_TESTS=0
 RUN_G3_3_TESTS=0
 RUN_G3_2_TESTS=0
 RUN_G3_1_TESTS=0
 RUN_G3_0_TESTS=0
+RUN_OVERRIDE_TESTS=1
 
 # Activate the desired Conda environment
+FAMILY_OVERRIDE="foobar"
 readonly PARTNER="ollama"
 readonly CONDA_RUN="conda run -n llama.cpp"
 readonly PYTHON_SCRIPT="./scripts/get_partner_model_name.py -p ${PARTNER} -m "
 readonly PYTHON_SCRIPT_DEBUG="./scripts/get_partner_model_name.py --debug -p ${PARTNER} -m "
+PYTHON_SCRIPT_OVERRIDE="./scripts/get_partner_model_name.py --family-override ${FAMILY_OVERRIDE} -p ${PARTNER} -m "
 
 # Function to print a success message and exit
 success() {
@@ -50,6 +53,31 @@ test() {
     success $1 $output
   fi
 }
+
+test-override() {
+  # FAMILY_OVERRIDE=$3
+  output=$($CONDA_RUN python $PYTHON_SCRIPT_OVERRIDE $1)
+  if ! [[ $output == $2 ]]; then
+    error $1 $output $2
+    python $PYTHON_SCRIPT_DEBUG $1
+    # exit 1
+  else
+    success $1 $output
+  fi
+}
+
+###################
+# Granite override
+###################
+
+if [[ $RUN_OVERRIDE_TESTS -eq 1 ]]; then
+echo -e "${YELLOW}Running Granite model name override tests..."
+
+input="granite-4.1-3b-Q8_0.gguf"
+expected="foobar4.1:3b-q8_0"
+test-override "$input" "$expected" foo
+
+fi
 
 ##############
 # G4.1

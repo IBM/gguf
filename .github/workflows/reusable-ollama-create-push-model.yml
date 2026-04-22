@@ -316,7 +316,7 @@ jobs:
       - name: ollama-push-model-default-quantization
         run: |
           if [[ "$REPO_NAME" =~ "base" ]]; then
-            echo "Environment variable contains 'base'. Exiting."
+            echo "Environment variable REPO_NAME contains 'base'. Exiting."
             exit 0
           fi
           if [[ "$IS_DEFAULT_QUANT" == "true" ]]; then
