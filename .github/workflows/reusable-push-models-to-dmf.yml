@@ -30,6 +30,10 @@ on:
         type: string
         required: false
         description: 'Target repository name extension'
+      served_model_name:
+        type: string
+        required: true
+        description: 'Custom model name for hosting (e.g., ibm-granite/granite-3.0-2b-instruct-v1)'
       ext_log:
         type: string
         required: false
@@ -248,7 +252,7 @@ jobs:
         echo "[INFO] Using DMF namespace: granite_gguf"
         echo "[INFO] Using DMF table: model"
 
-        DMF_COMMENTS='{"stack":"","instance_profile":"granite-4.0-1b-bf16.gguf","served_model_name":"${{env.TARGET_REPO_ID}}-{{inputs.quantization}}","metadata":[{"supplemental_arguments":[]},{"type":"gguf"}]}'
+        DMF_COMMENTS='{"stack":"","instance_profile":"granite-4.0-1b-bf16.gguf","served_model_name":"${{inputs.served_model_name}}","metadata":[{"supplemental_arguments":[]},{"type":"gguf"}]}'
 
         cat > lh-conf.yaml <<EOF
         lakehouse:
