@@ -62,8 +62,18 @@ env:
   MAX_WORKERS: 1
   MAX_TESTS: 10
 
+  # Partner "preview" models
   # 'ibm-granite/granite-4.0-tiny-preview',
   # 'ibm-granite/granite-4.0-tiny-base-preview'
+
+  # Cannot build "small" (i.e., 30b) model in public GH images
+  # 'ibm-granite/granite-4.0-h-small',
+  # 'ibm-granite/granite-4.0-h-small-base',
+
+  # Never released:
+  # 'ibm-granite/granite-4.0-8b', # now 4.1
+  # 'ibm-granite/granite-4.0-8b-base' # now 4.1
+
   # 'ibm-granite/granite-4.0-350m',
   # 'ibm-granite/granite-4.0-350m-base',
   # 'ibm-granite/granite-4.0-h-350m',
@@ -78,11 +88,6 @@ env:
   # 'ibm-granite/granite-4.0-h-micro-base',
   # 'ibm-granite/granite-4.0-h-tiny',
   # 'ibm-granite/granite-4.0-h-tiny-base',
-  # 'ibm-granite/granite-4.0-h-small',
-  # 'ibm-granite/granite-4.0-h-small-base',
-  #
-  # 'ibm-granite/granite-4.0-8b', # now 4.1
-  # 'ibm-granite/granite-4.0-8b-base' # now 4.1
   SOURCE_LANGUAGE_REPOS: "[
       'ibm-granite/granite-4.0-1b',
       'ibm-granite/granite-4.0-h-1b'
