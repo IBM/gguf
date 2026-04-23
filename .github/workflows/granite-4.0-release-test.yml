@@ -43,7 +43,7 @@ env:
 
   # HuggingFace Transformers versions
   # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
-  TRANSFORMERS_VERSION_LANGUAGE: "4.57.3"
+  TRANSFORMERS_VERSION_LANGUAGE: "5.6.1"
   TRANSFORMERS_VERSION_VISION: "4.57.3"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
   TRANSFORMERS_VERSION_EMBEDDING: "4.57.3"
@@ -84,12 +84,8 @@ env:
   # 'ibm-granite/granite-4.0-8b', # now 4.1
   # 'ibm-granite/granite-4.0-8b-base' # now 4.1
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-350m',
-      'ibm-granite/granite-4.0-h-350m',
       'ibm-granite/granite-4.0-1b',
-      'ibm-granite/granite-4.0-h-1b',
-      'ibm-granite/granite-4.0-micro',
-      'ibm-granite/granite-4.0-h-micro'
+      'ibm-granite/granite-4.0-h-1b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
