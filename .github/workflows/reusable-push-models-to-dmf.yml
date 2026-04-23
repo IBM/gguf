@@ -5,11 +5,11 @@ name: push-models-to-dmf
 on:
   workflow_dispatch:
     inputs:
-      enable_language_jobs:
+      enable_dmf_push:
         type: boolean
         required: false
         default: false
-        description: 'Enable language jobs to run tests'
+        description: 'Enable dmf push job'
       repo_id:
         type: string
         required: true
@@ -18,6 +18,10 @@ on:
         type: string
         required: true
         description: 'Quantization type (e.g., Q4_K_M)'
+      model_size:
+        type: string
+        required: true
+        description: 'Model size (e.g.,1b, 3b, 13b, 20b)'
       target_repo_owner:
         type: string
         required: true
@@ -26,6 +30,10 @@ on:
         type: string
         required: false
         description: 'Target repository name extension'
+      served_model_name:
+        type: string
+        required: true
+        description: 'Custom model name for hosting (e.g., ibm-granite/granite-3.0-2b-instruct-v1)'
       ext_log:
         type: string
         required: false
@@ -52,8 +60,12 @@ on:
         required: true
       IBM_DMF_TOKEN:
         required: true
+      ARTIFACTORY_USER:
+        required: true
+      ARTIFACTORY_API_KEY:
+        required: true
     inputs:
-      enable_language_jobs:
+      enable_dmf_push:
         type: boolean
         required: false
         default: false
@@ -61,6 +73,9 @@ on:
         type: string
         required: true
       quantization:
+        type: string
+        required: true
+      model_size:
         type: string
         required: true
       target_repo_owner:
@@ -114,7 +129,7 @@ env:
 jobs:
   push-quantized-model-to-dmf:
     runs-on: macos-latest # should be faster to provision mac runtime then ubuntu runtime
-    if: ${{ inputs.enable_language_jobs == true }}
+    if: ${{ inputs.enable_dmf_push == true }}
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
@@ -194,5 +209,68 @@ jobs:
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: install-dmf-library
+      run: |
+        echo "[INFO] Installing dmf-lib from Artifactory..."
+        pip install "dmf-lib==1.10.2" \
+          --index-url https://${{ secrets.ARTIFACTORY_USER }}:${{ secrets.ARTIFACTORY_API_KEY }}@na.artifactory.swg-devops.com/artifactory/api/pypi/res-data-model-factory-team-pypi-local/simple \
+          --extra-index-url https://pypi.org/simple \
+          --trusted-host na.artifactory.swg-devops.com
+        echo "[INFO] Verifying dmf-lib installation..."
+        pip show dmf-lib
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-gguf-from-huggingface
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        echo "--------------------"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: push-model-to-dmf
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      env:
+        DMF_TOKEN: ${{ secrets.IBM_DMF_TOKEN }}
+      run: |
+        echo "[INFO] Pushing model to Data Model Factory..."
+        echo "[INFO] Model path: ${{env.LOCAL_MODEL_PATH}}"
+        echo "[INFO] Target repo: ${{env.TARGET_REPO_ID}}"
+        echo "[INFO] Using DMF namespace: granite_gguf"
+        echo "[INFO] Using DMF table: model"
+
+        DMF_COMMENTS='{"stack":"","instance_profile":"granite-4.0-1b-bf16.gguf","served_model_name":"${{inputs.served_model_name}}","metadata":[{"supplemental_arguments":[]},{"type":"gguf"}]}'
+
+        cat > lh-conf.yaml <<EOF
+        lakehouse:
+          environment: PROD
+          token: ${DMF_TOKEN}
+        EOF
+
+        echo "[INFO] Verifying local model directory contents..."
+        ls -al "${{ env.LOCAL_MODEL_PATH }}"
+
+        dmf model push \
+          -n granite_gguf \
+          -t model \
+          --dir "${{ env.LOCAL_MODEL_PATH }}" \
+          --base-model "${{ env.REPO_NAME }}" \
+          --type granite \
+          --size "${{ inputs.model_size }}" \
+          --variant "${{ inputs.quantization }}" \
+          --comments "$DMF_COMMENTS"
 
     
