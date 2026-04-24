@@ -111,19 +111,19 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-4.0-350m | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-350m-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-h-350m | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-350m-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-1b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-1b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-1b | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-1b-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-micro | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-micro-base | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-micro | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-micro-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
-| ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
+| ibm-granite/granite-4.0-h-350m-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-1b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-1b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-1b | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-1b-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-micro | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-micro-base | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-micro | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-micro-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
+| ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
 
 <!--
 | ibm-granite/granite-4.0-3b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
