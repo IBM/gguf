@@ -84,24 +84,24 @@ Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-3.0-2b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-8b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-2b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-8b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-2b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-8b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-2b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-8b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.2-2b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | | |
-| ibm-granite/granite-3.2-8b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | | |
+| ibm-granite/granite-3.0-2b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-8b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-2b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-8b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-2b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-8b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-2b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-8b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.2-2b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | 4.49.0 | b4783 |
+| ibm-granite/granite-3.2-8b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | 4.49.0 | b4783 |
 | ibm-granite/granite-3.3-2b-base | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
 | ibm-granite/granite-3.3-8b-base | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
 | ibm-granite/granite-3.3-2b-instruct | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
@@ -136,7 +136,7 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-4.1-30b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
 -->
 
-- Supported quantizations: `F16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
+- Supported quantizations: `bf16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
 **\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
@@ -144,13 +144,13 @@ Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-guardian-3.0-2b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.0-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.1-2b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.1-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6569 |
+| ibm-granite/granite-guardian-3.0-2b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.0-8b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.1-2b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.1-8b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
+| ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
+| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.52.4, 4.57.3 | b6050, b6569 |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
