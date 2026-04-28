@@ -92,7 +92,7 @@ if __name__ == "__main__":
                 filename = args.license
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        license_file_contents = file.read()
+                        license_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.license ({args.license}):")
                         print('"""'+license_file_contents+'"""')
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                 filename = args.metadata_path + "/" + args.template_file
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        template_file_contents = file.read()
+                        template_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.template_file ({args.template_file}):")
                         print('"""'+template_file_contents+'"""')
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                 filename = args.metadata_path + "/" + args.system_file
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        system_file_contents = file.read()
+                        system_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.system_file ({args.system_file}):")
                         print('"""'+system_file_contents+'"""')
