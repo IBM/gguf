@@ -1,10 +1,10 @@
-name: ollama-publish-granite-4.0
+name: ollama-publish-granite-4.1
 run-name: "Ollama publish [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
     tags:
-      - "test-ollama-4.1*"
+      - "ollama-4.1*"
   workflow_dispatch:
 
 permissions:
