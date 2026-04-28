@@ -57,7 +57,7 @@ on:
       obfuscate_model:
         type: boolean
         required: false
-        default: true
+        default: false
 
 jobs:
   ollama-continuous-delivery:
