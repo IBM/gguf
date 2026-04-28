@@ -115,13 +115,14 @@ jobs:
       # TODO: allow diff. models to have diff. converted quant. default
       # Append "default quant. (i.e., from initial safetensors to gguf conversion
       # such as "bf16") to Ollama the quants. matrix
+      # TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
       - name: Append initial converted quant. to llm matrix
         id: ollama-append-default-to-llm-quant-matrix
         run: |
           echo "Appending to SOURCE_INSTRUCT_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS) }}'"
           TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_INSTRUCT_QUANTIZATIONS), env.ARRAY_SEP) }}"
           echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
-          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
+          TARGET_OLLAMA_LLM_QUANTS="['${TEMP_ARRAY_STRING}']"
           echo "TARGET_OLLAMA_LLM_QUANTS=$TARGET_OLLAMA_LLM_QUANTS" >> $GITHUB_ENV
 
       - name: Append initial converted quant. to guardian matrix
