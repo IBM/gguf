@@ -164,11 +164,11 @@ jobs:
 
       - name: ollama-generate-model-name
         run: |
-          if [[ ${{ inputs.obfuscate_model == true }} ]]; then
-            model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama --override-family foo-test --override-version 1.0)
-          else
+          # if [[ ${{ inputs.obfuscate_model == true }} ]]; then
+          #   model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama --override-family foo-test --override-version 1.0)
+          # else
             model_name=$(python ./scripts/get_partner_model_name.py -m ${{env.BASE_NAME_QUANTIZED}} -p ollama)
-          fi
+          # fi
 
           echo "model_name: '$model_name'"
           echo "OLLAMA_MODEL_NAME=$model_name" >> $GITHUB_ENV
