@@ -264,8 +264,7 @@ jobs:
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
-          echo "⚠️ Skipping upload - speech encoder conversion not yet implemented"
-          # python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/mmproj-model-f16.gguf ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/mmproj-model-f16.gguf ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: separate-llm-from-speech-model
         run: |
@@ -290,8 +289,7 @@ jobs:
 
       - name: upload-speech-llm-bf16-gguf-to-target-repo
         run: |
-          echo "⚠️ Skipping upload - speech LLM conversion not yet implemented"
-          # python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
   # ===========================================================================
   # Job 3: Convert Granite 4+ speech models (direct conversion with --mmproj)

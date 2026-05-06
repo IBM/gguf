@@ -491,6 +491,13 @@
                     "repo_name":"granite-4.1-30b",
                     "default_quant": "q4_K_M",
                     "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-4.1-2b",
+                    "default_quant": "q8_0",
+                    "is_latest": true
                 }
             ]
         }
