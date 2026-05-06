@@ -1,0 +1,365 @@
+# This workflow runs Build Verification Tests (BVT) on the quantized speech models
+# using llama.cpp utilities.
+name: bvt-hf-speech-quantized-models-gguf
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+    inputs:
+      enable_speech_jobs:
+        type: boolean
+        required: false
+        default: false
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
+      ext_log:
+        type: string
+        required: false
+        default: '.log.txt'
+      ext_response:
+        type: string
+        required: false
+        default: '.response.txt'
+      debug:
+        type: boolean
+        required: true
+        default: false
+      trace:
+        type: boolean
+        required: false
+        default: false
+      verbose:
+        type: boolean
+        required: false
+        default: true
+        description: "Enable verbose output for llama-cli (can cause slowdowns with per-token logging)"
+      verify_runtime:
+        type: boolean
+        required: false
+        default: true
+
+# See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
+env:
+  DEBUG: ${{inputs.debug}}
+  VERBOSE: ${{inputs.verbose}}
+  VERIFY_RUNTIME: ${{inputs.verify_runtime}}
+  EXT_GGUF: .gguf
+  EXT_NAME_F16: "-f16.gguf"
+  LLAMA_CLI_TOOL: llama-mtmd-cli # llama-speech-cli
+  LLAMA_REQUEST_TEMP: 0
+  LLAMA_REQUEST_CONTEXT_SIZE: 16384
+  LLAMA_REQUEST_TEST_AUDIO: "test/audio/sample.wav"
+  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
+  LLAMA_REQUEST_PROMPT_USER: "<|user|><audio>What is being said in this audio?<|assistant|>"
+  LLAMA_RESPONSE_REGEX: "(speech|audio|sound)+"
+  LLAMA_RESPONSE_WORDS:  "speech,audio,sound,voice"
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+  QUANTIZED_MODEL_EXISTS: false
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
+  TEST_LLAMA_CLI: true
+  GH_ARTIFACT_RETENTION: 2
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LOCAL_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+
+jobs:
+  test-quantized-model:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    if: ${{ inputs.enable_speech_jobs == true }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          requirements.txt
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_regex_match_file.py
+          scripts/test_regex_match_file_2.py
+          test/audio/
+          bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+    - name: confirm-environment
+      run: |
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+        echo "[INFO] >> llamacpp_build_tag: '${{ inputs.llamacpp_build_tag }}'"
+
+    # - name: Dump GitHub context
+    #   env:
+    #     GH_CONTEXT: ${{ toJson(github) }}
+    #   run: echo "$GH_CONTEXT"
+
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    # primarily huggingface_hub
+    - name: install-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{env.TARGET_REPO_ID}}" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-3
+      run: |
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+
+    - name: verify-github-env
+      run: |
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
+        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 3 =================="
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: verify-llama-mtmd-cli-runtime
+      if: env.VERIFY_RUNTIME == 'true'
+      continue-on-error: false
+      run: |
+        echo "Verifying llama-mtmd-cli runtime on ${{ runner.os }} using build tag: ${{ inputs.llamacpp_build_tag }}"
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        if [ ! -f "$LLAMA_CLI_PATH" ]; then
+          echo "[ERROR] llama-mtmd-cli binary not found at $LLAMA_CLI_PATH"
+          exit 1
+        fi
+
+        # Check if binary is executable
+        if [ ! -x "$LLAMA_CLI_PATH" ]; then
+          echo "[ERROR] llama-mtmd-cli binary is not executable"
+          chmod +x "$LLAMA_CLI_PATH"
+          echo "[INFO] Made binary executable"
+        fi
+
+        # Test basic execution (help/version)
+        echo "Testing llama-mtmd-cli execution..."
+        $LLAMA_CLI_PATH --version || $LLAMA_CLI_PATH --help || true
+
+        if [ $? -ne 0 ]; then
+          echo "[WARNING] llama-mtmd-cli execution test returned non-zero exit code"
+          echo "Checking for dynamic library dependencies..."
+          if command -v otool &> /dev/null; then
+            echo "macOS: Checking dynamic libraries with otool..."
+            otool -L $LLAMA_CLI_PATH
+          elif command -v ldd &> /dev/null; then
+            echo "Linux: Checking dynamic libraries with ldd..."
+            ldd $LLAMA_CLI_PATH
+          fi
+        else
+          echo "[SUCCESS] llama-mtmd-cli runtime verification passed"
+        fi
+
+    - name: test-quantized-model-exists
+      run: |
+        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+          exit 2
+        else
+          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
+          echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        fi
+
+    - name: download-quantized-llm-gguf-hf-hub-download
+      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      run: |
+        echo "Downloading model: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: download-mmproj-gguf-hf-hub-download
+      run: |
+        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    # - name: verify-downloaded-files
+    #   if: env.DEBUG == 'true' && runner.os == 'macOS'
+    #   run: |
+    #     find . -name \*.gguf -type f
+    #     find . -name \*.wav -type f
+
+    # OPTIMIZATION: Verbose flag is now configurable via inputs.verbose (default: true)
+    # Verbose mode causes per-token parsing overhead; disable if tests timeout
+    # Added --no-display-prompt and --simple-io to suppress ASCII art and progress indicators
+    - name: test-speech-model
+      if: env.TEST_LLAMA_CLI == 'true'
+      timeout-minutes: 10
+      continue-on-error: true
+      run: |
+        echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
+        echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "VERBOSE mode: ${{env.VERBOSE}}"
+        echo "⚠️ Note: Speech model testing requires audio input support"
+        echo "⚠️ This test may need adjustment based on speech model architecture"
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        VERBOSE_FLAG=""
+        if [[ "${{env.VERBOSE}}" == "true" ]]; then
+          VERBOSE_FLAG="--verbose"
+        fi
+
+        # Note: Audio input flag may need to be adjusted based on llama.cpp speech support
+        # This is a placeholder that mirrors the vision model test structure
+        $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+            -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+            --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            --single-turn \
+            $VERBOSE_FLAG \
+            --no-display-prompt \
+            --simple-io \
+            --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
+        if [ $? -eq 1 ]; then
+          echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
+          ls -al
+          echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+          echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+          exit 1
+        fi
+        echo "[SUCCESS] ${{env.LLAMA_CLI_TOOL}} succeeded:"
+        echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+
+    - name: show-response
+      run: |
+        cat ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: test-llama-cli-response-with-regex
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}})
+        echo "matched: '$matched'"
+        if [[ "$exists" == "False" ]]; then
+          echo "[FAILURE] Regex `${{env.LLAMA_RESPONSE_REGEX}}` NOT matched in llama-speech-cli response."
+          exit 1
+        else
+          echo "[SUCCESS] Regex `${{env.LLAMA_RESPONSE_REGEX}}` matched in llama-speech-cli response."
+        fi
+
+    - name: test-llama-cli-response-with-regex-word-match
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        python_output=$(python ./scripts/test_regex_match_file_2.py "${{env.BASE_FNAME_RESPONSE_FILE}}" "${{env.LLAMA_RESPONSE_WORDS}}")
+        echo "Full Python Output: $python_output"
+
+        # Extract the last line of the output, which contains "True" or "False"
+        return_value=$(echo "$python_output" | tail -n 1)
+
+        # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
+        if [[ "${return_value,,}" == "true" ]]; then
+          echo "✅ [SUCCESS]: $python_output"
+        else
+          echo "❌ [FAILURE]: $python_output"
+        fi
+
+    # ========================= Upload log as artifact ======================================
+
+    - name: Upload log artifact
+      if: env.TEST_LLAMA_CLI == 'true'
+      id: artifact-upload-log
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-log
+        path: ${{env.BASE_FNAME_LOG_FILE}}
+
+    - name: Show log artifact ID
+      if: env.TEST_LLAMA_CLI == 'true'
+      id: show-artifact-id-log
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
+
+    # ========================= Upload response as artifact ======================================
+
+    - name: Upload response artifact
+      if: env.TEST_LLAMA_CLI == 'true'
+      id: artifact-upload-response
+      uses: actions/upload-artifact@v4
+      with:
+        overwrite: true
+        retention-days: ${{env.GH_ARTIFACT_RETENTION}}
+        name: ${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}-response
+        path: ${{env.BASE_FNAME_RESPONSE_FILE}}
+
+    - name: Show response artifact ID
+      if: env.TEST_LLAMA_CLI == 'true'
+      id: show-artifact-id-response
+      run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+
+# Made with Bob

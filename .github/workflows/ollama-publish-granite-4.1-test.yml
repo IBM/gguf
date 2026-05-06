@@ -17,6 +17,7 @@ env:
   ENABLE_OLLAMA_PUSH: true
   ENABLE_LANGUAGE_JOBS: true
   ENABLE_VISION_JOBS: false
+  ENABLE_SPEECH_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
@@ -51,6 +52,12 @@ env:
   SOURCE_VISION_QUANTIZATIONS: "[
       'None'
     ]"
+  SOURCE_SPEECH_REPOS: "[
+      'None'
+    ]"
+  SOURCE_SPEECH_QUANTIZATIONS: "[
+      'None'
+    ]"
   SOURCE_EMBEDDING_REPOS: "[
       'None'
     ]"
@@ -80,6 +87,7 @@ jobs:
       trace: ${{ steps.set-vars.outputs.trace }}
       enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
+      enable_speech_jobs: ${{ steps.set-vars.outputs.enable_speech_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
@@ -91,6 +99,8 @@ jobs:
       source_instruct_quantizations: "${{ steps.set-vars.outputs.source_instruct_quantizations }}"
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       source_vision_quantizations: "${{ steps.set-vars.outputs.source_vision_quantizations }}"
+      source_speech_repos: "${{ steps.set-vars.outputs.source_speech_repos }}"
+      source_speech_quantizations: "${{ steps.set-vars.outputs.source_speech_quantizations }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       source_guardian_quantizations: "${{ steps.set-vars.outputs.source_guardian_quantizations }}"
       source_embedding_repos: "${{ steps.set-vars.outputs.source_embedding_repos }}"
@@ -103,6 +113,7 @@ jobs:
       target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
       target_ollama_embedding_quants: "${{ steps.set-vars.outputs.target_ollama_embedding_quants }}"
       target_ollama_vision_quants: "${{ steps.set-vars.outputs.target_ollama_vision_quants }}"
+      target_ollama_speech_quants: "${{ steps.set-vars.outputs.target_ollama_speech_quants }}"
       target_ollama_docling_quants: "${{ steps.set-vars.outputs.target_ollama_docling_quants }}"
     env:
       ARRAY_SEP: "','"
@@ -152,6 +163,15 @@ jobs:
           TARGET_OLLAMA_VISION_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
           echo "TARGET_OLLAMA_VISION_QUANTS=$TARGET_OLLAMA_VISION_QUANTS" >> $GITHUB_ENV
 
+      - name: Append initial converted quant. to speech matrix
+        id: ollama-append-default-to-speech-quant-matrix
+        run: |
+          echo "Appending to SOURCE_SPEECH_QUANTIZATIONS: '${{ fromJSON(env.SOURCE_SPEECH_QUANTIZATIONS) }}'"
+          TEMP_ARRAY_STRING="${{ join(fromJSON(env.SOURCE_SPEECH_QUANTIZATIONS), env.ARRAY_SEP) }}"
+          echo "TEMP_ARRAY_STRING=$TEMP_ARRAY_STRING"
+          TARGET_OLLAMA_SPEECH_QUANTS="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT}}']"
+          echo "TARGET_OLLAMA_SPEECH_QUANTS=$TARGET_OLLAMA_SPEECH_QUANTS" >> $GITHUB_ENV
+
       - name: Append initial converted quant. to docling matrix
         id: ollama-append-default-to-docling-quant-matrix
         run: |
@@ -174,6 +194,7 @@ jobs:
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_speech_jobs=$ENABLE_SPEECH_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
@@ -183,6 +204,8 @@ jobs:
             echo "source_instruct_quantizations=$SOURCE_INSTRUCT_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_vision_quantizations=$SOURCE_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_speech_repos=$SOURCE_SPEECH_REPOS" >> "$GITHUB_OUTPUT"
+            echo "source_speech_quantizations=$SOURCE_SPEECH_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_quantizations=$SOURCE_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
@@ -195,6 +218,7 @@ jobs:
             echo "target_ollama_guardian_quants=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_embedding_quants=$TARGET_OLLAMA_EMBEDDING_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_vision_quants=$TARGET_OLLAMA_VISION_QUANTS" >> "$GITHUB_OUTPUT"
+            echo "target_ollama_speech_quants=$TARGET_OLLAMA_SPEECH_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_docling_quants=$TARGET_OLLAMA_DOCLING_QUANTS" >> "$GITHUB_OUTPUT"
 
       - name: Verify updated environment variables
@@ -212,6 +236,7 @@ jobs:
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
+            echo "enable_speech_jobs: ${{ steps.set-vars.outputs.enable_speech_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
@@ -219,6 +244,8 @@ jobs:
             echo "source_instruct_quantizations: '${{ steps.set-vars.outputs.source_instruct_quantizations }}'"
             echo "source_vision_repos: '${{ steps.set-vars.outputs.source_vision_repos }}'"
             echo "source_vision_quantizations: '${{ steps.set-vars.outputs.source_vision_quantizations }}'"
+            echo "source_speech_repos: '${{ steps.set-vars.outputs.source_speech_repos }}'"
+            echo "source_speech_quantizations: '${{ steps.set-vars.outputs.source_speech_quantizations }}'"
             echo "source_guardian_repos: '${{ steps.set-vars.outputs.source_guardian_repos }}'"
             echo "source_guardian_quantizations: '${{ steps.set-vars.outputs.source_guardian_quantizations }}'"
             echo "source_embedding_repos: '${{ steps.set-vars.outputs.source_embedding_repos }}'"
@@ -231,6 +258,7 @@ jobs:
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
             echo "target_ollama_embedding_quants: '${{ steps.set-vars.outputs.target_ollama_embedding_quants }}'"
             echo "target_ollama_vision_quants: '${{ steps.set-vars.outputs.target_ollama_vision_quants }}'"
+            echo "target_ollama_speech_quants: '${{ steps.set-vars.outputs.target_ollama_speech_quants }}'"
             echo "target_ollama_docling_quants: '${{ steps.set-vars.outputs.target_ollama_docling_quants }}'"
 
       # - name: List all environment variables
@@ -346,6 +374,33 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN }}
+
+  # ===========================================================================
+  # Ollama (speech)
+  # ===========================================================================
+  ollama-release-speech-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-ollama-create-push-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_speech_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
