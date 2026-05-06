@@ -14,9 +14,9 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
+  ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_SPEECH_JOBS: false
+  ENABLE_SPEECH_JOBS: true
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
@@ -110,12 +110,12 @@ env:
       'None'
     ]"
   SOURCE_SPEECH_REPOS: "[
-      'None'
+      'ibm-granite/granite-speech-4.1-2b'
     ]"
   # 'Q4_K_M',
   # 'Q8_0'
   TARGET_SPEECH_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
     ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
