@@ -66,10 +66,10 @@ env:
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_AUDIO: "test/audio/sample.wav"
-  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
-  LLAMA_REQUEST_PROMPT_USER: "<|user|><audio>What is being said in this audio?<|assistant|>"
-  LLAMA_RESPONSE_REGEX: "(speech|audio|sound)+"
-  LLAMA_RESPONSE_WORDS:  "speech,audio,sound,voice"
+  LLAMA_REQUEST_PROMPT_SYSTEM: ""
+  LLAMA_REQUEST_PROMPT_USER: "Please you transcribe the audio file into written format."
+  LLAMA_RESPONSE_REGEX: "(Timothy|sister|sleep|hearth)+"
+  LLAMA_RESPONSE_WORDS:  "Timothy,sister,sleep,hearth"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
@@ -273,17 +273,20 @@ jobs:
         fi
 
         # Note: Audio input flag may need to be adjusted based on llama.cpp speech support
-        # This is a placeholder that mirrors the vision model test structure
+        # -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+        # --single-turn \
+        # --no-display-prompt \
+        # --simple-io \
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
-            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
+            --audio test/audio/multilingual_sample.wav \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
-            --single-turn \
             $VERBOSE_FLAG \
-            --no-display-prompt \
-            --simple-io \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
+
+         -p "can you transcribe the speech into a written format?" --jinja --temp 0
+
         if [ $? -eq 1 ]; then
           echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
           ls -al
