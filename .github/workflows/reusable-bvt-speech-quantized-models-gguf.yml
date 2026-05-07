@@ -65,8 +65,8 @@ env:
   LLAMA_CLI_TOOL: llama-mtmd-cli
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
-  LLAMA_REQUEST_TEST_AUDIO: "test/audio/sample.wav"
-  # LLAMA_REQUEST_PROMPT_SYSTEM: ""s
+  LLAMA_REQUEST_TEST_AUDIO: "test/audio/multilingual_sample.wav"
+  # LLAMA_REQUEST_PROMPT_SYSTEM: ""
   LLAMA_REQUEST_PROMPT_USER: "Please you transcribe the audio file into written format."
   LLAMA_RESPONSE_REGEX: "(Timothy|sister|sleep|hearth)+"
   LLAMA_RESPONSE_WORDS:  "Timothy,sister,sleep,hearth"
@@ -103,7 +103,7 @@ jobs:
           scripts/hf_file_download.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
-          test/audio/
+          test/audio/${{env.LLAMA_REQUEST_TEST_AUDIO}}
           bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
         sparse-checkout-cone-mode: false
         fetch-depth: 1
