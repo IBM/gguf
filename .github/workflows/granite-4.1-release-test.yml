@@ -860,7 +860,7 @@ jobs:
   speech-convert-hf-to-bf16-gguf:
     needs: [ environment-setup, speech-create-hf-repos, speech-check-llama-cpp-support ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-speech-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-speech-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
