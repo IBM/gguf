@@ -830,7 +830,7 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
-  check-speech-llama-cpp-support:
+  speech-check-llama-cpp-support:
     needs: [ environment-setup, speech-create-hf-repos ]
     runs-on: ubuntu-latest
     strategy:
@@ -857,10 +857,10 @@ jobs:
             echo "   Conversion and quantization will proceed, but inference testing requires llama.cpp support"
           fi
 
-  convert-hf-speech-to-f16-gguf:
-    needs: [ environment-setup, speech-create-hf-repos, check-speech-llama-cpp-support ]
+  speech-convert-hf-to-bf16-gguf:
+    needs: [ environment-setup, speech-create-hf-repos, speech-check-llama-cpp-support ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-speech-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-speech-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -884,8 +884,8 @@ jobs:
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-speech-and-upload-gguf:
-    needs: [ environment-setup, convert-hf-speech-to-f16-gguf ]
-    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.convert-hf-speech-to-f16-gguf.result == 'success' || needs.convert-hf-speech-to-f16-gguf.result == 'skipped') }}
+    needs: [ environment-setup, speech-convert-hf-to-bf16-gguf ]
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.speech-convert-hf-to-bf16-gguf.result == 'success' || needs.speech-convert-hf-to-bf16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-speech-upload-gguf.yml@main
     permissions:
       contents: write

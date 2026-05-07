@@ -2,7 +2,7 @@
 # - Job 1: Detects Granite version and sets up shared variables
 # - Job 2: Converts all speech models using convert_hf_to_gguf.py with --mmproj flag
 
-name: convert-hf-speech-to-f16-gguf-reusable
+name: speech-convert-hf-to-bf16-gguf-reusable
 
 on:
   workflow_call:
