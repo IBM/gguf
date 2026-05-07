@@ -820,6 +820,7 @@ jobs:
     uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
       granite_family: "speech"
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repos: ${{ needs.environment-setup.outputs.source_speech_repos }}
