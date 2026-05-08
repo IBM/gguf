@@ -281,9 +281,6 @@ jobs:
             --jinja \
             $VERBOSE_FLAG \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
-
-         -p "can you transcribe the speech into a written format?" --jinja --temp 0
-
         if [ $? -eq 1 ]; then
           echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
           ls -al
