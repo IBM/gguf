@@ -68,7 +68,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - uses: actions/checkout@v6
       - name: Download log artifacts
         id: artifact-download-logs
         uses: actions/download-artifact@v4
