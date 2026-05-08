@@ -303,10 +303,10 @@ jobs:
         matched=$(python ./scripts/test_regex_match_file.py "${{env.LLAMA_RESPONSE_REGEX}}" ${{env.BASE_FNAME_RESPONSE_FILE}})
         echo "matched: '$matched'"
         if [[ "$matched" == "False" ]]; then
-          echo "[FAILURE] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` NOT matched in llama-speech-cli response."
+          echo "❌ [FAILURE] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` NOT matched in llama-speech-cli response."
           exit 1
         else
-          echo "[SUCCESS] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` matched in llama-speech-cli response."
+          echo "✅ [SUCCESS] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` matched in llama-speech-cli response."
         fi
 
     - name: test-llama-cli-response-with-regex-word-match
