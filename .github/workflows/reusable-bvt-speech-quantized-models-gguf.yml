@@ -69,8 +69,8 @@ env:
   TEST_AUDIO_FILE: "multilingual_sample.wav"
   # LLAMA_REQUEST_PROMPT_SYSTEM: ""
   LLAMA_REQUEST_PROMPT_USER: "Please you transcribe the audio file into written format."
-  LLAMA_RESPONSE_REGEX: "(Timothy|sister|sleep|hearth)+"
-  LLAMA_RESPONSE_WORDS:  "Timothy,sister,sleep,hearth"
+  LLAMA_RESPONSE_REGEX: "(timothy|interfere|hearth|pêcheur)+"
+  LLAMA_RESPONSE_WORDS:  "timothy,interfere,hearth,pêcheur"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
   QUANTIZED_MODEL_EXISTS: false
