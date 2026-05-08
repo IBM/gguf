@@ -104,9 +104,9 @@ jobs:
           scripts/hf_file_download.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
-          test/audio/
+          test/audio
           bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
-        sparse-checkout-cone-mode: false
+        sparse-checkout-cone-mode: true
         fetch-depth: 1
     - name: confirm-environment
       run: |
