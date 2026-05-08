@@ -16,6 +16,7 @@
 test/*
 
 # Test directories - include specific subdirectories
+!test/audio/
 !test/images/
 !test/messages/
 !test/prompts/
