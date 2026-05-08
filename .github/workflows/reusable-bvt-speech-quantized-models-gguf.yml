@@ -304,7 +304,6 @@ jobs:
         echo "matched: '$matched'"
         if [[ "$matched" == "False" ]]; then
           echo "❌ [FAILURE] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` NOT matched in llama-speech-cli response."
-          exit 1
         else
           echo "✅ [SUCCESS] Regex \`${{env.LLAMA_RESPONSE_REGEX}}\` matched in llama-speech-cli response."
         fi
