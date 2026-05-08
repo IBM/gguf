@@ -49,4 +49,3 @@ echo ""
 echo "=== Test Complete (exit code: $exit_code) ==="
 exit $exit_code
 
-# Made with Bob

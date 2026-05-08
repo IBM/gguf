@@ -224,4 +224,3 @@ jobs:
         echo "Min Score: ${{env.MIN_SCORE}}"
         echo "=========================================="
 
-# Made with Bob

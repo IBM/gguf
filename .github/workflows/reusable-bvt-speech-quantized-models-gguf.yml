@@ -360,4 +360,3 @@ jobs:
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
 
-# Made with Bob

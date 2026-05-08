@@ -203,6 +203,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             convert_hf_to_gguf.py
+            convert_lora_to_gguf.py
             requirements/requirements-convert_hf_to_gguf.txt
             requirements/requirements-convert_legacy_llama.txt
             gguf-py/gguf
@@ -265,4 +266,36 @@ jobs:
         run: |
           python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
-# Made with Bob
+      - name: check-for-lora-adapter
+        id: check-lora
+        run: |
+          # Check if adapter_config.json exists in the model directory
+          if [ -f "${{ needs.detect-and-setup.outputs.local_model_path }}/adapter_config.json" ]; then
+            echo "✅ LoRA adapter found - will convert"
+            echo "has_lora=true" >> $GITHUB_OUTPUT
+          else
+            echo "ℹ️  No LoRA adapter found - skipping LoRA conversion"
+            echo "has_lora=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: convert-lora-adapter-to-gguf-bf16
+        if: steps.check-lora.outputs.has_lora == 'true'
+        run: |
+          echo "Converting LoRA adapter to GGUF format with bf16 quantization"
+          LORA_FNAME="${{ needs.detect-and-setup.outputs.repo_name }}-lora${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
+          echo "lora_filename=$LORA_FNAME"
+
+          # Convert LoRA adapter using convert_lora_to_gguf.py
+          python ./llama.cpp/convert_lora_to_gguf.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile "$LORA_FNAME" \
+            --outtype ${{env.DEF_PRECISION}} \
+            --verbose
+
+          ls -al *lora*.gguf
+
+      - name: upload-lora-adapter-bf16-gguf-to-target-repo
+        if: steps.check-lora.outputs.has_lora == 'true'
+        run: |
+          LORA_FNAME="${{ needs.detect-and-setup.outputs.repo_name }}-lora${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$LORA_FNAME" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
