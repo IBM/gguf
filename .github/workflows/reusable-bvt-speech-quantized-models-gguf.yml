@@ -319,7 +319,9 @@ jobs:
         return_value=$(echo "$python_output" | tail -n 1)
 
         # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
-        if [[ "${return_value,,}" == "true" ]]; then
+        # Convert to lowercase using tr for portability across bash versions
+        return_value_lower=$(echo "$return_value" | tr '[:upper:]' '[:lower:]')
+        if [[ "$return_value_lower" == "true" ]]; then
           echo "✅ [SUCCESS]: $python_output"
         else
           echo "❌ [FAILURE]: $python_output"
