@@ -1333,6 +1333,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
@@ -1356,6 +1357,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
