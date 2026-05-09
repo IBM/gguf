@@ -945,6 +945,7 @@ jobs:
     with:
       granite_family: "speech"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
