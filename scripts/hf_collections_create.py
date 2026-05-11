@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-import requests
 
 from huggingface_hub import list_collections, create_collection, add_collection_item, Collection, CollectionItem
 from huggingface_hub.errors import HfHubHTTPError
@@ -134,14 +133,8 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
         )
     except HfHubHTTPError as exc:
         print(f"HfHubHTTPError: {exc.server_message}, item_id: '{repo_id}'")
-    except requests.exceptions.HTTPError as exc:
-        print(f"HTTPError: {exc}")
-    except requests.exceptions.ConnectionError as exc:
-        print(f"ConnectionError: {exc}")
-    except requests.exceptions.Timeout as exc:
-        print(f"Timeout: {exc}")
-    except requests.exceptions.RequestException as exc:
-        print(f"RequestException: {exc}")
+    except Exception as exc:
+        print(f"Exception: {exc}")
     else:
         return collection
     return None
