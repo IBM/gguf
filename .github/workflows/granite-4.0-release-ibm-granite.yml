@@ -823,6 +823,8 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
   # ===========================================================================
   # Granite Speech
   # ===========================================================================
@@ -959,8 +961,6 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
-
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # ===========================================================================
