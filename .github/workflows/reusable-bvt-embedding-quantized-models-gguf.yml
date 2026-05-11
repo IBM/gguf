@@ -393,7 +393,7 @@ jobs:
 
     - name: Upload log artifact
       id: artifact-upload-log
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -408,7 +408,7 @@ jobs:
 
     - name: Upload raw response artifact
       id: artifact-upload-raw-response
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -423,7 +423,7 @@ jobs:
 
     - name: Upload processed response artifact
       id: artifact-upload-response
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}

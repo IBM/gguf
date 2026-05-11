@@ -364,7 +364,7 @@ jobs:
     # Upload baseline results as GitHub artifact
     - name: upload-baseline-results-artifact
       if: ${{ inputs.enable_embedding_jobs == true && env.BASELINE_RESULTS_FILE != '' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ env.REPO_NAME }}-baseline-results
         path: ${{ env.BASELINE_RESULTS_FILE }}
