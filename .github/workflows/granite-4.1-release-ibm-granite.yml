@@ -330,6 +330,8 @@ jobs:
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "enable_uat=$ENABLE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
+            echo "enable_convert_step=$ENABLE_CONVERT_STEP" >> "$GITHUB_OUTPUT"
+            echo "enable_quantize_step=$ENABLE_QUANTIZE_STEP" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
