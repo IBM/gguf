@@ -194,9 +194,10 @@ Typically, this model category includes "base" and "instruct" models.
 
 #### Speech
 
+<!-- | ibm-granite/granite-speech-3.3-8b (3.3) | WhisperForConditionalGeneration | Whisper-based Speech Recognition | 5.8.0 | b9045 | -->
+
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-speech-3.3-8b (3.3) | WhisperForConditionalGeneration | Whisper-based Speech Recognition | 5.8.0 | b9045 |
 | ibm-granite/granite-4.0-1b-speech (4.0) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
 | ibm-granite/granite-speech-4.1-2b (4.1) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
 
