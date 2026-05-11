@@ -109,10 +109,12 @@ env:
   TARGET_VISION_QUANTIZATIONS: "[
       'None'
     ]"
+  # 'ibm-granite/granite-speech-4.1-2b'
   SOURCE_SPEECH_REPOS: "[
       'ibm-granite/granite-speech-4.1-2b'
     ]"
   # 'Q4_K_M',
+  # 'Q6_K',
   # 'Q8_0'
   TARGET_SPEECH_QUANTIZATIONS: "[
       'Q4_K_M',

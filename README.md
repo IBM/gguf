@@ -9,6 +9,7 @@ This repository provides an automated CI/CD process to convert, test and deploy 
   - [Language](#language)
   - [Guardian](#guardian)
   - [Vision](#vision)
+  - [Speech](#speech)
   - [Embedding](#embedding-dense)
   - [Docling](#docling)
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
@@ -48,13 +49,14 @@ Select quantizations of a model will only be made available when:
 
 The following table shows which model types are supported by each Granite release workflow:
 
-| Workflow Version | Language | Guardian | Vision | Embedding | Docling |
-|------------------|:--------:|:--------:|:------:|:---------:|:-------:|
-| **Granite 3.0** | ✅ | ✅ | — | — | — |
-| **Granite 3.1** | ✅ | ✅ | — | — | — |
-| **Granite 3.2** | ✅ | ✅ | ✅ | ✅ | — |
-| **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Granite 4.0** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Workflow Version | Language | Guardian | Vision | Speech | Embedding | Docling |
+|------------------|:--------:|:--------:|:------:|:------:|:---------:|:-------:|
+| **Granite 3.0** | ✅ | ✅ | — | — | — | — |
+| **Granite 3.1** | ✅ | ✅ | — | — | — | — |
+| **Granite 3.2** | ✅ | ✅ | ✅ | — | ✅ | — |
+| **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Granite 4.0** | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| **Granite 4.1** | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 **Legend:**
 - ✅ = Workflow supports this model type with full CI/CD pipeline
@@ -64,8 +66,9 @@ The following table shows which model types are supported by each Granite releas
 **Key Features by Version:**
 - **Granite 3.0/3.1**: Basic language and guardian model support
 - **Granite 3.2**: Added vision and embedding model support
-- **Granite 3.3**: Added docling models, RAG testing for embeddings, llama.cpp validation for vision
-- **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, vision architecture pending llama.cpp support
+- **Granite 3.3**: Added docling models, speech models, RAG testing for embeddings, llama.cpp validation for vision
+- **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, speech model support, vision architecture pending llama.cpp support
+- **Granite 4.1**: Continued language and speech model support with updated architectures
 
 **Workflow Files:**
 - Test workflows: `.github/workflows/granite-{version}-release-test.yml`
@@ -188,6 +191,18 @@ Typically, this model category includes "base" and "instruct" models.
 **\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 **Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
+
+#### Speech
+
+| Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
+| --- | --- | --- | --- | --- |
+| ibm-granite/granite-speech-3.3-8b (3.3) | WhisperForConditionalGeneration | Whisper-based Speech Recognition | 5.8.0 | b9045 |
+| ibm-granite/granite-4.0-1b-speech (4.0) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
+| ibm-granite/granite-speech-4.1-2b (4.1) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
+
+- Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
+
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 #### Docling
 
@@ -449,6 +464,7 @@ env:
   ENABLE_VISION_JOBS: false        # Process vision models
   ENABLE_GUARDIAN_JOBS: false      # Process guardian models
   ENABLE_EMBEDDING_JOBS: false     # Process embedding models
+  ENABLE_SPEECH_JOBS: false        # Process speech models
   ENABLE_DOCLING_JOBS: true        # Process docling models
 ```
 
@@ -532,6 +548,19 @@ Each model family has two environment variables:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
       'Q8_0',
       'F16'
+    ]"
+```
+
+**Speech Models**
+
+```yaml
+  SOURCE_SPEECH_REPOS: "[
+      'ibm-granite/granite-speech-4.1-2b',
+    ]"
+  TARGET_SPEECH_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
 ```
 
