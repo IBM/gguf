@@ -930,6 +930,7 @@ jobs:
 
   speech-bvt-quantized-gguf-models:
     needs: [ environment-setup, quantize-speech-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-speech-and-upload-gguf.result == 'success' || needs.quantize-speech-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-speech-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -1349,6 +1350,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
@@ -1372,6 +1374,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
