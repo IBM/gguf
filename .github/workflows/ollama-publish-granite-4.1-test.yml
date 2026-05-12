@@ -52,11 +52,16 @@ env:
   SOURCE_VISION_QUANTIZATIONS: "[
       'None'
     ]"
+  # 'ibm-granite/granite-speech-4.1-2b'
+  # `ibm-granite/granite-speech-4.1-2b-plus`
   SOURCE_SPEECH_REPOS: "[
-      'None'
+      'ibm-granite/granite-speech-4.1-2b-plus'
     ]"
   SOURCE_SPEECH_QUANTIZATIONS: "[
-      'None'
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
   SOURCE_EMBEDDING_REPOS: "[
       'None'
