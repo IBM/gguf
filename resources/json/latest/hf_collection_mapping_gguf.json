@@ -519,6 +519,13 @@
                     "repo_name":"granite-speech-3.3-8b",
                     "default_quant": "q8_0",
                     "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-4.1-2b-plus",
+                    "default_quant": "q8_0",
+                    "is_latest": true
                 }
             ]
         }
