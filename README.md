@@ -154,6 +154,7 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
 | ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
 | ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.52.4, 4.57.3 | b6050, b6569 |
+| ibm-granite/granite-guardian-4.1-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
