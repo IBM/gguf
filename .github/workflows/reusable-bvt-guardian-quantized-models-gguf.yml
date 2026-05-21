@@ -59,9 +59,10 @@ env:
   EXT_ENC: .enc
   # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMA_CLI_TOOL: llama-cli
+  LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
   LLAMA_REQUEST_PROMPT_UNENCODED: test/prompts/granite/guardian/guardian_harm.txt
-  LLAMA_REQUEST_TEMP: 0.0 # Note: MUST be zero (float)
-  LLAMA_REQUEST_NUM_GPU_LAYERS: 0  # Note: in unknown "runners" we need to make sure GPU-spec. functions are not assumed.
+  LLAMA_CLI_TEMP: 0.0 # Note: MUST be zero (float)
+  # LLAMA_REQUEST_NUM_GPU_LAYERS: 0  # Note: in unknown "runners" we need to make sure GPU-spec. functions are not assumed.
 
   # TODO: do we need N?
   LLAMA_REQUEST_N_PREDICT: 128
@@ -86,7 +87,7 @@ env:
 jobs:
   test-quantized-model:
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
@@ -217,7 +218,7 @@ jobs:
        cat ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}}
 
     - name: test-granite-guardian-risk-harm
-      timeout-minutes: 45
+      timeout-minutes: 40
       continue-on-error: false
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
@@ -231,12 +232,11 @@ jobs:
 
         ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+          -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-          --n-gpu-layers ${{ env.LLAMA_REQUEST_NUM_GPU_LAYERS }} \
           --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
-          --temp ${{env.LLAMA_REQUEST_TEMP}} \
+          --temp ${{env.LLAMA_CLI_TEMP}} \
           $VERBOSE_FLAG \
-          -no-cnv \
           --single-turn \
           --no-display-prompt \
           --simple-io \
