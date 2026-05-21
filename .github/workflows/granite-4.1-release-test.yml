@@ -16,8 +16,8 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_SPEECH_JOBS: true
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_SPEECH_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
 
@@ -64,7 +64,7 @@ env:
   LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
   LLAMACPP_BUILD_TAG_VISION: b8100 # b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_SPEECH: b9045
-  LLAMACPP_BUILD_TAG_GUARDIAN: b6569
+  LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
   LLAMACPP_BUILD_TAG_DOCLING: b6569
 
@@ -96,11 +96,19 @@ env:
       'Q4_K_M',
       'Q8_0'
     ]"
+  # ibm-granite/granite-guardian-4.1-8b
   SOURCE_GUARDIAN_REPOS: "[
-      'None'
+      'ibm-granite/granite-guardian-4.1-8b'
     ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-      'None'
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
   SOURCE_VISION_REPOS: "[
       'None'
