@@ -45,10 +45,16 @@ on:
         type: boolean
         required: false
         default: false
+      verbose:
+        type: boolean
+        required: false
+        default: false
+        description: "Enable verbose output for llama-cli (can cause slowdowns with per-token logging)"
 
 # See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
+  VERBOSE: ${{inputs.verbose}}
   EXT_GGUF: .gguf
   EXT_ENC: .enc
   # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
@@ -211,32 +217,43 @@ jobs:
        cat ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}}
 
     - name: test-granite-guardian-risk-harm
-      timeout-minutes: 30
+      timeout-minutes: 45
       continue-on-error: false
       run: |
         echo "invoking llama-cli from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "VERBOSE mode: ${{env.VERBOSE}}"
+
+        VERBOSE_FLAG=""
+        if [[ "${{env.VERBOSE}}" == "true" ]]; then
+          VERBOSE_FLAG="--verbose"
+        fi
+
         ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
           -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
           -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
           --n-gpu-layers ${{ env.LLAMA_REQUEST_NUM_GPU_LAYERS }} \
           --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
           --temp ${{env.LLAMA_REQUEST_TEMP}} \
-          --verbose \
+          $VERBOSE_FLAG \
           -no-cnv \
           --single-turn \
+          --no-display-prompt \
+          --simple-io \
           --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
-        if [ $? -eq 1 ]; then
-          echo "[ERROR] llama-cli failed:"
+
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "❌ [ERROR] llama-cli failed with exit code $EXIT_CODE:"
           ls -al
-          echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-          echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+          echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+          echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
           exit 1
         fi
-        echo "[SUCCESS] llama-cli succeeded:"
-        echo "${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
-        echo "${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
-        echo "${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        echo "✅ [SUCCESS] llama-cli succeeded:"
+        echo "llama-cli: ${{env.BASE_FNAME_LOG_FILE}}: '$(cat ${{env.BASE_FNAME_LOG_FILE}})'"
+        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
+        echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'
