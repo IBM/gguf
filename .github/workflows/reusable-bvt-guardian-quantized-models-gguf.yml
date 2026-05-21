@@ -255,6 +255,13 @@ jobs:
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}}: '$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
         echo "llama-cli: ${{env.BASE_FNAME_RESPONSE_FILE}} ($(wc -w ${{env.BASE_FNAME_RESPONSE_FILE}} | awk '{print $1}') words):\n'$(cat ${{env.BASE_FNAME_RESPONSE_FILE}})'"
 
+    # ========================= llama-cli response validation ======================================
+
+    - name: show-response
+      if: env.TEST_LLAMA_CLI == 'true'
+      run: |
+        cat ${{env.BASE_FNAME_RESPONSE_FILE}}
+
     - name: test-llama-cli-response-with-regex
       if: env.TEST_LLAMA_CLI == 'true'
       run: |
