@@ -1059,6 +1059,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+      use_jinja_template: true
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
