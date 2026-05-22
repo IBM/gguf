@@ -69,7 +69,10 @@ env:
   LLAMACPP_BUILD_TAG_DOCLING: b6569
 
   # Enable appending the converted format (BF16/F16) to BVT test matrix
-  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: false
+
+  # Enable/disable BF16 for specific model types in BVT test matrix
+  ENABLE_BVT_GUARDIAN_BF16: true
 
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
@@ -420,11 +423,16 @@ jobs:
               echo "target_speech_quantizations_bvt=$TARGET_SPEECH_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
 
               # Guardian models (BF16)
-              echo "Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
-              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
-              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
-                TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+              if [ "$ENABLE_BVT_GUARDIAN_BF16" = "true" ]; then
+                echo "✅ Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
+                TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+                if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+                else
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+                fi
               else
+                echo "⏭️  Skipping BF16 append for Guardian models (ENABLE_BVT_GUARDIAN_BF16=false)"
                 TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
               fi
               echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
