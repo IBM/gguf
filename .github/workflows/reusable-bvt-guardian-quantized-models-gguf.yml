@@ -262,7 +262,8 @@ jobs:
             -p '${{env.JINJA_PROMPT_PREFIX}}${{env.JINJA_PROMPT_TEXT}}' \
             --temp ${{env.LLAMA_CLI_TEMP}} \
             -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
-            $VERBOSE_FLAG \
+            -ngl 0 \
+            --verbose \
             --single-turn \
             --no-display-prompt \
             --simple-io \
@@ -272,11 +273,12 @@ jobs:
 
           ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
             -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+            -ngl 0 \
             -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
             -n ${{env.LLAMA_REQUEST_N_PREDICT}} \
             --file ${{env.LLAMA_REQUEST_PROMPT_UNENCODED}}${{env.EXT_ENC}} \
             --temp ${{env.LLAMA_CLI_TEMP}} \
-            $VERBOSE_FLAG \
+            --verbose \
             --single-turn \
             --no-display-prompt \
             --simple-io \
