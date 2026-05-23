@@ -16,8 +16,8 @@ env:
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
-  ENABLE_SPEECH_JOBS: true
-  ENABLE_GUARDIAN_JOBS: false
+  ENABLE_SPEECH_JOBS: false
+  ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
 
@@ -71,6 +71,9 @@ env:
   # Enable appending the converted format (BF16/F16) to BVT test matrix
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
+  # Enable/disable BF16 for specific model types in BVT test matrix
+  ENABLE_BVT_GUARDIAN_BF16: true
+
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
   MAX_WORKERS: 1
@@ -100,8 +103,9 @@ env:
       'Q6_K',
       'Q8_0'
     ]"
+  # ibm-granite/granite-guardian-4.1-8b
   SOURCE_GUARDIAN_REPOS: "[
-      'None'
+      'ibm-granite/granite-guardian-4.1-8b'
     ]"
   TARGET_GUARDIAN_QUANTIZATIONS: "[
       'None'
@@ -413,11 +417,16 @@ jobs:
               echo "target_speech_quantizations_bvt=$TARGET_SPEECH_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
 
               # Guardian models (BF16)
-              echo "Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
-              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
-              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
-                TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+              if [ "$ENABLE_BVT_GUARDIAN_BF16" = "true" ]; then
+                echo "✅ Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
+                TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+                if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+                else
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+                fi
               else
+                echo "⏭️  Skipping BF16 append for Guardian models (ENABLE_BVT_GUARDIAN_BF16=false)"
                 TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
               fi
               echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
@@ -1051,6 +1060,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+      use_jinja_template: true
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 

@@ -1,5 +1,5 @@
 # This workflow pulls quantized models from HF and pushes them to IBM datastores.
-# Currently the workflow is designed to push the model up to Data Model Factory using the dmf cli. 
+# Currently the workflow is designed to push the model up to Data Model Factory using the dmf cli.
 name: push-models-to-dmf
 
 on:
@@ -119,7 +119,7 @@ jobs:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
@@ -195,4 +195,3 @@ jobs:
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
 
-    

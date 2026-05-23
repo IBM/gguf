@@ -65,7 +65,7 @@ cmake --build build --config Release
 **Runner:** `ubuntu-latest`
 
 1. **Checkout repository**
-   - Use `actions/checkout@v4`
+   - Use `actions/checkout@v6`
 
 2. **Install dependencies**
    - Install build essentials and CMake

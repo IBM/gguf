@@ -69,7 +69,7 @@ env:
   LLAMACPP_BUILD_TAG_DOCLING: b6569
 
   # Enable appending the converted format (BF16/F16) to BVT test matrix
-  ENABLE_BVT_TEST_CONVERTED_FORMAT: false
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
   # Enable/disable BF16 for specific model types in BVT test matrix
   ENABLE_BVT_GUARDIAN_BF16: true
@@ -108,8 +108,11 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-      'Q4_K_M',
-      'Q5_K_M',
+      'Q2_K',
+      'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+      'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+      'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+      'Q6_K',
       'Q8_0'
     ]"
   SOURCE_VISION_REPOS: "[
