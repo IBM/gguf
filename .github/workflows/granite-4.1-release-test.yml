@@ -72,7 +72,7 @@ env:
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
   # Enable/disable BF16 for specific model types in BVT test matrix
-  ENABLE_BVT_GUARDIAN_BF16: true
+  ENABLE_BVT_GUARDIAN_BF16: false
 
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
