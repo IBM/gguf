@@ -330,7 +330,7 @@ jobs:
     # ========================= Upload log as artifact ======================================
 
     - name: Upload log artifact
-      if: env.TEST_LLAMA_CLI == 'true'
+      if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: artifact-upload-log
       uses: actions/upload-artifact@v5
       with:
@@ -340,13 +340,14 @@ jobs:
         path: ${{env.BASE_FNAME_LOG_FILE}}
 
     - name: Show log artifact ID
+      if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: show-artifact-id-log
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-log.outputs.artifact-id }}'
 
     # ========================= Upload response as artifact ======================================
 
     - name: Upload response artifact
-      if: env.TEST_LLAMA_CLI == 'true'
+      if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: artifact-upload-response
       uses: actions/upload-artifact@v5
       with:
@@ -356,5 +357,6 @@ jobs:
         path: ${{env.BASE_FNAME_RESPONSE_FILE}}
 
     - name: Show response artifact ID
+      if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
