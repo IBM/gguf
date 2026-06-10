@@ -61,7 +61,7 @@ A key improvement in Granite Guardian 4.1 is stronger support for user-defined j
 
 #### Intended Use
 
-
+The guardian model must be used strictly for the prescribed scoring mode, which generates yes/no outputs based on the specified template. Any deviation from this intended use may lead to unexpected, potentially unsafe, or harmful outputs. The model may also be prone to such behavior via adversarial attacks.
 
 ---
 
