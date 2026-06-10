@@ -17,6 +17,7 @@ env:
   ENABLE_OLLAMA_PUSH: true
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
+  ENABLE_SPEECH_JOBS: false
   ENABLE_GUARDIAN_JOBS: true
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
@@ -68,6 +69,17 @@ env:
     ]"
   SOURCE_VISION_QUANTIZATIONS: "[
       'None'
+    ]"
+  # 'ibm-granite/granite-speech-4.1-2b'
+  # `ibm-granite/granite-speech-4.1-2b-plus`
+  SOURCE_SPEECH_REPOS: "[
+      'ibm-granite/granite-speech-4.1-2b-plus'
+    ]"
+  SOURCE_SPEECH_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
   SOURCE_EMBEDDING_REPOS: "[
       'None'
@@ -364,6 +376,33 @@ jobs:
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
       enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
+      source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
+      source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
+      target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
+      repo_id: ${{ matrix.repo_id }}
+      quantization: ${{ matrix.quantization }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+      ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
+
+  # ===========================================================================
+  # Ollama (speech)
+  # ===========================================================================
+  ollama-release-speech-models:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-ollama-create-push-model.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_ollama_speech_quants) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
