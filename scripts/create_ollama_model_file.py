@@ -119,7 +119,7 @@ if __name__ == "__main__":
             if args.verbose:
                 print(f"Adding --system-file='{args.system_file}' to Modelfile...")
 
-            if args.system_file is not None:
+            if args.system_file is not None and args.system_file != "":
                 filename = args.metadata_path + "/" + args.system_file
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
@@ -130,6 +130,10 @@ if __name__ == "__main__":
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
                 elif args.verbose:
                     print(f"[WARNING] --system-file='{args.system_file}' does not exist")
+            else:
+                # Write empty SYSTEM directive when no system file is provided
+                # modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\n")
+                print(f"[WARNING] --system-file='{args.system_file}' does not exist")
 
             if args.verbose:
                 print(f"Adding --params-file='{args.params_file}' to Modelfile...")
