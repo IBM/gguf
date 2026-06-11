@@ -253,7 +253,6 @@ jobs:
 
     # OPTIMIZATION: Verbose flag is now configurable via inputs.verbose (default: true)
     # Verbose mode causes per-token parsing overhead; disable if tests timeout
-    # Added --no-display-prompt and --simple-io to suppress ASCII art and progress indicators
     - name: test-vision-model
       if: env.TEST_LLAMA_CLI == 'true'
       timeout-minutes: 10
@@ -263,23 +262,22 @@ jobs:
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         echo "VERBOSE mode: ${{env.VERBOSE}}"
-        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
 
         VERBOSE_FLAG=""
         if [[ "${{env.VERBOSE}}" == "true" ]]; then
           VERBOSE_FLAG="--verbose"
         fi
 
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        # Note: Vision input uses --image flag
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
-            --single-turn \
+            --jinja \
             $VERBOSE_FLAG \
-            --no-display-prompt \
-            --simple-io \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
@@ -319,10 +317,13 @@ jobs:
         return_value=$(echo "$python_output" | tail -n 1)
 
         # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
-        if [[ "${return_value,,}" == "true" ]]; then
+        # Convert to lowercase using tr for portability across bash versions
+        return_value_lower=$(echo "$return_value" | tr '[:upper:]' '[:lower:]')
+        if [[ "$return_value_lower" == "true" ]]; then
           echo "✅ [SUCCESS]: $python_output"
         else
           echo "❌ [FAILURE]: $python_output"
+          exit 1
         fi
 
     # ========================= Upload log as artifact ======================================
