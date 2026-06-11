@@ -32,7 +32,13 @@ ollama run ibm/granite4.1-guardian:8b-q8_0
 
 #### Enable Thinking and setting criteria
 
-Use the flag optional boolean flag `--think` with value set to `true`.  In addition, the specific `system` criteria type can be specified with the `/set` command once the client is started with the supported values listed above (e.g.,  `harm`, `violence`, `my custom criteria`, etc.).
+Use the flag optional boolean flag `--think` with value set to `true`. For example:
+
+```bash
+ollama run ibm/granite4.1-guardian:8b-q4_K_M --think=false
+```
+
+In addition, the specific `system` criteria type can be specified within the chat session using the `/set` command, once the client is started, with the built-in criteria values listed below (e.g.,  `harm`, `violence`, `"my custom criteria"`, etc.).
 
 ##### List of Built-in Criteria {criteria_text}
 
@@ -55,7 +61,7 @@ The model is also equipped to detect hallucinations in agentic workflows:
 
 - **Function Calling Hallucination** (`function_call`): Function call hallucination occurs when a text includes function calls that either don't adhere to the correct format defined by the available tools or are inconsistent with the query's requirements. This risk arises from function calls containing incorrect argument names, values, or types that clash with the tool definitions or the query itself. Common examples include calling functions not present in the tool definitions, providing invalid argument values, or attempting to use parameters that don't exist.
 
-**Bring Your Own Criteria (BYOC)** (`add your custom criteria here`)
+**Bring Your Own Criteria (BYOC)** (`"add your custom criteria here"`)
 
 A key improvement in Granite Guardian 4.1 is stronger support for user-defined judging criteria. Beyond the pre-baked safety and hallucination criteria, users can specify arbitrary evaluation rules, such as checking whether a response follows specific formatting instructions, adheres to domain constraints, or satisfies complex multi-part requirements. The model is trained to faithfully apply these custom criteria and return calibrated yes/no judgements.
 
