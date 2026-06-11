@@ -1,17 +1,13 @@
 # Granite 4.0 3B Vision
 
 **Model Summary:**
-Granite-4.0-3B-Vision is a vision-language model (VLM) designed for enterprise-grade
-document data extraction. It focuses on specialized, complex extraction tasks that
-ultracompact models often struggle with:
+Granite-4.0-3B-Vision is a vision-language model (VLM) designed for enterprise-grade document data extraction. It focuses on specialized, complex extraction tasks that ultracompact models often struggle with:
 
 - **Chart extraction:** Converting charts into structured, machine-readable formats (Chart2CSV, Chart2Summary, and Chart2Code)
 - **Table extraction:** Accurately extracting tables with complex layouts from document images to JSON, HTML, or OTSL
 - **Semantic Key-Value Pair (KVP) extraction:** Extracting values based on key names and descriptions across diverse document layouts
 
-The model is delivered as a LoRA adapter on top of [Granite 4.0 Micro](https://huggingface.co/ibm-granite/granite-4.0-micro), with a 3.5B base LLM and 0.5B LoRA adapters. This enables a single
-deployment to support both multimodal document understanding and text-only workloads —
-the base model handles text-only requests without loading the adapter. See [Model Architecture](#model-architecture) for details.
+The model is delivered as a LoRA adapter on top of [Granite 4.0 Micro](https://huggingface.co/ibm-granite/granite-4.0-micro), with a 3.5B base LLM and 0.5B LoRA adapters. This enables a single deployment to support both multimodal document understanding and text-only workloads where the base model handles text-only requests without loading the adapter. See [Model Architecture](#model-architecture) for details.
 
 The methodology and data (ChartNet) used for this model are described in the paper [ChartNet: A Million-Scale, High-Quality Multimodal Dataset for Robust Chart Understanding](https://huggingface.co/papers/2603.27064).
 
@@ -56,7 +52,7 @@ The models are evaluated using LLM-as-a-judge (GPT4o) comparing the model predic
 We report the average scores 0-100 on chart2csv and chart2summary extraction tasks.
 
 <div style="display: flex; gap: 10px;">
-  <img src="charts.jpg" width="100%">
+  <img src="https://cas-bridge.xethub.hf.co/xet-bridge-us/69a722705d3b2011df11278e/d45d29983a4d207b0bd0a44bd675e39eae21749c22eb0e3ee73b8c55307bf9b2?Expires=1781187826&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYXMtYnJpZGdlLnhldGh1Yi5oZi5jby94ZXQtYnJpZGdlLXVzLzY5YTcyMjcwNWQzYjIwMTFkZjExMjc4ZS9kNDVkMjk5ODNhNGQyMDdiMGJkMGE0NGJkNjc1ZTM5ZWFlMjE3NDljMjJlYjBlM2VlNzNiOGM1NTMwN2JmOWIyKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc4MTE4NzgyNn19fV19&Signature=MEUCIQCc1AO3DpzMOEUmgMsgWzJG69DF3MwGB0xtYFlDn3c19QIge%7EmanA6iOZe25ICogXra%7EWkVhnoaf-1VGHwQSBjwtck_&Key-Pair-Id=K1LYXO563TGWFU&X-Xet-Cas-Uid=6679b96813c37a0fe4626868&response-content-type=image%2Fjpeg&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27charts.jpg%3B+filename%3D%22charts.jpg%22%3B&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=cas%2F20260611%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260611T132346Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=15f9a207450a9323a9b225069a3f313d2d08605650007196971caa1c928fd097" width="100%">
 </div>
 
 #### Table Extraction
@@ -73,11 +69,16 @@ We report results using **TEDS** ([Tree-Edit Distance-based Similarity](https://
 
 Results are presented separately for cropped-table and full-page settings to highlight performance across controlled and realistic document scenarios.
 
+##### cropped-table settings
+
 <div style="display: flex; gap: 10px;">
-  <img src="tables-cropped.jpg" width="75%">
+  <img src="https://cas-bridge.xethub.hf.co/xet-bridge-us/69a722705d3b2011df11278e/16f0cc3150414b49ef6145d3ff63c8b44067cf521dd37c83257918bdb97487cb?Expires=1781188409&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYXMtYnJpZGdlLnhldGh1Yi5oZi5jby94ZXQtYnJpZGdlLXVzLzY5YTcyMjcwNWQzYjIwMTFkZjExMjc4ZS8xNmYwY2MzMTUwNDE0YjQ5ZWY2MTQ1ZDNmZjYzYzhiNDQwNjdjZjUyMWRkMzdjODMyNTc5MThiZGI5NzQ4N2NiKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc4MTE4ODQwOX19fV19&Signature=MEUCIQCJG-HYrt5oe5F5fymDoXv4n4V3oh3kdvtAkjzn%7Ek3H6wIgfMtN5A6ptav%7Emhp78MhVgmFPT5K7hJaqks97fgX8Vik_&Key-Pair-Id=K1LYXO563TGWFU&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27tables-cropped.jpg%3B+filename%3D%22tables-cropped.jpg%22%3B&response-content-type=image%2Fjpeg&X-Xet-Cas-Uid=6679b96813c37a0fe4626868&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=cas%2F20260611%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260611T133329Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=879bc325a632d9c618daf5ad76a872ace1d733a39c015cfc5f93f537960c7d5a" width="75%">
 </div>
+
+##### full-page settings
+
 <div style="display: flex; gap: 10px;">
-  <img src="tables-full-page.jpg" width="75%">
+  <img src="https://cas-bridge.xethub.hf.co/xet-bridge-us/69a722705d3b2011df11278e/56c1d53e750f8ce481731941e9ac66b09b9005fb664eb92b8558e78b72318c10?Expires=1781188451&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9jYXMtYnJpZGdlLnhldGh1Yi5oZi5jby94ZXQtYnJpZGdlLXVzLzY5YTcyMjcwNWQzYjIwMTFkZjExMjc4ZS81NmMxZDUzZTc1MGY4Y2U0ODE3MzE5NDFlOWFjNjZiMDliOTAwNWZiNjY0ZWI5MmI4NTU4ZTc4YjcyMzE4YzEwKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc4MTE4ODQ1MX19fV19&Signature=MEUCIQCbge-2gQhyOJ5qTG0zwP%7EdC52pON9E-xtuSCujlAad9QIgVrmCJlPDowG8mxCpdg%7E8fGq9pBrKM9MKdzxVfAafDdw_&Key-Pair-Id=K1LYXO563TGWFU&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27tables-full-page.jpg%3B+filename%3D%22tables-full-page.jpg%22%3B&X-Xet-Cas-Uid=6679b96813c37a0fe4626868&response-content-type=image%2Fjpeg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=cas%2F20260611%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260611T133411Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=cc64aa63e8001101ac372258751b057bf52ca9aa09f73e0c7c0251590c3671ed" width="75%">
 </div>
 
 #### Key-Value Pair (KVP) Extraction
