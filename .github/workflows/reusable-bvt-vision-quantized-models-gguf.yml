@@ -82,11 +82,14 @@ env:
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LORA_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
   LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
   LOCAL_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LOCAL_FNAME_LORA_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LORA_NEEDED: "false"  # Set in check-lora-adapter-needed step
 
 jobs:
   test-quantized-model:
@@ -100,8 +103,10 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
+          scripts/check_lora_adapter_needed.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
+          resources/json/latest/hf_collection_mapping_gguf.json
           test/images/
           bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
         sparse-checkout-cone-mode: false
@@ -156,6 +161,7 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LORA_F16_GGUF=${{ env.REPO_NAME }}-LoRA-F16.gguf" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
@@ -167,6 +173,7 @@ jobs:
       run: |
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_LORA_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_LORA_F16_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
@@ -174,12 +181,14 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_LORA_F16_GGUF='$BASE_FNAME_LORA_F16_GGUF' (${{ env.BASE_FNAME_LORA_F16_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
         echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+        echo "LOCAL_FNAME_LORA_F16_GGUF='$LOCAL_FNAME_LORA_F16_GGUF' (${{ env.LOCAL_FNAME_LORA_F16_GGUF }})"
 
     - name: verify-llama-mtmd-cli-runtime
       if: env.VERIFY_RUNTIME == 'true'
@@ -244,6 +253,27 @@ jobs:
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
+    - name: check-lora-adapter-needed
+      id: check-lora
+      run: |
+        # Check if this model requires a LoRA adapter
+        LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+          --collection-mapping 'resources/json/latest/hf_collection_mapping_gguf.json' \
+          --repo-name '${{ env.REPO_NAME }}')
+        echo "LORA_NEEDED=$LORA_NEEDED" >> $GITHUB_ENV
+        if [ "$LORA_NEEDED" = "true" ]; then
+          echo "✅ LoRA adapter will be downloaded and used for testing"
+        else
+          echo "ℹ️ No LoRA adapter needed for this model"
+        fi
+
+    - name: download-lora-adapter-gguf-hf-hub-download
+      if: env.LORA_NEEDED == 'true'
+      run: |
+        echo "Downloading LoRA adapter: ${{env.BASE_FNAME_LORA_F16_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_LORA_F16_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
     # - name: verify-downloaded-files
     #   if: env.DEBUG == 'true' && runner.os == 'macOS'
     #   run: |
@@ -260,11 +290,18 @@ jobs:
         echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "env.LORA_NEEDED=${{env.LORA_NEEDED}}"
         echo "VERBOSE mode: ${{env.VERBOSE}}"
 
         VERBOSE_FLAG=""
         if [[ "${{env.VERBOSE}}" == "true" ]]; then
           VERBOSE_FLAG="--verbose"
+        fi
+
+        LORA_FLAG=""
+        if [[ "${{env.LORA_NEEDED}}" == "true" ]]; then
+          LORA_FLAG="--lora ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
+          echo "Using LoRA adapter: ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
         fi
 
         LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
@@ -274,6 +311,7 @@ jobs:
         # Pass plain user prompt without <image> tag - it will be added automatically
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            $LORA_FLAG \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
