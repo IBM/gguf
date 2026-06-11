@@ -32,7 +32,7 @@ ollama run ibm/granite4.1-guardian:8b-q8_0
 
 #### Enable Thinking and setting criteria
 
-Use the flag optional boolean flag `--think` with value set to `true`. For example:
+To enable or disable thinking, use the flag optional boolean flag `--think` with value set to `true` or `false` respectively (default is `true`, if not provided). For example:
 
 ```bash
 ollama run ibm/granite4.1-guardian:8b-q4_K_M --think=false
