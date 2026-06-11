@@ -228,14 +228,6 @@
                 },
                 {
                     "type": "model",
-                    "family": "vision",
-                    "repo_name": "granite-4.0-3b-vision",
-                    "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf",
-                    "llama_cpp_supported": false
-                },
-                {
-                    "type": "model",
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-30m-english",
