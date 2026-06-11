@@ -66,8 +66,8 @@ env:
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
-  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
-  LLAMA_REQUEST_PROMPT_USER: "<|user|><image>What type of flowers are in this picture?<|assistant|>"
+  LLAMA_REQUEST_PROMPT_SYSTEM: "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
+  LLAMA_REQUEST_PROMPT_USER: "<image>What type of flowers are in this picture?"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMA_RESPONSE_WORDS:  "cherry,blossoms"
   LLAMACPP_DIR: llama.cpp
@@ -271,10 +271,12 @@ jobs:
         LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
 
         # Note: Vision input uses --image flag
+        # When using --jinja, pass plain text prompts without special tokens
+        # The jinja template will handle formatting
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-            -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+            -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
             --jinja \
             $VERBOSE_FLAG \
