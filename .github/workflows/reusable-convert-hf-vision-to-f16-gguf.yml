@@ -377,6 +377,7 @@ jobs:
             ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile "$LORA_OUTPUT_FILE" \
             --outtype f16 \
+            --trust-remote-code \
             --verbose
 
           ls -al *.gguf
@@ -527,6 +528,7 @@ jobs:
             ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile "$LORA_OUTPUT_FILE" \
             --outtype f16 \
+            --trust-remote-code \
             --verbose
 
           ls -al *.gguf
