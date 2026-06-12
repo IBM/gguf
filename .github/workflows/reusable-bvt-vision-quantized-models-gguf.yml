@@ -303,6 +303,7 @@ jobs:
           LORA_FLAG="--lora ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
           echo "Using LoRA adapter: ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
         fi
+        echo "LORA_FLAG='$LORA_FLAG'"
 
         LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
 
