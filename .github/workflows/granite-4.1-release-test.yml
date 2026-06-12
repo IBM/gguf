@@ -795,8 +795,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   vision-bvt-quantized-gguf-models:
-    needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    needs: [ environment-setup, convert-hf-llava-to-f16-gguf, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
