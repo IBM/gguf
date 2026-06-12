@@ -115,12 +115,13 @@ env:
       'Q6_K',
       'Q8_0'
     ]"
+  # 'ibm-granite/granite-vision-4.1-4b'
   SOURCE_VISION_REPOS: "[
-      'None'
+      'ibm-granite/granite-vision-4.1-4b'
     ]"
   # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
     ]"
   # 'ibm-granite/granite-speech-4.1-2b'
   # 'ibm-granite/granite-speech-4.1-2b-plus'
