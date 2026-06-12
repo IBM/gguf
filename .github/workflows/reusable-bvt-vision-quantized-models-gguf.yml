@@ -66,7 +66,7 @@ env:
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
-  LLAMA_REQUEST_PROMPT_USER: "What type of flowers are in this picture?"
+  LLAMA_REQUEST_PROMPT_USER: "</image> What type of flowers are in this picture?"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMA_RESPONSE_WORDS:  "cherry,blossoms"
   LLAMACPP_DIR: llama.cpp
