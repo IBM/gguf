@@ -52,8 +52,8 @@ env:
 
   # HuggingFace Transformers versions
   # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
-  TRANSFORMERS_VERSION_LANGUAGE: "4.57.3"
-  TRANSFORMERS_VERSION_VISION: "4.57.3"
+  TRANSFORMERS_VERSION_LANGUAGE: "5.6.1"
+  TRANSFORMERS_VERSION_VISION: "5.8.0" # merged https://github.com/huggingface/transformers/pull/45597
   TRANSFORMERS_VERSION_SPEECH: "5.8.0"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
   TRANSFORMERS_VERSION_EMBEDDING: "4.57.3"
@@ -62,7 +62,7 @@ env:
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
   LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
-  LLAMACPP_BUILD_TAG_VISION: b8100 # b7951 worked, b6808 did not... mtmd support for granite-vision models
+  LLAMACPP_BUILD_TAG_VISION:  b9533 # b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_SPEECH: b9045
   LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
