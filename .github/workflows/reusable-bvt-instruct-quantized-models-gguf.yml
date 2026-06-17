@@ -413,7 +413,7 @@ jobs:
     - name: Upload log artifact
       if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: artifact-upload-log
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -430,7 +430,7 @@ jobs:
     - name: Upload response artifact
       if: ${{  env.TEST_LLAMA_CLI == 'true' || env.TEST_LLAMA_SERVER == 'true' || env.TEST_LLAMA_RUN == 'true' }}
       id: artifact-upload-response
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}

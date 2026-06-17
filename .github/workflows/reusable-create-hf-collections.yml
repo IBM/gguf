@@ -23,6 +23,10 @@ on:
         type: boolean
         required: false
         default: false
+      enable_speech_jobs:
+        type: boolean
+        required: false
+        default: false
       enable_guardian_jobs:
         type: boolean
         required: false
@@ -56,7 +60,7 @@ on:
 jobs:
   reusable_workflow_job:
     runs-on: macos-latest
-    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
+    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_speech_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     steps:
     - uses: actions/checkout@v6
     - run: |

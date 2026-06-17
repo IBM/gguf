@@ -66,8 +66,7 @@ env:
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
-  LLAMA_REQUEST_PROMPT_SYSTEM: "<|system|>A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."
-  LLAMA_REQUEST_PROMPT_USER: "<|user|><image>What type of flowers are in this picture?<|assistant|>"
+  LLAMA_REQUEST_PROMPT_USER: "</image> What type of flowers are in this picture?"
   LLAMA_RESPONSE_REGEX: "(cherry|blossoms)+"
   LLAMA_RESPONSE_WORDS:  "cherry,blossoms"
   LLAMACPP_DIR: llama.cpp
@@ -83,16 +82,19 @@ env:
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_LORA_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
   LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
   LOCAL_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LOCAL_FNAME_LORA_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LORA_NEEDED: "false"  # Set in check-lora-adapter-needed step
 
 jobs:
   test-quantized-model:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     if: ${{ inputs.enable_vision_jobs == true }}
     steps:
     - uses: actions/checkout@v6
@@ -101,8 +103,10 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
+          scripts/check_lora_adapter_needed.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
+          resources/json/latest/hf_collection_mapping_gguf.json
           test/images/
           bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
         sparse-checkout-cone-mode: false
@@ -157,6 +161,7 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_LORA_F16_GGUF=${{ env.REPO_NAME }}-LoRA-F16.gguf" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
@@ -168,6 +173,7 @@ jobs:
       run: |
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
         echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_LORA_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_LORA_F16_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
@@ -175,12 +181,14 @@ jobs:
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_LORA_F16_GGUF='$BASE_FNAME_LORA_F16_GGUF' (${{ env.BASE_FNAME_LORA_F16_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
         echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+        echo "LOCAL_FNAME_LORA_F16_GGUF='$LOCAL_FNAME_LORA_F16_GGUF' (${{ env.LOCAL_FNAME_LORA_F16_GGUF }})"
 
     - name: verify-llama-mtmd-cli-runtime
       if: env.VERIFY_RUNTIME == 'true'
@@ -245,6 +253,27 @@ jobs:
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
+    - name: check-lora-adapter-needed
+      id: check-lora
+      run: |
+        # Check if this model requires a LoRA adapter
+        LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+          --collection-mapping 'resources/json/latest/hf_collection_mapping_gguf.json' \
+          --repo-name '${{ env.REPO_NAME }}')
+        echo "LORA_NEEDED=$LORA_NEEDED" >> $GITHUB_ENV
+        if [ "$LORA_NEEDED" = "true" ]; then
+          echo "✅ LoRA adapter will be downloaded and used for testing"
+        else
+          echo "ℹ️ No LoRA adapter needed for this model"
+        fi
+
+    - name: download-lora-adapter-gguf-hf-hub-download
+      if: env.LORA_NEEDED == 'true'
+      run: |
+        echo "Downloading LoRA adapter: ${{env.BASE_FNAME_LORA_F16_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_LORA_F16_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
     # - name: verify-downloaded-files
     #   if: env.DEBUG == 'true' && runner.os == 'macOS'
     #   run: |
@@ -253,33 +282,42 @@ jobs:
 
     # OPTIMIZATION: Verbose flag is now configurable via inputs.verbose (default: true)
     # Verbose mode causes per-token parsing overhead; disable if tests timeout
-    # Added --no-display-prompt and --simple-io to suppress ASCII art and progress indicators
     - name: test-vision-model
       if: env.TEST_LLAMA_CLI == 'true'
-      timeout-minutes: 10
+      timeout-minutes: 30
       continue-on-error: true
       run: |
         echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        echo "env.LORA_NEEDED=${{env.LORA_NEEDED}}"
         echo "VERBOSE mode: ${{env.VERBOSE}}"
-        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
 
         VERBOSE_FLAG=""
         if [[ "${{env.VERBOSE}}" == "true" ]]; then
           VERBOSE_FLAG="--verbose"
         fi
 
+        LORA_FLAG=""
+        if [[ "${{env.LORA_NEEDED}}" == "true" ]]; then
+          LORA_FLAG="--lora ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
+          echo "Using LoRA adapter: ${{env.LOCAL_FNAME_LORA_F16_GGUF}}"
+        fi
+        echo "LORA_FLAG='$LORA_FLAG'"
+
+        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+
+        # Note: Vision models use --image flag which automatically inserts <image> token
+        # The jinja template in the model handles the <image> token placement
+        # Pass plain user prompt without <image> tag - it will be added automatically
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            $LORA_FLAG \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
-            -c ${{env.LLAMA_REQUEST_CONTEXT_SIZE}} \
-            -p "${{env.LLAMA_REQUEST_PROMPT_SYSTEM}}${{env.LLAMA_REQUEST_PROMPT_USER}}" \
+            -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
-            --single-turn \
+            --jinja \
             $VERBOSE_FLAG \
-            --no-display-prompt \
-            --simple-io \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
         if [ $? -eq 1 ]; then
           echo "[ERROR] ${{env.LLAMA_CLI_TOOL}} failed:"
@@ -319,10 +357,13 @@ jobs:
         return_value=$(echo "$python_output" | tail -n 1)
 
         # Use the extracted "boolean" string in a conditional (case-insensitive comparison)
-        if [[ "${return_value,,}" == "true" ]]; then
+        # Convert to lowercase using tr for portability across bash versions
+        return_value_lower=$(echo "$return_value" | tr '[:upper:]' '[:lower:]')
+        if [[ "$return_value_lower" == "true" ]]; then
           echo "✅ [SUCCESS]: $python_output"
         else
           echo "❌ [FAILURE]: $python_output"
+          exit 1
         fi
 
     # ========================= Upload log as artifact ======================================
@@ -330,7 +371,7 @@ jobs:
     - name: Upload log artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-log
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -347,7 +388,7 @@ jobs:
     - name: Upload response artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-response
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}

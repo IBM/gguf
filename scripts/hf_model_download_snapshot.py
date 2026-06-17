@@ -18,6 +18,7 @@ def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:Op
     import datetime
 
     # Retry logic with exponential backoff
+    # resume_download=True,  # Resume partial downloads (deprecated)
     for attempt in range(max_retries):
         try:
             now = datetime.datetime.now()
@@ -27,7 +28,6 @@ def download_model_snapshot(models_dir:str="", repo_id:str="", allow_patterns:Op
                     local_dir=local_dir,
                     allow_patterns=allow_patterns,
                     token=hf_token,
-                    resume_download=True,  # Resume partial downloads
                 )
             now = datetime.datetime.now()
             print(now.strftime("AFTER: %Y-%m-%d %H:%M:%S"))

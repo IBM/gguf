@@ -5,7 +5,7 @@
 Granite 4 `base` models are developed using a diverse set of techniques with a structured chat format, including supervised finetuning, model alignment using reinforcement learning, and model merging.
 
 Granite 4 `instruct` models are finetuned from their base models using a combination of open source instruction datasets with permissive license and internally collected synthetic datasets. They feature improved instruction following (IF) and tool-calling capabilities, making them more effective in enterprise applications.
-  - *Please note that `instruct` models do not have the `base` qualifier in their name (e.g., `ibm-granite/granite4:micro-h` vs. `mrutkows/granite4:micro-h-base`).*
+  - *Please note that `instruct` models do not have the `base` qualifier in their name (e.g., `ibm-granite/granite4:micro-h` vs. `ibm-granite/granite4:micro-h-base`).*
 
 #### Sizes
 
@@ -15,13 +15,13 @@ Granite 4 `instruct` models are finetuned from their base models using a combina
 
 #### Running
 
-Example of running the default `tiny` model (i.e., with quantization of Q4_K_M):
+Example of running the default `tiny` model (i.e., with quantization of `Q4_K_M`):
 
 ```
 ollama run ibm/granite4:tiny-h
 ```
 
-To run other quantizations (e.g., F16):
+To run other quantizations (e.g., `Q8_0`):
 
 ```
 ollama run ibm/granite4:tiny-h-q8_0

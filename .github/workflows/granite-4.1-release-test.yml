@@ -14,15 +14,17 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_LANGUAGE_JOBS: true
-  ENABLE_VISION_JOBS: false
+  ENABLE_LANGUAGE_JOBS: false
+  ENABLE_VISION_JOBS: true
+  ENABLE_SPEECH_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
-  USE_UAT_WORKFLOW: false
 
-  # Enable appending the converted format (BF16/F16) to BVT test matrix
-  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+  ###############################################
+  # Workflow jobs enable/disable flags
+  ###############################################
+  ENABLE_UAT_WORKFLOW: false
 
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
@@ -30,6 +32,13 @@ env:
   # Enable LM Eval workflow (not yet fully functional, default: false)
   ENABLE_LM_EVAL: false
 
+  # Enable/disable convert and quantize steps (default: true)
+  ENABLE_CONVERT_STEP: true
+  ENABLE_QUANTIZE_STEP: true
+
+  ###############################################
+  # Repo. configuration
+  ###############################################
   TARGET_HF_REPO_NAME_EXT: -GGUF
   TARGET_HF_REPO_OWNER: mrutkows
   TARGET_HF_REPO_PRIVATE: true
@@ -43,8 +52,9 @@ env:
 
   # HuggingFace Transformers versions
   # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
-  TRANSFORMERS_VERSION_LANGUAGE: "4.57.3"
-  TRANSFORMERS_VERSION_VISION: "4.57.3"
+  TRANSFORMERS_VERSION_LANGUAGE: "5.6.1"
+  TRANSFORMERS_VERSION_VISION: "5.8.0" # merged https://github.com/huggingface/transformers/pull/45597
+  TRANSFORMERS_VERSION_SPEECH: "5.8.0"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
   TRANSFORMERS_VERSION_EMBEDDING: "4.57.3"
   TRANSFORMERS_VERSION_DOCLING: "4.57.3"
@@ -52,10 +62,17 @@ env:
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
   LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
-  LLAMACPP_BUILD_TAG_VISION: b8100 # b7951 worked, b6808 did not... mtmd support for granite-vision models
-  LLAMACPP_BUILD_TAG_GUARDIAN: b6569
+  LLAMACPP_BUILD_TAG_VISION:  b9533 # b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
+  LLAMACPP_BUILD_TAG_SPEECH: b9045
+  LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
   LLAMACPP_BUILD_TAG_DOCLING: b6569
+
+  # Enable appending the converted format (BF16/F16) to BVT test matrix
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+
+  # Enable/disable BF16 for specific model types in BVT test matrix
+  ENABLE_BVT_GUARDIAN_BF16: false
 
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
@@ -82,18 +99,44 @@ env:
       'Q4_K_M',
       'Q8_0'
     ]"
+  # ibm-granite/granite-guardian-4.1-8b
   SOURCE_GUARDIAN_REPOS: "[
-      'None'
+      'ibm-granite/granite-guardian-4.1-8b'
     ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
-      'None'
+      'Q2_K',
+      'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
+      'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
+      'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
+      'Q6_K',
+      'Q8_0'
     ]"
+  # 'ibm-granite/granite-vision-4.1-4b'
   SOURCE_VISION_REPOS: "[
-      'None'
+      'ibm-granite/granite-vision-4.1-4b'
     ]"
   # 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-      'None'
+      'Q8_0'
+    ]"
+  # 'ibm-granite/granite-speech-4.1-2b'
+  # 'ibm-granite/granite-speech-4.1-2b-plus'
+  SOURCE_SPEECH_REPOS: "[
+      'ibm-granite/granite-speech-4.1-2b-plus'
+    ]"
+  # 'Q4_K_M',
+  # 'Q5_K_M',
+  # 'Q6_K',
+  # 'Q8_0'
+  TARGET_SPEECH_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
@@ -135,13 +178,16 @@ jobs:
       trace: ${{ steps.set-vars.outputs.trace }}
       enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}
       enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}
+      enable_speech_jobs: ${{ steps.set-vars.outputs.enable_speech_jobs }}
       enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
-      use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
+      enable_uat: ${{ steps.set-vars.outputs.enable_uat }}
+      enable_convert_step: ${{ steps.set-vars.outputs.enable_convert_step }}
+      enable_quantize_step: ${{ steps.set-vars.outputs.enable_quantize_step }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
@@ -152,6 +198,9 @@ jobs:
       source_vision_repos: "${{ steps.set-vars.outputs.source_vision_repos }}"
       target_vision_quantizations: "${{ steps.set-vars.outputs.target_vision_quantizations }}"
       target_vision_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_vision_quantizations_bvt }}"
+      source_speech_repos: "${{ steps.set-vars.outputs.source_speech_repos }}"
+      target_speech_quantizations: "${{ steps.set-vars.outputs.target_speech_quantizations }}"
+      target_speech_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_speech_quantizations_bvt }}"
       source_guardian_repos: "${{ steps.set-vars.outputs.source_guardian_repos }}"
       target_guardian_quantizations: "${{ steps.set-vars.outputs.target_guardian_quantizations }}"
       target_guardian_quantizations_bvt: "${{ steps.append-converted-format.outputs.target_guardian_quantizations_bvt }}"
@@ -168,16 +217,19 @@ jobs:
       ext_response: "${{ steps.set-vars.outputs.ext_response }}"
       transformers_version_language: "${{ steps.set-vars.outputs.transformers_version_language }}"
       transformers_version_vision: "${{ steps.set-vars.outputs.transformers_version_vision }}"
+      transformers_version_speech: "${{ steps.set-vars.outputs.transformers_version_speech }}"
       transformers_version_guardian: "${{ steps.set-vars.outputs.transformers_version_guardian }}"
       transformers_version_embedding: "${{ steps.set-vars.outputs.transformers_version_embedding }}"
       transformers_version_docling: "${{ steps.set-vars.outputs.transformers_version_docling }}"
       llamacpp_build_tag_language: "${{ steps.set-vars.outputs.llamacpp_build_tag_language }}"
       llamacpp_build_tag_vision: "${{ steps.set-vars.outputs.llamacpp_build_tag_vision }}"
+      llamacpp_build_tag_speech: "${{ steps.set-vars.outputs.llamacpp_build_tag_speech }}"
       llamacpp_build_tag_guardian: "${{ steps.set-vars.outputs.llamacpp_build_tag_guardian }}"
       llamacpp_build_tag_embedding: "${{ steps.set-vars.outputs.llamacpp_build_tag_embedding }}"
       llamacpp_build_tag_docling: "${{ steps.set-vars.outputs.llamacpp_build_tag_docling }}"
       def_converted_quant_language: "${{ steps.set-vars.outputs.def_converted_quant_language }}"
       def_converted_quant_vision: "${{ steps.set-vars.outputs.def_converted_quant_vision }}"
+      def_converted_quant_speech: "${{ steps.set-vars.outputs.def_converted_quant_speech }}"
       def_converted_quant_guardian: "${{ steps.set-vars.outputs.def_converted_quant_guardian }}"
       def_converted_quant_embedding: "${{ steps.set-vars.outputs.def_converted_quant_embedding }}"
       def_converted_quant_docling: "${{ steps.set-vars.outputs.def_converted_quant_docling }}"
@@ -185,6 +237,7 @@ jobs:
       ARRAY_SEP: "','"
       DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
       DEF_CONVERTED_QUANT_VISION: "f16"
+      DEF_CONVERTED_QUANT_SPEECH: "bf16"
       DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
       DEF_CONVERTED_QUANT_DOCLING: "f16"
@@ -195,12 +248,14 @@ jobs:
             NORMALIZED_SOURCE_LANGUAGE_REPOS="$(echo "$SOURCE_LANGUAGE_REPOS" | tr -d '[:space:]')"
             NORMALIZED_SOURCE_GUARDIAN_REPOS="$(echo "$SOURCE_GUARDIAN_REPOS" | tr -d '[:space:]')"
             NORMALIZED_SOURCE_VISION_REPOS="$(echo "$SOURCE_VISION_REPOS" | tr -d '[:space:]')"
+            NORMALIZED_SOURCE_SPEECH_REPOS="$(echo "$SOURCE_SPEECH_REPOS" | tr -d '[:space:]')"
             NORMALIZED_SOURCE_EMBEDDING_REPOS="$(echo "$SOURCE_EMBEDDING_REPOS" | tr -d '[:space:]')"
             NORMALIZED_SOURCE_DOCLING_REPOS="$(echo "$SOURCE_DOCLING_REPOS" | tr -d '[:space:]')"
 
             EFFECTIVE_ENABLE_LANGUAGE_JOBS="$ENABLE_LANGUAGE_JOBS"
             EFFECTIVE_ENABLE_GUARDIAN_JOBS="$ENABLE_GUARDIAN_JOBS"
             EFFECTIVE_ENABLE_VISION_JOBS="$ENABLE_VISION_JOBS"
+            EFFECTIVE_ENABLE_SPEECH_JOBS="$ENABLE_SPEECH_JOBS"
             EFFECTIVE_ENABLE_EMBEDDING_JOBS="$ENABLE_EMBEDDING_JOBS"
             EFFECTIVE_ENABLE_DOCLING_JOBS="$ENABLE_DOCLING_JOBS"
 
@@ -223,6 +278,13 @@ jobs:
               EFFECTIVE_ENABLE_VISION_JOBS=false
               SOURCE_VISION_REPOS="[]"
               TARGET_VISION_QUANTIZATIONS="[]"
+            fi
+
+            if [ "$ENABLE_SPEECH_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_SPEECH_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_SPEECH_REPOS" = "[]" ]; }; then
+              echo "⚠️ SOURCE_SPEECH_REPOS is empty/None; overriding ENABLE_SPEECH_JOBS=false"
+              EFFECTIVE_ENABLE_SPEECH_JOBS=false
+              SOURCE_SPEECH_REPOS="[]"
+              TARGET_SPEECH_QUANTIZATIONS="[]"
             fi
 
             if [ "$ENABLE_EMBEDDING_JOBS" = "true" ] && { [ "$NORMALIZED_SOURCE_EMBEDDING_REPOS" = "['None']" ] || [ "$NORMALIZED_SOURCE_EMBEDDING_REPOS" = "[]" ]; }; then
@@ -251,6 +313,10 @@ jobs:
             echo "SOURCE_VISION_REPOS=$SOURCE_VISION_REPOS" >> "$GITHUB_ENV"
             echo "TARGET_VISION_QUANTIZATIONS=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_ENV"
 
+            echo "ENABLE_SPEECH_JOBS=$EFFECTIVE_ENABLE_SPEECH_JOBS" >> "$GITHUB_ENV"
+            echo "SOURCE_SPEECH_REPOS=$SOURCE_SPEECH_REPOS" >> "$GITHUB_ENV"
+            echo "TARGET_SPEECH_QUANTIZATIONS=$TARGET_SPEECH_QUANTIZATIONS" >> "$GITHUB_ENV"
+
             echo "ENABLE_EMBEDDING_JOBS=$EFFECTIVE_ENABLE_EMBEDDING_JOBS" >> "$GITHUB_ENV"
             echo "SOURCE_EMBEDDING_REPOS=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_ENV"
             echo "TARGET_EMBEDDING_QUANTIZATIONS=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_ENV"
@@ -267,18 +333,21 @@ jobs:
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_HF_REPO_OWNER: $TARGET_HF_REPO_OWNER"
             echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
-            echo "USE_UAT_WORKFLOW: $USE_UAT_WORKFLOW"
+            echo "ENABLE_UAT_WORKFLOW: $ENABLE_UAT_WORKFLOW"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_vision_jobs=$ENABLE_VISION_JOBS" >> "$GITHUB_OUTPUT"
+            echo "enable_speech_jobs=$ENABLE_SPEECH_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_guardian_jobs=$ENABLE_GUARDIAN_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
-            echo "use_uat_workflow=$USE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
+            echo "enable_convert_step=$ENABLE_CONVERT_STEP" >> "$GITHUB_OUTPUT"
+            echo "enable_quantize_step=$ENABLE_QUANTIZE_STEP" >> "$GITHUB_OUTPUT"
+            echo "enable_uat=$ENABLE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -287,6 +356,8 @@ jobs:
             echo "target_repo_private=$TARGET_HF_REPO_PRIVATE" >> "$GITHUB_OUTPUT"
             echo "source_vision_repos=$SOURCE_VISION_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_vision_quantizations=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+            echo "source_speech_repos=$SOURCE_SPEECH_REPOS" >> "$GITHUB_OUTPUT"
+            echo "target_speech_quantizations=$TARGET_SPEECH_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_guardian_repos=$SOURCE_GUARDIAN_REPOS" >> "$GITHUB_OUTPUT"
             echo "target_guardian_quantizations=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_embedding_repos=$SOURCE_EMBEDDING_REPOS" >> "$GITHUB_OUTPUT"
@@ -301,16 +372,19 @@ jobs:
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
             echo "transformers_version_language=$TRANSFORMERS_VERSION_LANGUAGE" >> "$GITHUB_OUTPUT"
             echo "transformers_version_vision=$TRANSFORMERS_VERSION_VISION" >> "$GITHUB_OUTPUT"
+            echo "transformers_version_speech=$TRANSFORMERS_VERSION_SPEECH" >> "$GITHUB_OUTPUT"
             echo "transformers_version_guardian=$TRANSFORMERS_VERSION_GUARDIAN" >> "$GITHUB_OUTPUT"
             echo "transformers_version_embedding=$TRANSFORMERS_VERSION_EMBEDDING" >> "$GITHUB_OUTPUT"
             echo "transformers_version_docling=$TRANSFORMERS_VERSION_DOCLING" >> "$GITHUB_OUTPUT"
             echo "llamacpp_build_tag_language=$LLAMACPP_BUILD_TAG_LANGUAGE" >> "$GITHUB_OUTPUT"
             echo "llamacpp_build_tag_vision=$LLAMACPP_BUILD_TAG_VISION" >> "$GITHUB_OUTPUT"
+            echo "llamacpp_build_tag_speech=$LLAMACPP_BUILD_TAG_SPEECH" >> "$GITHUB_OUTPUT"
             echo "llamacpp_build_tag_guardian=$LLAMACPP_BUILD_TAG_GUARDIAN" >> "$GITHUB_OUTPUT"
             echo "llamacpp_build_tag_embedding=$LLAMACPP_BUILD_TAG_EMBEDDING" >> "$GITHUB_OUTPUT"
             echo "llamacpp_build_tag_docling=$LLAMACPP_BUILD_TAG_DOCLING" >> "$GITHUB_OUTPUT"
             echo "def_converted_quant_language=$DEF_CONVERTED_QUANT_LANGUAGE" >> "$GITHUB_OUTPUT"
             echo "def_converted_quant_vision=$DEF_CONVERTED_QUANT_VISION" >> "$GITHUB_OUTPUT"
+            echo "def_converted_quant_speech=$DEF_CONVERTED_QUANT_SPEECH" >> "$GITHUB_OUTPUT"
             echo "def_converted_quant_guardian=$DEF_CONVERTED_QUANT_GUARDIAN" >> "$GITHUB_OUTPUT"
             echo "def_converted_quant_embedding=$DEF_CONVERTED_QUANT_EMBEDDING" >> "$GITHUB_OUTPUT"
             echo "def_converted_quant_docling=$DEF_CONVERTED_QUANT_DOCLING" >> "$GITHUB_OUTPUT"
@@ -343,12 +417,27 @@ jobs:
               fi
               echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
 
-              # Guardian models (BF16)
-              echo "Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
-              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+              # Speech models (F16)
+              echo "Appending ${{env.DEF_CONVERTED_QUANT_SPEECH}} to TARGET_SPEECH_QUANTIZATIONS for BVT"
+              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_SPEECH_QUANTIZATIONS), env.ARRAY_SEP) }}"
               if [ "$TEMP_ARRAY_STRING" != "None" ]; then
-                TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+                TARGET_SPEECH_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_SPEECH}}']"
               else
+                TARGET_SPEECH_QUANTIZATIONS_BVT="$TARGET_SPEECH_QUANTIZATIONS"
+              fi
+              echo "target_speech_quantizations_bvt=$TARGET_SPEECH_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
+
+              # Guardian models (BF16)
+              if [ "$ENABLE_BVT_GUARDIAN_BF16" = "true" ]; then
+                echo "✅ Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
+                TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+                if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+                else
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+                fi
+              else
+                echo "⏭️  Skipping BF16 append for Guardian models (ENABLE_BVT_GUARDIAN_BF16=false)"
                 TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
               fi
               echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
@@ -376,6 +465,7 @@ jobs:
               echo "ℹ️  Skipping append of converted formats (ENABLE_BVT_TEST_CONVERTED_FORMAT=false)"
               echo "target_language_quantizations_bvt=$TARGET_LANGUAGE_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
               echo "target_vision_quantizations_bvt=$TARGET_VISION_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
+              echo "target_speech_quantizations_bvt=$TARGET_SPEECH_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
               echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
               echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
               echo "target_docling_quantizations_bvt=$TARGET_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
@@ -387,10 +477,11 @@ jobs:
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
             echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
+            echo "enable_speech_jobs: ${{ steps.set-vars.outputs.enable_speech_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
-            echo "use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}"
+            echo "enable_uat: ${{ steps.set-vars.outputs.enable_uat }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
@@ -451,6 +542,7 @@ jobs:
 
   language-convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -476,7 +568,7 @@ jobs:
 
   language-quantize-upload-gguf:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -554,7 +646,7 @@ jobs:
 
   language-uat-quantized-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models, language-lm-eval-gguf-models ]
-    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
+    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.enable_uat == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -651,6 +743,7 @@ jobs:
 
   convert-hf-llava-to-f16-gguf:
     needs: [ environment-setup, vision-create-hf-repos, check-vision-llama-cpp-support ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     # OLD: uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-f16-gguf.yml@main
     permissions:
@@ -677,7 +770,7 @@ jobs:
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
-    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -702,8 +795,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   vision-bvt-quantized-gguf-models:
-    needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    needs: [ environment-setup, convert-hf-llava-to-f16-gguf, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -746,6 +839,147 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   # ===========================================================================
+  # Granite Speech
+  # ===========================================================================
+  speech-create-hf-repos:
+    needs: [ environment-setup ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
+      granite_family: "speech"
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repos: ${{ needs.environment-setup.outputs.source_speech_repos }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  speech-check-llama-cpp-support:
+    needs: [ environment-setup, speech-create-hf-repos ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            scripts/is_model_llama_cpp_supported.py
+            resources/json/
+
+      - name: Check llama.cpp support for ${{ matrix.repo_id }}
+        id: check-support
+        run: |
+          SUPPORTED=$(python ./scripts/is_model_llama_cpp_supported.py ${{ needs.environment-setup.outputs.hf_collection_config }} ${{ matrix.repo_id }})
+
+          if [ "$SUPPORTED" = "true" ]; then
+            echo "✅ Model ${{ matrix.repo_id }} is supported by llama.cpp - BVT/UAT testing will be enabled"
+          else
+            echo "⚠️ Model ${{ matrix.repo_id }} is NOT supported by llama.cpp - BVT/UAT testing will be skipped"
+            echo "   Conversion and quantization will proceed, but inference testing requires llama.cpp support"
+          fi
+
+  speech-convert-hf-to-bf16-gguf:
+    needs: [ environment-setup, speech-create-hf-repos, speech-check-llama-cpp-support ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    uses: IBM/gguf/.github/workflows/reusable-convert-speech-hf-to-bf16-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_speech }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      repo_id: ${{ matrix.repo_id }}
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_speech }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_speech }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
+  quantize-speech-and-upload-gguf:
+    needs: [ environment-setup, speech-convert-hf-to-bf16-gguf ]
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.speech-convert-hf-to-bf16-gguf.result == 'success' || needs.speech-convert-hf-to-bf16-gguf.result == 'skipped') }}
+    uses: IBM/gguf/.github/workflows/reusable-quantize-speech-upload-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_speech_quantizations) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_speech }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
+      hf_collection_config: "${{ needs.environment-setup.outputs.hf_collection_config }}"
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_speech }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  speech-bvt-quantized-gguf-models:
+    needs: [ environment-setup, quantize-speech-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-speech-and-upload-gguf.result == 'success' || needs.quantize-speech-and-upload-gguf.result == 'skipped') }}
+    uses: IBM/gguf/.github/workflows/reusable-bvt-speech-quantized-models-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_speech_repos) }}
+        quantization: ${{ fromJson(needs.environment-setup.outputs.target_speech_quantizations_bvt) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_speech }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+      quantization: "${{ matrix.quantization }}"
+      ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
+      ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # TODO: change collection from private to public (on success)
+  speech-create-hf-collections:
+    needs: [
+      environment-setup,
+      speech-bvt-quantized-gguf-models,
+    ]
+    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    with:
+      granite_family: "speech"
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      enable_speech_jobs: ${{ needs.environment-setup.outputs.enable_speech_jobs == 'true' }}
+      hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
+      target_repo_owner: ${{ needs.environment-setup.outputs.target_repo_owner }}
+      target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
+      target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+  # ===========================================================================
   # Granite Guardian
   # ===========================================================================
   guardian-create-hf-repos:
@@ -765,6 +999,7 @@ jobs:
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -790,7 +1025,7 @@ jobs:
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -837,6 +1072,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+      use_jinja_template: true
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
@@ -883,6 +1119,7 @@ jobs:
   # This workflow includes baseline similarity testing before GGUF conversion
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -908,7 +1145,7 @@ jobs:
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -1022,6 +1259,7 @@ jobs:
 
   docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1047,7 +1285,7 @@ jobs:
 
   docling-quantize-upload-gguf:
     needs: [ environment-setup, docling-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -1123,6 +1361,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
@@ -1146,6 +1385,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main

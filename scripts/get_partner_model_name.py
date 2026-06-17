@@ -94,6 +94,7 @@ class MODEL_ARCH_DESCRIPTIVE_TYPES(StrEnum):
 class SUPPORTED_MODEL_LANGUAGES(StrEnum):
     ENGLISH = "english"
     CHINESE = "chinese"
+    JAPANESE = "japaneses"
     MULTILINGUAL = "multilingual"
 
 class SUPPORTED_RELEASE_STAGES(StrEnum):
@@ -132,6 +133,10 @@ if __name__ == "__main__":
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         parser.add_argument('--tag-only', default=False, action='store_true', help='Return only the tag portion of the model name')
+
+        parser.add_argument("--override-family", type=str, default='', required=False, help="Model family (override)")
+        parser.add_argument("--override-version", type=str, default='', required=False, help="Model family (override)")
+
         args = parser.parse_args()
 
         if(args.debug):
@@ -141,20 +146,20 @@ if __name__ == "__main__":
         if args.partner == SUPPORTED_PARTNERS.DOCKER:
             args.tag_only = True
 
-        normalized_model_name = args.hf_model_name.lower()
-
         # verify partner (output format) is known
         if args.partner not in SUPPORTED_PARTNERS.__members__.values():
             raise ValueError(f"invalid --partner. Model family '{SUPPORTED_PARTNERS}' not found.")
 
         # verify model family name
+        normalized_model_name = args.hf_model_name.lower()
         if MODEL_FAMILY not in normalized_model_name:
             raise NameError(f"invalid --hf-model-name. Model family '{MODEL_FAMILY}' not found.")
+        else:
+            model_family = MODEL_FAMILY.lower()
 
         # strip model format (if present)
         normalized_model_name = normalized_model_name.replace(MODEL_ATTRIBUTE_SEP+MODEL_FORMAT_GGUF, "")
 
-        model_family = MODEL_FAMILY.lower()
         model_version = ""
         model_layer_desc = "" # e.g., "dense", "moe" (only used for 3.0, 3.1 legacy)
         model_arch_desc = "" # e.g., "hybrid" or "h"
@@ -245,8 +250,19 @@ if __name__ == "__main__":
             if args.debug:
                 print(f"DEBUG: Model stage found in model name: `{normalized_model_name}`")
 
+        if args.override_family != '':
+            model_family = args.override_family.lower()
+            if args.debug:
+                print(f"DEBUG: Model family override; skipping validation: `{args.override_family}`")
+
+        if args.override_version != '':
+            model_version = args.override_version.lower()
+            if args.debug:
+                print(f"DEBUG: Model version override; skipping validation: `{args.override_version}`")
+
         if args.debug:
             print(f"model_family='{model_family}'\n \
+                family-override='{args.family_override}'\n \
                 model_layer_desc='{model_layer_desc}'\n \
                 model_arch_desc='{model_arch_desc}'\n \
                 model_modality='{model_modality}'\n \

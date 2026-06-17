@@ -9,6 +9,7 @@ This repository provides an automated CI/CD process to convert, test and deploy 
   - [Language](#language)
   - [Guardian](#guardian)
   - [Vision](#vision)
+  - [Speech](#speech)
   - [Embedding](#embedding-dense)
   - [Docling](#docling)
 - [GGUF Conversion & Quantization](#gguf-conversion--quantization)
@@ -48,13 +49,14 @@ Select quantizations of a model will only be made available when:
 
 The following table shows which model types are supported by each Granite release workflow:
 
-| Workflow Version | Language | Guardian | Vision | Embedding | Docling |
-|------------------|:--------:|:--------:|:------:|:---------:|:-------:|
-| **Granite 3.0** | ✅ | ✅ | — | — | — |
-| **Granite 3.1** | ✅ | ✅ | — | — | — |
-| **Granite 3.2** | ✅ | ✅ | ✅ | ✅ | — |
-| **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Granite 4.0** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Workflow Version | Language | Guardian | Vision | Speech | Embedding | Docling |
+|------------------|:--------:|:--------:|:------:|:------:|:---------:|:-------:|
+| **Granite 3.0** | ✅ | ✅ | — | — | — | — |
+| **Granite 3.1** | ✅ | ✅ | — | — | — | — |
+| **Granite 3.2** | ✅ | ✅ | ✅ | — | ✅ | — |
+| **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Granite 4.0** | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| **Granite 4.1** | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 
 **Legend:**
 - ✅ = Workflow supports this model type with full CI/CD pipeline
@@ -64,8 +66,9 @@ The following table shows which model types are supported by each Granite releas
 **Key Features by Version:**
 - **Granite 3.0/3.1**: Basic language and guardian model support
 - **Granite 3.2**: Added vision and embedding model support
-- **Granite 3.3**: Added docling models, RAG testing for embeddings, llama.cpp validation for vision
-- **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, vision architecture pending llama.cpp support
+- **Granite 3.3**: Added docling models, speech models, RAG testing for embeddings, llama.cpp validation for vision
+- **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, speech model support, vision architecture pending llama.cpp support
+- **Granite 4.1**: Continued language and speech model support with updated architectures
 
 **Workflow Files:**
 - Test workflows: `.github/workflows/granite-{version}-release-test.yml`
@@ -84,24 +87,24 @@ Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-3.0-2b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-8b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-2b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-8b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.0-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.0-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-2b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-8b-base | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-2b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-8b-instruct | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-3.1-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.1-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-3.2-2b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | | |
-| ibm-granite/granite-3.2-8b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | | |
+| ibm-granite/granite-3.0-2b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-8b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-2b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-8b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.0-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.0-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-2b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-8b-base | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-1b-a400m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-3b-a800m-base | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-2b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-8b-instruct | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-3.1-1b-a400m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.1-3b-a800m-instruct | GraniteMoeForCausalLM | MoE (Mixture of Experts) | - | - |
+| ibm-granite/granite-3.2-2b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | 4.49.0 | b4783 |
+| ibm-granite/granite-3.2-8b-instruct | GraniteForCausalLM | Dense Transformer (gpt2) | 4.49.0 | b4783 |
 | ibm-granite/granite-3.3-2b-base | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
 | ibm-granite/granite-3.3-8b-base | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
 | ibm-granite/granite-3.3-2b-instruct | GraniteForCausalLM | Dense Transformer | 4.52.1 | b6569 |
@@ -111,23 +114,32 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-4.0-350m | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-350m-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
 | ibm-granite/granite-4.0-h-350m | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-350m-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-1b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-1b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-1b | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-1b-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-micro | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-micro-base | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-micro | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-micro-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808 |
-| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | | |
-| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | | |
-| ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
-| ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | | |
-| ibm-granite/granite-4.0-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-4.0-8b-base | GraniteForCausalLM | Dense Transformer | | |
+| ibm-granite/granite-4.0-h-350m-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-1b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-1b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-1b | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-1b-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-micro | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-micro-base | GraniteMoeHybridForCausalLM | Dense Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-micro | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-micro-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer (3B) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-tiny | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 4.57.3 | b6808, b8100 |
+| ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
+| ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
 
-- Supported quantizations: `F16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
+<!--
+| ibm-granite/granite-4.0-3b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-3b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-30b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+| ibm-granite/granite-4.1-30b-base | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
+-->
+
+- Supported quantizations: `bf16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
 
 **\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
@@ -135,13 +147,14 @@ Typically, this model category includes "base" and "instruct" models.
 
 | Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
 | --- | --- | --- | --- | --- |
-| ibm-granite/granite-guardian-3.0-2b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.0-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.1-2b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.1-8b | GraniteForCausalLM | Dense Transformer | | |
-| ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | | |
-| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b6569 |
+| ibm-granite/granite-guardian-3.0-2b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.0-8b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.1-2b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.1-8b | GraniteForCausalLM | Dense Transformer | - | - |
+| ibm-granite/granite-guardian-3.2-3b-a800m | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
+| ibm-granite/granite-guardian-3.2-5b | GraniteMoeForCausalLM | MoE (Mixture of Experts) | 4.49.0 | b4783 |
+| ibm-granite/granite-guardian-3.3-8b | GraniteForCausalLM | Dense Transformer | 4.52.4, 4.57.3 | b6050, b6569 |
+| ibm-granite/granite-guardian-4.1-8b | GraniteForCausalLM | Dense Transformer | 4.57.3 | b8742 |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`
 
@@ -179,6 +192,19 @@ Typically, this model category includes "base" and "instruct" models.
 **\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 **Note**: Sparse model architecture (i.e., HF `RobertaMaskedLM`) is not currently supported; therefore, there is no conversion for `ibm-granite/granite-embedding-30m-sparse`.
+
+#### Speech
+
+<!-- | ibm-granite/granite-speech-3.3-8b (3.3) | WhisperForConditionalGeneration | Whisper-based Speech Recognition | 5.8.0 | b9045 | -->
+
+| Source Repo. ID | Architecture (HF) | Architecture Description | HF Transformers* | llama.cpp* |
+| --- | --- | --- | --- | --- |
+| ibm-granite/granite-4.0-1b-speech (4.0) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
+| ibm-granite/granite-speech-4.1-2b (4.1) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0  | b9045 |
+
+- Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
+
+**\* Known successful build versions:** The HF Transformers and llama.cpp columns indicate known versions used to successfully convert, quantize, and test these models in the full release workflow.
 
 #### Docling
 
@@ -251,8 +277,8 @@ As a baseline, each converted model MUST successfully be run in the following pr
 [Ollama](https://github.com/ollama/ollama) - As a key model service provider supported by higher level frameworks and platforms (e.g., [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm), [LM Studio](https://github.com/lmstudio-ai) etc.), testing the ability to `pull` and `run` the model is essential.
 
 ##### Mode of Testing
-- BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime. 
-- UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request. 
+- BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime.
+- UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request.
 
 **Notes**
 
@@ -440,6 +466,7 @@ env:
   ENABLE_VISION_JOBS: false        # Process vision models
   ENABLE_GUARDIAN_JOBS: false      # Process guardian models
   ENABLE_EMBEDDING_JOBS: false     # Process embedding models
+  ENABLE_SPEECH_JOBS: false        # Process speech models
   ENABLE_DOCLING_JOBS: true        # Process docling models
 ```
 
@@ -523,6 +550,19 @@ Each model family has two environment variables:
   TARGET_EMBEDDING_QUANTIZATIONS: "[
       'Q8_0',
       'F16'
+    ]"
+```
+
+**Speech Models**
+
+```yaml
+  SOURCE_SPEECH_REPOS: "[
+      'ibm-granite/granite-speech-4.1-2b',
+    ]"
+  TARGET_SPEECH_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
 ```
 

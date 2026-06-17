@@ -1,0 +1,251 @@
+# This workflow:
+# - Downloads the source HF (safetensors) speech model from the Hugging Face hub.
+# - Uses HF Transformers to save just the LLM portion of the speech model
+# - Convert the LLM model to f16 GGUF
+# - Quantizes the f16 GGUF to the designated 'quantization' (e.g., Q4_0, Q4_K_M, etc.) defined in the build matrix.
+# - Uploads the quantized GGUF to target 'repo_id'.
+
+name: quantize-speech-llm-upload-gguf-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+    inputs:
+      enable_speech_jobs:
+        type: boolean
+        required: false
+        default: false
+      repo_id:
+        type: string
+        required: true
+      quantization:
+        type: string
+        required: true
+      hf_collection_config:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which binary tools to use from ./bin subdirectory."
+      converted_quantization:
+        type: string
+        required: true
+        description: "Base quantization format of the converted model (e.g., 'f16', 'bf16'). Used to construct the filename of the base model to download."
+      debug:
+        type: boolean
+        required: true
+        default: false
+      trace:
+        type: boolean
+        required: false
+        default: false
+
+env:
+  DEF_SEP: "-"
+  EXT_GGUF: .gguf
+  BF16_FILE_EXISTS: "0"
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""  # Set in set-github-env step
+  REPO_NAME: ""  # Set in set-github-env step
+  TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-2 step
+  BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-1 step
+  LOCAL_FNAME_BF16_GGUF: ""  # Set in set-derivative-env-vars-2 step
+  LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-2 step
+
+jobs:
+  quantize:
+    runs-on: macos-latest
+    if: ${{ inputs.enable_speech_jobs == true }}
+    env:
+      HF_HUB_DISABLE_XET: 1
+      HF_HUB_ENABLE_HF_TRANSFER: 0
+    steps:
+    - uses: actions/checkout@v6
+
+    - run: |
+        echo "[INFO] github.env:"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
+        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
+        echo "[INFO] >> run_id: '${{ github.run_id }}'"
+        echo "[INFO] >> event_name: '${{ github.event_name }}'"
+        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
+        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
+        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
+        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
+
+    - name: confirm-environment
+      run: |
+        uname -a
+        echo "runner.os: ${{ runner.os }}"
+        echo "runner.arch: ${{ runner.arch }}"
+        echo "github.workspace: ${{ github.workspace }}"
+        echo "llamacpp_build_tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
+        echo "env.EXT_NAME_BF16: ${{ env.EXT_NAME_BF16 }}"
+        echo "env.BF16_FILE_EXISTS: ${{ env.BF16_FILE_EXISTS }}"
+        echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
+        echo "env.LLAMACPP_DIR: ${{ env.LLAMACPP_DIR }}"
+        echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
+
+    # if: ${{ github.event.inputs.debug }}
+    - name: Dump GitHub inputs
+      env:
+        GITHUB_INPUTS: ${{ toJson(inputs) }}
+      run: echo "$GITHUB_INPUTS"
+
+    # Use this step to set values to the github context (shared across jobs/steps)
+    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
+    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
+    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
+    - name: set-github-env
+      id: set_github_env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars-1
+      run: |
+        echo "BASE_FNAME_BF16_GGUF=${{ env.REPO_NAME }}${{ env.DEF_SEP }}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+
+    # NOTE: we MUST have the target quant. model (output) in a sep. directory as the source f16 model (input)
+    # or streaming will cause a SIGSEV error
+    - name: set-derivative-env-vars-2
+      run: |
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_BF16_GGUF=${{env.MODEL_DOWNLOAD_DIR}}/${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}/$BASE_FNAME_BF16_GGUF" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
+
+    # echo "BASE_FNAME_F16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_F16_GGUF }})"
+    - name: verify-github-env
+      run: |
+        echo "================== GITHUB_ENV ====================="
+        echo "REPO_ORG=$REPO_ORG"
+        echo "REPO_NAME=$REPO_NAME"
+        echo "================== Derivative Environment Variables 1 =================="
+        echo "BASE_FNAME_BF16_GGUF='$BASE_FNAME_F16_GGUF' (${{ env.BASE_FNAME_BF16_GGUF }})"
+        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
+        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
+        echo "================== Derivative Environment Variables 2 =================="
+        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
+        echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+
+    - name: List all environment variables
+      if: ${{ github.event.inputs.debug }}
+      run: env | sort
+
+    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
+    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    # Sparse checkout llama-quantize binary from GGUF repo based on build tag
+    # IMPORTANT: clean: false preserves files from the initial checkout and any downloaded files
+    - name: sparse-checkout-llama-quantize-binary
+      uses: actions/checkout@v6
+      with:
+        clean: false
+        sparse-checkout: |
+          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+          requirements.txt
+          scripts/
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: verify-llama-quantize-binary
+      run: |
+        echo "=========================================="
+        echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "=========================================="
+        ls -al ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        if [ ! -f "./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize" ]; then
+          echo "[ERROR] llama-quantize binary not found at ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize"
+          exit 1
+        fi
+        chmod +x ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        echo "[SUCCESS] llama-quantize binary found and made executable"
+
+    - name: install-general-dependencies
+      run: |
+        python -m pip install -r ./requirements.txt
+        pip list
+
+    # output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_F16_GGUF }} ${{secrets.hf_token}})
+    - name: test-bf16-exists
+      run: |
+        output=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}})
+        echo "output: '$output'"
+        if [[ "$output" == "True" ]]; then
+          echo "BF16_FILE_EXISTS=1" >> $GITHUB_ENV
+        elif [[ "$output" == "False" ]]; then
+          echo "BF16_FILE_EXISTS=0" >> $GITHUB_ENV
+        else
+          echo "Unexpected output from Python script: $output"
+          exit 2
+        fi
+
+    - name: download-bf16-gguf-hf-hub-download
+      run: |
+        echo "Downloading ${{ inputs.converted_quantization }} GGUF using hf_file_download..."
+        echo "--------------------"
+        echo "MODEL_DOWNLOAD_DIR=${{env.MODEL_DOWNLOAD_DIR}}"
+        echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_BF16_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*.gguf
+
+    - name: verify-bf16-gguf-hf-hub-download
+      run: |
+        echo downloaded files...
+        echo "--------------------"
+        find . -name \*.gguf -type f
+        echo "--------------------"
+        echo "LOCAL_FNAME_BF16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
+        if [ -f ${{env.LOCAL_FNAME_BF16_GGUF}} ]; then
+          echo "File exists"
+        else
+          env | sort
+          echo "File does not exist. env.LOCAL_FNAME_BF16_GGUF=${{env.LOCAL_FNAME_BF16_GGUF}}"
+          exit 1
+        fi
+
+    - name: quantize-gguf
+      run: |
+        echo "--------------------"
+        echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
+        echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
+        echo "--------------------"
+        sudo ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+
+    - name: find-gguf-files
+      if: inputs.debug == true
+      run: |
+        find . -name \*.gguf -type f
+        ls -al .
+        echo "--------------------"
+
+    - name: upload-quantized-gguf-model
+      run: |
+        echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
+        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
+        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+

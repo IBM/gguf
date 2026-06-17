@@ -30,6 +30,7 @@ class VALID_PARAMS(StrEnum):
     MIN_P           = "min_p"
 
 if __name__ == "__main__":
+    args = None
     try:
         parser = argparse.ArgumentParser(description=__doc__, exit_on_error=False)
         parser.add_argument("--model-file", "-m", type=str, required=True, help="Path to gguf model file (GGUF).")
@@ -92,7 +93,7 @@ if __name__ == "__main__":
                 filename = args.license
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        license_file_contents = file.read()
+                        license_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.license ({args.license}):")
                         print('"""'+license_file_contents+'"""')
@@ -107,7 +108,7 @@ if __name__ == "__main__":
                 filename = args.metadata_path + "/" + args.template_file
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        template_file_contents = file.read()
+                        template_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.template_file ({args.template_file}):")
                         print('"""'+template_file_contents+'"""')
@@ -118,17 +119,21 @@ if __name__ == "__main__":
             if args.verbose:
                 print(f"Adding --system-file='{args.system_file}' to Modelfile...")
 
-            if args.system_file is not None:
+            if args.system_file is not None and args.system_file != "":
                 filename = args.metadata_path + "/" + args.system_file
                 if os.path.exists(filename):
                     with open(filename, 'r') as file:
-                        system_file_contents = file.read()
+                        system_file_contents = file.read().rstrip('\n')
                     if args.debug:
                         print(f"args.system_file ({args.system_file}):")
                         print('"""'+system_file_contents+'"""')
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\"{system_file_contents}\"\"\"\n")
                 elif args.verbose:
                     print(f"[WARNING] --system-file='{args.system_file}' does not exist")
+            else:
+                # Write empty SYSTEM directive when no system file is provided
+                # modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\n")
+                print(f"[WARNING] --system-file='{args.system_file}' does not exist")
 
             if args.verbose:
                 print(f"Adding --params-file='{args.params_file}' to Modelfile...")
@@ -146,16 +151,18 @@ if __name__ == "__main__":
                             modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
                 elif args.verbose:
                     print(f"[WARNING] --params-file='{args.params_file}' does not exist")
-
+    except FileNotFoundError as e:
+        error_msg = f"Error: File not found: {e}"
+        if args and hasattr(args, 'model_file'):
+            error_msg += f" (model_file: '{args.model_file}')"
+        print(error_msg)
+        exit(1)
     except IOError as e:
         print(f"Error: unable to write to file: {e}")
         # Cleanup Modelfile if unable to write to
-        if os.path.exists(args.model_file):
-            os.remove(args.model_file)
-            print(f">> Deleting '{args.model_file}' due to write error.")
-        exit(1)
-    except FileNotFoundError:
-        print(f"Error: The file '{args.filename}' was not found.")
+        if args and hasattr(args, 'output_file') and os.path.exists(args.output_file):
+            os.remove(args.output_file)
+            print(f">> Deleting '{args.output_file}' due to write error.")
         exit(1)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

@@ -94,6 +94,45 @@ if __name__ == "__main__":
                 print(formatted_json)
 
         collections_defn = json_data["collections"]
+
+        # Validate that all repos in the include list exist in the JSON config for the specified family
+        print(f"[INFO] Validating model names in include list against JSON configuration...")
+        valid_repo_names = set()
+        for collection_defn in collections_defn:
+            collection_items = collection_defn["items"]
+            for item_defn in collection_items:
+                if item_defn.get("family") == args.family:
+                    valid_repo_names.add(item_defn["repo_name"])
+
+        if args.debug:
+            print(f"[DEBUG] Valid repo names for family '{args.family}': {sorted(valid_repo_names)}")
+
+        # Check each repo in the include list
+        invalid_repos = []
+        for repo in repo_list:
+            # Extract just the model name from the full repo path (e.g., 'ibm-granite/granite-4.1-3b' -> 'granite-4.1-3b')
+            repo_name = repo.split('/')[-1] if '/' in repo else repo
+            if repo_name not in valid_repo_names:
+                invalid_repos.append(repo_name)
+
+        if invalid_repos:
+            print(f"\n{'='*80}")
+            print(f"[ERROR] Validation Failed: Model name(s) NOT found in '{args.collection_config}'")
+            print(f"{'='*80}")
+            print(f"Family: '{args.family}'")
+            print(f"\nMissing model(s):")
+            for invalid_repo in invalid_repos:
+                print(f"  ❌ {invalid_repo}")
+            print(f"\nValid model names for family '{args.family}':")
+            for valid_name in sorted(valid_repo_names):
+                print(f"  ✓ {valid_name}")
+            print(f"\n[ERROR] Please update the model names in your workflow configuration")
+            print(f"[ERROR] or add the missing models to '{args.collection_config}'")
+            print(f"{'='*80}\n")
+            sys.exit(1)
+
+        print(f"[SUCCESS] All model names validated successfully for family '{args.family}'")
+
         for collection_defn in collections_defn:
             collection_title = collection_defn["title"]
             collection_desc = collection_defn["description"]

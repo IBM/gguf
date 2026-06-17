@@ -196,7 +196,8 @@ jobs:
             scripts/torch_llava_save_llm.py
             scripts/hf_model_upload.py
             scripts/get_vision_config_path.py
-            resources/json/
+            scripts/check_lora_adapter_needed.py
+            resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
@@ -239,6 +240,27 @@ jobs:
           pip uninstall --yes transformers
           pip install transformers==${{ inputs.transformers_version }}
           echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: check-lora-adapter-needed
+        id: check-lora
+        run: |
+          # Check if this model requires a LoRA adapter
+          LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+            --collection-mapping '${{ inputs.hf_collection_config }}' \
+            --repo-name '${{ needs.detect-and-setup.outputs.repo_name }}')
+          echo "lora_needed=$LORA_NEEDED" >> $GITHUB_OUTPUT
+          if [ "$LORA_NEEDED" = "true" ]; then
+            echo "✅ LoRA adapter conversion will be performed for this model"
+          else
+            echo "ℹ️ No LoRA adapter needed for this model"
+          fi
+
+      - name: install-lora-requirements
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "📦 Installing LoRA conversion requirements..."
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+          echo "✅ LoRA requirements installed"
 
       - name: download-model-snapshot
         run: |
@@ -343,6 +365,37 @@ jobs:
         run: |
           python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
+      - name: convert-lora-adapter-to-gguf-f16
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "🔄 Converting LoRA adapter to GGUF F16 format..."
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          echo "Output file: $LORA_OUTPUT_FILE"
+
+          # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
+          python ./llama.cpp/convert_lora_to_gguf.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile "$LORA_OUTPUT_FILE" \
+            --outtype f16 \
+            --trust-remote-code \
+            --verbose
+
+          ls -al *.gguf
+          echo "✅ LoRA adapter conversion complete"
+
+      - name: upload-lora-adapter-f16-gguf-to-target-repo
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
+          python ./scripts/hf_model_upload.py \
+            ${{ needs.detect-and-setup.outputs.target_repo_id }} \
+            "$LORA_OUTPUT_FILE" \
+            ${{secrets.hf_token}} \
+            ${{github.workflow_ref}} \
+            ${{github.run_id}}
+          echo "✅ LoRA adapter uploaded successfully"
+
   # ===========================================================================
   # Job 3: Convert Granite 4+ vision models (direct conversion with --mmproj)
   # ===========================================================================
@@ -358,6 +411,8 @@ jobs:
             requirements.txt
             scripts/hf_model_download_snapshot.py
             scripts/hf_model_upload.py
+            scripts/check_lora_adapter_needed.py
+            resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
@@ -375,7 +430,10 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             convert_hf_to_gguf.py
+            convert_lora_to_gguf.py
+            conversion
             requirements/requirements-convert_hf_to_gguf.txt
+            requirements/requirements-convert_lora_to_gguf.txt
             requirements/requirements-convert_legacy_llama.txt
             gguf-py/gguf
             scripts
@@ -394,6 +452,27 @@ jobs:
           pip uninstall --yes transformers
           pip install transformers==${{ inputs.transformers_version }}
           echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: check-lora-adapter-needed
+        id: check-lora
+        run: |
+          # Check if this model requires a LoRA adapter
+          LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+            --collection-mapping '${{ inputs.hf_collection_config }}' \
+            --repo-name '${{ needs.detect-and-setup.outputs.repo_name }}')
+          echo "lora_needed=$LORA_NEEDED" >> $GITHUB_OUTPUT
+          if [ "$LORA_NEEDED" = "true" ]; then
+            echo "✅ LoRA adapter conversion will be performed for this model"
+          else
+            echo "ℹ️ No LoRA adapter needed for this model"
+          fi
+
+      - name: install-lora-requirements
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "📦 Installing LoRA conversion requirements..."
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+          echo "✅ LoRA requirements installed"
 
       - name: download-model-snapshot
         run: |
@@ -437,4 +516,34 @@ jobs:
         run: |
           python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
-# Made with Bob
+      - name: convert-lora-adapter-to-gguf-f16
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "🔄 Converting LoRA adapter to GGUF F16 format..."
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          echo "Output file: $LORA_OUTPUT_FILE"
+
+          # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
+          python ./llama.cpp/convert_lora_to_gguf.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile "$LORA_OUTPUT_FILE" \
+            --outtype f16 \
+            --trust-remote-code \
+            --verbose
+
+          ls -al *.gguf
+          echo "✅ LoRA adapter conversion complete"
+
+      - name: upload-lora-adapter-f16-gguf-to-target-repo
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
+          python ./scripts/hf_model_upload.py \
+            ${{ needs.detect-and-setup.outputs.target_repo_id }} \
+            "$LORA_OUTPUT_FILE" \
+            ${{secrets.hf_token}} \
+            ${{github.workflow_ref}} \
+            ${{github.run_id}}
+          echo "✅ LoRA adapter uploaded successfully"
+

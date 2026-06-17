@@ -68,12 +68,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      - uses: actions/checkout@v6
       - name: Download log artifacts
         id: artifact-download-logs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: ${{inputs.artifacts_path}}
+
+      - name: Debug - List downloaded artifacts
+        run: |
+          echo "=== Checking artifacts directory ==="
+          if [ -d "${{inputs.artifacts_path}}" ]; then
+            echo "✅ Directory exists: ${{inputs.artifacts_path}}"
+            echo "=== Full directory listing ==="
+            ls -alR ${{inputs.artifacts_path}}
+            echo "=== Files matching extension '${{inputs.artifacts_extension}}' ==="
+            find ${{inputs.artifacts_path}} -type f -name "*${{inputs.artifacts_extension}}" || echo "No files found"
+          else
+            echo "❌ Directory does NOT exist: ${{inputs.artifacts_path}}"
+            echo "=== Current directory ==="
+            ls -al
+          fi
 
       - name: Create zip artifact filename with release tag
         id: create-zip-filename-with-release-tag
@@ -81,13 +95,17 @@ jobs:
           echo "ZIP_ARTIFACT_FNAME=${{ inputs.artifacts_root_name }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
 
       - name: find-artifacts
-        if: inputs.debug == true
         run: |
-          # ls -alR ${{inputs.artifacts_path}}
+          echo "Running Python script to find files..."
+          echo "  Path: ${{inputs.artifacts_path}}"
+          echo "  Extension: ${{inputs.artifacts_extension}}"
           python ./scripts/get_filenames.py -p ${{inputs.artifacts_path}} -x ${{inputs.artifacts_extension}} -o ${{env.ARTIFACT_LIST_FILENAME}}
-          echo "=== ${{env.ARTIFACT_LIST_FILENAME}} ===:"
-          cat ${{env.ARTIFACT_LIST_FILENAME}}
-          echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
+          echo "Python script completed"
+          if [ "${{ inputs.debug }}" == "true" ]; then
+            echo "=== ${{env.ARTIFACT_LIST_FILENAME}} ===:"
+            cat ${{env.ARTIFACT_LIST_FILENAME}}
+            echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
+          fi
 
       - name: Zip artifacts
         id: zip-artifacts
@@ -153,7 +171,7 @@ jobs:
           asset_name: ${{env.ZIP_ARTIFACT_FNAME}}
           asset_content_type: application/zip
 
-    # TODO: look to replace the "actions/upload-artifact@v4" with the GH API as the action is outdated
+    # TODO: look to replace the "actions/upload-artifact@v5" with the GH API as the action is outdated
     # See: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#upload-a-release-asset
     # See: (Python) https://github.com/AnswerDotAI/ghapi?tab=readme-ov-file (tutorials/tutorial_actions.ipynb)
     # Tutorial Example:

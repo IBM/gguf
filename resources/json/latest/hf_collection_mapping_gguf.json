@@ -228,14 +228,6 @@
                 },
                 {
                     "type": "model",
-                    "family": "vision",
-                    "repo_name": "granite-4.0-3b-vision",
-                    "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf",
-                    "llama_cpp_supported": false
-                },
-                {
-                    "type": "model",
                     "family": "embedding",
                     "version": "3.2",
                     "repo_name": "granite-embedding-30m-english",
@@ -491,6 +483,63 @@
                     "repo_name":"granite-4.1-30b",
                     "default_quant": "q4_K_M",
                     "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-3.3-8b",
+                    "default_quant": "q8_0",
+                    "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-4.0-1b-speech",
+                    "default_quant": "q8_0",
+                    "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-4.1-2b",
+                    "default_quant": "q8_0",
+                    "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-3.3-8b",
+                    "default_quant": "q8_0",
+                    "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "speech",
+                    "repo_name":"granite-speech-4.1-2b-plus",
+                    "default_quant": "q8_0",
+                    "is_latest": true
+                },
+                {
+                    "type": "model",
+                    "family": "guardian",
+                    "repo_name": "granite-guardian-4.1-8b",
+                    "default_quant": "q6_K"
+                },
+                {
+                    "type": "model",
+                    "family": "vision",
+                    "repo_name": "granite-4.0-3b-vision",
+                    "default_quant": "q8_0",
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "lora_adapter": true
+                },
+                {
+                    "type": "model",
+                    "family": "vision",
+                    "repo_name": "granite-vision-4.1-4b",
+                    "default_quant": "q8_0",
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "lora_adapter": true
                 }
             ]
         }

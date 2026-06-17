@@ -177,6 +177,7 @@ jobs:
         sparse-checkout-cone-mode: false
         sparse-checkout: |
           convert_hf_to_gguf.py
+          conversion
           requirements/requirements-convert_legacy_llama.txt
           requirements/requirements-convert_hf_to_gguf.txt
           gguf-py/gguf
@@ -364,7 +365,7 @@ jobs:
     # Upload baseline results as GitHub artifact
     - name: upload-baseline-results-artifact
       if: ${{ inputs.enable_embedding_jobs == true && env.BASELINE_RESULTS_FILE != '' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ env.REPO_NAME }}-baseline-results
         path: ${{ env.BASELINE_RESULTS_FILE }}
