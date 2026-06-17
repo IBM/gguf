@@ -15,9 +15,9 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
-  ENABLE_VISION_JOBS: false
+  ENABLE_VISION_JOBS: true
   ENABLE_SPEECH_JOBS: false
-  ENABLE_GUARDIAN_JOBS: true
+  ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
 
@@ -52,8 +52,8 @@ env:
 
   # HuggingFace Transformers versions
   # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
-  TRANSFORMERS_VERSION_LANGUAGE: "4.57.3"
-  TRANSFORMERS_VERSION_VISION: "4.57.3"
+  TRANSFORMERS_VERSION_LANGUAGE: "5.6.1"
+  TRANSFORMERS_VERSION_VISION: "5.8.0" # merged https://github.com/huggingface/transformers/pull/45597
   TRANSFORMERS_VERSION_SPEECH: "5.8.0"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
   TRANSFORMERS_VERSION_EMBEDDING: "4.57.3"
@@ -61,8 +61,8 @@ env:
 
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
-  LLAMACPP_BUILD_TAG_LANGUAGE: b8742
-  LLAMACPP_BUILD_TAG_VISION: b8100 # b7951 worked, b6808 did not... mtmd support for granite-vision models
+  LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
+  LLAMACPP_BUILD_TAG_VISION:  b9533 # b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_SPEECH: b9045
   LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
@@ -86,8 +86,8 @@ env:
   # 'ibm-granite/granite-4.1-30b-base',
   # 'ibm-granite/granite-4.1-30b'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.1-8b-base',
-      'ibm-granite/granite-4.1-3b'
+      'ibm-granite/granite-4.1-3b',
+      'ibm-granite/granite-4.1-8b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -96,11 +96,7 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-      'Q2_K',
-      'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
-      'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-      'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-      'Q6_K',
+      'Q4_K_M',
       'Q8_0'
     ]"
   # ibm-granite/granite-guardian-4.1-8b
@@ -119,11 +115,16 @@ env:
       'Q6_K',
       'Q8_0'
     ]"
+  # 'ibm-granite/granite-vision-4.1-4b'
   SOURCE_VISION_REPOS: "[
-      'None'
+      'ibm-granite/granite-vision-4.1-4b'
     ]"
+  # 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-      'None'
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
+      'Q8_0'
     ]"
   # 'ibm-granite/granite-speech-4.1-2b'
   # 'ibm-granite/granite-speech-4.1-2b-plus'
@@ -234,7 +235,7 @@ jobs:
     env:
       ARRAY_SEP: "','"
       DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
-      DEF_CONVERTED_QUANT_VISION: "f16"
+      DEF_CONVERTED_QUANT_VISION: "bf16"
       DEF_CONVERTED_QUANT_SPEECH: "bf16"
       DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"

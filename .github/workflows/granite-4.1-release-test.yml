@@ -119,8 +119,11 @@ env:
   SOURCE_VISION_REPOS: "[
       'ibm-granite/granite-vision-4.1-4b'
     ]"
-  # 'Q8_0'
+  # 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
+      'Q4_K_M',
+      'Q5_K_M',
+      'Q6_K',
       'Q8_0'
     ]"
   # 'ibm-granite/granite-speech-4.1-2b'
@@ -236,7 +239,7 @@ jobs:
     env:
       ARRAY_SEP: "','"
       DEF_CONVERTED_QUANT_LANGUAGE: "bf16"
-      DEF_CONVERTED_QUANT_VISION: "f16"
+      DEF_CONVERTED_QUANT_VISION: "bf16"
       DEF_CONVERTED_QUANT_SPEECH: "bf16"
       DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
