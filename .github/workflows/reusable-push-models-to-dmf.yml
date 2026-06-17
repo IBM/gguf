@@ -200,6 +200,8 @@ jobs:
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
         # For split GGUF files, set the base pattern (without .gguf extension and without part numbers)
         echo "SPLIT_GGUF_BASE_PATTERN=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
+        # DMF derives the model label as {type}-{size}-{variant}; the follow-up push-files calls need this.
+        echo "DMF_MODEL_LABEL=granite-${{ inputs.model_size }}-${{ inputs.quantization }}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -260,18 +262,8 @@ jobs:
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
-    - name: download-split-gguf-files-from-huggingface
-      if: env.QUANTIZED_MODEL_EXISTS == 'true' && inputs.is_split_gguf == true
-      run: |
-        echo "Downloading split GGUF files with pattern: ${{env.SPLIT_GGUF_BASE_PATTERN}}..."
-        echo "--------------------"
-        python ./scripts/hf_split_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.SPLIT_GGUF_BASE_PATTERN }} ${{secrets.hf_token}}
-        echo "--------------------"
-        echo "Downloaded files:"
-        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
-
     - name: push-model-to-dmf
-      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && inputs.is_split_gguf == false
       env:
         DMF_TOKEN: ${{ secrets.IBM_DMF_TOKEN }}
       run: |
@@ -301,3 +293,89 @@ jobs:
           --size "${{ inputs.model_size }}" \
           --variant "${{ inputs.quantization }}" \
           --comments "$DMF_COMMENTS"
+
+    # For split GGUF files, the runner does not have enough disk to hold every shard
+    # at once. We list shards up front, then loop: download one shard, push it to DMF
+    # (the first shard creates the model+revision via `dmf model push`; subsequent
+    # shards append into the same revision via `dmf model push-files`), then delete
+    # the local file before fetching the next shard.
+    - name: download-and-push-split-gguf-shards
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && inputs.is_split_gguf == true
+      env:
+        DMF_TOKEN: ${{ secrets.IBM_DMF_TOKEN }}
+        REVISION: ${{ github.run_id }}
+      run: |
+        set -euo pipefail
+
+        SHARDS_FILE="split-shards.txt"
+
+        echo "[INFO] Listing split shards for pattern: ${SPLIT_GGUF_BASE_PATTERN}"
+        python ./scripts/hf_split_file_download.py \
+          "${TARGET_REPO_ID}" "${SPLIT_GGUF_BASE_PATTERN}" "${{ secrets.hf_token }}" \
+          "${SHARDS_FILE}"
+
+        if [[ ! -s "${SHARDS_FILE}" ]]; then
+          echo "[ERROR] Shard manifest ${SHARDS_FILE} is missing or empty"
+          exit 2
+        fi
+
+        TOTAL=$(grep -c . "${SHARDS_FILE}" || true)
+        echo "[INFO] Found ${TOTAL} shards. Revision='${REVISION}', label='${DMF_MODEL_LABEL}'"
+        sed 's/^/  - /' "${SHARDS_FILE}"
+
+        DMF_COMMENTS='{"stack":"","instance_profile":"","served_model_name":"'"${TARGET_REPO_ID}"'/*'"${EXT_GGUF}"'","metadata":[{"supplemental_arguments":[]}]}'
+
+        cat > lh-conf.yaml <<EOF
+        lakehouse:
+          environment: PROD
+          token: ${DMF_TOKEN}
+        EOF
+
+        mkdir -p "${LOCAL_MODEL_PATH}"
+
+        i=0
+        while IFS= read -r SHARD || [[ -n "${SHARD}" ]]; do
+          # Skip blank lines defensively.
+          [[ -z "${SHARD}" ]] && continue
+          i=$((i+1))
+
+          echo "==================================================="
+          echo "[INFO] Shard ${i}/${TOTAL}: ${SHARD}"
+          echo "==================================================="
+
+          # Defensive: ensure --dir has only the next shard's *.gguf at push-files time.
+          find "${LOCAL_MODEL_PATH}" -maxdepth 1 -type f -name "*${EXT_GGUF}" -delete || true
+
+          python ./scripts/hf_file_download.py \
+            "${MODEL_DOWNLOAD_DIR}" "${TARGET_REPO_ID}" "${SHARD}" "${{ secrets.hf_token }}"
+
+          ls -al "${LOCAL_MODEL_PATH}"
+          df -h .
+
+          if [[ ${i} -eq 1 ]]; then
+            echo "[INFO] First shard: dmf model push (creates model + revision)"
+            dmf model push \
+              -n granite_gguf \
+              -t model \
+              --dir "${LOCAL_MODEL_PATH}" \
+              --base-model "${REPO_NAME}" \
+              --type granite \
+              --size "${{ inputs.model_size }}" \
+              --variant "${{ inputs.quantization }}" \
+              --revision "${REVISION}" \
+              --comments "${DMF_COMMENTS}"
+          else
+            echo "[INFO] Subsequent shard: dmf model push-files (appends to revision)"
+            dmf model push-files "${DMF_MODEL_LABEL}" \
+              --revision "${REVISION}" \
+              -n granite_gguf \
+              -t model \
+              --dir "${LOCAL_MODEL_PATH}"
+          fi
+
+          echo "[INFO] Cleaning up shard ${SHARD}"
+          rm -f "${LOCAL_MODEL_PATH}/${SHARD}"
+          df -h .
+        done < "${SHARDS_FILE}"
+
+        echo "[INFO] All ${TOTAL} shards downloaded, pushed, and cleaned up."
