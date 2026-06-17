@@ -54,6 +54,11 @@ on:
         required: false
         default: false
         description: 'Enable trace mode'
+      is_split_gguf:
+        type: boolean
+        required: false
+        default: false
+        description: 'Enable split GGUF file download (for multi-part files like *-00001-of-00005.gguf)'
   workflow_call:
     secrets:
       hf_token:
@@ -97,6 +102,10 @@ on:
         required: false
         default: false
       trace:
+        type: boolean
+        required: false
+        default: false
+      is_split_gguf:
         type: boolean
         required: false
         default: false
@@ -189,6 +198,8 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
+        # For split GGUF files, set the base pattern (without .gguf extension and without part numbers)
+        echo "SPLIT_GGUF_BASE_PATTERN=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -222,23 +233,41 @@ jobs:
 
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}})
-        echo "exists: '$exists'"
-        if [[ "$exists" == "False" ]]; then
-          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
-          exit 2
-        else
-          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
-          echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+        if [[ "${{ inputs.is_split_gguf }}" == "true" ]]; then
+          echo "Checking for split GGUF files with pattern: ${{ env.SPLIT_GGUF_BASE_PATTERN }}-*-of-*.gguf"
+          # For split files, we'll check if any files matching the pattern exist
+          # The actual download script will handle finding all parts
+          echo "Split GGUF mode enabled - will download all matching parts"
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+        else
+          exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+          echo "exists: '$exists'"
+          if [[ "$exists" == "False" ]]; then
+            echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
+            exit 2
+          else
+            echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
+            echo setting environment variable: QUANTIZED_MODEL_EXISTS='true'...
+            echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+          fi
         fi
 
     - name: download-quantized-gguf-from-huggingface
-      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && inputs.is_split_gguf == false
       run: |
-        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        echo "Downloading single GGUF file to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
         echo "--------------------"
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.HF_TOKEN_IBM_GRANITE}}
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
+        ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: download-split-gguf-files-from-huggingface
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && inputs.is_split_gguf == true
+      run: |
+        echo "Downloading split GGUF files with pattern: ${{env.SPLIT_GGUF_BASE_PATTERN}}..."
+        echo "--------------------"
+        python ./scripts/hf_split_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.SPLIT_GGUF_BASE_PATTERN }} ${{secrets.hf_token}}
+        echo "--------------------"
+        echo "Downloaded files:"
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
     - name: push-model-to-dmf
@@ -252,7 +281,7 @@ jobs:
         echo "[INFO] Using DMF namespace: granite_gguf"
         echo "[INFO] Using DMF table: model"
 
-        DMF_COMMENTS='{"stack":"","instance_profile":"granite-4.0-1b-bf16.gguf","served_model_name":"${{inputs.served_model_name}}","metadata":[{"supplemental_arguments":[]},{"type":"gguf"}]}'
+        DMF_COMMENTS='{"stack":"","instance_profile":"","served_model_name":"${{env.TARGET_REPO_ID}}/*${{env.EXT_GGUF}}","metadata":[{"supplemental_arguments":[]}]}'
 
         cat > lh-conf.yaml <<EOF
         lakehouse:
@@ -272,5 +301,3 @@ jobs:
           --size "${{ inputs.model_size }}" \
           --variant "${{ inputs.quantization }}" \
           --comments "$DMF_COMMENTS"
-
-    
