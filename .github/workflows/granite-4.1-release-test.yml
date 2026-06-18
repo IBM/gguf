@@ -1,10 +1,10 @@
-name: granite-4.1-tagged-test-release
+name: foobar-granite-4.1-tagged-test-release
 run-name: "[TEST] Granite 4.1 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
     tags:
-      - "test-v4.1-*"
+      - "foobar-v4.1*"
   workflow_dispatch:
 
 permissions:
