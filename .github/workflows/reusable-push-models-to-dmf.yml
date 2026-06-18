@@ -343,11 +343,20 @@ jobs:
           echo "[INFO] Shard ${i}/${TOTAL}: ${SHARD}"
           echo "==================================================="
 
-          # Defensive: ensure --dir has only the next shard's *.gguf at push-files time.
+          # Defensive: ensure --dir has only the next shard's *.gguf at push-files time,
+          # and that no HuggingFace cache artifacts (.cache/huggingface/CACHEDIR.TAG,
+          # *.metadata) remain from a previous iteration — DMF would reject those as
+          # "already exists in the model checkpoint" on push-files.
           find "${LOCAL_MODEL_PATH}" -maxdepth 1 -type f -name "*${EXT_GGUF}" -delete || true
+          rm -rf "${LOCAL_MODEL_PATH}/.cache"
 
           python ./scripts/hf_file_download.py \
             "${MODEL_DOWNLOAD_DIR}" "${TARGET_REPO_ID}" "${SHARD}" "${{ secrets.hf_token }}"
+
+          # hf_hub_download(local_dir=...) re-creates .cache/huggingface inside
+          # LOCAL_MODEL_PATH with CACHEDIR.TAG and a per-shard .metadata file.
+          # Strip it now so dmf only uploads the .gguf shard.
+          rm -rf "${LOCAL_MODEL_PATH}/.cache"
 
           ls -al "${LOCAL_MODEL_PATH}"
           df -h .
@@ -375,6 +384,7 @@ jobs:
 
           echo "[INFO] Cleaning up shard ${SHARD}"
           rm -f "${LOCAL_MODEL_PATH}/${SHARD}"
+          rm -rf "${LOCAL_MODEL_PATH}/.cache"
           df -h .
         done < "${SHARDS_FILE}"
 
