@@ -4,7 +4,7 @@ run-name: "[TEST] Granite 4.1 - CI/CD quantized GGUF models [${{github.ref_type}
 on:
   push:
     tags:
-      - "test-v4.1*"
+      - "test-v4.1-*"
   workflow_dispatch:
 
 permissions:
