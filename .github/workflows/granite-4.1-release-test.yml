@@ -26,6 +26,9 @@ env:
   ###############################################
   ENABLE_UAT_WORKFLOW: false
 
+  # Enable/disable BVT testing for specific model types (default: true)
+  ENABLE_BVT_VISION: false
+
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
 
@@ -186,6 +189,7 @@ jobs:
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
+      enable_bvt_vision: ${{ steps.set-vars.outputs.enable_bvt_vision }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
       enable_uat: ${{ steps.set-vars.outputs.enable_uat }}
@@ -346,6 +350,7 @@ jobs:
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
+            echo "enable_bvt_vision=$ENABLE_BVT_VISION" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "enable_convert_step=$ENABLE_CONVERT_STEP" >> "$GITHUB_OUTPUT"
@@ -799,7 +804,7 @@ jobs:
 
   vision-bvt-quantized-gguf-models:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
