@@ -58,6 +58,7 @@ env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   EXT_NAME_BF16: "-bf16.gguf"
+  EXT_NAME_LORA_F16: "-lora-f16.gguf"
   F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
@@ -369,7 +370,7 @@ jobs:
         if: steps.check-lora.outputs.lora_needed == 'true'
         run: |
           echo "🔄 Converting LoRA adapter to GGUF F16 format..."
-          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "Output file: $LORA_OUTPUT_FILE"
 
           # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
@@ -386,7 +387,7 @@ jobs:
       - name: upload-lora-adapter-f16-gguf-to-target-repo
         if: steps.check-lora.outputs.lora_needed == 'true'
         run: |
-          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
           python ./scripts/hf_model_upload.py \
             ${{ needs.detect-and-setup.outputs.target_repo_id }} \
@@ -520,7 +521,7 @@ jobs:
         if: steps.check-lora.outputs.lora_needed == 'true'
         run: |
           echo "🔄 Converting LoRA adapter to GGUF F16 format..."
-          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "Output file: $LORA_OUTPUT_FILE"
 
           # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
@@ -537,7 +538,7 @@ jobs:
       - name: upload-lora-adapter-f16-gguf-to-target-repo
         if: steps.check-lora.outputs.lora_needed == 'true'
         run: |
-          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}-LoRA-F16.gguf"
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
           python ./scripts/hf_model_upload.py \
             ${{ needs.detect-and-setup.outputs.target_repo_id }} \
