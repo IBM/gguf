@@ -1102,6 +1102,106 @@ Refer to [Docker Model Runner documentation](https://github.com/docker/model-run
 - The `latest` tag is only applied to models marked with `is_latest: true` in the collection config and using the default quantization
 - Docker Hub credentials are managed via GitHub secrets (`DOCKER_USERNAME`, `DOCKERHUB_TOKEN`)
 
+## Hugging Face Utility Scripts
+
+This repository includes Python utility scripts for interacting with Hugging Face Hub repositories.
+
+### File Download Script
+
+Download files from Hugging Face Hub repositories.
+
+**Script:** `scripts/hf_file_download.py`
+
+**Usage:**
+```bash
+python scripts/hf_file_download.py <models_dir> <repo_id> <model_file> <hf_token> [--debug]
+```
+
+**Arguments:**
+- `models_dir`: Local directory where the file will be downloaded
+- `repo_id`: Hugging Face repository ID (e.g., `ibm-granite/granite-3.0-2b-instruct`)
+- `model_file`: Name of the file to download from the repository
+- `hf_token`: Hugging Face API access token
+
+**Example:**
+```bash
+# Download a GGUF model file
+python scripts/hf_file_download.py \
+  ./models \
+  ibm-granite/granite-3.0-2b-instruct-GGUF \
+  granite-3.0-2b-instruct.Q4_K_M.gguf \
+  $HF_TOKEN
+```
+
+**Features:**
+- Automatic retry logic (3 attempts with 5-second delays)
+- Resume interrupted downloads
+- Token validation
+- Detailed error messages and timestamps
+
+---
+
+### File Upload Script
+
+Upload files to Hugging Face Hub repositories.
+
+**Script:** `scripts/hf_file_upload.py`
+
+**Usage:**
+```bash
+python scripts/hf_file_upload.py <local_file_path> <repo_id> <hf_token> [options]
+```
+
+**Arguments:**
+- `local_file_path`: Path to the local file to upload
+- `repo_id`: Hugging Face repository ID (e.g., `mrutkows/granite-4.0-3b-vision-GGUF`)
+- `hf_token`: Hugging Face API access token
+
+**Options:**
+- `--path-in-repo`: Destination path in the repository (defaults to basename of local file)
+- `--repo-type`: Repository type: `model`, `dataset`, or `space` (default: `model`)
+- `--commit-message`: Custom commit message for the upload
+- `--debug`: Enable debug output
+
+**Examples:**
+
+Basic upload (filename automatically extracted from local path):
+```bash
+python scripts/hf_file_upload.py \
+  /path/to/local/granite-4.0-3b-vision-lora-f16.gguf \
+  mrutkows/granite-4.0-3b-vision-GGUF \
+  $HF_TOKEN
+```
+
+Upload with custom destination path and commit message:
+```bash
+python scripts/hf_file_upload.py \
+  /path/to/local/model.gguf \
+  mrutkows/granite-4.0-3b-vision-GGUF \
+  $HF_TOKEN \
+  --path-in-repo models/granite-4.0-3b-vision-lora-f16.gguf \
+  --commit-message "Upload quantized vision model"
+```
+
+Upload to a dataset repository:
+```bash
+python scripts/hf_file_upload.py \
+  /path/to/data.csv \
+  myorg/my-dataset \
+  $HF_TOKEN \
+  --repo-type dataset
+```
+
+**Features:**
+- Automatic retry logic (3 attempts with 5-second delays)
+- File existence validation before upload
+- File size display
+- Token validation
+- Support for model, dataset, and space repositories
+- Detailed error messages and timestamps
+
+---
+
 ---
 
 ## References

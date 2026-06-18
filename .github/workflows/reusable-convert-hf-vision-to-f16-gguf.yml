@@ -160,7 +160,8 @@ jobs:
 
           # Granite 4+ vision models use convert_hf_to_gguf.py with --mmproj flag
           # Granite 3 and earlier use llava_surgery_v2.py for tensor separation
-          if [[ "$REPO_NAME" =~ granite-([4-9]|[1-9][0-9]+)\. ]]; then
+          # Note: Granite 4.0 uses pattern "granite-4.0-*-vision" while 4.1+ uses "granite-vision-4.1-*"
+          if [[ "$REPO_NAME" =~ (granite-([4-9]|[1-9][0-9]+)\.[0-9].*-vision|granite-vision-([4-9]|[1-9][0-9]+)\.) ]]; then
             echo "use_convert_script_with_mmproj=true" >> $GITHUB_OUTPUT
             echo "Detected Granite 4+ vision model: will use convert_hf_to_gguf.py with --mmproj"
           else
