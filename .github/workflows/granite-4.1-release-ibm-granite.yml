@@ -36,6 +36,9 @@ env:
   ENABLE_CONVERT_STEP: true
   ENABLE_QUANTIZE_STEP: true
 
+  # Enable/disable BVT testing for specific model types (default: true)
+  ENABLE_BVT_VISION: false
+
   ###############################################
   # Repo. configuration
   ###############################################
@@ -182,6 +185,7 @@ jobs:
       enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}
       enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
+      enable_bvt_vision: ${{ steps.set-vars.outputs.enable_bvt_vision }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
       enable_uat: ${{ steps.set-vars.outputs.enable_uat }}
@@ -342,6 +346,7 @@ jobs:
             echo "enable_embedding_jobs=$ENABLE_EMBEDDING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_docling_jobs=$ENABLE_DOCLING_JOBS" >> "$GITHUB_OUTPUT"
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
+            echo "enable_bvt_vision=$ENABLE_BVT_VISION" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "enable_uat=$ENABLE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
@@ -794,7 +799,7 @@ jobs:
 
   vision-bvt-quantized-gguf-models:
     needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
