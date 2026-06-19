@@ -54,6 +54,7 @@ on:
 env:
   DEF_SEP: "-"
   DEF_PRECISION: "${{ inputs.converted_quantization }}"
+  DEF_MMPROJ_PRECISION: "f16"
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   EXT_NAME_BF16: "-bf16.gguf"
@@ -123,7 +124,8 @@ jobs:
           BASE_FNAME_CONVERTED_GGUF="${REPO_NAME}${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
 
           # Get projector precision from JSON config (defaults to f16 if not specified)
-          PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${REPO_NAME}" "f16")
+          # The script will emit a warning to stderr if a vision model is found but projector_precision is missing
+          PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${REPO_NAME}" "${{env.DEF_MMPROJ_PRECISION}}" 2>&1)
           echo "Projector precision for ${REPO_NAME}: ${PROJECTOR_PRECISION}"
 
           echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
@@ -134,9 +136,6 @@ jobs:
           echo "base_fname_mmproj_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_OUTPUT
           echo "projector_precision=${PROJECTOR_PRECISION}" >> $GITHUB_OUTPUT
           echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
-
-          # Set DEF_MMPROJ_PRECISION for downstream use
-          echo "DEF_MMPROJ_PRECISION=${PROJECTOR_PRECISION}" >> $GITHUB_ENV
 
       - name: download-model-snapshot
         run: |
@@ -493,7 +492,7 @@ jobs:
 
       - name: convert-mmproj-with-convert-script
         run: |
-          echo "DEF_MMPROJ_PRECISION=${{env.DEF_MMPROJ_PRECISION}}"
+          echo "projector_precision=${{ needs.detect-and-setup.outputs.projector_precision }}"
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "visual_encoder_path=${{ needs.detect-and-setup.outputs.visual_encoder_path }}"
           echo "base_fname_mmproj_gguf=${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }}"
@@ -503,7 +502,7 @@ jobs:
           # to load the model architecture if it's not directly supported by the script
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} \
-            --outtype ${{env.DEF_MMPROJ_PRECISION}} \
+            --outtype ${{ needs.detect-and-setup.outputs.projector_precision }} \
             --mmproj \
             --verbose
           ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}

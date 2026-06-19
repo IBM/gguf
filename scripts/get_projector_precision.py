@@ -29,6 +29,7 @@ def get_projector_precision(collection_mapping_file, repo_id, default_precision=
 
     Returns:
         The projector_precision or default_precision
+        Prints warning to stderr if model is found but projector_precision is missing
     """
     try:
         with open(collection_mapping_file, 'r') as f:
@@ -45,9 +46,14 @@ def get_projector_precision(collection_mapping_file, repo_id, default_precision=
                     if projector_precision:
                         return projector_precision
                     else:
+                        # Model found but projector_precision is missing - emit warning
+                        # Check if this is a vision model (has family="vision" or projector_model field)
+                        is_vision = item.get('family') == 'vision' or 'projector_model' in item
+                        if is_vision:
+                            print(f"WARNING: Vision model '{repo_name}' found in JSON config but 'projector_precision' field is missing. Using default: {default_precision}", file=sys.stderr)
                         return default_precision
 
-        # If repo not found, return default
+        # If repo not found, return default (no warning - model might not be a vision model)
         return default_precision
 
     except FileNotFoundError:
