@@ -543,8 +543,8 @@
                     "family": "vision",
                     "repo_name": "granite-vision-4.1-4b",
                     "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf",
-                    "projector_precision": "f16"
+                    "projector_model": "mmproj-model-bf16.gguf",
+                    "projector_precision": "bf16"
                 }
             ]
         }

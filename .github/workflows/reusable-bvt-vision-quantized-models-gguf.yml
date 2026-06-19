@@ -104,6 +104,7 @@ jobs:
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/check_lora_adapter_needed.py
+          scripts/get_projector_precision.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
           resources/json/latest/hf_collection_mapping_gguf.json
@@ -158,9 +159,13 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
+        # Get projector precision from JSON config (defaults to f16 if not specified)
+        PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${{ env.REPO_NAME }}" "f16")
+        echo "Projector precision for ${{ env.REPO_NAME }}: ${PROJECTOR_PRECISION}"
+
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_LORA_F16_GGUF=${{ env.REPO_NAME }}-LoRA-F16.gguf" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
