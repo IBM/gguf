@@ -92,6 +92,8 @@ jobs:
           sparse-checkout: |
             scripts/hf_model_download_snapshot.py
             scripts/check_model_architecture_support.py
+            scripts/get_projector_precision.py
+            resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
