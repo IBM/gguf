@@ -208,6 +208,7 @@
                     "repo_name": "granite-vision-3.2-2b",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16",
                     "vision_config": "resources/json/granite-3.2/vision_config.json"
                 },
                 {
@@ -216,6 +217,7 @@
                     "repo_name": "granite-vision-3.3-2b",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16",
                     "vision_config": "resources/json/granite-3.3/vision_config.json"
                 },
                 {
@@ -224,6 +226,7 @@
                     "repo_name": "granite-vision-3.3-2b-chart2csv-preview",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16",
                     "vision_config": "resources/json/granite-3.3/vision_config.json"
                 },
                 {
@@ -425,7 +428,8 @@
                     "family": "docling",
                     "repo_name":"granite-docling-258M",
                     "default_quant": "bf16",
-                    "projector_model": "mmproj-model-f16.gguf"
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16"
                 },
                 {
                     "type": "model",
@@ -531,6 +535,7 @@
                     "repo_name": "granite-4.0-3b-vision",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16",
                     "lora_adapter": true
                 },
                 {
@@ -538,7 +543,8 @@
                     "family": "vision",
                     "repo_name": "granite-vision-4.1-4b",
                     "default_quant": "q8_0",
-                    "projector_model": "mmproj-model-f16.gguf"
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16"
                 }
             ]
         }

@@ -390,6 +390,7 @@ The JSON collection mapping files have the following structure:
                     "repo_name": "granite-vision-3.3-2b",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16",
                     "vision_config": "VISION_CONFIG: resources/json/granite-3.3/vision_config.json"
                 },
                 {
@@ -410,7 +411,8 @@ The JSON collection mapping files have the following structure:
                     "family": "docling",
                     "repo_name": "granite-docling-258M",
                     "default_quant": "bf16",
-                    "projector_model": "mmproj-model-f16.gguf"
+                    "projector_model": "mmproj-model-f16.gguf",
+                    "projector_precision": "f16"
                 },
                 {
                     "type": "model",
@@ -456,9 +458,10 @@ Each item represents a single source repository and contains the following field
   - `mini` - Mini models (~8B parameters)
 - `is_latest`: Boolean flag to mark which model should receive the `latest` tag in Docker Hub. Used by Docker Model Factory workflows to identify the primary model for a given repository. Only one model should be marked as `is_latest: true` per repository, and it must use the default quantization. Base models are excluded from receiving the `latest` tag. (optional, defaults to `false`)
 
-*Vision/Docling-specific fields:*
-- `projector_model`: Specifies the multimodal projector file (e.g., `mmproj-model-f16.gguf`) (required for vision/docling models)
-- `vision_config`: Path to vision configuration JSON file (e.g., `VISION_CONFIG: resources/json/granite-3.3/vision_config.json`) (optional)
+*Vision/Docling/Speech-specific fields:*
+- `projector_model`: Specifies the multimodal projector file (e.g., `mmproj-model-f16.gguf`) (required for vision/docling/speech models)
+- `projector_precision`: Precision for the projector model (e.g., `f16`, `bf16`). Defaults to `f16` if not specified (optional)
+- `vision_config`: Path to vision configuration JSON file (e.g., `VISION_CONFIG: resources/json/granite-3.3/vision_config.json`) (optional, vision models only)
 
 **Note:** The `size` field is used by the `get_partner_model_name.py` script to generate standardized model names for partner registries (Ollama, Docker Model Factory) when the model repository name doesn't include an explicit size designation. This ensures consistent naming conventions across different deployment platforms.
 

@@ -82,6 +82,7 @@ jobs:
       local_model_path: ${{ steps.setup.outputs.local_model_path }}
       base_fname_bf16_gguf: ${{ steps.setup.outputs.base_fname_bf16_gguf }}
       base_fname_mmproj_f16_gguf: ${{ steps.setup.outputs.base_fname_mmproj_f16_gguf }}
+      projector_precision: ${{ steps.setup.outputs.projector_precision }}
       speech_encoder_path: ${{ steps.setup.outputs.speech_encoder_path }}
     steps:
       - uses: actions/checkout@v6
@@ -117,13 +118,21 @@ jobs:
           # This matches the construction method in reusable-quantize-speech-upload-gguf.yml
           BASE_FNAME_CONVERTED_GGUF="${REPO_NAME}${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
 
+          # Get projector precision from JSON config (defaults to f16 if not specified)
+          PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${REPO_NAME}" "f16")
+          echo "Projector precision for ${REPO_NAME}: ${PROJECTOR_PRECISION}"
+
           echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
           echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
           echo "base_fname_bf16_gguf=${BASE_FNAME_CONVERTED_GGUF}" >> $GITHUB_OUTPUT
-          echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_OUTPUT
+          echo "base_fname_mmproj_f16_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_OUTPUT
+          echo "projector_precision=${PROJECTOR_PRECISION}" >> $GITHUB_OUTPUT
           echo "speech_encoder_path=speech_encoder" >> $GITHUB_OUTPUT
+
+          # Set DEF_MMPROJ_PRECISION for downstream use
+          echo "DEF_MMPROJ_PRECISION=${PROJECTOR_PRECISION}" >> $GITHUB_ENV
 
       - name: download-model-snapshot
         run: |
@@ -238,8 +247,9 @@ jobs:
           # Convert the speech encoder (mmproj) component
           # The convert_hf_to_gguf.py script will use transformers AutoModel classes
           # to load the model architecture if it's not directly supported by the script
+          echo "base_fname_mmproj_f16_gguf=${{ needs.detect-and-setup.outputs.base_fname_mmproj_f16_gguf }}"
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
-            --outfile ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/mmproj-model-f16.gguf \
+            --outfile ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_f16_gguf }} \
             --outtype ${{env.DEF_MMPROJ_PRECISION}} \
             --mmproj \
             --verbose
@@ -247,7 +257,7 @@ jobs:
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/mmproj-model-f16.gguf ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_f16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: convert-speech-model-llm-to-gguf-bf16
         run: |

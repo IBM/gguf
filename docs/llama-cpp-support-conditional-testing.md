@@ -32,6 +32,7 @@ In `resources/json/latest/hf_collection_mapping_gguf.json`, models can specify l
     "repo_name": "granite-4.0-3b-vision",
     "default_quant": "q8_0",
     "projector_model": "mmproj-model-f16.gguf",
+    "projector_precision": "f16",
     "llama_cpp_supported": false
 }
 ```
