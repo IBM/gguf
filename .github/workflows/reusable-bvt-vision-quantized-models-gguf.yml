@@ -316,6 +316,8 @@ jobs:
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \
+            --fit off \
+            --no-warmup \
             --jinja \
             $VERBOSE_FLAG \
             --log-file ${{env.BASE_FNAME_LOG_FILE}} 1>${{env.BASE_FNAME_RESPONSE_FILE}}
