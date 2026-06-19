@@ -25,9 +25,17 @@ def safe_create_repo_in_namespace(repo_id:str="", private:bool=True, hf_token:st
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
+        # Print full exception details for better debugging
+        print(f"HfHubHTTPError creating repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception creating repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     else:
         return repo_url
     return None
