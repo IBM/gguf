@@ -83,12 +83,12 @@ env:
   REPO_NAME: ""  # Set in set-github-env step
   TARGET_REPO_ID: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-1 step
-  BASE_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-1 step
+  BASE_FNAME_MMPROJ_GGUF: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_LOG_FILE: ""  # Set in set-derivative-env-vars-1 step
   BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
   LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-3 step
-  LOCAL_FNAME_MMPROJ_F16_GGUF: ""  # Set in set-derivative-env-vars-3 step
+  LOCAL_FNAME_MMPROJ_GGUF: ""  # Set in set-derivative-env-vars-3 step
 
 jobs:
   test-quantized-model:
@@ -102,11 +102,13 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
+          scripts/get_projector_precision.py
           scripts/test_regex_match_file.py
           scripts/test_regex_match_file_2.py
+          resources/json/latest/hf_collection_mapping_gguf.json
           test/audio
           bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
-        sparse-checkout-cone-mode: true
+        sparse-checkout-cone-mode: false
         fetch-depth: 1
     - name: confirm-environment
       run: |
@@ -155,9 +157,13 @@ jobs:
 
     - name: set-derivative-env-vars-1
       run: |
+        # Get projector precision from JSON config (defaults to f16 if not specified)
+        PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${{ env.REPO_NAME }}" "f16")
+        echo "Projector precision for ${{ env.REPO_NAME }}: ${PROJECTOR_PRECISION}"
+
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_MMPROJ_F16_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}${{env.EXT_NAME_F16}}" >> $GITHUB_ENV
+        echo "BASE_FNAME_MMPROJ_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
@@ -168,14 +174,14 @@ jobs:
     - name: set-derivative-env-vars-3
       run: |
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-        echo "LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_F16_GGUF}}" >> $GITHUB_ENV
+        echo "LOCAL_FNAME_MMPROJ_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_MMPROJ_GGUF}}" >> $GITHUB_ENV
 
     - name: verify-github-env
       run: |
         echo "================== Derivative Environment Variables 1 =================="
         echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
-        echo "BASE_FNAME_MMPROJ_F16_GGUF='$BASE_FNAME_MMPROJ_F16_GGUF' (${{ env.BASE_FNAME_MMPROJ_F16_GGUF }})"
+        echo "BASE_FNAME_MMPROJ_GGUF='$BASE_FNAME_MMPROJ_GGUF' (${{ env.BASE_FNAME_MMPROJ_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
         echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
         echo "================== Derivative Environment Variables 2 =================="
@@ -242,8 +248,8 @@ jobs:
 
     - name: download-mmproj-gguf-hf-hub-download
       run: |
-        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_F16_GGUF}}..."
-        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_F16_GGUF }} ${{secrets.hf_token}}
+        echo "Downloading model: ${{env.BASE_FNAME_MMPROJ_GGUF}}..."
+        python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_MMPROJ_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
 
     - name: verify-downloaded-files
@@ -261,7 +267,7 @@ jobs:
       continue-on-error: true
       run: |
         echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
-        echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
+        echo "env.LOCAL_FNAME_MMPROJ_GGUF=${{env.LOCAL_FNAME_MMPROJ_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         echo "VERBOSE mode: ${{env.VERBOSE}}"
 
@@ -274,7 +280,7 @@ jobs:
 
         # Note: Audio input flag may need to be adjusted based on llama.cpp speech support
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
-            --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
+            --mmproj ${{env.LOCAL_FNAME_MMPROJ_GGUF}} \
             --audio ${{env.TEST_AUDIO_PATH}}${{env.TEST_AUDIO_FILE}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
             --temp ${{env.LLAMA_REQUEST_TEMP}} \

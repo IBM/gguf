@@ -26,7 +26,7 @@ env:
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
   # Enable/disable BVT testing for specific model types (default: true)
-  ENABLE_BVT_VISION: false
+  ENABLE_BVT_VISION: true
 
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
@@ -813,6 +813,7 @@ jobs:
       environment-setup,
       vision-bvt-quantized-gguf-models,
     ]
+    if: ${{ always() && (needs.vision-bvt-quantized-gguf-models.result == 'success' || needs.vision-bvt-quantized-gguf-models.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       granite_family: "vision"

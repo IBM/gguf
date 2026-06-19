@@ -37,7 +37,7 @@ env:
   ENABLE_QUANTIZE_STEP: true
 
   # Enable/disable BVT testing for specific model types (default: true)
-  ENABLE_BVT_VISION: false
+  ENABLE_BVT_VISION: true
 
   ###############################################
   # Repo. configuration
@@ -829,6 +829,7 @@ jobs:
       environment-setup,
       vision-bvt-quantized-gguf-models,
     ]
+    if: ${{ always() && (needs.vision-bvt-quantized-gguf-models.result == 'success' || needs.vision-bvt-quantized-gguf-models.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       granite_family: "vision"
