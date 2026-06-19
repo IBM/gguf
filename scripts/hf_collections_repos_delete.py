@@ -26,15 +26,25 @@ def safe_delete_repo(repo_id:str="", repo_type:str="model", hf_token:str="") -> 
             missing_ok=True,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
+        print(f"HfHubHTTPError deleting repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except requests.exceptions.HTTPError as exc:
-        print(f"HTTPError: {exc}")
+        print(f"HTTPError deleting repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     except requests.exceptions.ConnectionError as exc:
-        print(f"ConnectionError: {exc}")
+        print(f"ConnectionError deleting repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     except requests.exceptions.Timeout as exc:
-        print(f"Timeout: {exc}")
+        print(f"Timeout deleting repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     except requests.exceptions.RequestException as exc:
-        print(f"RequestException: {exc}")
+        print(f"RequestException deleting repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     return None
 
 
@@ -94,9 +104,16 @@ def safe_delete_collection_in_namespace(hf_owner:str="", title:str="", hf_token:
         else:
             print(f"[WARNING] Collection '{title}' not found in namespace '{hf_owner}'")
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
+        print(f"HfHubHTTPError deleting collection.title: '{title}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception deleting collection.title: '{title}'")
+        print(f"  Error: {exc}")
     else:
         return collection
     return None

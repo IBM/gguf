@@ -42,10 +42,17 @@ def safe_delete_file(
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', file_name: '{file_name}'")
+        print(f"HfHubHTTPError deleting file from repo_id: '{repo_id}', file_name: '{file_name}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
         sys.exit(2)
     except Exception as exc:
-        print(f"Other Exception: {exc}")
+        print(f"Exception deleting file from repo_id: '{repo_id}', file_name: '{file_name}'")
+        print(f"  Error: {exc}")
         sys.exit(2)
     return None
 

@@ -98,9 +98,16 @@ def safe_create_collection_in_namespace(hf_owner:str="", title:str="", descripti
         else:
             print(f"[WARNING] Collection '{title}' already exists in namespace '{hf_owner}'")
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, collection.title: '{title}'")
+        print(f"HfHubHTTPError creating collection.title: '{title}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception creating collection.title: '{title}'")
+        print(f"  Error: {exc}")
     else:
         return collection
     return None
@@ -132,9 +139,16 @@ def add_update_collection_item(collection_slug:str="", repo_id:str="", item_type
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, item_id: '{repo_id}'")
+        print(f"HfHubHTTPError adding item_id: '{repo_id}' to collection")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception adding item_id: '{repo_id}' to collection")
+        print(f"  Error: {exc}")
     else:
         return collection
     return None

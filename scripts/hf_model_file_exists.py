@@ -32,10 +32,17 @@ def model_file_exists(
         )
 
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}', test_file_name: '{test_filename}'")
+        print(f"HfHubHTTPError checking file existence for repo_id: '{repo_id}', test_file_name: '{test_filename}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
         return False
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception checking file existence for repo_id: '{repo_id}', test_file_name: '{test_filename}'")
+        print(f"  Error: {exc}")
     return False
 
 

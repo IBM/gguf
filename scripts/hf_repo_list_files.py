@@ -29,10 +29,17 @@ def list_model_files(
         )
 
     except HfHubHTTPError as exc:
-        print(f"HfHubHTTPError: {exc.server_message}, repo_id: '{repo_id}'")
+        print(f"HfHubHTTPError listing files for repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
         return None
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception listing files for repo_id: '{repo_id}'")
+        print(f"  Error: {exc}")
     return None
 
 

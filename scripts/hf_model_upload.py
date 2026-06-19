@@ -46,9 +46,16 @@ def safe_upload_file(
             token=hf_token,
         )
     except HfHubHTTPError as exc:
-        print(f"[ERROR] HfHubHTTPError: {exc.server_message}, repo_name: '{repo_id}', model_file: '{model_file}'")
+        print(f"[ERROR] HfHubHTTPError uploading to repo_name: '{repo_id}', model_file: '{model_file}'")
+        print(f"  Error: {exc}")
+        if hasattr(exc, 'server_message') and exc.server_message:
+            print(f"  Server message: {exc.server_message}")
+        if hasattr(exc, 'response') and exc.response:
+            print(f"  Response status: {exc.response.status_code}")
+            print(f"  Response text: {exc.response.text}")
     except Exception as exc:
-        print(f"Exception: {exc}")
+        print(f"Exception uploading to repo_name: '{repo_id}', model_file: '{model_file}'")
+        print(f"  Error: {exc}")
     else:
         return commit_info
     return None
