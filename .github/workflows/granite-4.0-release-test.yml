@@ -26,7 +26,7 @@ env:
   ENABLE_BVT_TEST_CONVERTED_FORMAT: true
 
   # Enable/disable BVT testing for specific model types (default: true)
-  ENABLE_BVT_VISION: false
+  ENABLE_BVT_VISION: true
 
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
