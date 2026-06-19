@@ -4,6 +4,7 @@ This repository provides an automated CI/CD process to convert, test and deploy 
 
 #### Topic index
 
+- [Documentation](#documentation)
 - [Criteria for IBM Granite model format conversion and quantization](#criteria-for-ibm-granite-model-format-conversion-and-quantization)
 - [Supported IBM Granite models (GGUF)](#supported-ibm-granite-models-gguf)
   - [Language](#language)
@@ -19,6 +20,26 @@ This repository provides an automated CI/CD process to convert, test and deploy 
   - [Ollama](#ollama)
   - [Docker Model Factory](#docker-model-factory)
 - [References](#references)
+
+---
+
+## Documentation
+
+For detailed guides and technical documentation, see the following resources in the [`docs/`](docs/) directory:
+
+### Build & Workflow Guides
+- **[Quick Start: Building llama.cpp Binaries](docs/build-llamacpp-quick-start.md)** - Fast guide to building llama.cpp binaries using GitHub Actions workflow
+- **[Build llama.cpp Workflow Plan](docs/build-llamacpp-workflow-plan.md)** - Design and architecture of the automated llama.cpp build workflow
+- **[Build llama.cpp Workflow Usage](docs/build-llamacpp-workflow-usage.md)** - Comprehensive usage guide for the llama.cpp build workflow with all configuration options
+
+### Model Conversion & Testing
+- **[Converting Vision Models to GGUF](docs/convert-vision-models.md)** - Guide for converting Granite vision models (multimodal) from HuggingFace to GGUF format
+- **[Conditional Testing for llama.cpp Support](docs/llama-cpp-support-conditional-testing.md)** - How the workflow handles models with architectures not yet supported by llama.cpp
+- **[Embedding Similarity Thresholds](docs/embedding-similarity-thresholds.md)** - Configuration and explanation of per-model similarity thresholds for embedding model BVT tests
+
+### Configuration & Utilities
+- **[Parameterizing Transformers Version](docs/parameterize-transformers-version.md)** - How to control HuggingFace Transformers versions in conversion workflows
+- **[Python Scripts Reference](docs/scripts-reference.md)** - Comprehensive documentation for all Python utility scripts used in CI/CD workflows
 
 ---
 
@@ -165,7 +186,8 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-vision-3.2-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.52.1† | b7951 |
 | ibm-granite/granite-vision-3.3-2b | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | 4.57.3† | b8100‡ |
 | ibm-granite/granite-vision-3.3-2b-chart2csv-preview | LlavaNextForConditionalGeneration (text: GraniteForCausalLM, vision: siglip_vision_model) | LlavaNext (text: Dense Transformer, vision: SigLIP) | not yet successfully tested | not yet successfully tested. |
-| ibm-granite/granite-4.0-3b-vision ⚠️ | Granite4VisionForConditionalGeneration (custom model) (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | ❌ **Not currently supported** - Requires custom code not available in llama.cpp or HF Transformers. See [Converting Vision Models](docs/convert-vision-models.md) for details. | | |
+| ibm-granite/granite-4.0-3b-vision | Granite4VisionForConditionalGeneration (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | Granite 4.0 Vision (text: MoE Hybrid Transformer, vision: SigLIP) **[Requires LoRA adapter]** | 5.8.0+ (min), 5.8.0+ (current) | b9533 (min), b9704 (current) |
+| ibm-granite/granite-vision-4.1-4b | Granite4VisionForConditionalGeneration (text: GraniteMoeHybridForCausalLM, vision: siglip_vision_model) | Granite 4.1 Vision (text: MoE Hybrid Transformer, vision: SigLIP) | 5.8.0+ (min), 5.8.0+ (current) | b9533 (min), b9704 (current) |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
 
