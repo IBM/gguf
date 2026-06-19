@@ -753,7 +753,7 @@ jobs:
     needs: [ environment-setup, vision-create-hf-repos, check-vision-llama-cpp-support ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     # OLD: uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-f16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-gguf.yml@main
     permissions:
       contents: write
       packages: write

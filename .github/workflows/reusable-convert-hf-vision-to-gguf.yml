@@ -1,0 +1,296 @@
+# This workflow converts HF LLaVA (vision) models to GGUF format using a multi-job structure:
+# - Job 1: Detects Granite version and sets up shared variables
+# - Job 2: Converts Granite 3 models using llava surgery tooling
+# - Job 3: Converts Granite 4+ models using convert_hf_to_gguf.py with --mmproj flag
+
+name: convert-hf-vision-to-gguf-reusable
+
+on:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      ibm_granite_token:
+        required: true
+    inputs:
+      enable_vision_jobs:
+        type: boolean
+        required: false
+        default: false
+      repo_id:
+        type: string
+        required: true
+      hf_collection_config:
+        type: string
+        required: true
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      transformers_version:
+        type: string
+        required: false
+        default: "4.52.1"
+        description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3'). Defaults to 4.52.1 for Granite 3.x models."
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag to use (e.g., 'b6569', 'b6808', 'b8100'). Determines which llama.cpp version to clone."
+      converted_quantization:
+        type: string
+        required: true
+        description: "Quantization format for converted vision model LLM (e.g., 'f16' or 'bf16')"
+      debug:
+        type: boolean
+        required: true
+        default: false
+      trace:
+        type: boolean
+        required: true
+        default: false
+
+env:
+  DEF_SEP: "-"
+  DEF_PRECISION: "${{ inputs.converted_quantization }}"
+  EXT_GGUF: .gguf
+  EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_BF16: "-bf16.gguf"
+  EXT_NAME_LORA_F16: "-lora-f16.gguf"
+  F16_MMPROJ_MODEL_BASE_FILENAME: mmproj-model
+  FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
+  LLAMACPP_DIR: llama.cpp
+  MODEL_DOWNLOAD_DIR: models
+  LLAVA_PROJECTOR_KEYS_FILE: projector_keys.txt
+  HF_HUB_DISABLE_XET: 1
+  HF_HUB_ENABLE_HF_TRANSFER: 0
+  HF_TRANSFORMERS_LLAVA_NEXT_INIT_CHANGE: "4.52.1"
+
+jobs:
+  # ===========================================================================
+  # Job 1: Detect Granite version and setup shared variables
+  # ===========================================================================
+  detect-and-setup:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable_vision_jobs == true }}
+    timeout-minutes: 5
+    outputs:
+      use_convert_script_with_mmproj: ${{ steps.detect.outputs.use_convert_script_with_mmproj }}
+      repo_org: ${{ steps.setup.outputs.repo_org }}
+      repo_name: ${{ steps.setup.outputs.repo_name }}
+      target_repo_id: ${{ steps.setup.outputs.target_repo_id }}
+      local_model_path: ${{ steps.setup.outputs.local_model_path }}
+      base_fname_bf16_gguf: ${{ steps.setup.outputs.base_fname_bf16_gguf }}
+      base_fname_mmproj_gguf: ${{ steps.setup.outputs.base_fname_mmproj_gguf }}
+      projector_precision: ${{ steps.setup.outputs.projector_precision }}
+      visual_encoder_path: ${{ steps.setup.outputs.visual_encoder_path }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            requirements.txt
+            scripts/check_model_architecture_support.py
+            scripts/get_projector_precision.py
+            resources/json/latest/hf_collection_mapping_gguf.json
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install -r ./requirements.txt
+          pip list
+
+      - name: setup-shared-vars
+        id: setup
+        run: |
+          REPO_ORG=$(dirname '${{ inputs.repo_id }}')
+          REPO_NAME=$(basename '${{ inputs.repo_id }}')
+
+          # Dynamically construct filename using converted_quantization parameter
+          # This matches the construction method in reusable-quantize-llava-upload-gguf.yml
+          BASE_FNAME_CONVERTED_GGUF="${REPO_NAME}${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
+
+          # Get projector precision from JSON config (defaults to f16 if not specified)
+          PROJECTOR_PRECISION=$(python ./scripts/get_projector_precision.py resources/json/latest/hf_collection_mapping_gguf.json "${REPO_NAME}" "f16")
+          echo "Projector precision for ${REPO_NAME}: ${PROJECTOR_PRECISION}"
+
+          echo "repo_org=$REPO_ORG" >> $GITHUB_OUTPUT
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "target_repo_id=${{inputs.target_repo_owner}}/${REPO_NAME}${{inputs.target_repo_name_ext}}" >> $GITHUB_OUTPUT
+          echo "local_model_path=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_OUTPUT
+          echo "base_fname_bf16_gguf=${BASE_FNAME_CONVERTED_GGUF}" >> $GITHUB_OUTPUT
+          echo "base_fname_mmproj_gguf=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_OUTPUT
+          echo "projector_precision=${PROJECTOR_PRECISION}" >> $GITHUB_OUTPUT
+          echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
+
+      - name: detect-conversion-path
+        id: detect
+        run: |
+          REPO_NAME="${{ steps.setup.outputs.repo_name }}"
+
+          # Granite 4+ vision models use convert_hf_to_gguf.py with --mmproj flag
+          # Granite 3 and earlier use llava_surgery_v2.py for tensor separation
+          # Note: Granite 4.0 uses pattern "granite-4.0-*-vision" while 4.1+ uses "granite-vision-4.1-*"
+          if [[ "$REPO_NAME" =~ (granite-([4-9]|[1-9][0-9]+)\.[0-9].*-vision|granite-vision-([4-9]|[1-9][0-9]+)\.) ]]; then
+            echo "use_convert_script_with_mmproj=true" >> $GITHUB_OUTPUT
+            echo "Detected Granite 4+ vision model: will use convert_hf_to_gguf.py with --mmproj"
+          else
+            echo "use_convert_script_with_mmproj=false" >> $GITHUB_OUTPUT
+            echo "Detected Granite 3 or earlier: will use llava_surgery_v2.py tooling"
+          fi
+
+      - name: show-setup-outputs
+        run: |
+          echo "use_convert_script_with_mmproj: ${{ steps.detect.outputs.use_convert_script_with_mmproj }}"
+          echo "repo_org: ${{ steps.setup.outputs.repo_org }}"
+          echo "repo_name: ${{ steps.setup.outputs.repo_name }}"
+          echo "target_repo_id: ${{ steps.setup.outputs.target_repo_id }}"
+          echo "local_model_path: ${{ steps.setup.outputs.local_model_path }}"
+          echo "base_fname_bf16_gguf: ${{ steps.setup.outputs.base_fname_bf16_gguf }}"
+          echo "base_fname_mmproj_gguf: ${{ steps.setup.outputs.base_fname_mmproj_gguf }}"
+          echo "projector_precision: ${{ steps.setup.outputs.projector_precision }}"
+          echo "visual_encoder_path: ${{ steps.setup.outputs.visual_encoder_path }}"
+
+  # ===========================================================================
+  # Job 2: Convert Granite 3 vision models (llava surgery path)
+  # ===========================================================================
+  convert-granite-3-vision:
+    needs: detect-and-setup
+    if: ${{ needs.detect-and-setup.outputs.use_convert_script_with_mmproj == 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            requirements.txt
+            scripts/hf_model_download_snapshot.py
+            scripts/hf_model_upload.py
+            scripts/torch_llava_save_llm.py
+            scripts/torch_llava_validate_tensors.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install -r ./requirements.txt
+          pip list
+
+      - name: download-model-snapshot
+        run: |
+          python ./scripts/hf_model_download_snapshot.py ${{ needs.detect-and-setup.outputs.local_model_path }} ${{ inputs.repo_id }} ${{ secrets.ibm_granite_token }}
+
+      - name: clone-llama-cpp
+        run: |
+          git clone https://github.com/ggerganov/llama.cpp.git
+          cd llama.cpp
+          git checkout ${{ inputs.llamacpp_build_tag }}
+
+      - name: convert-llm-with-llava-surgery
+        run: |
+          python ./scripts/torch_llava_save_llm.py ${{ needs.detect-and-setup.outputs.local_model_path }}
+
+      - name: upload-llm-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+      - name: validate-projector-tensors
+        run: |
+          python ./scripts/torch_llava_validate_tensors.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip \
+            ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector
+
+      - name: convert-mmproj-f16-gguf
+        run: |
+          mkdir -p ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
+          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} \
+            --outtype ${{ needs.detect-and-setup.outputs.projector_precision }} \
+            --verbose
+
+      - name: upload-mmproj-f16-gguf-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+  # ===========================================================================
+  # Job 3: Convert Granite 4+ vision models (direct conversion with --mmproj)
+  # ===========================================================================
+  convert-granite-4plus-vision:
+    needs: detect-and-setup
+    if: ${{ needs.detect-and-setup.outputs.use_convert_script_with_mmproj == 'true' }}
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            requirements.txt
+            scripts/hf_model_download_snapshot.py
+            scripts/hf_model_upload.py
+          sparse-checkout-cone-mode: false
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: install-dependencies
+        run: |
+          python -m pip install -r ./requirements.txt
+          pip list
+
+      - name: download-model-snapshot
+        run: |
+          python ./scripts/hf_model_download_snapshot.py ${{ needs.detect-and-setup.outputs.local_model_path }} ${{ inputs.repo_id }} ${{ secrets.ibm_granite_token }}
+
+      - name: clone-llama-cpp
+        run: |
+          git clone https://github.com/ggerganov/llama.cpp.git
+          cd llama.cpp
+          git checkout ${{ inputs.llamacpp_build_tag }}
+
+      - name: convert-llm-with-convert-script
+        run: |
+          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
+            --outtype ${{env.DEF_PRECISION}} \
+            --verbose
+
+      - name: upload-llm-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+      - name: convert-mmproj-with-convert-script
+        run: |
+          echo "projector_precision=${{ needs.detect-and-setup.outputs.projector_precision }}"
+          echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
+          echo "visual_encoder_path=${{ needs.detect-and-setup.outputs.visual_encoder_path }}"
+          echo "base_fname_mmproj_gguf=${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }}"
+          mkdir -p ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
+          # Convert the visual encoder (mmproj) component
+          # The convert_hf_to_gguf.py script will use transformers AutoModel classes
+          # to load the model architecture if it's not directly supported by the script
+          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} \
+            --outtype ${{ needs.detect-and-setup.outputs.projector_precision }} \
+            --mmproj \
+            --verbose
+          ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
+
+      - name: upload-mmproj-f16-gguf-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+# Made with Bob
