@@ -189,7 +189,7 @@ jobs:
 
       - name: download-model-snapshot
         run: |
-          python ./scripts/hf_model_download_snapshot.py ${{ needs.detect-and-setup.outputs.local_model_path }} ${{ inputs.repo_id }} ${{ secrets.ibm_granite_token }}
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{ secrets.ibm_granite_token }}
 
       - name: clone-llama-cpp
         run: |
@@ -253,7 +253,7 @@ jobs:
 
       - name: download-model-snapshot
         run: |
-          python ./scripts/hf_model_download_snapshot.py ${{ needs.detect-and-setup.outputs.local_model_path }} ${{ inputs.repo_id }} ${{ secrets.ibm_granite_token }}
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{ secrets.ibm_granite_token }}
 
       - name: clone-llama-cpp
         run: |
