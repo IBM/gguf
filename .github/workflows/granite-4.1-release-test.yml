@@ -126,8 +126,7 @@ env:
   TARGET_VISION_QUANTIZATIONS: "[
       'Q4_K_M',
       'Q5_K_M',
-      'Q6_K',
-      'Q8_0'
+      'Q6_K'
     ]"
   # 'ibm-granite/granite-speech-4.1-2b'
   # 'ibm-granite/granite-speech-4.1-2b-plus'
