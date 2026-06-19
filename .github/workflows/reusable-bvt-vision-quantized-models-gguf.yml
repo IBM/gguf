@@ -63,7 +63,7 @@ env:
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
   LLAMA_CLI_TOOL: llama-mtmd-cli # llama-llava-cli
-  LLAMA_REQUEST_TEMP: 0.1 # 0
+  LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
   LLAMA_REQUEST_TEST_IMAGE: "test/images/cherry_blossom.jpg"
   LLAMA_REQUEST_PROMPT_USER: "</image> What type of flowers are in this picture?"
