@@ -90,7 +90,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           sparse-checkout: |
-            requirements.txt
+            scripts/hf_model_download_snapshot.py
             scripts/check_model_architecture_support.py
             scripts/get_projector_precision.py
             resources/json/latest/hf_collection_mapping_gguf.json
@@ -103,10 +103,16 @@ jobs:
 
       - name: install-dependencies
         run: |
-          python -m pip install -r ./requirements.txt
-          pip list
+          python -m pip install huggingface-hub transformers==${{ inputs.transformers_version }}
+          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
 
-      - name: setup-shared-vars
+      - name: Dump GitHub inputs
+        if: ${{ inputs.debug }}
+        env:
+          GITHUB_INPUTS: ${{ toJson(inputs) }}
+        run: echo "$GITHUB_INPUTS"
+
+      - name: setup-shared-variables
         id: setup
         run: |
           REPO_ORG=$(dirname '${{ inputs.repo_id }}')
@@ -129,10 +135,39 @@ jobs:
           echo "projector_precision=${PROJECTOR_PRECISION}" >> $GITHUB_OUTPUT
           echo "visual_encoder_path=visual_encoder" >> $GITHUB_OUTPUT
 
-      - name: detect-conversion-path
+          # Set DEF_MMPROJ_PRECISION for downstream use
+          echo "DEF_MMPROJ_PRECISION=${PROJECTOR_PRECISION}" >> $GITHUB_ENV
+
+      - name: download-model-snapshot
+        run: |
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ steps.setup.outputs.repo_org }} ${{ steps.setup.outputs.repo_name }} ${{secrets.ibm_granite_token}}
+
+      - name: validate-model-architecture-support
+        id: validate-arch
+        run: |
+          echo "🔍 Checking model architecture: ${{ steps.setup.outputs.repo_name }}"
+
+          DEBUG_FLAG=""
+          if [ "${{ inputs.debug }}" = "true" ]; then
+            DEBUG_FLAG="--debug"
+            echo "Debug mode enabled - will show full architecture list on failure"
+          fi
+
+          if python ./scripts/check_model_architecture_support.py ${{ steps.setup.outputs.local_model_path }} $DEBUG_FLAG; then
+            echo "✅ Model architecture validation PASSED"
+          else
+            echo "❌ Model architecture validation FAILED"
+            echo "::error::Model architecture is not supported by transformers version ${{ inputs.transformers_version }}"
+            echo "::error::The model cannot be converted with the current transformers version"
+            echo "::error::Consider updating transformers_version input parameter"
+            exit 1
+          fi
+
+      - name: detect-granite-version
         id: detect
         run: |
-          REPO_NAME="${{ steps.setup.outputs.repo_name }}"
+          REPO_NAME=$(basename '${{ inputs.repo_id }}')
+          echo "REPO_NAME: $REPO_NAME"
 
           # Granite 4+ vision models use convert_hf_to_gguf.py with --mmproj flag
           # Granite 3 and earlier use llava_surgery_v2.py for tensor separation
@@ -145,7 +180,7 @@ jobs:
             echo "Detected Granite 3 or earlier: will use llava_surgery_v2.py tooling"
           fi
 
-      - name: show-setup-outputs
+      - name: verify-outputs
         run: |
           echo "use_convert_script_with_mmproj: ${{ steps.detect.outputs.use_convert_script_with_mmproj }}"
           echo "repo_org: ${{ steps.setup.outputs.repo_org }}"
@@ -154,27 +189,28 @@ jobs:
           echo "local_model_path: ${{ steps.setup.outputs.local_model_path }}"
           echo "base_fname_bf16_gguf: ${{ steps.setup.outputs.base_fname_bf16_gguf }}"
           echo "base_fname_mmproj_gguf: ${{ steps.setup.outputs.base_fname_mmproj_gguf }}"
-          echo "projector_precision: ${{ steps.setup.outputs.projector_precision }}"
           echo "visual_encoder_path: ${{ steps.setup.outputs.visual_encoder_path }}"
 
   # ===========================================================================
   # Job 2: Convert Granite 3 vision models (llava surgery path)
   # ===========================================================================
-  convert-granite-3-vision:
+  convert-granite3-vision:
     needs: detect-and-setup
     if: ${{ needs.detect-and-setup.outputs.use_convert_script_with_mmproj == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             requirements.txt
             scripts/hf_model_download_snapshot.py
-            scripts/hf_model_upload.py
-            scripts/torch_llava_save_llm.py
             scripts/torch_llava_validate_tensors.py
+            scripts/torch_llava_save_llm.py
+            scripts/hf_model_upload.py
+            scripts/get_vision_config_path.py
+            scripts/check_lora_adapter_needed.py
+            resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
@@ -182,56 +218,205 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: shallow-clone-llamacpp
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.LLAMACPP_DIR }}
+          repository: 'ggerganov/llama.cpp'
+          ref: ${{ inputs.llamacpp_build_tag }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            convert_hf_to_gguf.py
+            convert_lora_to_gguf.py
+            requirements/requirements-convert_hf_to_gguf.txt
+            requirements/requirements-convert_lora_to_gguf.txt
+            requirements/requirements-convert_legacy_llama.txt
+            gguf-py
+            tools/mtmd/requirements.txt
+            tools/mtmd/legacy-models
+
+      - name: print-llamacpp-clone
+        run: |
+          echo "=========================================="
+          echo "llama.cpp cloned from build tag: ${{ inputs.llamacpp_build_tag }}"
+          echo "=========================================="
+          echo "PATH: '$PATH'"
+          ls -al llama.cpp
+          find llama.cpp ${{env.FIND_ARGS}}
+
       - name: install-dependencies
         run: |
           python -m pip install -r ./requirements.txt
-          pip list
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          python -m pip install -r ./llama.cpp/tools/mtmd/requirements.txt
+          pip uninstall --yes transformers
+          pip install transformers==${{ inputs.transformers_version }}
+          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: check-lora-adapter-needed
+        id: check-lora
+        run: |
+          # Check if this model requires a LoRA adapter
+          LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+            --collection-mapping '${{ inputs.hf_collection_config }}' \
+            --repo-name '${{ needs.detect-and-setup.outputs.repo_name }}')
+          echo "lora_needed=$LORA_NEEDED" >> $GITHUB_OUTPUT
+          if [ "$LORA_NEEDED" = "true" ]; then
+            echo "✅ LoRA adapter conversion will be performed for this model"
+          else
+            echo "ℹ️ No LoRA adapter needed for this model"
+          fi
+
+      - name: install-lora-requirements
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "📦 Installing LoRA conversion requirements..."
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+          echo "✅ LoRA requirements installed"
 
       - name: download-model-snapshot
         run: |
-          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{ secrets.ibm_granite_token }}
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{secrets.ibm_granite_token}}
 
-      - name: clone-llama-cpp
+      - name: print-model-snapshot
         run: |
-          git clone https://github.com/ggerganov/llama.cpp.git
-          cd llama.cpp
-          git checkout ${{ inputs.llamacpp_build_tag }}
+          find models ${{env.FIND_ARGS}}
 
-      - name: convert-llm-with-llava-surgery
+      - name: separate-clip-and-projector-tensors
         run: |
-          python ./scripts/torch_llava_save_llm.py ${{ needs.detect-and-setup.outputs.local_model_path }}
+          echo "Separating CLIP and projector tensors..."
+          python ./llama.cpp/tools/mtmd/legacy-models/llava_surgery_v2.py -C -m ${{ needs.detect-and-setup.outputs.local_model_path }}
+          ls -al ${{ needs.detect-and-setup.outputs.local_model_path }}
 
-      - name: upload-llm-to-target-repo
+      - name: validate-clip-and-projector-tensors
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/torch_llava_validate_tensors.py ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
+          cat ${{ env.LLAVA_PROJECTOR_KEYS_FILE }}
 
-      - name: validate-projector-tensors
+      - name: get-vision-config-path
         run: |
-          python ./scripts/torch_llava_validate_tensors.py \
-            ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip \
-            ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector
+          VISION_CONFIG=$(python ./scripts/get_vision_config_path.py resources/json/latest/hf_collection_mapping_gguf.json ${{ inputs.repo_id }})
+          echo "VISION_CONFIG=$VISION_CONFIG" >> $GITHUB_ENV
+          if [ -n "$VISION_CONFIG" ]; then
+            echo "✅ Using vision_config: $VISION_CONFIG"
+          else
+            echo "⚠️ No vision_config found in collection mapping"
+          fi
 
-      - name: convert-mmproj-f16-gguf
+      # Note that currently you cannot quantize the visual encoder because granite
+      # vision models use SigLIP as the visual encoder, which has tensor dimensions
+      # that are not divisible by 32.
+      - name: convert-image-encoder-to-gguf
         run: |
-          mkdir -p ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
-          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
-            --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} \
-            --outtype ${{ needs.detect-and-setup.outputs.projector_precision }} \
-            --verbose
+          mkdir ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
+          cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector
+          cp ${{ needs.detect-and-setup.outputs.local_model_path }}/llava.clip ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/pytorch_model.bin
+
+          # Copy vision config if specified
+          if [ -n "$VISION_CONFIG" ]; then
+            if [ -f "./$VISION_CONFIG" ]; then
+              cp ./$VISION_CONFIG ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/config.json
+              echo "✅ Successfully copied vision config: $VISION_CONFIG"
+            else
+              echo "❌ Error: vision_config specified but file not found: $VISION_CONFIG"
+              exit 1
+            fi
+          else
+            echo "⚠️ Warning: No vision_config specified in collection mapping"
+            echo "⚠️ Skipping convert_image_encoder_to_gguf.py step"
+            exit 0
+          fi
+          # Run the conversion
+          python ./llama.cpp/tools/mtmd/legacy-models/convert_image_encoder_to_gguf.py \
+            -m ${{ needs.detect-and-setup.outputs.visual_encoder_path }} \
+            --llava-projector ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/llava.projector \
+            --output-dir ${{ needs.detect-and-setup.outputs.visual_encoder_path }} \
+            --clip-model-is-vision \
+            --clip-model-is-siglip \
+            --image-mean 0.5 0.5 0.5 --image-std 0.5 0.5 0.5
+          ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
           python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
+      - name: separate-llm-from-vision-model
+        run: |
+          python ./scripts/torch_llava_save_llm.py ${{ needs.detect-and-setup.outputs.local_model_path }} $PWD/granite_vision_llm
+          ls -al $PWD/granite_vision_llm
+
+      - name: fix-granite-architecture-in-config
+        run: |
+          CONFIG_FILE="$PWD/granite_vision_llm/config.json"
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Config file not found: $CONFIG_FILE"
+            exit 0
+          fi
+
+          echo "Checking architecture in config.json..."
+          ARCHITECTURE=$(GREP_COLORS='' grep --color=never -A 1 '"architectures"' "$CONFIG_FILE" | grep --color=never -o '"[^"]*"' | tail -1 | tr -d '"' | sed $'s/\x1b\\[[0-9;]*m//g' | sed $'s/\x1b\\[K//g')
+
+          if [ "$ARCHITECTURE" = "GraniteModel" ]; then
+            echo "✏️ Fixing architecture from 'GraniteModel' to 'GraniteForCausalLM'..."
+            sed -i 's/"GraniteModel"/"GraniteForCausalLM"/g' "$CONFIG_FILE"
+            echo "✅ Updated config.json:"
+            cat "$CONFIG_FILE"
+          else
+            echo "✅ Architecture is already correct: $ARCHITECTURE"
+          fi
+
+      - name: convert-vision-model-llm-to-gguf-bf16
+        run: |
+          python ./llama.cpp/convert_hf_to_gguf.py $PWD/granite_vision_llm \
+            --outfile ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
+            --outtype ${{env.DEF_PRECISION}} \
+            --verbose
+          ls -al *.gguf
+
+      - name: upload-vision-llm-bf16-gguf-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+      - name: convert-lora-adapter-to-gguf-f16
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "🔄 Converting LoRA adapter to GGUF F16 format..."
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
+          echo "Output file: $LORA_OUTPUT_FILE"
+
+          # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
+          python ./llama.cpp/convert_lora_to_gguf.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile "$LORA_OUTPUT_FILE" \
+            --outtype f16 \
+            --trust-remote-code \
+            --verbose
+
+          ls -al *.gguf
+          echo "✅ LoRA adapter conversion complete"
+
+      - name: upload-lora-adapter-f16-gguf-to-target-repo
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
+          echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
+          python ./scripts/hf_model_upload.py \
+            ${{ needs.detect-and-setup.outputs.target_repo_id }} \
+            "$LORA_OUTPUT_FILE" \
+            ${{secrets.hf_token}} \
+            ${{github.workflow_ref}} \
+            ${{github.run_id}}
+          echo "✅ LoRA adapter uploaded successfully"
+
   # ===========================================================================
   # Job 3: Convert Granite 4+ vision models (direct conversion with --mmproj)
   # ===========================================================================
-  convert-granite-4plus-vision:
+  convert-granite4-vision:
     needs: detect-and-setup
     if: ${{ needs.detect-and-setup.outputs.use_convert_script_with_mmproj == 'true' }}
     runs-on: macos-latest
-    timeout-minutes: 45
-
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -239,6 +424,8 @@ jobs:
             requirements.txt
             scripts/hf_model_download_snapshot.py
             scripts/hf_model_upload.py
+            scripts/check_lora_adapter_needed.py
+            resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
           fetch-depth: 1
 
@@ -246,35 +433,67 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: shallow-clone-llamacpp
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.LLAMACPP_DIR }}
+          repository: 'ggerganov/llama.cpp'
+          ref: ${{ inputs.llamacpp_build_tag }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            convert_hf_to_gguf.py
+            convert_lora_to_gguf.py
+            conversion
+            requirements/requirements-convert_hf_to_gguf.txt
+            requirements/requirements-convert_lora_to_gguf.txt
+            requirements/requirements-convert_legacy_llama.txt
+            gguf-py/gguf
+            scripts
+
+      - name: print-llamacpp-clone
+        run: |
+          echo "=========================================="
+          echo "llama.cpp cloned from build tag: ${{ inputs.llamacpp_build_tag }}"
+          echo "=========================================="
+          ls -al llama.cpp
+
       - name: install-dependencies
         run: |
           python -m pip install -r ./requirements.txt
-          pip list
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_hf_to_gguf.txt
+          pip uninstall --yes transformers
+          pip install transformers==${{ inputs.transformers_version }}
+          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: check-lora-adapter-needed
+        id: check-lora
+        run: |
+          # Check if this model requires a LoRA adapter
+          LORA_NEEDED=$(python ./scripts/check_lora_adapter_needed.py \
+            --collection-mapping '${{ inputs.hf_collection_config }}' \
+            --repo-name '${{ needs.detect-and-setup.outputs.repo_name }}')
+          echo "lora_needed=$LORA_NEEDED" >> $GITHUB_OUTPUT
+          if [ "$LORA_NEEDED" = "true" ]; then
+            echo "✅ LoRA adapter conversion will be performed for this model"
+          else
+            echo "ℹ️ No LoRA adapter needed for this model"
+          fi
+
+      - name: install-lora-requirements
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "📦 Installing LoRA conversion requirements..."
+          python -m pip install -r ./llama.cpp/requirements/requirements-convert_lora_to_gguf.txt
+          echo "✅ LoRA requirements installed"
 
       - name: download-model-snapshot
         run: |
-          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{ secrets.ibm_granite_token }}
-
-      - name: clone-llama-cpp
-        run: |
-          git clone https://github.com/ggerganov/llama.cpp.git
-          cd llama.cpp
-          git checkout ${{ inputs.llamacpp_build_tag }}
-
-      - name: convert-llm-with-convert-script
-        run: |
-          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
-            --outfile ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
-            --outtype ${{env.DEF_PRECISION}} \
-            --verbose
-
-      - name: upload-llm-to-target-repo
-        run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.local_model_path }}/${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_download_snapshot.py ${{ env.MODEL_DOWNLOAD_DIR }} ${{ needs.detect-and-setup.outputs.repo_org }} ${{ needs.detect-and-setup.outputs.repo_name }} ${{secrets.ibm_granite_token}}
 
       - name: convert-mmproj-with-convert-script
         run: |
-          echo "projector_precision=${{ needs.detect-and-setup.outputs.projector_precision }}"
+          echo "DEF_MMPROJ_PRECISION=${{env.DEF_MMPROJ_PRECISION}}"
           echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
           echo "visual_encoder_path=${{ needs.detect-and-setup.outputs.visual_encoder_path }}"
           echo "base_fname_mmproj_gguf=${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }}"
@@ -284,7 +503,7 @@ jobs:
           # to load the model architecture if it's not directly supported by the script
           python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
             --outfile ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} \
-            --outtype ${{ needs.detect-and-setup.outputs.projector_precision }} \
+            --outtype ${{env.DEF_MMPROJ_PRECISION}} \
             --mmproj \
             --verbose
           ls -al ${{ needs.detect-and-setup.outputs.visual_encoder_path }}
@@ -292,5 +511,54 @@ jobs:
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
           python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+      - name: convert-vision-model-llm-to-gguf-bf16
+        run: |
+          echo "DEF_PRECISION=${{env.DEF_PRECISION}}"
+          echo "local_model_path=${{ needs.detect-and-setup.outputs.local_model_path }}"
+          echo "base_fname_bf16_gguf=${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }}"
+          # Convert the language model (LLM) component
+          # The convert_hf_to_gguf.py script will use transformers AutoModel classes
+          # to load the model architecture if it's not directly supported by the script
+          python ./llama.cpp/convert_hf_to_gguf.py ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} \
+            --outtype ${{env.DEF_PRECISION}} \
+            --verbose
+          ls -al *.gguf
+
+      - name: upload-vision-llm-bf16-gguf-to-target-repo
+        run: |
+          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+      - name: convert-lora-adapter-to-gguf-f16
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          echo "🔄 Converting LoRA adapter to GGUF F16 format..."
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
+          echo "Output file: $LORA_OUTPUT_FILE"
+
+          # Convert LoRA adapter using llama.cpp convert_lora_to_gguf.py
+          python ./llama.cpp/convert_lora_to_gguf.py \
+            ${{ needs.detect-and-setup.outputs.local_model_path }} \
+            --outfile "$LORA_OUTPUT_FILE" \
+            --outtype f16 \
+            --trust-remote-code \
+            --verbose
+
+          ls -al *.gguf
+          echo "✅ LoRA adapter conversion complete"
+
+      - name: upload-lora-adapter-f16-gguf-to-target-repo
+        if: steps.check-lora.outputs.lora_needed == 'true'
+        run: |
+          LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
+          echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
+          python ./scripts/hf_model_upload.py \
+            ${{ needs.detect-and-setup.outputs.target_repo_id }} \
+            "$LORA_OUTPUT_FILE" \
+            ${{secrets.hf_token}} \
+            ${{github.workflow_ref}} \
+            ${{github.run_id}}
+          echo "✅ LoRA adapter uploaded successfully"
 
 # Made with Bob
