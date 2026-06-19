@@ -62,6 +62,7 @@ env:
   VERIFY_RUNTIME: ${{inputs.verify_runtime}}
   EXT_GGUF: .gguf
   EXT_NAME_F16: "-f16.gguf"
+  EXT_NAME_LORA_F16: "-lora-f16.gguf"
   LLAMA_CLI_TOOL: llama-mtmd-cli # llama-llava-cli
   LLAMA_REQUEST_TEMP: 0
   LLAMA_REQUEST_CONTEXT_SIZE: 16384
@@ -166,7 +167,7 @@ jobs:
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
         echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
         echo "BASE_FNAME_MMPROJ_GGUF=${{ env.F16_MMPROJ_MODEL_BASE_FILENAME }}-${PROJECTOR_PRECISION}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LORA_F16_GGUF=${{ env.REPO_NAME }}-LoRA-F16.gguf" >> $GITHUB_ENV
+        echo "BASE_FNAME_LORA_F16_GGUF=${{ env.REPO_NAME }}${{env.EXT_NAME_LORA_F16}}" >> $GITHUB_ENV
         echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
         echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
 
