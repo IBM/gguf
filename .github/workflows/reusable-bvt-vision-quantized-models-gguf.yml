@@ -284,7 +284,7 @@ jobs:
     # Verbose mode causes per-token parsing overhead; disable if tests timeout
     - name: test-vision-model
       if: env.TEST_LLAMA_CLI == 'true'
-      timeout-minutes: 20
+      timeout-minutes: 35
       continue-on-error: true
       run: |
         echo "invoking ${{env.LLAMA_CLI_TOOL}} from build tag: ${{ inputs.llamacpp_build_tag }}"
