@@ -535,7 +535,7 @@
                     "repo_name": "granite-4.0-3b-vision",
                     "default_quant": "q8_0",
                     "projector_model": "mmproj-model-f16.gguf",
-                    "projector_precision": "f16",
+                    "projector_precision": "bf16",
                     "lora_adapter": true
                 },
                 {
