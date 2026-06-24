@@ -201,7 +201,7 @@ jobs:
         # For split GGUF files, set the base pattern (without .gguf extension and without part numbers)
         echo "SPLIT_GGUF_BASE_PATTERN=${{ env.REPO_NAME }}-${{inputs.quantization}}" >> $GITHUB_ENV
         # DMF derives the model label as {type}-{size}-{variant}; the follow-up push-files calls need this.
-        echo "DMF_MODEL_LABEL=granite-${{ inputs.model_size }}-${{ inputs.quantization }}" >> $GITHUB_ENV
+        echo "DMF_MODEL_LABEL=${{ env.REPO_NAME }}-${{ inputs.model_size }}-${{ inputs.quantization }}" >> $GITHUB_ENV
 
     - name: set-derivative-env-vars-2
       run: |
@@ -218,6 +218,7 @@ jobs:
         echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
         echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
         echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
+        echo "DMF_MODEL_LABEL='$DMF_MODEL_LABEL' (${{ env.DMF_MODEL_LABEL }})"
         echo "================== Derivative Environment Variables 2 =================="
         echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
         echo "================== Derivative Environment Variables 3 =================="
@@ -289,7 +290,7 @@ jobs:
           -t model \
           --dir "${{ env.LOCAL_MODEL_PATH }}" \
           --base-model "${{ env.REPO_NAME }}" \
-          --type granite \
+          --type "${{ env.REPO_NAME }}" \
           --size "${{ inputs.model_size }}" \
           --variant "${{ inputs.quantization }}" \
           --comments "$DMF_COMMENTS"
@@ -368,7 +369,7 @@ jobs:
               -t model \
               --dir "${LOCAL_MODEL_PATH}" \
               --base-model "${REPO_NAME}" \
-              --type granite \
+              --type "${REPO_NAME}" \
               --size "${{ inputs.model_size }}" \
               --variant "${{ inputs.quantization }}" \
               --revision "${REVISION}" \
