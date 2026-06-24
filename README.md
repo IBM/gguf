@@ -1,5 +1,5 @@
 # gguf
-Test push access
+
 This repository provides an automated CI/CD process to convert, test and deploy IBM Granite models, in safetensor format, from the `ibm-granite` organization to IBM GGUF versions (with various supported quantizations) within model repositories respectively named with the `-GGUF` extension.  These GGUF model repositories are also included to the [Granite Quantized Model](https://huggingface.co/collections/ibm-granite/granite-quantized-models) collection for convenience.
 
 #### Topic index
@@ -279,6 +279,23 @@ As a baseline, each converted model MUST successfully be run in the following pr
 ##### Mode of Testing
 - BVT: Currently all pipeline runs can trigger Behavioural Verification Tests (BVT) which are singular tests on model utility via runtimes such as llama.cpp. The test verifies the model can be pulled, started and invoked on the expected runtime.
 - UAT: The pipeline is being extended to support running User Acceptance Tests (UAT) which are a larger suite of runtime specific tests to validate each model feature is supported on that runtime (such as tool-calling, document-rag, thinking). These are propietary suites of tests and run through a Docker container. See workflow `reusable-uat-instruct-quantized-models-gguf.yml` for an example of running the language models against llama.cpp. Access to codebase available on request.
+
+##### Open Benchmarking
+
+In addition to BVT and UAT, GGUF models can be evaluated against open benchmarks after release. This is driven by the `push-all-gguf-models-to-dmf` workflow, which discovers all GGUF files in a target HuggingFace repository and pushes each quantization to IBM's Data Model Factory (DMF). Two workflow settings scope what gets pushed:
+
+- `exclude_quantizations` — comma-separated list of quantization names to skip (case-insensitive substring match against the filename). For example, `Q4_K_M,Q5_K_S` skips any file whose name contains either token.
+- `skip_split_gguf` — when `true` (the default), split (multi-shard) GGUF files are not pushed. This keeps very large models out of the benchmarking loop unless explicitly opted in.
+
+Once a model is pushed to DMF, a cron job detects the new model, triggers the jobs that host it on [RITS](https://pytorch.org/blog/ibm-research-uses-vllm-at-the-heart-of-its-rits-platform/), and then runs the enabled open benchmarking tests against the RITS-hosted model. Results are stored in a Postgres database and rendered on internal dashboards (access shared on request).
+
+Currently only **language** benchmarking is enabled. The benchmarks run are:
+
+- MMLU
+- RAGBench
+- BFCL
+
+**Updating RITS deployments**: to change how models are deployed on RITS, both the cron job and the corresponding [granite.build](https://github.com/ibm-granite/granite.build) pipelines must be updated.
 
 **Notes**
 
