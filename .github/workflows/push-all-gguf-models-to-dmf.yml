@@ -5,27 +5,38 @@ name: push-all-gguf-models-to-dmf
 on:
   workflow_dispatch:
     inputs:
-      enable_language_jobs:
+      enable_dmf_push:
         type: boolean
         required: false
         default: false
-        description: 'Enable language jobs to run tests'
+        description: 'Enable DMF push operations'
       repo_id:
         type: string
         required: true
-        description: 'HuggingFace repository ID (e.g., ibm-granite/granite-3.0-2b-instruct)'
-      quantization:
+        description: 'HuggingFace repository ID (e.g., ibm-granite/granite-4.1-3b)'
+      model_size:
         type: string
         required: true
-        description: 'Quantization type (e.g., Q4_K_M)'
+        description: 'Model size (e.g., 3b, 8b, 13b)'
       target_repo_owner:
         type: string
         required: true
-        description: 'Target repository owner'
+        description: 'Target repository owner (e.g., ibm-granite)'
       target_repo_name_ext:
         type: string
         required: false
-        description: 'Target repository name extension'
+        default: '-GGUF'
+        description: 'Target repository name extension (e.g., -GGUF)'
+      exclude_quantizations:
+        type: string
+        required: false
+        default: ''
+        description: 'Comma-separated list of quantization names to exclude (case-insensitive substring match). Example: "Q4_K_M,Q5_K_S" skips any file whose name contains those quantizations.'
+      skip_split_gguf:
+        type: boolean
+        required: false
+        default: true
+        description: 'Skip split (multi-shard) GGUF files. Default true — only single-file quantizations are pushed.'
       ext_log:
         type: string
         required: false
@@ -46,153 +57,121 @@ on:
         required: false
         default: false
         description: 'Enable trace mode'
-  workflow_call:
-    secrets:
-      hf_token:
-        required: true
-      IBM_DMF_TOKEN:
-        required: true
-    inputs:
-      enable_language_jobs:
-        type: boolean
-        required: false
-        default: false
-      repo_id:
-        type: string
-        required: true
-      quantization:
-        type: string
-        required: true
-      target_repo_owner:
-        type: string
-        required: true
-      target_repo_name_ext:
-        type: string
-        required: true
-      ext_log:
-        type: string
-        required: false
-        default: '.log.txt'
-      ext_response:
-        type: string
-        required: false
-        default: '.response.txt'
-      debug:
-        type: boolean
-        required: false
-        default: false
-      trace:
-        type: boolean
-        required: false
-        default: false
 
-# See: https://github.com/ggerganov/llama.cpp/blob/master/examples/server/tests/unit/test_completion.py
 env:
   DEBUG: ${{inputs.debug}}
-  # FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   EXT_GGUF: .gguf
-  # LLAMA_REQUEST_SEED: 647063347
-  # LLAMA_REQUEST_PROMPT: "What is the professional answer to \"Why is the sky blue?\""
-  LLAMA_SYSTEM_PROMPT: "You are a helpful assistant. Please ensure responses are professional, accurate, and safe."
-  LLAMA_REQUEST_PROMPT: "Why is the sky blue according to science?"
-  LLAMA_REQUEST_N_PREDICT: 128
-  LLAMA_CLI_TOOL: llama-cli
-  LLAMA_CLI_TEMP: 0.8
-  # LLAMA_RUN_BIN: ./bin/llama-run
-  # LLAMA_RUN_FLAGS: "-v -n 9"
-  LLAMA_RESPONSE_WORDS:  "Rayleigh,scatter,atmosphere"
-  LLAMA_SERVER_HOST: localhost
-  LLAMA_SERVER_PORT: 8080
-  LLAMACPP_DIR: llama.cpp
-  MODEL_DOWNLOAD_DIR: models
-  QUANTIZED_MODEL_EXISTS: false
-  TEST_LLAMA_SERVER: false
-  TEST_LLAMA_CLI: false
-  TEST_LLAMA_RUN: false
-  GH_ARTIFACT_RETENTION: 2
 
 jobs:
-  discover-and-push-gguf-files:
-    runs-on: macos-latest # should be faster to provision mac runtime then ubuntu runtime
-    if: ${{ inputs.enable_language_jobs == true }}
-    env:
-      HF_HUB_DISABLE_XET: 1
-      HF_HUB_ENABLE_HF_TRANSFER: 0
+  discover-gguf-files:
+    runs-on: ubuntu-latest
+    outputs:
+      quantizations: ${{ steps.parse_files.outputs.quantizations }}
+      file_count: ${{ steps.parse_files.outputs.file_count }}
     steps:
     - uses: actions/checkout@v4
-    - name: confirm-environment
-      run: |
-        echo "[INFO] github.env:"
-        echo "[INFO] >> run_id: '${{ github.run_id }}'"
-        echo "[INFO] >> ref: '${{ github.ref }}', ref_name: '${{ github.ref_name }}', ref_type: '${{ github.ref_type }}'"
-        echo "[INFO] >> workflow_ref: '${{ github.workflow_ref }}'"
-        echo "[INFO] >> event_type: '${{ github.event_type }}'"
-        echo "[INFO] >> event.: action: '${{ github.event.action }}'"
-        echo "[INFO] >> event.: base_ref: '${{ github.event.base_ref }}'"
-        echo "[INFO] >> event.: workflow_run.conclusion: '${{ github.event.workflow_run.conclusion }}'"
-        echo "[INFO] >> event.release.: name: '${{ github.event.release.name }}', tag_name: '${{ github.event.release.tag_name }}'"
-
-    - name: Dump GitHub context
-      env:
-        GH_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GH_CONTEXT"
-
-    - name: Dump GitHub inputs
-      env:
-        GITHUB_INPUTS: ${{ toJson(inputs) }}
-      run: echo "$GITHUB_INPUTS"
-
-    # - name: List all environment variables
-    #   if: ${{ github.event.inputs.debug }}
-    #   run: env | sort
-
-    # Note: at the current time, we cannot use Python versions > 3.11 due to HF and langchain deps.
-    # Note: you can verify in a step using: run: python -c "import sys; print(sys.version)"
-    - uses: actions/setup-python@v5
+    
+    - name: Setup Python
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
-
-    # primarily huggingface_hub
-    - name: install-dependencies
+    
+    - name: Install dependencies
       run: |
         python -m pip install -r ./requirements.txt
         pip list
-
-    # Use this step to set values to the github context (shared across jobs/steps)
-    # Note: using $GITHUB_OUTPUT sets values under the current step's namespace
-    # whereas using $GITHUB_ENV sets values in the job's underlying environment.
-    # Note: for each 'repo_id' we parse out e.g., REPO_ORG=ibm-granite REPO_NAME=granite-3.0-2b-instruct
-    - name: set-github-env
-      id: set_github_env
+    
+    - name: Set environment variables
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
-
-    - name: set-derivative-env-vars-1
-      run: |
-        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_QUANTIZED_GGUF=${{ env.REPO_NAME }}-${{inputs.quantization}}${{env.EXT_GGUF}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_LOG_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_log}}" >> $GITHUB_ENV
-        echo "BASE_FNAME_RESPONSE_FILE=${{env.REPO_NAME}}-${{inputs.quantization}}-${{env.LLAMA_CLI_TOOL}}${{inputs.ext_response}}" >> $GITHUB_ENV
-
-    - name: set-derivative-env-vars-2
-      run: |
-        echo "LOCAL_MODEL_PATH=${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}" >> $GITHUB_ENV
-
-    - name: set-derivative-env-vars-3
-      run: |
-        echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_MODEL_PATH}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}" >> $GITHUB_ENV
-
-    - name: verify-github-env
-      run: |
-        echo "================== Derivative Environment Variables 1 =================="
-        echo "TARGET_REPO_ID='$TARGET_REPO_ID' (${{ env.TARGET_REPO_ID }})"
-        echo "BASE_FNAME_QUANTIZED_GGUF='$BASE_FNAME_QUANTIZED_GGUF' (${{ env.BASE_FNAME_QUANTIZED_GGUF }})"
-        echo "BASE_FNAME_LOG_FILE='$BASE_FNAME_LOG_FILE' (${{ env.BASE_FNAME_LOG_FILE }})"
-        echo "BASE_FNAME_RESPONSE_FILE='$BASE_FNAME_RESPONSE_FILE' (${{ env.BASE_FNAME_RESPONSE_FILE }})"
-        echo "================== Derivative Environment Variables 2 =================="
-        echo "LOCAL_MODEL_PATH='$LOCAL_MODEL_PATH' (${{ env.LOCAL_MODEL_PATH }})"
-        echo "================== Derivative Environment Variables 3 =================="
-        echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
-
+        echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/$(basename '${{ inputs.repo_id }}')${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
     
+    - name: List and parse GGUF files
+      id: parse_files
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        EXCLUDE_QUANTIZATIONS: ${{ inputs.exclude_quantizations }}
+        SKIP_SPLIT_GGUF: ${{ inputs.skip_split_gguf }}
+        QUANTIZATIONS_FILE: gguf-quantizations.json
+      run: |
+        set -euo pipefail
+
+        echo "[INFO] Listing GGUF quantizations in repository: ${TARGET_REPO_ID}"
+
+        args=("${TARGET_REPO_ID}" "${REPO_NAME}" "${HF_TOKEN}" "${QUANTIZATIONS_FILE}")
+        if [[ -n "${EXCLUDE_QUANTIZATIONS}" ]]; then
+          args+=(--exclude-quantizations "${EXCLUDE_QUANTIZATIONS}")
+        fi
+        if [[ "${SKIP_SPLIT_GGUF}" == "true" ]]; then
+          args+=(--skip-split)
+        fi
+
+        python ./scripts/hf_repo_filter_gguf_quantizations_files.py "${args[@]}"
+
+        echo "[INFO] Parsed quantizations:"
+        echo "Quantization files found to push: "
+        jq '.' "${QUANTIZATIONS_FILE}"
+
+        file_count=$(jq 'length' "${QUANTIZATIONS_FILE}")
+        echo "[INFO] Total GGUF quantizations to process: ${file_count}"
+
+        echo "quantizations=$(jq -c '.' "${QUANTIZATIONS_FILE}")" >> "$GITHUB_OUTPUT"
+        echo "file_count=${file_count}" >> "$GITHUB_OUTPUT"
+
+    - name: Display discovered files
+      run: |
+        echo "=========================================="
+        echo "GGUF Files Discovery Summary"
+        echo "=========================================="
+        echo "Repository: ${{ env.TARGET_REPO_ID }}"
+        echo "Total GGUF files: ${{ steps.parse_files.outputs.file_count }}"
+        echo "Files:"
+        echo '${{ steps.parse_files.outputs.quantizations }}' | jq '.'
+
+  push-model:
+    needs: discover-gguf-files
+    if: ${{ needs.discover-gguf-files.outputs.file_count > 0 && inputs.enable_dmf_push }}
+    strategy:
+      matrix:
+        model: ${{ fromJson(needs.discover-gguf-files.outputs.quantizations) }}
+      fail-fast: false
+      max-parallel: 3
+    uses: ./.github/workflows/reusable-push-models-to-dmf.yml
+    with:
+      enable_dmf_push: ${{ inputs.enable_dmf_push }}
+      repo_id: ${{ inputs.repo_id }}
+      quantization: ${{ matrix.model.quantization }}
+      model_size: ${{ inputs.model_size }}
+      target_repo_owner: ${{ inputs.target_repo_owner }}
+      target_repo_name_ext: ${{ inputs.target_repo_name_ext }}
+      ext_log: ${{ inputs.ext_log }}
+      ext_response: ${{ inputs.ext_response }}
+      debug: ${{ inputs.debug }}
+      trace: ${{ inputs.trace }}
+      is_split_gguf: ${{ matrix.model.is_split || false }}
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN }}
+      IBM_DMF_TOKEN: ${{ secrets.IBM_DMF_TOKEN }}
+      ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+      ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+
+  summary:
+    needs: [discover-gguf-files, push-model]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Display summary
+      run: |
+        echo "=========================================="
+        echo "Workflow Execution Summary"
+        echo "=========================================="
+        echo "Repository: ${{ inputs.repo_id }}"
+        echo "Target Repository: ${{ inputs.target_repo_owner }}/$(basename '${{ inputs.repo_id }}')${{ inputs.target_repo_name_ext }}"
+        echo "Total GGUF files discovered: ${{ needs.discover-gguf-files.outputs.file_count }}"
+        echo "DMF Push Enabled: ${{ inputs.enable_dmf_push }}"
+        echo "Discovery Job Status: ${{ needs.discover-gguf-files.result }}"
+        echo "Push Job Status: ${{ needs.push-model.result }}"
+        echo "=========================================="
+
+# Made with Bob
