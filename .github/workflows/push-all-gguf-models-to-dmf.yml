@@ -139,7 +139,7 @@ jobs:
       max-parallel: 3
     uses: ./.github/workflows/reusable-push-models-to-dmf.yml
     with:
-      enable_language_jobs: true
+      enable_dmf_push: ${{ inputs.enable_dmf_push }}
       repo_id: ${{ inputs.repo_id }}
       quantization: ${{ matrix.model.quantization }}
       model_size: ${{ inputs.model_size }}
