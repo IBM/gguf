@@ -310,7 +310,7 @@ jobs:
         SHARDS_FILE="split-shards.txt"
 
         echo "[INFO] Listing split shards for pattern: ${SPLIT_GGUF_BASE_PATTERN}"
-        python ./scripts/hf_split_file_download.py \
+        python ./scripts/hf_repo_list_split_gguf_files.py \
           "${TARGET_REPO_ID}" "${SPLIT_GGUF_BASE_PATTERN}" "${{ secrets.hf_token }}" \
           "${SHARDS_FILE}"
 
