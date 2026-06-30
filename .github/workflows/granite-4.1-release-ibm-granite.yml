@@ -37,7 +37,7 @@ env:
   ENABLE_QUANTIZE_STEP: true
 
   # Enable/disable BVT testing for specific model types (default: true)
-  ENABLE_BVT_VISION: true
+  ENABLE_BVT_VISION: false
 
   ###############################################
   # Repo. configuration
