@@ -1,10 +1,10 @@
-name: granite-4.0-tagged-test-release
-run-name: "[TEST] Granite 4.0 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
+name: granite-4.1-tagged-release
+run-name: "[RELEASE] Granite 4.1 - CI/CD quantized GGUF models [${{github.ref_type}}: ${{github.ref_name}}]"
 
 on:
   push:
     tags:
-      - "test-v4.0*"
+      - "v4.2*"
   workflow_dispatch:
 
 permissions:
@@ -20,13 +20,11 @@ env:
   ENABLE_GUARDIAN_JOBS: false
   ENABLE_EMBEDDING_JOBS: false
   ENABLE_DOCLING_JOBS: false
-  USE_UAT_WORKFLOW: false
 
-  # Enable appending the converted format (BF16/F16) to BVT test matrix
-  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
-
-  # Enable/disable BVT testing for specific model types (default: true)
-  ENABLE_BVT_VISION: true
+  ###############################################
+  # Workflow jobs enable/disable flags
+  ###############################################
+  ENABLE_UAT_WORKFLOW: false
 
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
@@ -34,8 +32,18 @@ env:
   # Enable LM Eval workflow (not yet fully functional, default: false)
   ENABLE_LM_EVAL: false
 
+  # Enable/disable convert and quantize steps (default: true)
+  ENABLE_CONVERT_STEP: true
+  ENABLE_QUANTIZE_STEP: true
+
+  # Enable/disable BVT testing for specific model types (default: true)
+  ENABLE_BVT_VISION: true
+
+  ###############################################
+  # Repo. configuration
+  ###############################################
   TARGET_HF_REPO_NAME_EXT: -GGUF
-  TARGET_HF_REPO_OWNER: mrutkows
+  TARGET_HF_REPO_OWNER: ibm-granite
   TARGET_HF_REPO_PRIVATE: true
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
@@ -57,108 +65,78 @@ env:
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
   LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
-  LLAMACPP_BUILD_TAG_VISION:  b9704 # (b9704) b9533, b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
+  LLAMACPP_BUILD_TAG_VISION:  b9704 # b9533 # b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_SPEECH: b9045
   LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
   LLAMACPP_BUILD_TAG_EMBEDDING: b8100 # ModernBert support: https://github.com/ggml-org/llama.cpp/pull/18330
   LLAMACPP_BUILD_TAG_DOCLING: b6569
+
+  # Enable appending the converted format (BF16/F16) to BVT test matrix
+  ENABLE_BVT_TEST_CONVERTED_FORMAT: true
+
+  # Enable/disable BF16 for specific model types in BVT test matrix
+  ENABLE_BVT_GUARDIAN_BF16: false
 
   # Docker test configuration
   UAT_TESTS: '["inference", "control", "function-calling", "rag", "structured-output"]'
   MAX_WORKERS: 1
   MAX_TESTS: 10
 
-  # Partner "preview" models
-  # 'ibm-granite/granite-4.0-tiny-preview',
-  # 'ibm-granite/granite-4.0-tiny-base-preview'
-
-  # Cannot build "small" (i.e., 30b) model in public GH images
-  # 'ibm-granite/granite-4.0-h-small',
-  # 'ibm-granite/granite-4.0-h-small-base',
-
-  # Never released:
-  # 'ibm-granite/granite-4.0-8b', # now 4.1
-  # 'ibm-granite/granite-4.0-8b-base' # now 4.1
-
-  # 'ibm-granite/granite-4.0-350m',
-  # 'ibm-granite/granite-4.0-350m-base',
-  # 'ibm-granite/granite-4.0-h-350m',
-  # 'ibm-granite/granite-4.0-h-350m-base',
-  # 'ibm-granite/granite-4.0-1b',
-  # 'ibm-granite/granite-4.0-1b-base',
-  # 'ibm-granite/granite-4.0-h-1b',
-  # 'ibm-granite/granite-4.0-h-1b-base',
-  # 'ibm-granite/granite-4.0-micro',
-  # 'ibm-granite/granite-4.0-micro-base',
-  # 'ibm-granite/granite-4.0-h-micro',
-  # 'ibm-granite/granite-4.0-h-micro-base',
-  # 'ibm-granite/granite-4.0-h-tiny',
-  # 'ibm-granite/granite-4.0-h-tiny-base',
+  # 'ibm-granite/granite-4.2-3b-base',
+  # 'ibm-granite/granite-4.2-3b',
+  # 'ibm-granite/granite-4.2-8b-base',
+  # 'ibm-granite/granite-4.2-8b',
+  # 'ibm-granite/granite-4.2-30b-base',
+  # 'ibm-granite/granite-4.2-30b'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.0-1b',
-      'ibm-granite/granite-4.0-h-1b'
+      'ibm-granite/granite-4.2-3b',
+      'ibm-granite/granite-4.2-8b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
   # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
   # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
   # 'Q6_K',
-  # 'Q8_0',
-  # 'F16'
+  # 'Q8_0'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-      'Q8_0',
+      'Q4_K_M',
+      'Q8_0'
     ]"
   SOURCE_GUARDIAN_REPOS: "[
       'None'
     ]"
+  # 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0'
   TARGET_GUARDIAN_QUANTIZATIONS: "[
       'None'
     ]"
-  # 'ibm-granite/granite-4.0-3b-vision'
   SOURCE_VISION_REPOS: "[
-      'ibm-granite/granite-4.0-3b-vision'
+      'None'
     ]"
   # 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0'
   TARGET_VISION_QUANTIZATIONS: "[
-      'Q8_0'
+      'None'
     ]"
-  # 'ibm-granite/granite-4.0-1b-speech'
   SOURCE_SPEECH_REPOS: "[
-      'ibm-granite/granite-4.0-1b-speech'
+      'None'
     ]"
-  # 'Q4_K_M',
-  # 'Q5_K_M',
-  # 'Q6_K',
-  # 'Q8_0'
+  # 'Q4_K_M', 'Q5_K_M', 'Q6_K', 'Q8_0'
   TARGET_SPEECH_QUANTIZATIONS: "[
-      'Q4_K_M',
-      'Q5_K_M',
-      'Q6_K'
+      'None'
     ]"
   # TODO: Sparse arch. not supp. by llama.cpp: 'ibm-granite/granite-embedding-30m-sparse',
   # Note: vis. embed. arch. is not supported in llama.cpp, transformers only with custom classes for ibm layers
-  # 'ibm-granite/granite-embedding-small-english-r2',
-  # 'ibm-granite/granite-embedding-english-r2',
-  # 'ibm-granite/granite-embedding-reranker-english-r2'
   SOURCE_EMBEDDING_REPOS: "[
-      'ibm-granite/granite-embedding-small-english-r2'
+      'None'
     ]"
-  # 'Q4_K_M',
-  # 'Q8_0'
+  # 'Q4_K_M', 'Q8_0'
   TARGET_EMBEDDING_QUANTIZATIONS: "[
-      'Q8_0'
+      'None'
     ]"
-  # 'ibm-granite/granite-docling-258M'
   SOURCE_DOCLING_REPOS: "[
-      'ibm-granite/granite-docling-258M'
+      'None'
     ]"
-  # 'Q4_0', 'Q4_1', 'Q4_K_M', 'Q4_K_S',
-  # 'Q5_0', 'Q5_1', 'Q5_K_M', 'Q5_K_S',
-  # 'Q6_K',
-  # 'Q8_0',
-  # 'F16'
   TARGET_DOCLING_QUANTIZATIONS: "[
-      'Q8_0'
+      'None'
     ]"
 
 jobs:
@@ -183,7 +161,9 @@ jobs:
       enable_bvt_vision: ${{ steps.set-vars.outputs.enable_bvt_vision }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
       enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
-      use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
+      enable_uat: ${{ steps.set-vars.outputs.enable_uat }}
+      enable_convert_step: ${{ steps.set-vars.outputs.enable_convert_step }}
+      enable_quantize_step: ${{ steps.set-vars.outputs.enable_quantize_step }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
@@ -329,7 +309,7 @@ jobs:
             echo "COLLECTION_CONFIG: $COLLECTION_CONFIG"
             echo "TARGET_HF_REPO_OWNER: $TARGET_HF_REPO_OWNER"
             echo "TARGET_HF_REPO_NAME_EXT: $TARGET_HF_REPO_NAME_EXT"
-            echo "USE_UAT_WORKFLOW: $USE_UAT_WORKFLOW"
+            echo "ENABLE_UAT_WORKFLOW: $ENABLE_UAT_WORKFLOW"
             echo "debug=$DEBUG" >> "$GITHUB_OUTPUT"
             echo "trace=$TRACE" >> "$GITHUB_OUTPUT"
             echo "enable_language_jobs=$ENABLE_LANGUAGE_JOBS" >> "$GITHUB_OUTPUT"
@@ -342,7 +322,9 @@ jobs:
             echo "enable_bvt_vision=$ENABLE_BVT_VISION" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
-            echo "use_uat_workflow=$USE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
+            echo "enable_uat=$ENABLE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
+            echo "enable_convert_step=$ENABLE_CONVERT_STEP" >> "$GITHUB_OUTPUT"
+            echo "enable_quantize_step=$ENABLE_QUANTIZE_STEP" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
             echo "target_repo_name_ext=$TARGET_HF_REPO_NAME_EXT" >> "$GITHUB_OUTPUT"
@@ -423,11 +405,16 @@ jobs:
               echo "target_speech_quantizations_bvt=$TARGET_SPEECH_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
 
               # Guardian models (BF16)
-              echo "Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
-              TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
-              if [ "$TEMP_ARRAY_STRING" != "None" ]; then
-                TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+              if [ "$ENABLE_BVT_GUARDIAN_BF16" = "true" ]; then
+                echo "✅ Appending ${{env.DEF_CONVERTED_QUANT_GUARDIAN}} to TARGET_GUARDIAN_QUANTIZATIONS for BVT"
+                TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_GUARDIAN_QUANTIZATIONS), env.ARRAY_SEP) }}"
+                if [ "$TEMP_ARRAY_STRING" != "None" ]; then
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="['${TEMP_ARRAY_STRING}${{env.ARRAY_SEP}}${{env.DEF_CONVERTED_QUANT_GUARDIAN}}']"
+                else
+                  TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
+                fi
               else
+                echo "⏭️  Skipping BF16 append for Guardian models (ENABLE_BVT_GUARDIAN_BF16=false)"
                 TARGET_GUARDIAN_QUANTIZATIONS_BVT="$TARGET_GUARDIAN_QUANTIZATIONS"
               fi
               echo "target_guardian_quantizations_bvt=$TARGET_GUARDIAN_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
@@ -467,11 +454,10 @@ jobs:
             echo "trace: ${{ steps.set-vars.outputs.trace }}"
             echo "enable_language_jobs: ${{ steps.set-vars.outputs.enable_language_jobs }}"
             echo "enable_vision_jobs: ${{ steps.set-vars.outputs.enable_vision_jobs }}"
-            echo "enable_speech_jobs: ${{ steps.set-vars.outputs.enable_speech_jobs }}"
             echo "enable_guardian_jobs: ${{ steps.set-vars.outputs.enable_guardian_jobs }}"
             echo "enable_embedding_jobs: ${{ steps.set-vars.outputs.enable_embedding_jobs }}"
             echo "enable_docling_jobs: ${{ steps.set-vars.outputs.enable_docling_jobs }}"
-            echo "use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}"
+            echo "enable_uat: ${{ steps.set-vars.outputs.enable_uat }}"
             echo "hf_collection_config: '${{ steps.set-vars.outputs.hf_collection_config }}'"
             echo "target_repo_owner: '${{ steps.set-vars.outputs.target_repo_owner }}'"
             echo "target_repo_name_ext: '${{ steps.set-vars.outputs.target_repo_name_ext }}'"
@@ -528,10 +514,11 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -552,12 +539,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_language }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-quantize-upload-gguf:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.language-convert-hf-to-f16-gguf.result == 'success' || needs.language-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -579,7 +566,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_language }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
@@ -605,7 +592,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-lm-eval-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models ]
@@ -631,11 +618,11 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-uat-quantized-gguf-models:
     needs: [ environment-setup, language-bvt-quantized-gguf-models, language-lm-eval-gguf-models ]
-    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.use_uat_workflow == 'true' }}
+    if: ${{ always() && (needs.language-lm-eval-gguf-models.result == 'success' || needs.language-lm-eval-gguf-models.result == 'skipped') && needs.environment-setup.outputs.enable_uat == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-uat-instruct-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -656,7 +643,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       IBM_CLOUD_API_KEY: ${{ secrets.IBM_CLOUD_API_KEY }}
       UAT_REGISTRY_NAMESPACE: ${{ secrets.UAT_REGISTRY_NAMESPACE }}
       UAT_IMAGE_NAME: ${{ secrets.UAT_IMAGE_NAME }}
@@ -683,7 +670,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # ===========================================================================
   # Granite Vision
@@ -701,7 +688,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   check-vision-llama-cpp-support:
     needs: [ environment-setup, vision-create-hf-repos ]
@@ -732,6 +719,7 @@ jobs:
 
   convert-hf-llava-to-f16-gguf:
     needs: [ environment-setup, vision-create-hf-repos, check-vision-llama-cpp-support ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     # OLD: uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-gguf.yml@main
     permissions:
@@ -753,12 +741,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_vision }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-vision-llm-and-upload-gguf:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf ]
-    if: ${{ always() && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-llava-upload-gguf.yml@main
     permissions:
       contents: write
@@ -780,11 +768,11 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_vision }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   vision-bvt-quantized-gguf-models:
-    needs: [ environment-setup, convert-hf-llava-to-f16-gguf, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    needs: [ environment-setup, quantize-vision-llm-and-upload-gguf ]
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -806,7 +794,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   vision-create-hf-collections:
@@ -814,6 +802,7 @@ jobs:
       environment-setup,
       vision-bvt-quantized-gguf-models,
     ]
+    if: ${{ always() && (needs.vision-bvt-quantized-gguf-models.result == 'success' || needs.vision-bvt-quantized-gguf-models.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       granite_family: "vision"
@@ -824,8 +813,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
-
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
   # ===========================================================================
   # Granite Speech
   # ===========================================================================
@@ -842,7 +830,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   speech-check-llama-cpp-support:
     needs: [ environment-setup, speech-create-hf-repos ]
@@ -873,6 +861,7 @@ jobs:
 
   speech-convert-hf-to-bf16-gguf:
     needs: [ environment-setup, speech-create-hf-repos, speech-check-llama-cpp-support ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-speech-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -893,11 +882,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_speech }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_speech }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   quantize-speech-and-upload-gguf:
     needs: [ environment-setup, speech-convert-hf-to-bf16-gguf ]
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.speech-convert-hf-to-bf16-gguf.result == 'success' || needs.speech-convert-hf-to-bf16-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-quantize-speech-upload-gguf.yml@main
     permissions:
       contents: write
@@ -919,10 +909,11 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_speech }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   speech-bvt-quantized-gguf-models:
     needs: [ environment-setup, quantize-speech-and-upload-gguf ]
+    if: ${{ always() && (needs.quantize-speech-and-upload-gguf.result == 'success' || needs.quantize-speech-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-speech-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -944,7 +935,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   speech-create-hf-collections:
@@ -962,7 +953,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
 
   # ===========================================================================
@@ -981,10 +972,11 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1005,12 +997,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_guardian }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   guardian-quantize-upload-gguf:
     needs: [ environment-setup, guardian-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.guardian-convert-hf-to-f16-gguf.result == 'success' || needs.guardian-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -1032,7 +1024,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_guardian }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
@@ -1057,8 +1049,9 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
+      use_jinja_template: true
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   guardian-create-hf-collections:
@@ -1076,7 +1069,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # ===========================================================================
   # Granite Embedding
@@ -1094,7 +1087,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # Note: Granite 4.0 embedding models have different architectures:
   # - Non-r2 models (e.g., granite-embedding-30m-english): RoBERTa architecture
@@ -1103,6 +1096,7 @@ jobs:
   # This workflow includes baseline similarity testing before GGUF conversion
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1123,12 +1117,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   embedding-quantize-upload-gguf:
     needs: [ environment-setup, embedding-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.embedding-convert-hf-to-f16-gguf.result == 'success' || needs.embedding-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -1150,7 +1144,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_embedding }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   embedding-bvt-quantized-gguf-models:
     needs: [ environment-setup, embedding-quantize-upload-gguf ]
@@ -1176,7 +1170,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   embedding-rag-test-quantized-gguf-models:
     needs: [ environment-setup, embedding-bvt-quantized-gguf-models ]
@@ -1201,7 +1195,7 @@ jobs:
       top_k: 3
       min_score: 0.5
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   embedding-create-hf-collections:
@@ -1220,7 +1214,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # ===========================================================================
   # Granite Docling
@@ -1238,10 +1232,11 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_repo_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
+    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1262,12 +1257,12 @@ jobs:
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_docling }}
       transformers_version: ${{ needs.environment-setup.outputs.transformers_version_docling }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   docling-quantize-upload-gguf:
     needs: [ environment-setup, docling-convert-hf-to-f16-gguf ]
-    if: ${{ always() && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_quantize_step == 'true' && (needs.docling-convert-hf-to-f16-gguf.result == 'success' || needs.docling-convert-hf-to-f16-gguf.result == 'skipped') }}
     permissions:
       contents: write
       packages: write
@@ -1289,7 +1284,7 @@ jobs:
       quantization: "${{ matrix.quantization }}"
       converted_quantization: ${{ needs.environment-setup.outputs.def_converted_quant_docling }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
@@ -1316,7 +1311,7 @@ jobs:
       ext_log: "${{ needs.environment-setup.outputs.ext_log }}"
       ext_response: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   # TODO: change collection from private to public (on success)
   docling-create-hf-collections:
@@ -1334,7 +1329,7 @@ jobs:
       target_repo_name_ext: ${{ needs.environment-setup.outputs.target_repo_name_ext }}
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
-      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   logs-aggregate-zip-upload:
     needs: [
@@ -1343,6 +1338,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
@@ -1366,6 +1362,7 @@ jobs:
       language-uat-quantized-gguf-models,
       guardian-bvt-quantized-gguf-models,
       docling-bvt-quantized-gguf-models,
+      speech-bvt-quantized-gguf-models,
     ]
     if: always()
     uses: IBM/gguf/.github/workflows/reusable-zip-release-artifacts.yml@main
