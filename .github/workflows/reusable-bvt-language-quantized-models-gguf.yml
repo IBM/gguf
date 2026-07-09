@@ -91,7 +91,7 @@ env:
 
 jobs:
   test-quantized-model:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 60
     if: ${{ inputs.enable_language_jobs == true }}
     env:
