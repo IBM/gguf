@@ -52,8 +52,12 @@ on:
 env:
   LLAMA_CPP_REPO: 'https://github.com/ggerganov/llama.cpp.git'
   ARTIFACT_RETENTION_DAYS: 90
-  # llama-run was removed (at some point) after b6808, so only build it for this version and older
+  # llama-run was removed after b6808, so only build it for this version and older
   LLAMA_RUN_LAST_VERSION: 6808
+  # llama-completion was introduced at b8742; skip verification/packaging for older builds
+  LLAMA_COMPLETION_FIRST_VERSION: 8742
+  # llama-mtmd-cli was introduced at b8742; skip verification/packaging for older builds
+  LLAMA_MTMD_FIRST_VERSION: 8742
 
 jobs:
   build-binaries:
@@ -99,14 +103,26 @@ jobs:
 
           # Determine if llama-run should be built (only for b$LLAMA_RUN_LAST_VERSION and older)
           INCLUDE_LLAMA_RUN="false"
+          INCLUDE_LLAMA_COMPLETION="true"
+          INCLUDE_LLAMA_MTMD="true"
           if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
             VERSION_NUM="${BASH_REMATCH[1]}"
             if [ "$VERSION_NUM" -le ${{ env.LLAMA_RUN_LAST_VERSION }} ]; then
               INCLUDE_LLAMA_RUN="true"
             fi
+            if [ "$VERSION_NUM" -lt ${{ env.LLAMA_COMPLETION_FIRST_VERSION }} ]; then
+              INCLUDE_LLAMA_COMPLETION="false"
+            fi
+            if [ "$VERSION_NUM" -lt ${{ env.LLAMA_MTMD_FIRST_VERSION }} ]; then
+              INCLUDE_LLAMA_MTMD="false"
+            fi
           fi
           echo "include_llama_run=$INCLUDE_LLAMA_RUN" >> $GITHUB_OUTPUT
+          echo "include_llama_completion=$INCLUDE_LLAMA_COMPLETION" >> $GITHUB_OUTPUT
+          echo "include_llama_mtmd=$INCLUDE_LLAMA_MTMD" >> $GITHUB_OUTPUT
           echo "Include llama-run in build: $INCLUDE_LLAMA_RUN (threshold: b${{ env.LLAMA_RUN_LAST_VERSION }})"
+          echo "Include llama-completion in build: $INCLUDE_LLAMA_COMPLETION (first version: b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
+          echo "Include llama-mtmd-cli in build: $INCLUDE_LLAMA_MTMD (first version: b${{ env.LLAMA_MTMD_FIRST_VERSION }})"
 
       - name: Verify environment
         if: matrix.build_enabled
@@ -282,7 +298,7 @@ jobs:
           echo "Checking for required binaries..."
 
           # Core binaries (always required)
-          for binary in llama-cli llama-completion llama-quantize llama-server llama-mtmd-cli llama-gguf llama-gguf-split llama-embedding; do
+          for binary in llama-cli llama-quantize llama-server llama-gguf llama-gguf-split llama-embedding; do
             if [ -f "$binary" ]; then
               echo "✓ $binary found"
             else
@@ -290,6 +306,30 @@ jobs:
               exit 1
             fi
           done
+
+          # llama-completion: only available from b${{ env.LLAMA_COMPLETION_FIRST_VERSION }} onwards
+          if [ "${{ steps.set_version.outputs.include_llama_completion }}" = "true" ]; then
+            if [ -f "llama-completion" ]; then
+              echo "✓ llama-completion found"
+            else
+              echo "✗ llama-completion NOT FOUND (expected for version ${{ steps.set_version.outputs.version }})"
+              exit 1
+            fi
+          else
+            echo "ℹ llama-completion not checked (not available before b${{ env.LLAMA_COMPLETION_FIRST_VERSION }}, building ${{ steps.set_version.outputs.version }})"
+          fi
+
+          # llama-mtmd-cli: only available from b${{ env.LLAMA_MTMD_FIRST_VERSION }} onwards
+          if [ "${{ steps.set_version.outputs.include_llama_mtmd }}" = "true" ]; then
+            if [ -f "llama-mtmd-cli" ]; then
+              echo "✓ llama-mtmd-cli found"
+            else
+              echo "✗ llama-mtmd-cli NOT FOUND (expected for version ${{ steps.set_version.outputs.version }})"
+              exit 1
+            fi
+          else
+            echo "ℹ llama-mtmd-cli not checked (not available before b${{ env.LLAMA_MTMD_FIRST_VERSION }}, building ${{ steps.set_version.outputs.version }})"
+          fi
 
           # See if llama-run is supported based upon the last version that was known to support it
           if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ]; then
@@ -312,8 +352,12 @@ jobs:
           # Test llama-cli
           ./llama-cli --version || ./llama-cli --help | head -5
 
-          # Test llama-completion
-          ./llama-completion --version || ./llama-completion --help | head -5
+          # Test llama-completion (only from b${{ env.LLAMA_COMPLETION_FIRST_VERSION }} onwards)
+          if [ "${{ steps.set_version.outputs.include_llama_completion }}" = "true" ]; then
+            ./llama-completion --version || ./llama-completion --help | head -5
+          else
+            echo "Skipping llama-completion test (not available before b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
+          fi
 
           # Test llama-quantize
           ./llama-quantize --help | head -5
@@ -329,8 +373,12 @@ jobs:
             echo "Skipping llama-run test (not built in version ${{ steps.set_version.outputs.version }})"
           fi
 
-          # Test llama-mtmd-cli
-          ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
+          # Test llama-mtmd-cli (only from b${{ env.LLAMA_MTMD_FIRST_VERSION }} onwards)
+          if [ "${{ steps.set_version.outputs.include_llama_mtmd }}" = "true" ]; then
+            ./llama-mtmd-cli --version || ./llama-mtmd-cli --help | head -5
+          else
+            echo "Skipping llama-mtmd-cli test (not available before b${{ env.LLAMA_MTMD_FIRST_VERSION }})"
+          fi
 
           # Test llama-gguf
           echo "Testing llama-gguf..."
@@ -353,7 +401,12 @@ jobs:
           echo "=========================================="
           echo "Listing available devices for llama.cpp"
           echo "=========================================="
-          ./llama-completion --list-devices || echo "Note: --list-devices flag may not be available in version ${{ steps.set_version.outputs.version }}"
+          if [ "${{ steps.set_version.outputs.include_llama_completion }}" = "true" ]; then
+            ./llama-completion --list-devices || echo "Note: --list-devices flag may not be available in version ${{ steps.set_version.outputs.version }}"
+          else
+            ./llama-cli --help 2>&1 | head -3 || true
+            echo "Note: llama-completion not available in version ${{ steps.set_version.outputs.version }} (introduced at b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
+          fi
           echo "=========================================="
           echo ""
           echo "This information shows what CPU/GPU devices are visible to llama.cpp"
@@ -470,6 +523,20 @@ jobs:
             LLAMA_RUN_BINARY="- **llama-run**: ⚠️ Not included (removed after b${{ env.LLAMA_RUN_LAST_VERSION }})"
           fi
 
+          # Determine if llama-completion is included
+          if [ "${{ steps.set_version.outputs.include_llama_completion }}" = "true" ]; then
+            LLAMA_COMPLETION_BINARY="- **llama-completion**: Simple completion tool (no conversation mode, no banner)"
+          else
+            LLAMA_COMPLETION_BINARY="- **llama-completion**: ⚠️ Not included (introduced at b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
+          fi
+
+          # Determine if llama-mtmd-cli is included
+          if [ "${{ steps.set_version.outputs.include_llama_mtmd }}" = "true" ]; then
+            LLAMA_MTMD_BINARY="- **llama-mtmd-cli**: Multi-turn multi-document CLI tool"
+          else
+            LLAMA_MTMD_BINARY="- **llama-mtmd-cli**: ⚠️ Not included (introduced at b${{ env.LLAMA_MTMD_FIRST_VERSION }})"
+          fi
+
           # Set platform-specific information
           if [ "${{ matrix.platform }}" = "linux-x86_64" ]; then
             PLATFORM_NAME="Linux (linux-x86_64)"
@@ -559,11 +626,11 @@ jobs:
 
           ## Included Binaries
           - **llama-cli**: Main command-line inference tool (conversation mode)
-          - **llama-completion**: Simple completion tool (no conversation mode, no banner)
+          $LLAMA_COMPLETION_BINARY
           - **llama-quantize**: Model quantization tool
           - **llama-server**: HTTP server for model inference
           $LLAMA_RUN_BINARY
-          - **llama-mtmd-cli**: Multi-turn multi-document CLI tool
+          $LLAMA_MTMD_BINARY
           - **llama-gguf**: GGUF file inspection and manipulation tool
           - **llama-gguf-split**: GGUF file splitting tool for large models
           - **llama-embedding**: Embedding generation tool for text embeddings
@@ -589,9 +656,25 @@ jobs:
           ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform_suffix }}.zip"
 
           # Base binaries (always included)
-          BINARIES="llama-cli llama-completion llama-quantize llama-server llama-mtmd-cli llama-gguf llama-gguf-split llama-embedding BUILD_INFO.md"
+          BINARIES="llama-cli llama-quantize llama-server llama-gguf llama-gguf-split llama-embedding BUILD_INFO.md"
 
-          # Add llama-run only for b6808 and older
+          # Add llama-completion only from b${{ env.LLAMA_COMPLETION_FIRST_VERSION }} onwards
+          if [ "${{ steps.set_version.outputs.include_llama_completion }}" = "true" ] && [ -f "llama-completion" ]; then
+            BINARIES="$BINARIES llama-completion"
+            echo "Including llama-completion in archive (version ${{ steps.set_version.outputs.version }})"
+          else
+            echo "Excluding llama-completion from archive (version ${{ steps.set_version.outputs.version }}, introduced at b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
+          fi
+
+          # Add llama-mtmd-cli only from b${{ env.LLAMA_MTMD_FIRST_VERSION }} onwards
+          if [ "${{ steps.set_version.outputs.include_llama_mtmd }}" = "true" ] && [ -f "llama-mtmd-cli" ]; then
+            BINARIES="$BINARIES llama-mtmd-cli"
+            echo "Including llama-mtmd-cli in archive (version ${{ steps.set_version.outputs.version }})"
+          else
+            echo "Excluding llama-mtmd-cli from archive (version ${{ steps.set_version.outputs.version }}, introduced at b${{ env.LLAMA_MTMD_FIRST_VERSION }})"
+          fi
+
+          # Add llama-run only for b${{ env.LLAMA_RUN_LAST_VERSION }} and older
           if [ "${{ steps.set_version.outputs.include_llama_run }}" = "true" ] && [ -f "llama-run" ]; then
             BINARIES="$BINARIES llama-run"
             echo "Including llama-run in archive (version ${{ steps.set_version.outputs.version }})"
@@ -691,12 +774,20 @@ jobs:
         run: |
           VERSION="${{ inputs.llama_cpp_version || 'b8100' }}"
 
-          # Determine if llama-run was included (re-calculate for summary job)
+          # Re-calculate version flags for summary job
           INCLUDE_LLAMA_RUN="false"
+          INCLUDE_LLAMA_COMPLETION="true"
+          INCLUDE_LLAMA_MTMD="true"
           if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
             VERSION_NUM="${BASH_REMATCH[1]}"
             if [ "$VERSION_NUM" -le ${{ env.LLAMA_RUN_LAST_VERSION }} ]; then
               INCLUDE_LLAMA_RUN="true"
+            fi
+            if [ "$VERSION_NUM" -lt ${{ env.LLAMA_COMPLETION_FIRST_VERSION }} ]; then
+              INCLUDE_LLAMA_COMPLETION="false"
+            fi
+            if [ "$VERSION_NUM" -lt ${{ env.LLAMA_MTMD_FIRST_VERSION }} ]; then
+              INCLUDE_LLAMA_MTMD="false"
             fi
           fi
 
@@ -709,7 +800,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Built Binaries" >> $GITHUB_STEP_SUMMARY
           echo "- llama-cli" >> $GITHUB_STEP_SUMMARY
-          echo "- llama-completion" >> $GITHUB_STEP_SUMMARY
+
+          # Check if llama-completion should be included
+          if [ "$INCLUDE_LLAMA_COMPLETION" = "true" ]; then
+            echo "- llama-completion" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ~~llama-completion~~ (not available before b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})" >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "- llama-quantize" >> $GITHUB_STEP_SUMMARY
           echo "- llama-server" >> $GITHUB_STEP_SUMMARY
 
@@ -720,7 +818,13 @@ jobs:
             echo "- ~~llama-run~~ (not built in $VERSION)" >> $GITHUB_STEP_SUMMARY
           fi
 
-          echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
+          # Check if llama-mtmd-cli should be included
+          if [ "$INCLUDE_LLAMA_MTMD" = "true" ]; then
+            echo "- llama-mtmd-cli" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ~~llama-mtmd-cli~~ (not available before b${{ env.LLAMA_MTMD_FIRST_VERSION }})" >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "- llama-gguf" >> $GITHUB_STEP_SUMMARY
           echo "- llama-gguf-split" >> $GITHUB_STEP_SUMMARY
           echo "- llama-embedding" >> $GITHUB_STEP_SUMMARY
@@ -752,5 +856,3 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "❌ **Some builds failed. Check the logs above.**" >> $GITHUB_STEP_SUMMARY
           fi
-
-
