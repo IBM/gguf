@@ -58,6 +58,8 @@ env:
   LLAMA_COMPLETION_FIRST_VERSION: 8742
   # llama-mtmd-cli was introduced at b8742; skip verification/packaging for older builds
   LLAMA_MTMD_FIRST_VERSION: 8742
+  # --single-turn flag for llama-cli was introduced after b6808
+  LLAMA_SINGLE_TURN_FIRST_VERSION: 6809
 
 jobs:
   build-binaries:
@@ -105,6 +107,7 @@ jobs:
           INCLUDE_LLAMA_RUN="false"
           INCLUDE_LLAMA_COMPLETION="true"
           INCLUDE_LLAMA_MTMD="true"
+          INCLUDE_SINGLE_TURN="true"
           if [[ "$VERSION" =~ ^b([0-9]+)$ ]]; then
             VERSION_NUM="${BASH_REMATCH[1]}"
             if [ "$VERSION_NUM" -le ${{ env.LLAMA_RUN_LAST_VERSION }} ]; then
@@ -116,13 +119,18 @@ jobs:
             if [ "$VERSION_NUM" -lt ${{ env.LLAMA_MTMD_FIRST_VERSION }} ]; then
               INCLUDE_LLAMA_MTMD="false"
             fi
+            if [ "$VERSION_NUM" -lt ${{ env.LLAMA_SINGLE_TURN_FIRST_VERSION }} ]; then
+              INCLUDE_SINGLE_TURN="false"
+            fi
           fi
           echo "include_llama_run=$INCLUDE_LLAMA_RUN" >> $GITHUB_OUTPUT
           echo "include_llama_completion=$INCLUDE_LLAMA_COMPLETION" >> $GITHUB_OUTPUT
           echo "include_llama_mtmd=$INCLUDE_LLAMA_MTMD" >> $GITHUB_OUTPUT
+          echo "include_single_turn=$INCLUDE_SINGLE_TURN" >> $GITHUB_OUTPUT
           echo "Include llama-run in build: $INCLUDE_LLAMA_RUN (threshold: b${{ env.LLAMA_RUN_LAST_VERSION }})"
           echo "Include llama-completion in build: $INCLUDE_LLAMA_COMPLETION (first version: b${{ env.LLAMA_COMPLETION_FIRST_VERSION }})"
           echo "Include llama-mtmd-cli in build: $INCLUDE_LLAMA_MTMD (first version: b${{ env.LLAMA_MTMD_FIRST_VERSION }})"
+          echo "Include --single-turn flag: $INCLUDE_SINGLE_TURN (first version: b${{ env.LLAMA_SINGLE_TURN_FIRST_VERSION }})"
 
       - name: Verify environment
         if: matrix.build_enabled
@@ -219,6 +227,12 @@ jobs:
               CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=ON"
             fi
           fi
+
+          # Disable CURL unconditionally: the runner has no libcurl-dev and URL-based
+          # model downloading is not needed in this pipeline. Safe across all versions:
+          # older builds (e.g. b6808) where LLAMA_CURL defaults to ON will respect this;
+          # newer builds where it was renamed to GGML_CURL or deprecated just emit a warning.
+          CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_CURL=OFF"
 
           # Optional OpenSSL static linking (only when openssl_static is true)
           if [ "${{ inputs.openssl_static }}" = "true" ]; then
@@ -460,12 +474,18 @@ jobs:
           echo ""
 
           # Run a simple inference test with verbose output and log file
+          # --single-turn was added after b${{ env.LLAMA_SINGLE_TURN_FIRST_VERSION }}; omit for older versions
+          SINGLE_TURN_FLAG=""
+          if [ "${{ steps.set_version.outputs.include_single_turn }}" = "true" ]; then
+            SINGLE_TURN_FLAG="--single-turn"
+          fi
+
           ./llama-cli \
             -m granite-4.0-1b-Q4_K_M.gguf \
             -p "Why is the sky blue according to science?" \
             -n 128 \
             --temp 0.0 \
-            --single-turn \
+            $SINGLE_TURN_FLAG \
             --verbose \
             --log-file inference_test_error.log 2>&1 | tee inference_test.log
 
@@ -498,7 +518,7 @@ jobs:
       - name: Display inference performance metrics
         if: matrix.build_enabled && always()
         run: |
-          cd llama.cpp/build/bin
+          [ -d llama.cpp/build/bin ] && cd llama.cpp/build/bin || { echo "Build directory not found, skipping metrics"; exit 0; }
           if [ -f inference_test.log ]; then
             echo "=== Inference Performance Metrics ==="
             # Extract timing information from llama-cli output
