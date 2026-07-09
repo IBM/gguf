@@ -165,7 +165,7 @@ jobs:
 
   convert-hf-to-bf16-gguf:
     needs: [ environment-setup, instruct-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -210,7 +210,7 @@ jobs:
 
   bvt-instruct-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
-    uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -371,7 +371,7 @@ jobs:
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write

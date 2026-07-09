@@ -285,3 +285,5 @@ jobs:
           cd model-runner/cmd/cli
           ./model-cli package --gguf "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" ${{inputs.target_dockerhub_namespace}}/${{inputs.target_dockerhub_repository}}:${{env.TAG_LATEST}} --license "${{env.ABSOLUTE_PATH_FNAME_QUANTIZED}}" --push
           exit 0
+
+

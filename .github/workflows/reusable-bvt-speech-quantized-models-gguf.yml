@@ -107,9 +107,15 @@ jobs:
           scripts/test_regex_match_file_2.py
           resources/json/latest/hf_collection_mapping_gguf.json
           test/audio
-          bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
+          bin/${{ inputs.llamacpp_build_tag }}/**
         sparse-checkout-cone-mode: false
         fetch-depth: 1
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
@@ -194,7 +200,7 @@ jobs:
       continue-on-error: false
       run: |
         echo "Verifying llama-mtmd-cli runtime on ${{ runner.os }} using build tag: ${{ inputs.llamacpp_build_tag }}"
-        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+        LLAMA_CLI_PATH="./$LLAMA_BIN_DIR/${{env.LLAMA_CLI_TOOL}}"
 
         if [ ! -f "$LLAMA_CLI_PATH" ]; then
           echo "[ERROR] llama-mtmd-cli binary not found at $LLAMA_CLI_PATH"
@@ -276,7 +282,7 @@ jobs:
           VERBOSE_FLAG="--verbose"
         fi
 
-        LLAMA_CLI_PATH="./bin/${{ inputs.llamacpp_build_tag }}/${{env.LLAMA_CLI_TOOL}}"
+        LLAMA_CLI_PATH="./$LLAMA_BIN_DIR/${{env.LLAMA_CLI_TOOL}}"
 
         # Note: Audio input flag may need to be adjusted based on llama.cpp speech support
         $LLAMA_CLI_PATH -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
@@ -337,7 +343,7 @@ jobs:
     - name: Upload log artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-log
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -354,7 +360,7 @@ jobs:
     - name: Upload response artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -365,4 +371,6 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true'
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+
+
 

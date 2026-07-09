@@ -520,7 +520,7 @@ jobs:
   language-convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -554,7 +554,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -572,7 +572,7 @@ jobs:
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-quantize-upload-gguf ]
     if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
-    uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -977,7 +977,7 @@ jobs:
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -1011,7 +1011,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -1131,7 +1131,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -1237,7 +1237,7 @@ jobs:
   docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
     if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -1271,7 +1271,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_docling_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_docling_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -1378,3 +1378,4 @@ jobs:
       artifacts_root_name: "${{ needs.environment-setup.outputs.artifact_responses_name }}"
       artifacts_extension: "${{ needs.environment-setup.outputs.ext_response }}"
     secrets: inherit
+

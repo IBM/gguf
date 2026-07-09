@@ -117,7 +117,7 @@ jobs:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          bin/${{ inputs.llamacpp_build_tag }}/llama-embedding
+          bin/${{ inputs.llamacpp_build_tag }}/**
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
           scripts/validate_embedding_json.py
@@ -125,6 +125,12 @@ jobs:
           scripts/extract_embedding_keywords.py
         sparse-checkout-cone-mode: false
         fetch-depth: 1
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
 
     - name: confirm-environment
       run: |
@@ -215,7 +221,7 @@ jobs:
     - name: verify-llama-embedding-binary
       run: |
         echo "Verifying llama-embedding binary from build tag: ${{ inputs.llamacpp_build_tag }}"
-        LLAMA_EMBEDDING_BIN="./bin/${{ inputs.llamacpp_build_tag }}/llama-embedding"
+        LLAMA_EMBEDDING_BIN="./$LLAMA_BIN_DIR/llama-embedding"
         if [ ! -f "$LLAMA_EMBEDDING_BIN" ]; then
           echo "[ERROR] llama-embedding binary not found at: $LLAMA_EMBEDDING_BIN"
           exit 1
@@ -412,7 +418,7 @@ jobs:
 
     - name: Upload log artifact
       id: artifact-upload-log
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -427,7 +433,7 @@ jobs:
 
     - name: Upload raw response artifact
       id: artifact-upload-raw-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -442,7 +448,7 @@ jobs:
 
     - name: Upload processed response artifact
       id: artifact-upload-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -452,4 +458,6 @@ jobs:
     - name: Show processed response artifact ID
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+
+
 

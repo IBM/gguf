@@ -69,24 +69,24 @@ jobs:
       quantizations: ${{ steps.parse_files.outputs.quantizations }}
       file_count: ${{ steps.parse_files.outputs.file_count }}
     steps:
-    - uses: actions/checkout@v4
-    
+    - uses: actions/checkout@v6
+
     - name: Setup Python
       uses: actions/setup-python@v6
       with:
         python-version: '3.11'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install -r ./requirements.txt
         pip list
-    
+
     - name: Set environment variables
       run: |
         echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/$(basename '${{ inputs.repo_id }}')${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-    
+
     - name: List and parse GGUF files
       id: parse_files
       env:
@@ -175,3 +175,5 @@ jobs:
         echo "=========================================="
 
 # Made with Bob
+
+

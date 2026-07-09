@@ -80,15 +80,22 @@ jobs:
     env:
       HF_HUB_DISABLE_XET: 1
       HF_HUB_ENABLE_HF_TRANSFER: 0
-      LLAMA_SERVER_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-server
+      LLAMA_SERVER_BIN: ""  # Set dynamically in detect-platform step
     steps:
     - uses: actions/checkout@v6
       with:
         sparse-checkout: |
-          bin/${{ inputs.llamacpp_build_tag }}/llama-server
+          bin/${{ inputs.llamacpp_build_tag }}/**
           scripts
           requirements.txt
         sparse-checkout-cone-mode: false
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "LLAMA_SERVER_BIN=./bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}/llama-server" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
@@ -206,7 +213,7 @@ jobs:
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
         echo "Starting llama-server on port ${{env.LLAMA_SERVER_PORT}}"
-        nohup ${{env.LLAMA_SERVER_BIN}} -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} --temp ${{env.LLAMA_SERVER_TEMP}} --verbose --log-file ${{env.BASE_FNAME_LOG_FILE}} &
+        nohup $LLAMA_SERVER_BIN -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} --port ${{env.LLAMA_SERVER_PORT}} --temp ${{env.LLAMA_SERVER_TEMP}} --verbose --log-file ${{env.BASE_FNAME_LOG_FILE}} &
         echo "Llama server started in the background."
         echo waiting for llama-server to start...
         retry_count=0
@@ -281,7 +288,7 @@ jobs:
     - name: Upload log artifact
       if: env.TEST_LLAMA_SERVER == 'true'
       id: artifact-upload-llama-server-log
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -298,7 +305,7 @@ jobs:
     - name: Upload response artifact
       if: env.TEST_LLAMA_SERVER == 'true'
       id: artifact-upload-llama-server-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -309,3 +316,5 @@ jobs:
       if: env.TEST_LLAMA_SERVER == 'true'
       id: show-artifact-id-llama-server-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-llama-server-response.outputs.artifact-id }}'
+
+

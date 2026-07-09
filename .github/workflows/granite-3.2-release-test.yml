@@ -378,7 +378,7 @@ jobs:
 
   convert-hf-to-bf16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -412,7 +412,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_language_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_language_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -430,7 +430,7 @@ jobs:
   bvt-language-quantized-gguf-models:
     needs: [ environment-setup, quantize-upload-gguf ]
     if: ${{ always() && (needs.quantize-upload-gguf.result == 'success' || needs.quantize-upload-gguf.result == 'skipped') }}
-    uses: IBM/gguf/.github/workflows/reusable-bvt-instruct-quantized-models-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -605,7 +605,7 @@ jobs:
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -639,7 +639,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_guardian_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_guardian_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -752,7 +752,7 @@ jobs:
       matrix:
         repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
         quantization: ${{ fromJson(needs.environment-setup.outputs.target_embedding_quantizations) }}
-    uses: IBM/gguf/.github/workflows/reusable-quantize-upload-gguf.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-quantize-language-gguf-upload.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       trace: ${{ needs.environment-setup.outputs.trace == 'true' }}
@@ -807,3 +807,5 @@ jobs:
       target_collection_private: ${{ needs.environment-setup.outputs.target_repo_private == 'true' }}
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
+
+

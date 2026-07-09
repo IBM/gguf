@@ -76,6 +76,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
+
     - run: |
         echo "[INFO] github.env:"
         echo "[INFO] >> run_id: '${{ github.run_id }}'"
@@ -164,7 +171,7 @@ jobs:
       with:
         clean: false
         sparse-checkout: |
-          bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+          bin/${{ inputs.llamacpp_build_tag }}/**
           requirements.txt
           scripts/
         sparse-checkout-cone-mode: false
@@ -175,12 +182,12 @@ jobs:
         echo "=========================================="
         echo "Using llama-quantize from build tag: ${{ inputs.llamacpp_build_tag }}"
         echo "=========================================="
-        ls -al ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
-        if [ ! -f "./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize" ]; then
-          echo "[ERROR] llama-quantize binary not found at ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize"
+        ls -al ./$LLAMA_BIN_DIR/llama-quantize
+        if [ ! -f "./$LLAMA_BIN_DIR/llama-quantize" ]; then
+          echo "[ERROR] llama-quantize binary not found at ./$LLAMA_BIN_DIR/llama-quantize"
           exit 1
         fi
-        chmod +x ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize
+        chmod +x ./$LLAMA_BIN_DIR/llama-quantize
         echo "[SUCCESS] llama-quantize binary found and made executable"
 
     - name: install-general-dependencies
@@ -234,7 +241,7 @@ jobs:
         echo "LOCAL_FNAME_BF16_GGUF='$LOCAL_FNAME_BF16_GGUF' (${{ env.LOCAL_FNAME_BF16_GGUF }})"
         echo "LOCAL_FNAME_QUANTIZED_GGUF='$LOCAL_FNAME_QUANTIZED_GGUF' (${{ env.LOCAL_FNAME_QUANTIZED_GGUF }})"
         echo "--------------------"
-        sudo ./bin/${{ inputs.llamacpp_build_tag }}/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
+        sudo ./$LLAMA_BIN_DIR/llama-quantize ${{ env.LOCAL_FNAME_BF16_GGUF }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{inputs.quantization}}
 
     - name: find-gguf-files
       if: inputs.debug == true
@@ -248,4 +255,6 @@ jobs:
         echo "TARGET_REPO_ID=${{env.TARGET_REPO_ID}}"
         echo "LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
         python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{ env.LOCAL_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+
+
 

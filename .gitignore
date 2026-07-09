@@ -5,6 +5,10 @@
 .vscode/*.log
 .vscode/launch.json
 
+# Python
+__pycache__/
+*.pyc
+
 # repos.
 /llama.cpp
 

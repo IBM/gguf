@@ -1,5 +1,5 @@
 name: Build llama.cpp Binaries
-run-name: "[RELEASE] Build llama.cpp Binaries [${{ inputs.llama_cpp_version }}] - ${{ inputs.target_platform }}"
+run-name: "[RELEASE] Build llama.cpp Binaries [${{ inputs.llama_cpp_version }}]"
 
 on:
   workflow_dispatch:
@@ -7,20 +7,27 @@ on:
       llama_cpp_version:
         description: 'llama.cpp version (commit hash or tag)'
         required: true
-        default: 'b8100'
+        default: 'b9850'
         type: string
       release_tag_extension:
-        description: 'Optional release tag extension (appended after date with dash). Date (YYYYMMDD) is always included. Example: if extension="metal", tag becomes "llama.cpp-b8100-20260415-metal"'
+        description: 'Optional release tag extension (appended after date with dash). Date (YYYYMMDD) is always included. Example: if extension="v2", tag becomes "llama.cpp-b8100-20260415-v2"'
         required: false
         type: string
-      target_platform:
-        description: 'Target platform for binaries'
+      build_macos_arm64:
+        description: 'Build macOS ARM64 (Apple Silicon) binaries'
         required: false
-        default: 'macos-arm64'
-        type: choice
-        options:
-          - macos-arm64
-          - linux-x86_64
+        default: true
+        type: boolean
+      build_linux_arm64:
+        description: 'Build Linux ARM64 (aarch64) binaries'
+        required: false
+        default: true
+        type: boolean
+      build_linux_x86_64:
+        description: 'Build Linux x86_64 (Intel/AMD) binaries'
+        required: false
+        default: false
+        type: boolean
       debug:
         description: 'Enable debug output'
         required: false
@@ -50,20 +57,40 @@ env:
 
 jobs:
   build-binaries:
-    name: Build llama.cpp Binaries
-    runs-on: ${{ inputs.target_platform == 'linux-x86_64' && 'ubuntu-latest' || 'macos-latest' }}
+    name: Build llama.cpp Binaries (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-arm64
+            runner: macos-latest
+            platform_suffix: darwin-arm64
+            build_enabled: ${{ inputs.build_macos_arm64 }}
+          - platform: linux-arm64
+            runner: ubuntu-24.04-arm
+            platform_suffix: linux-arm64
+            build_enabled: ${{ inputs.build_linux_arm64 }}
+          - platform: linux-x86_64
+            runner: ubuntu-latest
+            platform_suffix: linux-x86_64
+            build_enabled: ${{ inputs.build_linux_x86_64 }}
 
     steps:
       - name: Print CMake version
+        if: matrix.build_enabled
         run: |
           set -e
           echo "CMake version:"
           cmake --version || { echo "ERROR: CMake not found or failed to execute"; exit 1; }
 
       - name: Checkout repository
+        if: matrix.build_enabled
         uses: actions/checkout@v6
 
       - name: Set llama.cpp version
+        if: matrix.build_enabled
         id: set_version
         run: |
           VERSION="${{ inputs.llama_cpp_version }}"
@@ -82,6 +109,7 @@ jobs:
           echo "Include llama-run in build: $INCLUDE_LLAMA_RUN (threshold: b${{ env.LLAMA_RUN_LAST_VERSION }})"
 
       - name: Verify environment
+        if: matrix.build_enabled
         run: |
           echo "CMake version:"
           cmake --version
@@ -89,6 +117,7 @@ jobs:
           uname -m
 
       - name: Clone llama.cpp
+        if: matrix.build_enabled
         run: |
           git clone --depth 1 --branch ${{ steps.set_version.outputs.version }} ${{ env.LLAMA_CPP_REPO }}
           cd llama.cpp
@@ -96,29 +125,31 @@ jobs:
           git log -1 --oneline
 
       - name: Configure CMake
+        if: matrix.build_enabled
         run: |
           cd llama.cpp
 
           # Platform-specific configuration
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
-            echo "Configuring for Linux x86_64..."
-            # Base flags for Linux x86_64
+          if [ "${{ matrix.platform }}" = "linux-arm64" ]; then
+            echo "Configuring for Linux ARM64..."
+            # Base flags for Linux ARM64
             CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=Linux"
-            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=x86_64"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=aarch64"
             CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
-            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=x86-64 -mtune=generic\""
-            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=x86-64 -mtune=generic\""
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
             CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
 
-            # Enable x86_64 SIMD optimizations (unless minimize_acceleration is true)
+            # Enable ARM64 SIMD optimizations (unless minimize_acceleration is true)
             if [ "${{ inputs.minimize_acceleration }}" != "true" ]; then
-              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX=ON"
-              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX2=ON"
-              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=ON"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8.2-a -mtune=generic\""
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8.2-a -mtune=generic\""
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
+            else
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
             fi
-          else
+          elif [ "${{ matrix.platform }}" = "macos-arm64" ]; then
             echo "Configuring for macOS ARM64..."
 
             # Base flags for macOS ARM64 (cross-compilation)
@@ -153,6 +184,24 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_SVE=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
             CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+          else
+            echo "Configuring for Linux x86_64..."
+            # Base flags for Linux x86_64
+            CMAKE_FLAGS="-DCMAKE_SYSTEM_NAME=Linux"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_SYSTEM_PROCESSOR=x86_64"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_SHARED_LIBS=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_NATIVE_DEFAULT=OFF"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=x86-64 -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=x86-64 -mtune=generic\""
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DLLAMA_BUILD_EXAMPLES=ON"
+
+            # Enable x86_64 SIMD optimizations (unless minimize_acceleration is true)
+            if [ "${{ inputs.minimize_acceleration }}" != "true" ]; then
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX=ON"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX2=ON"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=ON"
+            fi
           fi
 
           # Optional OpenSSL static linking (only when openssl_static is true)
@@ -174,7 +223,10 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_AVX2=OFF"
             CMAKE_FLAGS="$CMAKE_FLAGS -DGGML_FMA=OFF"
-            if [ "${{ inputs.target_platform }}" = "macos-arm64" ]; then
+            if [ "${{ matrix.platform }}" = "linux-arm64" ]; then
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=\"-march=armv8-a -mtune=generic\""
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
+            elif [ "${{ matrix.platform }}" = "macos-arm64" ]; then
               CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=armv8-a -mtune=generic\""
             else
               CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=\"-march=x86-64 -mtune=generic\""
@@ -188,12 +240,12 @@ jobs:
           eval cmake -B build $CMAKE_FLAGS
 
           # Platform-specific compiler flag explanation
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
-            echo "Compiler flags for Linux x86_64:"
-            echo "  -march=x86-64: Target baseline x86-64 instruction set"
-            echo "  -mtune=generic: Optimize for generic x86_64 processors"
-            echo "  Result: Binaries work on any x86_64 system with reasonable performance"
-          else
+          if [ "${{ matrix.platform }}" = "linux-arm64" ]; then
+            echo "Compiler flags for Linux ARM64:"
+            echo "  -march=armv8.2-a: Target ARMv8.2-A instruction set (compatible with most modern ARM64 CPUs)"
+            echo "  -mtune=generic: Optimize for generic ARM64 processors"
+            echo "  Result: Binaries work on any ARMv8.2-A+ Linux arm64 system with reasonable performance"
+          elif [ "${{ matrix.platform }}" = "macos-arm64" ]; then
             echo "Compiler flags for macOS ARM64 (optimized for GitHub Actions M1):"
             echo "  -march=armv8.2-a: Target ARMv8.2-A instruction set (M1 baseline)"
             echo "  -mtune=apple-m1: Optimize for Apple M1 CPU characteristics"
@@ -207,14 +259,21 @@ jobs:
               echo "  Result: CPU-only binaries optimized for M1 runners"
             fi
             echo "  Note: Compatible with all Apple Silicon (M1/M2/M3/M4)"
+          else
+            echo "Compiler flags for Linux x86_64:"
+            echo "  -march=x86-64: Target baseline x86-64 instruction set"
+            echo "  -mtune=generic: Optimize for generic x86_64 processors"
+            echo "  Result: Binaries work on any x86_64 Linux system with reasonable performance"
           fi
 
       - name: Build binaries
+        if: matrix.build_enabled
         run: |
           cd llama.cpp
           cmake --build build --config Release -j $(nproc 2>/dev/null || sysctl -n hw.ncpu)
 
       - name: Verify binaries exist
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
           echo "Built binaries:"
@@ -245,6 +304,7 @@ jobs:
           fi
 
       - name: Run smoke tests
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
           echo "Running smoke tests..."
@@ -287,6 +347,7 @@ jobs:
           echo "All smoke tests passed!"
 
       - name: List available devices
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
           echo "=========================================="
@@ -300,15 +361,18 @@ jobs:
           echo "decisions about compiler flags and hardware acceleration options."
 
       - name: Setup Python for model download
+        if: matrix.build_enabled
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       - name: Install huggingface_hub
+        if: matrix.build_enabled
         run: |
           pip install huggingface_hub
 
       - name: Download test model from HuggingFace
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
           echo "Downloading small GGUF model for inference test..."
@@ -334,10 +398,11 @@ jobs:
           ls -lh granite-4.0-1b-Q4_K_M.gguf
 
       - name: Test llama-cli with real model inference
+        if: matrix.build_enabled
         timeout-minutes: 10
         run: |
           cd llama.cpp/build/bin
-          echo "Testing llama-cli with actual inference on macos-latest runner..."
+          echo "Testing llama-cli with actual inference on ${{ matrix.platform }} runner..."
           echo "This verifies the binary works with the build flags in GitHub Actions environment"
           echo ""
 
@@ -369,16 +434,16 @@ jobs:
           if [ $EXIT_CODE -eq 0 ]; then
             echo ""
             echo "✅ SUCCESS: llama-cli inference test passed!"
-            echo "Binary is confirmed working on macos-latest (M1) with current build flags"
+            echo "Binary is confirmed working on ${{ matrix.platform }} with current build flags"
           else
             echo ""
             echo "❌ FAILURE: llama-cli inference test failed with exit code $EXIT_CODE"
-            echo "Build flags may not be compatible with macos-latest runners"
+            echo "Build flags may not be compatible with ${{ matrix.platform }} runners"
             exit 1
           fi
 
       - name: Display inference performance metrics
-        if: always()
+        if: matrix.build_enabled && always()
         run: |
           cd llama.cpp/build/bin
           if [ -f inference_test.log ]; then
@@ -388,6 +453,7 @@ jobs:
           fi
 
       - name: Create build information README
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
 
@@ -405,7 +471,7 @@ jobs:
           fi
 
           # Set platform-specific information
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
+          if [ "${{ matrix.platform }}" = "linux-x86_64" ]; then
             PLATFORM_NAME="Linux (linux-x86_64)"
             ARCHITECTURE="x86_64 (Intel/AMD 64-bit)"
             MIN_VERSION="N/A (portable Linux binary)"
@@ -416,6 +482,18 @@ jobs:
             BUILD_SUMMARY="- Native Linux x86_64 build
           - Software-only operations (hardware acceleration settings per minimize_acceleration flag)
           - Maximum compatibility across x86_64 platforms
+          - Static linking for portability"
+          elif [ "${{ matrix.platform }}" = "linux-arm64" ]; then
+            PLATFORM_NAME="Linux (linux-arm64)"
+            ARCHITECTURE="ARM64 (64-bit ARM / aarch64)"
+            MIN_VERSION="N/A (portable Linux arm64 binary)"
+            COMPILER_EXPLANATION="- **-march=armv8.2-a**: Target ARMv8.2-A instruction set (compatible with most modern ARM64 CPUs)
+          - **-mtune=generic**: Optimize for generic ARM64 processors
+          - **Result**: Binaries work on any ARMv8.2-A+ Linux arm64 system (AWS Graviton 2+, Ampere Altra, etc.)"
+            USAGE_NOTE="All binaries are statically linked and should run on any modern Linux arm64 system (ARMv8.2-A or newer) without additional dependencies."
+            BUILD_SUMMARY="- Native Linux arm64 build (ubuntu-24.04-arm runner)
+          - Software-only operations (no GPU acceleration)
+          - Compatible with AWS Graviton 2/3/4, Ampere Altra, and other ARMv8.2-A+ platforms
           - Static linking for portability"
           else
             PLATFORM_NAME="macOS (darwin-arm64)"
@@ -465,7 +543,7 @@ jobs:
 
           ## Input Parameters
           - **llama_cpp_version**: \`${{ inputs.llama_cpp_version }}\`
-          - **target_platform**: \`${{ inputs.target_platform }}\`
+          - **target_platform**: \`${{ matrix.platform }}\`
           - **minimize_acceleration**: \`${{ inputs.minimize_acceleration }}\`
           - **enable_metal**: \`${{ inputs.enable_metal }}\`
           - **openssl_static**: \`${{ inputs.openssl_static }}\`
@@ -504,17 +582,11 @@ jobs:
           cat BUILD_INFO.md
 
       - name: Create zip archive
+        if: matrix.build_enabled
         run: |
           cd llama.cpp/build/bin
 
-          # Set platform-specific archive name
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
-            PLATFORM_SUFFIX="linux-x86_64"
-          else
-            PLATFORM_SUFFIX="darwin-arm64"
-          fi
-
-          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${PLATFORM_SUFFIX}.zip"
+          ZIP_NAME="llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform_suffix }}.zip"
 
           # Base binaries (always included)
           BINARIES="llama-cli llama-completion llama-quantize llama-server llama-mtmd-cli llama-gguf llama-gguf-split llama-embedding BUILD_INFO.md"
@@ -531,33 +603,17 @@ jobs:
           echo "Created archive: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
 
-      - name: Upload workflow artifacts
-        run: |
-          cd llama.cpp/build/bin
-
-          # Set platform-specific archive name
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
-            PLATFORM_SUFFIX="linux-x86_64"
-          else
-            PLATFORM_SUFFIX="darwin-arm64"
-          fi
-
-          ARTIFACT_NAME="llama-cpp-binaries-${{ steps.set_version.outputs.version }}-${PLATFORM_SUFFIX}"
-          ZIP_PATH="llama-cpp-${{ steps.set_version.outputs.version }}-${PLATFORM_SUFFIX}.zip"
-
-          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_ENV
-          echo "zip_path=${ZIP_PATH}" >> $GITHUB_ENV
-
       - name: Upload artifacts
+        if: matrix.build_enabled
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.artifact_name }}
-          path: llama.cpp/build/bin/${{ env.zip_path }}
+          name: llama-cpp-binaries-${{ steps.set_version.outputs.version }}-${{ matrix.platform_suffix }}
+          path: llama.cpp/build/bin/llama-cpp-${{ steps.set_version.outputs.version }}-${{ matrix.platform_suffix }}.zip
           retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
           if-no-files-found: error
 
       - name: Debug output
-        if: inputs.debug == true
+        if: matrix.build_enabled && inputs.debug == true
         run: |
           echo "=== Environment ==="
           uname -a
@@ -576,6 +632,8 @@ jobs:
     needs: build-binaries
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+    permissions:
+      contents: write
 
     steps:
       - name: Set release tag
@@ -667,11 +725,21 @@ jobs:
           echo "- llama-gguf-split" >> $GITHUB_STEP_SUMMARY
           echo "- llama-embedding" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Platform" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ inputs.target_platform }}" = "linux-x86_64" ]; then
-            echo "- Linux (linux-x86_64)" >> $GITHUB_STEP_SUMMARY
+          echo "## Platforms" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.build_macos_arm64 }}" = "true" ]; then
+            echo "- ✅ macOS ARM64 (darwin-arm64)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- macOS (darwin-arm64)" >> $GITHUB_STEP_SUMMARY
+            echo "- ⏭️ macOS ARM64 (skipped)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ inputs.build_linux_arm64 }}" = "true" ]; then
+            echo "- ✅ Linux ARM64 (linux-arm64)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Linux ARM64 (skipped)" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ inputs.build_linux_x86_64 }}" = "true" ]; then
+            echo "- ✅ Linux x86_64 (linux-x86_64)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Linux x86_64 (skipped)" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
@@ -684,4 +752,5 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "❌ **Some builds failed. Check the logs above.**" >> $GITHUB_STEP_SUMMARY
           fi
+
 

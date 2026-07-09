@@ -120,9 +120,15 @@ jobs:
           scripts/test_regex_match_file.py
           test/prompts/
           test/scripts/
-          bin/${{ inputs.llamacpp_build_tag }}/llama-cli
+          bin/${{ inputs.llamacpp_build_tag }}/**
         sparse-checkout-cone-mode: false
         fetch-depth: 1
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
     - name: confirm-environment
       run: |
         uname -a
@@ -255,7 +261,7 @@ jobs:
           echo "System prompt: ${{env.JINJA_SYSTEM_PROMPT}}"
           echo "Prompt: ${{env.JINJA_PROMPT_PREFIX}}'${{env.JINJA_PROMPT_TEXT}}'"
 
-          ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
+          ./$LLAMA_BIN_DIR/llama-cli \
             -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --jinja \
             -sys '${{env.JINJA_SYSTEM_PROMPT}}' \
@@ -272,7 +278,7 @@ jobs:
         else
           echo "Using legacy mode with file-based prompt"
 
-          ./bin/${{ inputs.llamacpp_build_tag }}/llama-cli \
+          ./$LLAMA_BIN_DIR/llama-cli \
             -m ./${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             -ngl 0 \
             -sys '${{env.LLAMA_SYSTEM_PROMPT}}' \
@@ -332,7 +338,7 @@ jobs:
     - name: Upload log artifact
       if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: artifact-upload-log
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -349,7 +355,7 @@ jobs:
     - name: Upload response artifact
       if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: artifact-upload-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -360,3 +366,4 @@ jobs:
       if: ${{ env.TEST_LLAMA_CLI == 'true' }}
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+

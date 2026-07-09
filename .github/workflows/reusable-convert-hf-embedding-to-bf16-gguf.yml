@@ -100,9 +100,15 @@ jobs:
           scripts/hf_model_download_snapshot.py
           scripts/check_model_architecture_support.py
           scripts/test_embedding_baseline_hf.py
-          bin/${{ inputs.llamacpp_build_tag }}/llama-gguf
+          bin/${{ inputs.llamacpp_build_tag }}/**
         sparse-checkout-cone-mode: false
         fetch-depth: 1
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
 
     - name: Dump GitHub inputs
       env:
@@ -317,7 +323,7 @@ jobs:
     # - name: display-gguf-header
     #   run: |
     #     echo "🔍 Checking for llama-gguf tool..."
-    #     LLAMA_GGUF_PATH="./bin/${{ inputs.llamacpp_build_tag }}/llama-gguf"
+    #     LLAMA_GGUF_PATH="./$LLAMA_BIN_DIR/llama-gguf"
     #     if [ -f "$LLAMA_GGUF_PATH" ]; then
     #       echo "✅ llama-gguf found at $LLAMA_GGUF_PATH, displaying GGUF header for converted model:"
     #       echo "Using llama-gguf from build tag: ${{ inputs.llamacpp_build_tag }}"
@@ -365,7 +371,7 @@ jobs:
     # Upload baseline results as GitHub artifact
     - name: upload-baseline-results-artifact
       if: ${{ inputs.enable_embedding_jobs == true && env.BASELINE_RESULTS_FILE != '' }}
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ env.REPO_NAME }}-baseline-results
         path: ${{ env.BASELINE_RESULTS_FILE }}
@@ -391,3 +397,4 @@ jobs:
         else
           echo "[WARNING] Baseline results file not found, skipping upload"
         fi
+

@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 30
     if: ${{ inputs.enable_docling_jobs == true }}
     env:
-      LLAMA_MTMD_CLI_BIN: ./bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
+      LLAMA_MTMD_CLI_BIN: ""  # Set dynamically in detect-platform step
     steps:
     - uses: actions/checkout@v6
       with:
@@ -98,10 +98,17 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
-          bin/${{ inputs.llamacpp_build_tag }}/llama-mtmd-cli
+          bin/${{ inputs.llamacpp_build_tag }}/**
           test/images
         sparse-checkout-cone-mode: false
         fetch-depth: 1
+    - name: detect-platform
+      run: |
+        OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+        ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+        echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+        echo "LLAMA_MTMD_CLI_BIN=./bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}/llama-mtmd-cli" >> $GITHUB_ENV
+        echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
     - name: confirm-environment
       run: |
         echo "[INFO] github.env:"
@@ -221,7 +228,7 @@ jobs:
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ${{env.LLAMA_MTMD_CLI_BIN}}  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        $LLAMA_MTMD_CLI_BIN  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_GH_SS}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
@@ -250,7 +257,7 @@ jobs:
         echo "invoking llama-mtmd-cli to test inference..."
         echo "env.LOCAL_FNAME_MMPROJ_F16_GGUF=${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}}"
         echo "env.LOCAL_FNAME_QUANTIZED_GGUF=${{env.LOCAL_FNAME_QUANTIZED_GGUF}}"
-        ${{env.LLAMA_MTMD_CLI_BIN}}  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
+        $LLAMA_MTMD_CLI_BIN  -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             --mmproj ${{env.LOCAL_FNAME_MMPROJ_F16_GGUF}} \
             --image ${{env.LLAMA_REQUEST_TEST_IMAGE_OLD_NEWSPAPER}} \
             -p "${{env.LLAMA_REQUEST_PROMPT_USER}}" \
@@ -275,7 +282,7 @@ jobs:
     - name: Upload log artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-log
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -292,7 +299,7 @@ jobs:
     - name: Upload response artifact
       if: env.TEST_LLAMA_CLI == 'true'
       id: artifact-upload-response
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         overwrite: true
         retention-days: ${{env.GH_ARTIFACT_RETENTION}}
@@ -303,3 +310,5 @@ jobs:
       if: env.TEST_LLAMA_CLI == 'true'
       id: show-artifact-id-response
       run:  echo 'Artifact ID is ${{ steps.artifact-upload-response.outputs.artifact-id }}'
+
+
