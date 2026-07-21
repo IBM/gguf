@@ -496,8 +496,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
 
   language-bvt-quantized-gguf-models:
-    needs: [ environment-setup, language-quantize-upload-gguf ]
-    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
+    needs: [ environment-setup, language-convert-hf-to-f16-gguf, language-quantize-upload-gguf ]
+    if: ${{ always() && needs.language-convert-hf-to-f16-gguf.result != 'failure' && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write

@@ -89,7 +89,7 @@ env:
   # 'ibm-granite/granite-4.1-30b-base',
   # 'ibm-granite/granite-4.1-30b'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.1-3b'
+      'ibm-granite/granite-4.1-30b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -98,8 +98,7 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-      'Q4_K_M',
-      'Q8_0'
+      'Q4_K_M', 'Q5_K_M', 'Q8_0'
     ]"
   # ibm-granite/granite-guardian-4.1-8b
   SOURCE_GUARDIAN_REPOS: "[
@@ -599,8 +598,8 @@ jobs:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
   language-bvt-quantized-gguf-models:
-    needs: [ environment-setup, language-quantize-upload-gguf ]
-    if: ${{ always() && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
+    needs: [ environment-setup, language-convert-hf-to-f16-gguf, language-quantize-upload-gguf ]
+    if: ${{ always() && needs.language-convert-hf-to-f16-gguf.result != 'failure' && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write

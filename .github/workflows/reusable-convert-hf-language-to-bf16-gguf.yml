@@ -82,12 +82,13 @@ env:
   BASE_FNAME_MMPROJ_GGUF: ""  # Set in set-github-env step
   TARGET_REPO_ID: ""  # Set in download-safetensors-convert-to-gguf step
   FNAME_CONVERTED_GGUF: ""  # Set in download-safetensors-convert-to-gguf step
+  GGUF_UPLOAD_FILES: ""  # Set in split-gguf-if-oversized step (shard list, or original file if no split needed)
   HAS_PROJECTOR_MODEL: ""  # Set in download-safetensors-convert-to-gguf and convert-and-extract-mmproj-model steps
   FNAME_MMPROJ_GGUF: ""  # Set in convert-and-extract-mmproj-model step
 
 jobs:
   convert-safetensor-to-gguf:
-    runs-on: ubuntu-latest
+    runs-on: gguf-linux-arm64-32-128GB-1200GB # ubuntu-latest
     if: ${{ inputs.enable_language_jobs == true  || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     timeout-minutes: 30
     env:
@@ -214,6 +215,29 @@ jobs:
         pip list
         df -h
 
+    - name: Print Storage & Memory Info (macOS)
+      if: inputs.debug == true && runner.os == 'macOS'
+      run: |
+        df
+        echo "--------------------"
+        xcodebuild -version
+        clang --version
+        echo "--------------------"
+        top -l 1 | grep -E "^CPU|^PhysMem"
+        echo "--------------------"
+
+    - name: Print Storage & Memory Info (Linux)
+      if: inputs.debug == true  && runner.os == 'Linux'
+      run: |
+        df -h
+        echo "--------------------"
+        gcc --version || lsb_release -a
+        echo "--------------------"
+        free -h
+        echo "--------------------"
+        top -b -n 1 | head -n 5
+        echo "--------------------"
+
     # TODO: need a "source" and "target" HF_TOKEN
     # find models ${{env.FIND_ARGS}}
     - name: download-model-snapshot
@@ -261,9 +285,6 @@ jobs:
         echo "BASE_FNAME_MMPROJ_GGUF (env)=$BASE_FNAME_MMPROJ_GGUF (${{env.BASE_FNAME_MMPROJ_GGUF}})"
         ls -al $MODEL_DOWNLOAD_DIR
 
-    - name: check-disk-space-3
-      run: df -h
-
     # HACK, HACK - bug. PR submitted to delete bad file from HF ibm-granite
     - name: remove-extraneous-safetensors-index
       if: contains(env.REPO_NAME, 'granite-4.0-1b-base') || contains(env.REPO_NAME, 'granite-4.0-h-1b-base')
@@ -288,13 +309,15 @@ jobs:
         else
           echo "Does not have a projector model."
         fi
+        GGUF_OUTFILE="${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}"
+        echo "GGUF output path: $GGUF_OUTFILE"
         python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
-            --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}} \
+            --outfile "$GGUF_OUTFILE" \
             --outtype ${{env.DEF_PRECISION}} \
             --verbose
-        ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
+        ls -al "$GGUF_OUTFILE"
         echo "TARGET_REPO_ID=${{inputs.target_repo_owner}}/${{env.REPO_NAME}}${{inputs.target_repo_name_ext}}" >> $GITHUB_ENV
-        echo "FNAME_CONVERTED_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.REPO_NAME }}${{env.EXT_PRECISION_GGUF}}" >> $GITHUB_ENV
+        echo "FNAME_CONVERTED_GGUF=$GGUF_OUTFILE" >> $GITHUB_ENV
 
     # Disabled: display-gguf-header step errors when reading large GGUF files
     # - name: display-gguf-header
@@ -310,11 +333,48 @@ jobs:
     #       echo "ℹ️  llama-gguf tool not found at $LLAMA_GGUF_PATH, skipping GGUF header display"
     #     fi
 
+    - name: split-gguf-if-oversized
+      run: |
+        # HuggingFace LFS enforces a 50 GB per-file limit (HTTP 422 if exceeded).
+        # Split any converted GGUF that exceeds 45 GiB into shards using llama-gguf-split
+        # so that every shard is safely under the limit.
+        HF_MAX_BYTES=$((45 * 1024 * 1024 * 1024))   # 45 GiB safety threshold
+        SPLIT_SIZE_MiB=45000                           # shard size passed to llama-gguf-split
+
+        FILE_BYTES=$(stat -c%s "$FNAME_CONVERTED_GGUF")
+        echo "Converted GGUF: '$FNAME_CONVERTED_GGUF' — ${FILE_BYTES} bytes (threshold: ${HF_MAX_BYTES})"
+
+        if [ "$FILE_BYTES" -gt "$HF_MAX_BYTES" ]; then
+          echo "⚠️  File exceeds HF 50 GB limit — splitting with llama-gguf-split..."
+          SPLIT_TOOL="./$LLAMA_BIN_DIR/llama-gguf-split"
+          if [ ! -f "$SPLIT_TOOL" ]; then
+            echo "::error::llama-gguf-split not found at $SPLIT_TOOL (build tag: ${{ inputs.llamacpp_build_tag }}, dir: $LLAMA_BIN_DIR)"
+            exit 1
+          fi
+          chmod +x "$SPLIT_TOOL"
+          BASENAME="${FNAME_CONVERTED_GGUF%.gguf}"
+          "$SPLIT_TOOL" --split-max-size "${SPLIT_SIZE_MiB}M" \
+                        "$FNAME_CONVERTED_GGUF" \
+                        "$BASENAME"
+          # Remove the original unsplit file to free runner disk space
+          rm -f "$FNAME_CONVERTED_GGUF"
+          ls -lh ${BASENAME}-*.gguf
+          GGUF_UPLOAD_FILES=$(ls ${BASENAME}-*.gguf | tr '\n' ' ')
+          echo "✅ Split produced: $GGUF_UPLOAD_FILES"
+        else
+          echo "✅ File is within the 50 GB limit — no split needed."
+          GGUF_UPLOAD_FILES="$FNAME_CONVERTED_GGUF"
+        fi
+        echo "GGUF_UPLOAD_FILES=$GGUF_UPLOAD_FILES" >> $GITHUB_ENV
+
     - name: upload-converted-gguf-to-target-repo
       run: |
-        echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
+        echo "GGUF_UPLOAD_FILES='$GGUF_UPLOAD_FILES' (${{ env.GGUF_UPLOAD_FILES }})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_CONVERTED_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        for FILE in $GGUF_UPLOAD_FILES; do
+          echo ">> Uploading: '$FILE'"
+          python ./scripts/hf_model_upload.py $TARGET_REPO_ID "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        done
 
     # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
     - name: convert-and-extract-mmproj-model
@@ -323,12 +383,14 @@ jobs:
           echo "'docling' model."
           echo "HAS_PROJECTOR_MODEL=true" >> $GITHUB_ENV
           echo "HAS_PROJECTOR_MODEL: '${{env.HAS_PROJECTOR_MODEL}}' ('$HAS_PROJECTOR_MODEL')"
+          MMPROJ_OUTFILE="${{ env.BASE_FNAME_MMPROJ_GGUF}}"
+          echo "mmproj GGUF output path: $MMPROJ_OUTFILE"
           python ./llama.cpp/convert_hf_to_gguf.py ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }} \
-              --outfile ${{env.MODEL_DOWNLOAD_DIR}}/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}} \
+              --outfile "$MMPROJ_OUTFILE" \
               --mmproj \
               --verbose
-          ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
-          echo "FNAME_MMPROJ_GGUF=$MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/${{ env.BASE_FNAME_MMPROJ_GGUF}}" >> $GITHUB_ENV
+          ls -al "$MMPROJ_OUTFILE"
+          echo "FNAME_MMPROJ_GGUF=$MMPROJ_OUTFILE" >> $GITHUB_ENV
         else
           echo "NOT a 'docling' model."
         fi

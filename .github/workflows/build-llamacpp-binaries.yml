@@ -71,11 +71,11 @@ jobs:
       matrix:
         include:
           - platform: macos-arm64
-            runner: macos-latest
+            runner: macos-latest # gguf-macos-mini
             platform_suffix: darwin-arm64
             build_enabled: ${{ inputs.build_macos_arm64 }}
           - platform: linux-arm64
-            runner: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm # gguf-ubuntu-basic
             platform_suffix: linux-arm64
             build_enabled: ${{ inputs.build_linux_arm64 }}
           - platform: linux-x86_64
@@ -147,6 +147,35 @@ jobs:
           cd llama.cpp
           echo "Cloned llama.cpp at version: ${{ steps.set_version.outputs.version }}"
           git log -1 --oneline
+
+      - name: Patch repack.cpp const-correctness (x86 AVX helpers)
+        if: matrix.build_enabled && matrix.platform == 'linux-x86_64'
+        run: |
+          # PROBLEM: ggml/src/ggml-cpu/arch/x86/repack.cpp defines two static inline AVX helpers
+          # (__avx_repeat_f32cx8_load and __avx_rearranged_f32cx8_load) with non-const ggml_fp16_t*
+          # parameters, but they are called with const ggml_half* values (struct member `.d` fields).
+          # GCC treats this implicit const-drop as a hard error, breaking the linux-x86_64 build.
+          #
+          # WORKAROUND: This step patches the two function signatures in-place with sed to add const,
+          # making the call sites conformant. This is not ideal — it mutates cloned upstream source
+          # rather than fixing the root cause — but it is the minimal intervention available here.
+          #
+          # REMOVE THIS STEP when either condition is met:
+          #   1. The upstream llama.cpp version being built contains the fix (i.e. the two helpers
+          #      already declare their first parameter as `const ggml_fp16_t *x`).
+          #   2. The linux-x86_64 build target is dropped from this workflow entirely.
+          REPACK="llama.cpp/ggml/src/ggml-cpu/arch/x86/repack.cpp"
+          if [ -f "$REPACK" ]; then
+            sed -i \
+              's/static inline __m256 __avx_repeat_f32cx8_load(ggml_fp16_t \*x)/static inline __m256 __avx_repeat_f32cx8_load(const ggml_fp16_t *x)/' \
+              "$REPACK"
+            sed -i \
+              's/static inline __m256 __avx_rearranged_f32cx8_load(ggml_fp16_t \*x,/static inline __m256 __avx_rearranged_f32cx8_load(const ggml_fp16_t *x,/' \
+              "$REPACK"
+            echo "Patched $REPACK"
+          else
+            echo "WARNING: $REPACK not found, skipping patch"
+          fi
 
       - name: Configure CMake
         if: matrix.build_enabled

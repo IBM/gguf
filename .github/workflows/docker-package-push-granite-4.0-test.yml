@@ -215,7 +215,7 @@ jobs:
   # ===========================================================================
   docker-package-push-llm-models:
     needs: [ environment-setup ]
-    uses: ibm-granite/gguf/.github/workflows/reusable-docker-package-push-model.yml@main
+    uses: IBM/gguf/.github/workflows/reusable-docker-package-push-model.yml@main
     permissions:
       contents: write
       packages: write
@@ -242,7 +242,7 @@ jobs:
 
   # docker-bvt-models:
   #     needs: [ environment-setup, docker-package-push-llm-models ]
-  #     uses: ibm-granite/gguf/.github/workflows/reusable-docker-bvt-model.yml@main
+  #     uses: IBM/gguf/.github/workflows/reusable-docker-bvt-model.yml@main
   #     permissions:
   #       contents: write
   #       packages: write
