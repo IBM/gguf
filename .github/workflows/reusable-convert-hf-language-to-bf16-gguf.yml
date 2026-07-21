@@ -215,6 +215,26 @@ jobs:
         pip list
         df -h
 
+    - name: disk-usage-diagnostics
+      run: |
+        echo "=========================================="
+        echo "Disk usage by directory (top-level, sorted)"
+        echo "=========================================="
+        df -h /dev/root || df -h /
+        echo ""
+        echo "--- workspace ---"
+        du -sh ${{ github.workspace }}/*/ 2>/dev/null | sort -rh
+        echo ""
+        echo "--- llama.cpp subdirectories ---"
+        du -sh llama.cpp/*/ 2>/dev/null | sort -rh
+        echo ""
+        echo "--- llama.cpp/.git ---"
+        du -sh llama.cpp/.git 2>/dev/null
+        echo ""
+        echo "--- pip cache / site-packages ---"
+        du -sh $(python -c "import site; print(site.getsitepackages()[0])") 2>/dev/null
+        du -sh ~/.cache/pip 2>/dev/null
+
     - name: Print Storage & Memory Info (macOS)
       if: inputs.debug == true && runner.os == 'macOS'
       run: |
