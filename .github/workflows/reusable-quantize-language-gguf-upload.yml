@@ -86,7 +86,7 @@ env:
 
 jobs:
   quantize:
-    runs-on: gguf-linux-arm64-32-128GB-1200GB
+    runs-on: ubuntu-latest
     if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
