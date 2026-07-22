@@ -86,7 +86,7 @@ env:
 
 jobs:
   quantize:
-    runs-on: ubuntu-latest
+    runs-on: gguf-linux-arm64-32-128GB-1200GB
     if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
@@ -400,18 +400,6 @@ jobs:
         pip install transformers==4.49.0
         pip list
 
-    - name: download-model-snapshot
-      if: env.CONVERTED_FILE_EXISTS == '0'
-      run: |
-        python ./scripts/hf_model_download_snapshot.py ${{env.MODEL_DOWNLOAD_DIR}} $REPO_ORG $REPO_NAME
-        find models ${{env.FIND_ARGS}}
-
-    - name: convert-hf-to-gguf
-      if: env.CONVERTED_FILE_EXISTS == '0'
-      run: |
-        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} --verbose
-        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
-
     - name: Print Storage & Memory Info (macOS)
       if: inputs.debug == true && runner.os == 'macOS'
       run: |
@@ -434,6 +422,18 @@ jobs:
         echo "--------------------"
         top -b -n 1 | head -n 5
         echo "--------------------"
+
+    - name: download-model-snapshot
+      if: env.CONVERTED_FILE_EXISTS == '0'
+      run: |
+        python ./scripts/hf_model_download_snapshot.py ${{env.MODEL_DOWNLOAD_DIR}} $REPO_ORG $REPO_NAME
+        find models ${{env.FIND_ARGS}}
+
+    - name: convert-hf-to-gguf
+      if: env.CONVERTED_FILE_EXISTS == '0'
+      run: |
+        python ./llama.cpp/convert_hf_to_gguf.py ${{ env.LOCAL_MODEL_PATH }} --outfile ${{ env.LOCAL_FNAME_CONVERTED_GGUF }} --verbose
+        ls -al ${{ env.LOCAL_MODEL_PATH }}/*.gguf
 
     - name: verify-downloaded-files
       if: inputs.debug == true

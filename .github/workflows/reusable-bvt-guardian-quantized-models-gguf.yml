@@ -101,6 +101,8 @@ env:
   BASE_FNAME_RESPONSE_FILE: ""  # Set in set-derivative-env-vars-1 step
   LOCAL_MODEL_PATH: ""  # Set in set-derivative-env-vars-2 step
   LOCAL_FNAME_QUANTIZED_GGUF: ""  # Set in set-derivative-env-vars-2 step
+  IS_SPLIT_GGUF: "0"  # Set in test-quantized-model-exists: 1 = quantized GGUF was uploaded as shards
+  SHARD1_FNAME: ""  # Set in test-quantized-model-exists: first shard filename when IS_SPLIT_GGUF=1
 
 jobs:
   test-quantized-model:
@@ -198,25 +200,95 @@ jobs:
 
     - name: test-quantized-model-exists
       run: |
-        exists=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
-        echo "exists: '$exists'"
-        if [[ "$exists" == "False" ]]; then
-          echo "FAILURE: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' does not exist."
-          exit 2
-        else
-          echo "SUCCESS: model file: '${{env.TARGET_REPO_ID}}/${{env.BASE_FNAME_QUANTIZED_GGUF}}' exists."
-          echo "setting environment variable: QUANTIZED_MODEL_EXISTS='true'..."
+        # First check for the unsplit (single-file) quantized GGUF.
+        # If not found, probe for the first shard (-00001-of-NNNNN.gguf) which indicates
+        # the quantized GGUF was uploaded as split files by the quantize workflow.
+        UNSPLIT_EXISTS=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}})
+        echo "Unsplit file check → '$UNSPLIT_EXISTS'"
+
+        if [[ "$UNSPLIT_EXISTS" == "True" ]]; then
+          echo "✅ Unsplit quantized GGUF found: '${{env.BASE_FNAME_QUANTIZED_GGUF}}'"
           echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+          echo "IS_SPLIT_GGUF=0" >> $GITHUB_ENV
+        else
+          # Probe for first shard: <basename>-00001-of-0000N.gguf (N = 2..9)
+          BASENAME="${{ env.BASE_FNAME_QUANTIZED_GGUF }}"
+          BASENAME="${BASENAME%.gguf}"
+          SHARD1_FOUND=""
+          for N in $(seq -w 2 9); do
+            CANDIDATE="${BASENAME}-00001-of-0000${N}.gguf"
+            SHARD_EXISTS=$(python ./scripts/hf_model_file_exists.py ${{ env.TARGET_REPO_ID }} "$CANDIDATE" ${{secrets.hf_token}})
+            if [[ "$SHARD_EXISTS" == "True" ]]; then
+              SHARD1_FOUND="$CANDIDATE"
+              echo "✅ Split quantized GGUF detected — first shard: '$SHARD1_FOUND'"
+              echo "QUANTIZED_MODEL_EXISTS=true" >> $GITHUB_ENV
+              echo "IS_SPLIT_GGUF=1" >> $GITHUB_ENV
+              echo "SHARD1_FNAME=$SHARD1_FOUND" >> $GITHUB_ENV
+              break
+            fi
+          done
+          if [[ -z "$SHARD1_FOUND" ]]; then
+            echo "❌ FAILURE: neither unsplit nor split quantized GGUF found in '${{ env.TARGET_REPO_ID }}'."
+            exit 2
+          fi
         fi
 
     - name: download-quantized-gguf-hf-hub-download
-      if: env.QUANTIZED_MODEL_EXISTS == 'true'
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.IS_SPLIT_GGUF == '0'
       run: |
-        echo "Downloading model to: ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}..."
+        echo "Downloading unsplit quantized GGUF: '${{env.BASE_FNAME_QUANTIZED_GGUF}}'..."
         echo "--------------------"
         python ./scripts/hf_file_download.py ${{ env.MODEL_DOWNLOAD_DIR}} ${{ env.TARGET_REPO_ID }} ${{ env.BASE_FNAME_QUANTIZED_GGUF }} ${{secrets.hf_token}}
         ls -al ${{env.LOCAL_FNAME_QUANTIZED_GGUF}}
         ls -al ${{env.MODEL_DOWNLOAD_DIR}}/${{ env.TARGET_REPO_ID }}/*${{env.EXT_GGUF}}
+
+    - name: download-and-merge-split-quantized-gguf
+      if: env.QUANTIZED_MODEL_EXISTS == 'true' && env.IS_SPLIT_GGUF == '1'
+      run: |
+        # The quantized GGUF was uploaded as shards. Download every shard then merge
+        # them back into a single file using llama-gguf-split --merge.
+        MERGE_TOOL="./$LLAMA_BIN_DIR/llama-gguf-split"
+        if [ ! -f "$MERGE_TOOL" ]; then
+          echo "::error::llama-gguf-split not found at $MERGE_TOOL (build tag: ${{ inputs.llamacpp_build_tag }})"
+          exit 1
+        fi
+        chmod +x "$MERGE_TOOL"
+
+        DEST_DIR="${{ env.MODEL_DOWNLOAD_DIR }}/${{ env.TARGET_REPO_ID }}"
+        mkdir -p "$DEST_DIR"
+
+        BASENAME="${{ env.BASE_FNAME_QUANTIZED_GGUF }}"
+        BASENAME="${BASENAME%.gguf}"
+
+        # Parse total shard count from the first shard filename
+        FIRST="${{ env.SHARD1_FNAME }}"
+        TOTAL=$(echo "$FIRST" | grep -oP '(?<=of-)\d+(?=\.gguf)')
+        echo "Downloading $TOTAL shard(s) for '${{ env.BASE_FNAME_QUANTIZED_GGUF }}'..."
+
+        for SHARD_INDEX in $(seq 1 $((10#$TOTAL))); do
+          PADDED=$(printf "%05d" $SHARD_INDEX)
+          SHARD_FILE="${BASENAME}-${PADDED}-of-${TOTAL}.gguf"
+          echo "Downloading shard: '$SHARD_FILE'"
+          python ./scripts/hf_file_download.py "${{ env.MODEL_DOWNLOAD_DIR }}" "${{ env.TARGET_REPO_ID }}" "$SHARD_FILE" ${{secrets.hf_token}}
+          SHARD_PATH="$DEST_DIR/$SHARD_FILE"
+          if [ ! -f "$SHARD_PATH" ]; then
+            echo "::error::Expected shard not found after download: $SHARD_PATH"
+            exit 1
+          fi
+          ls -lh "$SHARD_PATH"
+        done
+
+        # Merge all shards into a single quantized GGUF for testing
+        FIRST_SHARD="$DEST_DIR/${{ env.SHARD1_FNAME }}"
+        MERGED_FILE="$DEST_DIR/${{ env.BASE_FNAME_QUANTIZED_GGUF }}"
+        echo "Merging shards → '$MERGED_FILE'"
+        "$MERGE_TOOL" --merge "$FIRST_SHARD" "$MERGED_FILE"
+        ls -lh "$MERGED_FILE"
+
+        # Remove the individual shards to free runner disk space
+        echo "Removing shard files to free disk space..."
+        rm -f "$DEST_DIR/${BASENAME}"-*-of-*.gguf
+        ls -lh "$DEST_DIR"
 
     # - name: verify-downloaded-files
     #   if: env.DEBUG == 'true' && runner.os == 'macOS'
@@ -225,6 +297,29 @@ jobs:
     #     echo "--------------------"
     #     find . -name \*.gguf -type f
     #     find . -name \*.json -type f
+
+    - name: Print Storage & Memory Info (macOS)
+      if: inputs.debug == true && runner.os == 'macOS'
+      run: |
+        df
+        echo "--------------------"
+        xcodebuild -version
+        clang --version
+        echo "--------------------"
+        top -l 1 | grep -E "^CPU|^PhysMem"
+        echo "--------------------"
+
+    - name: Print Storage & Memory Info (Linux)
+      if: inputs.debug == true  && runner.os == 'Linux'
+      run: |
+        df -h
+        echo "--------------------"
+        gcc --version || lsb_release -a
+        echo "--------------------"
+        free -h
+        echo "--------------------"
+        top -b -n 1 | head -n 5
+        echo "--------------------"
 
     - name: test-is-granite-guardian
       run: |

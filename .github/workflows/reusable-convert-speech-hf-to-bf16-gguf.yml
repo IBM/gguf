@@ -66,6 +66,10 @@ env:
   HF_HUB_ENABLE_HF_TRANSFER: 0
   HF_TRANSFORMERS_SPEECH_INIT_CHANGE: "4.52.1"
 
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  LLAMA_BIN_DIR: ""  # Set in detect-platform step
+  GGUF_UPLOAD_FILES: ""  # Set in split-gguf-if-oversized step (shard list, or original file if no split needed)
+
 jobs:
   # ===========================================================================
   # Job 1: Detect Granite version and setup shared variables
@@ -99,16 +103,39 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: install-dependencies
-        run: |
-          python -m pip install huggingface-hub transformers==${{ inputs.transformers_version }}
-          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
-
       - name: Dump GitHub inputs
         if: ${{ inputs.debug }}
         env:
           GITHUB_INPUTS: ${{ toJson(inputs) }}
         run: echo "$GITHUB_INPUTS"
+
+      - name: install-dependencies
+        run: |
+          python -m pip install huggingface-hub transformers==${{ inputs.transformers_version }}
+          echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: Print Storage & Memory Info (macOS)
+        if: inputs.debug == true && runner.os == 'macOS'
+        run: |
+          df
+          echo "--------------------"
+          xcodebuild -version
+          clang --version
+          echo "--------------------"
+          top -l 1 | grep -E "^CPU|^PhysMem"
+          echo "--------------------"
+
+      - name: Print Storage & Memory Info (Linux)
+        if: inputs.debug == true  && runner.os == 'Linux'
+        run: |
+          df -h
+          echo "--------------------"
+          gcc --version || lsb_release -a
+          echo "--------------------"
+          free -h
+          echo "--------------------"
+          top -b -n 1 | head -n 5
+          echo "--------------------"
 
       - name: setup-shared-variables
         id: setup
@@ -197,8 +224,16 @@ jobs:
             requirements.txt
             scripts/hf_model_download_snapshot.py
             scripts/hf_model_upload.py
+            bin/${{ inputs.llamacpp_build_tag }}/**
           sparse-checkout-cone-mode: false
           fetch-depth: 1
+
+      - name: detect-platform
+        run: |
+          OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]' | sed 's/macos/darwin/')
+          ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]' | sed 's/x64/x86_64/')
+          echo "LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}" >> $GITHUB_ENV
+          echo "Detected platform: ${OS}-${ARCH} → LLAMA_BIN_DIR=bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}"
 
       - uses: actions/setup-python@v6
         with:
@@ -235,6 +270,29 @@ jobs:
           pip uninstall --yes transformers
           pip install transformers==${{ inputs.transformers_version }}
           echo "✅ Installed transformers version: ${{ inputs.transformers_version }}"
+
+      - name: Print Storage & Memory Info (macOS)
+        if: inputs.debug == true && runner.os == 'macOS'
+        run: |
+          df
+          echo "--------------------"
+          xcodebuild -version
+          clang --version
+          echo "--------------------"
+          top -l 1 | grep -E "^CPU|^PhysMem"
+          echo "--------------------"
+
+      - name: Print Storage & Memory Info (Linux)
+        if: inputs.debug == true  && runner.os == 'Linux'
+        run: |
+          df -h
+          echo "--------------------"
+          gcc --version || lsb_release -a
+          echo "--------------------"
+          free -h
+          echo "--------------------"
+          top -b -n 1 | head -n 5
+          echo "--------------------"
 
       - name: download-model-snapshot
         run: |
@@ -275,9 +333,48 @@ jobs:
             --verbose
           ls -al *.gguf
 
+      - name: split-gguf-if-oversized
+        run: |
+          # HuggingFace LFS enforces a 50 GB per-file limit (HTTP 422 if exceeded).
+          # Split any converted GGUF that exceeds 45 GiB into shards using llama-gguf-split
+          # so that every shard is safely under the limit.
+          HF_MAX_BYTES=$((45 * 1024 * 1024 * 1024))   # 45 GiB safety threshold
+          SPLIT_SIZE_MiB=45000                           # shard size passed to llama-gguf-split
+
+          BF16_GGUF="${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }}"
+          FILE_BYTES=$(stat -f%z "$BF16_GGUF" 2>/dev/null || stat -c%s "$BF16_GGUF")
+          echo "Converted GGUF: '$BF16_GGUF' — ${FILE_BYTES} bytes (threshold: ${HF_MAX_BYTES})"
+
+          if [ "$FILE_BYTES" -gt "$HF_MAX_BYTES" ]; then
+            echo "⚠️  File exceeds HF 50 GB limit — splitting with llama-gguf-split..."
+            SPLIT_TOOL="./$LLAMA_BIN_DIR/llama-gguf-split"
+            if [ ! -f "$SPLIT_TOOL" ]; then
+              echo "::error::llama-gguf-split not found at $SPLIT_TOOL (build tag: ${{ inputs.llamacpp_build_tag }}, dir: $LLAMA_BIN_DIR)"
+              exit 1
+            fi
+            chmod +x "$SPLIT_TOOL"
+            BASENAME="${BF16_GGUF%.gguf}"
+            "$SPLIT_TOOL" --split-max-size "${SPLIT_SIZE_MiB}M" \
+                          "$BF16_GGUF" \
+                          "$BASENAME"
+            # Remove the original unsplit file to free runner disk space
+            rm -f "$BF16_GGUF"
+            ls -lh ${BASENAME}-*.gguf
+            GGUF_UPLOAD_FILES=$(ls ${BASENAME}-*.gguf | tr '\n' ' ')
+            echo "✅ Split produced: $GGUF_UPLOAD_FILES"
+          else
+            echo "✅ File is within the 50 GB limit — no split needed."
+            GGUF_UPLOAD_FILES="$BF16_GGUF"
+          fi
+          echo "GGUF_UPLOAD_FILES=$GGUF_UPLOAD_FILES" >> $GITHUB_ENV
+
       - name: upload-speech-llm-bf16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          echo "GGUF_UPLOAD_FILES='$GGUF_UPLOAD_FILES' (${{ env.GGUF_UPLOAD_FILES }})"
+          for FILE in $GGUF_UPLOAD_FILES; do
+            echo ">> Uploading: '$FILE'"
+            python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          done
 
       - name: check-for-lora-adapter
         id: check-lora
