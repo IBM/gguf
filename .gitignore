@@ -1,5 +1,6 @@
 # Filesystem
 .DS_Store
+__pycache__/
 
 # IDEs (e.g., VSCode)
 .vscode/*.log
