@@ -33,7 +33,7 @@ env:
 
   # Enable cosine similarity fidelity test for embedding models (runs after successful BVT)
   # Compares embeddings from the original HF model vs the converted BF16 GGUF for the same sentences
-  ENABLE_COSINE_SIMILARITY: false
+  ENABLE_COSINE_SIMILARITY: true
 
   # Enable LM Eval workflow (not yet fully functional, default: false)
   ENABLE_LM_EVAL: false
