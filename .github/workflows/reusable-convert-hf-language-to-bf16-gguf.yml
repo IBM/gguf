@@ -361,7 +361,7 @@ jobs:
         HF_MAX_BYTES=$((45 * 1024 * 1024 * 1024))   # 45 GiB safety threshold
         SPLIT_SIZE_MiB=45000                           # shard size passed to llama-gguf-split
 
-        FILE_BYTES=$(stat -c%s "$FNAME_CONVERTED_GGUF")
+        FILE_BYTES=$(stat -f%z "$FNAME_CONVERTED_GGUF" 2>/dev/null || stat -c%s "$FNAME_CONVERTED_GGUF")
         echo "Converted GGUF: '$FNAME_CONVERTED_GGUF' — ${FILE_BYTES} bytes (threshold: ${HF_MAX_BYTES})"
 
         if [ "$FILE_BYTES" -gt "$HF_MAX_BYTES" ]; then
