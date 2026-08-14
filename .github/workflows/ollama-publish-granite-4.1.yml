@@ -14,7 +14,7 @@ permissions:
 env:
   DEBUG: true
   TRACE: false
-  ENABLE_OLLAMA_PUSH: true
+  ENABLE_OLLAMA_MODEL_PUSH: true
   ENABLE_LANGUAGE_JOBS: false
   ENABLE_VISION_JOBS: false
   ENABLE_SPEECH_JOBS: false
@@ -130,7 +130,7 @@ jobs:
       source_speech_quantizations: "${{ steps.set-vars.outputs.source_speech_quantizations }}"
       source_docling_repos: "${{ steps.set-vars.outputs.source_docling_repos }}"
       source_docling_quantizations: "${{ steps.set-vars.outputs.source_docling_quantizations }}"
-      enable_ollama_push: ${{ steps.set-vars.outputs.enable_ollama_push }}
+      enable_ollama_model_push: ${{ steps.set-vars.outputs.enable_ollama_model_push }}
       target_ollama_org: ${{ steps.set-vars.outputs.target_ollama_org }}
       target_ollama_llm_quants: "${{ steps.set-vars.outputs.target_ollama_llm_quants }}"
       target_ollama_guardian_quants: "${{ steps.set-vars.outputs.target_ollama_guardian_quants }}"
@@ -235,7 +235,7 @@ jobs:
             echo "source_embedding_quantizations=$SOURCE_EMBEDDING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
             echo "source_docling_repos=$SOURCE_DOCLING_REPOS" >> "$GITHUB_OUTPUT"
             echo "source_docling_quantizations=$SOURCE_DOCLING_QUANTIZATIONS" >> "$GITHUB_OUTPUT"
-            echo "enable_ollama_push=$ENABLE_OLLAMA_PUSH" >> "$GITHUB_OUTPUT"
+            echo "enable_ollama_model_push=$ENABLE_OLLAMA_MODEL_PUSH" >> "$GITHUB_OUTPUT"
             echo "target_ollama_org=$TARGET_OLLAMA_ORG" >> "$GITHUB_OUTPUT"
             echo "target_ollama_llm_quants=$TARGET_OLLAMA_LLM_QUANTS" >> "$GITHUB_OUTPUT"
             echo "target_ollama_guardian_quants=$TARGET_OLLAMA_GUARDIAN_QUANTS" >> "$GITHUB_OUTPUT"
@@ -275,7 +275,7 @@ jobs:
             echo "source_embedding_quantizations: '${{ steps.set-vars.outputs.source_embedding_quantizations }}'"
             echo "source_docling_repos: '${{ steps.set-vars.outputs.source_docling_repos }}'"
             echo "source_docling_quantizations: '${{ steps.set-vars.outputs.source_docling_quantizations }}'"
-            echo "enable_ollama_push: '${{ steps.set-vars.outputs.enable_ollama_push }}'"
+            echo "enable_ollama_model_push: '${{ steps.set-vars.outputs.enable_ollama_model_push }}'"
             echo "target_ollama_org: '${{ steps.set-vars.outputs.target_ollama_org }}'"
             echo "target_ollama_llm_quants: '${{ steps.set-vars.outputs.target_ollama_llm_quants }}'"
             echo "target_ollama_guardian_quants: '${{ steps.set-vars.outputs.target_ollama_guardian_quants }}'"
@@ -311,7 +311,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
@@ -339,7 +339,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       enable_guardian_jobs: ${{ needs.environment-setup.outputs.enable_guardian_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
@@ -367,7 +367,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       enable_embedding_jobs: ${{ needs.environment-setup.outputs.enable_embedding_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
@@ -395,7 +395,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       enable_vision_jobs: ${{ needs.environment-setup.outputs.enable_vision_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
@@ -423,7 +423,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
       target_ollama_org: ${{ needs.environment-setup.outputs.target_ollama_org }}
@@ -450,7 +450,7 @@ jobs:
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       hf_collection_config: ${{ needs.environment-setup.outputs.hf_collection_config }}
-      enable_ollama_push: ${{ needs.environment-setup.outputs.enable_ollama_push == 'true' }}
+      enable_ollama_model_push: ${{ needs.environment-setup.outputs.enable_ollama_model_push == 'true' }}
       enable_docling_jobs: ${{ needs.environment-setup.outputs.enable_docling_jobs == 'true' }}
       source_repo_owner: ${{ needs.environment-setup.outputs.source_repo_owner }}
       source_repo_name_ext: ${{ needs.environment-setup.outputs.source_repo_name_ext }}
@@ -460,5 +460,3 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
       ollama_token: ${{ secrets.OLLAMA_TOKEN_IBM }}
-
-

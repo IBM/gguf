@@ -55,7 +55,7 @@ env:
 
   # HuggingFace Transformers versions
   # V4.57.3 is the last well-tested version we know the CI can support for Granite 4
-  TRANSFORMERS_VERSION_LANGUAGE: "5.14.1" # "5.6.1"
+  TRANSFORMERS_VERSION_LANGUAGE: "5.6.1"
   TRANSFORMERS_VERSION_VISION: "5.8.0" # merged https://github.com/huggingface/transformers/pull/45597
   TRANSFORMERS_VERSION_SPEECH: "5.8.0"
   TRANSFORMERS_VERSION_GUARDIAN: "4.57.3"
@@ -64,7 +64,7 @@ env:
 
   # llama.cpp build tags per model type - determines which binary tools to use from ./bin subdirectory
   # Available tags: b6569, b6808, b8100 (corresponds to llama.cpp release tags)
-  LLAMACPP_BUILD_TAG_LANGUAGE: b9850 # b8742 # b8100
+  LLAMACPP_BUILD_TAG_LANGUAGE: b8742 # b8100
   LLAMACPP_BUILD_TAG_VISION:  b9704 # b9533 # b8100, b7951 worked, b6808 did not... mtmd support for granite-vision models
   LLAMACPP_BUILD_TAG_SPEECH: b9850 # b9045
   LLAMACPP_BUILD_TAG_GUARDIAN: b8742 # b6569
@@ -89,7 +89,8 @@ env:
   # 'ibm-granite/granite-4.1-30b-base',
   # 'ibm-granite/granite-4.1-30b'
   SOURCE_LANGUAGE_REPOS: "[
-      'ibm-granite/granite-4.1-3b'
+      'ibm-granite/granite-4.1-3b',
+      'ibm-granite/granite-4.1-8b'
     ]"
   # 'Q2_K',
   # 'Q3_K_L', 'Q3_K_M', 'Q3_K_S',
@@ -98,7 +99,7 @@ env:
   # 'Q6_K',
   # 'Q8_0'
   TARGET_LANGUAGE_QUANTIZATIONS: "[
-      'Q4_K_M', 'Q5_K_M', 'Q8_0'
+      'Q4_K_M'
     ]"
   # ibm-granite/granite-guardian-4.1-8b
   SOURCE_GUARDIAN_REPOS: "[
@@ -547,7 +548,7 @@ jobs:
 
   language-convert-hf-to-f16-gguf:
     needs: [ environment-setup, language-create-hf-repos ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.language-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -721,6 +722,7 @@ jobs:
 
   check-vision-llama-cpp-support:
     needs: [ environment-setup, vision-create-hf-repos ]
+    if: ${{ needs.vision-create-hf-repos.result == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -748,7 +750,7 @@ jobs:
 
   convert-hf-llava-to-f16-gguf:
     needs: [ environment-setup, vision-create-hf-repos, check-vision-llama-cpp-support ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.vision-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     # OLD: uses: IBM/gguf/.github/workflows/reusable-convert-hf-llava-to-bf16-gguf.yml@main
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-vision-to-gguf.yml@main
     permissions:
@@ -863,6 +865,7 @@ jobs:
 
   speech-check-llama-cpp-support:
     needs: [ environment-setup, speech-create-hf-repos ]
+    if: ${{ needs.speech-create-hf-repos.result == 'success' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -890,7 +893,7 @@ jobs:
 
   speech-convert-hf-to-bf16-gguf:
     needs: [ environment-setup, speech-create-hf-repos, speech-check-llama-cpp-support ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.speech-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-speech-hf-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1004,7 +1007,7 @@ jobs:
 
   guardian-convert-hf-to-f16-gguf:
     needs: [ environment-setup, guardian-create-hf-repos ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.guardian-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1124,7 +1127,7 @@ jobs:
   # This workflow includes baseline similarity testing before GGUF conversion
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.embedding-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
@@ -1264,7 +1267,7 @@ jobs:
 
   docling-convert-hf-to-f16-gguf:
     needs: [ environment-setup, docling-create-hf-repos ]
-    if: ${{ needs.environment-setup.outputs.enable_convert_step == 'true' }}
+    if: ${{ needs.docling-create-hf-repos.result == 'success' && needs.environment-setup.outputs.enable_convert_step == 'true' }}
     uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
     permissions:
       contents: write

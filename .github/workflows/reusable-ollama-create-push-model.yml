@@ -12,7 +12,11 @@ on:
         type: boolean
         required: true
         default: false
-      enable_ollama_push:
+      enable_ollama_model_create:
+        type: boolean
+        required: false
+        default: true
+      enable_ollama_model_push:
         type: boolean
         required: false
         default: false
@@ -67,7 +71,7 @@ jobs:
   ollama-continuous-delivery:
     runs-on: macos-latest
     timeout-minutes: 45
-    if: ${{ inputs.enable_ollama_push == true && ( inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_speech_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true ) }}
+    if: ${{ inputs.enable_language_jobs == true || inputs.enable_vision_jobs == true || inputs.enable_speech_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     env:
       DEFAULT_MODEL_LICENSE: Apache-2.0
       MODEL_DOWNLOAD_DIR: models
@@ -79,6 +83,8 @@ jobs:
       OLLAMA_TEMPLATE_FILE: template.txt
       OLLAMA_PARAMS_FILE: params.json
       OLLAMA_SYSTEM_FILE: system.txt
+      GENERATION_CONFIG_FILENAME: generation_config.json
+      GENERATION_CONFIG_LOCAL_PATH: ""
       OLLAMA_DEBUG: 0 # TODO: allow setting at workflow level...
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
@@ -245,11 +251,48 @@ jobs:
             exit 1
           fi
 
-      - name: customize-readme
+      - name: customize-readme-macos
+        if: runner.os == 'macOS'
         run: |
           sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
           sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
           cat ./resources/README.md
+
+      - name: customize-readme-linux
+        if: runner.os == 'Linux'
+        run: |
+          sed -i 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
+          sed -i 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
+          cat ./resources/README.md
+
+      # ---------------------------------------------------------------------------
+      # Fetch generation_config.json from the *source* (non-GGUF) HF model repo.
+      # The file is optional — if it does not exist the step is a no-op and
+      # GENERATION_CONFIG_LOCAL_PATH stays empty so the Modelfile step skips it.
+      # ---------------------------------------------------------------------------
+      - name: hf-fetch-generation-config
+        run: |
+          SOURCE_BASE_REPO_ID="${{ inputs.source_repo_owner }}/${{ env.REPO_NAME }}"
+          echo "Checking for ${{ env.GENERATION_CONFIG_FILENAME }} in '${SOURCE_BASE_REPO_ID}'..."
+          exists=$(python ./scripts/hf_model_file_exists.py \
+            "${SOURCE_BASE_REPO_ID}" \
+            "${{ env.GENERATION_CONFIG_FILENAME }}" \
+            "${{ secrets.hf_token }}")
+          echo "exists: '$exists'"
+          if [[ "$exists" == "True" ]]; then
+            LOCAL_GEN_CFG_PATH="${{ env.MODEL_DOWNLOAD_DIR }}/${SOURCE_BASE_REPO_ID}/${{ env.GENERATION_CONFIG_FILENAME }}"
+            echo "Downloading to: '${LOCAL_GEN_CFG_PATH}'..."
+            python ./scripts/hf_file_download.py \
+              "${{ env.MODEL_DOWNLOAD_DIR }}" \
+              "${SOURCE_BASE_REPO_ID}" \
+              "${{ env.GENERATION_CONFIG_FILENAME }}" \
+              "${{ secrets.hf_token }}"
+            echo "GENERATION_CONFIG_LOCAL_PATH=${LOCAL_GEN_CFG_PATH}" >> $GITHUB_ENV
+            echo "Contents:"
+            cat "${LOCAL_GEN_CFG_PATH}"
+          else
+            echo "ℹ️  ${{ env.GENERATION_CONFIG_FILENAME }} not found in '${SOURCE_BASE_REPO_ID}' — skipping."
+          fi
 
       - name: ollama-create-modelfile
         run: |
@@ -264,6 +307,15 @@ jobs:
             SYSTEM_FILE_ARG=""
           fi
 
+          # Conditionally pass --generation-config if the file was downloaded
+          GEN_CFG_ARG=""
+          if [ -n "${{ env.GENERATION_CONFIG_LOCAL_PATH }}" ] && [ -f "${{ env.GENERATION_CONFIG_LOCAL_PATH }}" ]; then
+            echo "generation_config.json found — injecting hyperparameters into Modelfile."
+            GEN_CFG_ARG="-gc ${{ env.GENERATION_CONFIG_LOCAL_PATH }}"
+          else
+            echo "ℹ️  No generation_config.json — Modelfile will use static params only."
+          fi
+
           python ./scripts/create_ollama_model_file.py \
             -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             -mp ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}} \
@@ -271,12 +323,14 @@ jobs:
             -p ${{env.OLLAMA_MODEL_RESOURCES}} \
             -tf ${{env.OLLAMA_TEMPLATE_FILE}} \
             $SYSTEM_FILE_ARG \
+            $GEN_CFG_ARG \
             -pf ${{env.OLLAMA_PARAMS_FILE}} \
             -o ${{env.OLLAMA_MODELFILE}}
           echo "Verifying Modelfile..."
           cat ${{env.OLLAMA_MODELFILE}}
 
-      - name: ollama-server-start
+      - name: ollama-server-start-macos
+        if: ${{ (inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true) && runner.os == 'macOS' }}
         run: |
           echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
           echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
@@ -286,15 +340,31 @@ jobs:
           echo -e "Sleeping...\n"
           sleep 10
           echo -e "Getting PID...\n"
-          lsof -i  | grep ollama
+          lsof -i | grep ollama
+          ls -al $HOME/.ollama
+
+      - name: ollama-server-start-linux
+        if: ${{ (inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true) && runner.os == 'Linux' }}
+        run: |
+          echo -e "OLLAMA_DEBUG: $OLLAMA_DEBUG\n"
+          echo -e "OLLAMA_PORT: $OLLAMA_PORT\n"
+          echo -e "OLLAMA_HOST: $OLLAMA_HOST\n"
+          echo -e "starting ollama on port: $OLLAMA_HOST...\n"
+          ./bin/ollama serve &
+          echo -e "Sleeping...\n"
+          sleep 10
+          echo -e "Getting PID...\n"
+          ss -tlnp | grep $OLLAMA_PORT
           ls -al $HOME/.ollama
 
       - name: ollama-client
+        if: ${{ inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true }}
         run: |
           echo -e "Ollama list...\n"
           ./bin/ollama list
 
       - name: ollama-create-model
+        if: ${{ inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true }}
         run: |
           echo -e "Ollama creating model from Modelfile...\n"
           ./bin/ollama create ${{env.BASE_NAME_QUANTIZED}} -f Modelfile
@@ -350,6 +420,7 @@ jobs:
       #     echo "=========================================="
 
       - name: ollama-model-cp
+        if: ${{ inputs.enable_ollama_model_push == true }}
         run: |
           echo "env.OLLAMA_MODEL_NAME: '${{env.OLLAMA_MODEL_NAME}}'"
           ./bin/ollama cp "${{env.BASE_NAME_QUANTIZED}}" "${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}"
@@ -358,19 +429,23 @@ jobs:
           ./bin/ollama list
 
       - name: ollama-push-start
+        if: ${{ inputs.enable_ollama_model_push == true }}
         run: |
           echo "OLLAMA_PUSH_START=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
 
       - name: ollama-model-push
+        if: ${{ inputs.enable_ollama_model_push == true }}
         run: |
           echo -e "Ollama push ...\n"
           ./bin/ollama push ${{env.TARGET_OLLAMA_ORG}}/${{env.OLLAMA_MODEL_NAME}}
 
       - name: ollama-push-stop
+        if: ${{ inputs.enable_ollama_model_push == true }}
         run: |
           echo "OLLAMA_PUSH_STOP=$(date +'%Y-%m-%d %H:%M:%S.%3N')" >> $GITHUB_ENV
 
       - name: ollama-is-model-default-quantization
+        if: ${{ inputs.enable_ollama_model_push == true }}
         continue-on-error: true
         run: |
           result=$(python ./scripts/is_model_quant_default.py ${{ inputs.hf_collection_config }} -m ${{env.REPO_NAME}} -q ${{inputs.quantization}})
@@ -387,6 +462,7 @@ jobs:
 
       # NOTE: "base" models are never selected for latest LLM model
       - name: ollama-push-model-default-quantization
+        if: ${{ inputs.enable_ollama_model_push == true }}
         run: |
           if [[ "$REPO_NAME" =~ "base" ]]; then
             echo "Environment variable REPO_NAME contains 'base'. Exiting."
@@ -406,14 +482,26 @@ jobs:
           fi
           exit 0
 
-      - name: ollama-server-stop
-        run:
+      - name: ollama-server-stop-macos
+        if: ${{ (inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true) && runner.os == 'macOS' }}
+        run: |
           echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
           echo -e "Killing server...\n"
           kill -9 $(lsof -i:${{env.OLLAMA_PORT}} -t)
           echo -e "Sleeping...\n"
           sleep 10
           lsof -i
+          exit 0
+
+      - name: ollama-server-stop-linux
+        if: ${{ (inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true) && runner.os == 'Linux' }}
+        run: |
+          echo -e "OLLAMA_PORT:" "${{env.OLLAMA_PORT}}\n"
+          echo -e "Killing server...\n"
+          fuser -k ${{env.OLLAMA_PORT}}/tcp || true
+          echo -e "Sleeping...\n"
+          sleep 10
+          ss -tlnp
           exit 0
 
 
