@@ -1,0 +1,212 @@
+# This workflow runs a cosine similarity fidelity test on the converted BF16 GGUF
+# embedding model by comparing its embeddings against the original HuggingFace model
+# for the same input sentences. Results are logged for informational purposes only —
+# this test does not pass or fail the pipeline.
+name: cosine-similarity-embedding-gguf-reusable
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      hf_token:
+        required: true
+      ibm_granite_token:
+        required: true
+    inputs:
+      enable_cosine_similarity:
+        type: boolean
+        required: false
+        default: false
+        description: "Enable cosine similarity fidelity test (requires successful BVT)"
+      repo_id:
+        type: string
+        required: true
+        description: "Source HF repo ID (e.g. ibm-granite/granite-embedding-small-english-r2)"
+      target_repo_owner:
+        type: string
+        required: true
+      target_repo_name_ext:
+        type: string
+        required: true
+      llamacpp_build_tag:
+        type: string
+        required: true
+        description: "llama.cpp build tag (e.g. 'b8100'). Determines which binary to use from ./bin subdirectory."
+      transformers_version:
+        type: string
+        required: false
+        default: "4.57.3"
+        description: "HuggingFace Transformers version (used by sentence_transformers dependency)"
+      debug:
+        type: boolean
+        required: false
+        default: false
+
+env:
+  DEBUG: ${{ inputs.debug }}
+  EXT_GGUF: .gguf
+  MODEL_DOWNLOAD_DIR: models
+  GGUF_MODEL_EXISTS: false
+
+  # Test sentences — must match the sentences used in the BVT and baseline workflows
+  TEST_SENTENCE_1: "Artificial intelligence was founded as an academic discipline in 1956."
+  TEST_SENTENCE_2: "AI started as an academic field in the 1950s."
+  TEST_SENTENCE_3: "Delicious pepperoni pizza with extra cheese and mushrooms makes my favorite weekend meal."
+
+  # Dynamically set variables (pre-declared to avoid linter warnings)
+  REPO_ORG: ""         # Set in set-github-env step
+  REPO_NAME: ""        # Set in set-github-env step
+  SOURCE_REPO_ID: ""   # Set in set-derivative-env-vars step
+  TARGET_REPO_ID: ""   # Set in set-derivative-env-vars step
+  BASE_FNAME_GGUF: ""  # Set in set-derivative-env-vars step
+  LOCAL_GGUF_PATH: ""  # Set in set-derivative-env-vars step
+  HF_MODEL_PATH: ""    # Set in set-derivative-env-vars step
+  LLAMA_EMBEDDING_BIN: ""  # Set in verify-llama-embedding-binary step
+
+jobs:
+  cosine-similarity-embedding:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    if: ${{ inputs.enable_cosine_similarity == true }}
+    steps:
+
+    - uses: actions/checkout@v6
+      with:
+        sparse-checkout: |
+          bin/${{ inputs.llamacpp_build_tag }}/**
+          scripts/hf_model_download_snapshot.py
+          scripts/hf_model_file_exists.py
+          scripts/hf_file_download.py
+          scripts/test_embedding_cosine_hf_gguf.py
+          requirements/requirements-cosine-similarity.txt
+        sparse-checkout-cone-mode: false
+        fetch-depth: 1
+
+    - name: confirm-environment
+      run: |
+        echo "[INFO] =================================="
+        echo "[INFO] Environment Variables"
+        echo "[INFO] =================================="
+        echo "[INFO] DEBUG:                ${{ env.DEBUG }}"
+        echo "[INFO] REPO_ID:              ${{ inputs.repo_id }}"
+        echo "[INFO] TARGET_REPO_OWNER:    ${{ inputs.target_repo_owner }}"
+        echo "[INFO] TARGET_REPO_NAME_EXT: ${{ inputs.target_repo_name_ext }}"
+        echo "[INFO] LLAMACPP_BUILD_TAG:   ${{ inputs.llamacpp_build_tag }}"
+        echo "[INFO] TRANSFORMERS_VERSION: ${{ inputs.transformers_version }}"
+        echo "[INFO] =================================="
+
+    - name: set-github-env
+      run: |
+        echo "REPO_ORG=$(dirname '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+        echo "REPO_NAME=$(basename '${{ inputs.repo_id }}')" >> $GITHUB_ENV
+
+    - name: set-derivative-env-vars
+      run: |
+        echo "SOURCE_REPO_ID=${{ inputs.repo_id }}" >> $GITHUB_ENV
+        echo "TARGET_REPO_ID=${{ inputs.target_repo_owner }}/${{ env.REPO_NAME }}${{ inputs.target_repo_name_ext }}" >> $GITHUB_ENV
+        echo "BASE_FNAME_GGUF=${{ env.REPO_NAME }}-bf16${{ env.EXT_GGUF }}" >> $GITHUB_ENV
+        echo "LOCAL_GGUF_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.target_repo_owner }}/${{ env.REPO_NAME }}${{ inputs.target_repo_name_ext }}" >> $GITHUB_ENV
+        echo "HF_MODEL_PATH=${{ env.MODEL_DOWNLOAD_DIR }}/${{ inputs.repo_id }}" >> $GITHUB_ENV
+
+    - name: verify-env-vars
+      run: |
+        echo "[INFO] SOURCE_REPO_ID:  $SOURCE_REPO_ID"
+        echo "[INFO] TARGET_REPO_ID:  $TARGET_REPO_ID"
+        echo "[INFO] BASE_FNAME_GGUF: $BASE_FNAME_GGUF"
+        echo "[INFO] LOCAL_GGUF_PATH: $LOCAL_GGUF_PATH"
+        echo "[INFO] HF_MODEL_PATH:   $HF_MODEL_PATH"
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+
+    - name: install-dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements/requirements-cosine-similarity.txt
+        pip install transformers==${{ inputs.transformers_version }}
+        pip list
+
+    - name: download-hf-model
+      run: |
+        echo "[INFO] Downloading HF model: ${{ inputs.repo_id }}"
+        python ./scripts/hf_model_download_snapshot.py \
+          ${{ env.MODEL_DOWNLOAD_DIR }} \
+          ${{ env.REPO_ORG }} \
+          ${{ env.REPO_NAME }} \
+          ${{ secrets.ibm_granite_token }}
+        echo "[INFO] HF model downloaded to: ${{ env.HF_MODEL_PATH }}"
+
+    - name: verify-llama-embedding-binary
+      run: |
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+        if [ "$ARCH" = "x86_64" ]; then ARCH="x86_64"; elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; fi
+        LLAMA_EMBEDDING_BIN="./bin/${{ inputs.llamacpp_build_tag }}/${OS}-${ARCH}/llama-embedding"
+        if [ ! -f "$LLAMA_EMBEDDING_BIN" ]; then
+          echo "[ERROR] llama-embedding binary not found at: $LLAMA_EMBEDDING_BIN"
+          exit 1
+        fi
+        chmod +x "$LLAMA_EMBEDDING_BIN"
+        echo "[INFO] llama-embedding binary found at: $LLAMA_EMBEDDING_BIN"
+        echo "LLAMA_EMBEDDING_BIN=$LLAMA_EMBEDDING_BIN" >> $GITHUB_ENV
+
+    - name: check-gguf-exists-and-download
+      run: |
+        echo "[INFO] Checking GGUF exists: ${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_GGUF }}"
+        exists=$(python ./scripts/hf_model_file_exists.py \
+          ${{ env.TARGET_REPO_ID }} \
+          ${{ env.BASE_FNAME_GGUF }} \
+          ${{ secrets.hf_token }})
+        echo "[INFO] exists: '$exists'"
+        if [[ "$exists" == "False" ]]; then
+          echo "[ERROR] GGUF file not found: ${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_GGUF }}"
+          exit 2
+        fi
+        echo "GGUF_MODEL_EXISTS=true" >> $GITHUB_ENV
+        python ./scripts/hf_file_download.py \
+          ${{ env.MODEL_DOWNLOAD_DIR }} \
+          ${{ env.TARGET_REPO_ID }} \
+          ${{ env.BASE_FNAME_GGUF }} \
+          ${{ secrets.hf_token }}
+        echo "[INFO] GGUF downloaded to: ${{ env.LOCAL_GGUF_PATH }}/${{ env.BASE_FNAME_GGUF }}"
+
+    - name: run-cosine-similarity-test
+      timeout-minutes: 15
+      run: |
+        echo "[INFO] =========================================="
+        echo "[INFO] HF vs GGUF Cosine Similarity Fidelity Test"
+        echo "[INFO] =========================================="
+        echo "[INFO] HF model:        ${{ env.HF_MODEL_PATH }}"
+        echo "[INFO] GGUF model:      ${{ env.LOCAL_GGUF_PATH }}/${{ env.BASE_FNAME_GGUF }}"
+        echo "[INFO] llama-embedding: ${{ env.LLAMA_EMBEDDING_BIN }}"
+        echo "[INFO] =========================================="
+        echo ""
+
+        python3 ./scripts/test_embedding_cosine_hf_gguf.py \
+          "${{ env.HF_MODEL_PATH }}" \
+          "${{ env.LOCAL_GGUF_PATH }}/${{ env.BASE_FNAME_GGUF }}" \
+          "${{ env.LLAMA_EMBEDDING_BIN }}" \
+          --sentences \
+            "${{ env.TEST_SENTENCE_1 }}" \
+            "${{ env.TEST_SENTENCE_2 }}" \
+            "${{ env.TEST_SENTENCE_3 }}"
+
+        echo ""
+        echo "[INFO] =========================================="
+        echo "[INFO] Cosine similarity test complete"
+        echo "[INFO] Results above are informational only"
+        echo "[INFO] =========================================="
+
+    - name: test-summary
+      if: always()
+      run: |
+        echo "=========================================="
+        echo "Cosine Similarity Fidelity Test Summary"
+        echo "=========================================="
+        echo "Source HF model:  ${{ inputs.repo_id }}"
+        echo "GGUF model:       ${{ env.TARGET_REPO_ID }}/${{ env.BASE_FNAME_GGUF }}"
+        echo "Build tag:        ${{ inputs.llamacpp_build_tag }}"
+        echo "=========================================="
+        echo "See 'run-cosine-similarity-test' step above for per-sentence scores."
+        echo "=========================================="

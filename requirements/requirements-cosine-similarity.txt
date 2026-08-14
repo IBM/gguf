@@ -1,0 +1,5 @@
+# Cosine Similarity Fidelity Test Dependencies
+# Used by: .github/workflows/reusable-cosine-similarity-embedding-gguf.yml
+# Install with: pip install -r requirements/requirements-cosine-similarity.txt
+
+sentence_transformers

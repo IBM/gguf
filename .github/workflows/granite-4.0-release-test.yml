@@ -15,10 +15,10 @@ env:
   DEBUG: true
   TRACE: false
   ENABLE_LANGUAGE_JOBS: false
-  ENABLE_VISION_JOBS: true
+  ENABLE_VISION_JOBS: false
   ENABLE_SPEECH_JOBS: false
   ENABLE_GUARDIAN_JOBS: false
-  ENABLE_EMBEDDING_JOBS: false
+  ENABLE_EMBEDDING_JOBS: true
   ENABLE_DOCLING_JOBS: false
   USE_UAT_WORKFLOW: false
 
@@ -31,11 +31,15 @@ env:
   # Enable RAG testing for embedding models (runs after successful BVT)
   ENABLE_RAG_TESTING: false
 
+  # Enable cosine similarity fidelity test for embedding models (runs after successful BVT)
+  # Compares embeddings from the original HF model vs the converted BF16 GGUF for the same sentences
+  ENABLE_COSINE_SIMILARITY: true
+
   # Enable LM Eval workflow (not yet fully functional, default: false)
   ENABLE_LM_EVAL: false
 
   TARGET_HF_REPO_NAME_EXT: -GGUF
-  TARGET_HF_REPO_OWNER: mrutkows
+  TARGET_HF_REPO_OWNER: sanjanasrikanth
   TARGET_HF_REPO_PRIVATE: true
   COLLECTION_CONFIG: "resources/json/latest/hf_collection_mapping_gguf.json"
 
@@ -182,6 +186,7 @@ jobs:
       enable_bvt_test_converted_format: ${{ steps.set-vars.outputs.enable_bvt_test_converted_format }}
       enable_bvt_vision: ${{ steps.set-vars.outputs.enable_bvt_vision }}
       enable_rag_testing: ${{ steps.set-vars.outputs.enable_rag_testing }}
+      enable_cosine_similarity: ${{ steps.set-vars.outputs.enable_cosine_similarity }}
       enable_lm_eval: ${{ steps.set-vars.outputs.enable_lm_eval }}
       use_uat_workflow: ${{ steps.set-vars.outputs.use_uat_workflow }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
@@ -341,6 +346,7 @@ jobs:
             echo "enable_bvt_test_converted_format=$ENABLE_BVT_TEST_CONVERTED_FORMAT" >> "$GITHUB_OUTPUT"
             echo "enable_bvt_vision=$ENABLE_BVT_VISION" >> "$GITHUB_OUTPUT"
             echo "enable_rag_testing=$ENABLE_RAG_TESTING" >> "$GITHUB_OUTPUT"
+            echo "enable_cosine_similarity=$ENABLE_COSINE_SIMILARITY" >> "$GITHUB_OUTPUT"
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "use_uat_workflow=$USE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
@@ -1083,7 +1089,7 @@ jobs:
   # ===========================================================================
   embedding-create-hf-repos:
     needs: [ environment-setup ]
-    uses: IBM/gguf/.github/workflows/reusable-create-hf-repos.yml@main
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-create-hf-repos.yml@main
     with:
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
       granite_family: "embedding"
@@ -1103,7 +1109,7 @@ jobs:
   # This workflow includes baseline similarity testing before GGUF conversion
   embedding-convert-hf-to-f16-gguf:
     needs: [ environment-setup, embedding-create-hf-repos ]
-    uses: IBM/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-convert-hf-embedding-to-bf16-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -1155,7 +1161,7 @@ jobs:
   embedding-bvt-quantized-gguf-models:
     needs: [ environment-setup, embedding-quantize-upload-gguf ]
     if: ${{ always() && (needs.embedding-quantize-upload-gguf.result == 'success' || needs.embedding-quantize-upload-gguf.result == 'skipped') }}
-    uses: IBM/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -1181,7 +1187,7 @@ jobs:
   embedding-rag-test-quantized-gguf-models:
     needs: [ environment-setup, embedding-bvt-quantized-gguf-models ]
     if: ${{ always() && needs.embedding-bvt-quantized-gguf-models.result == 'success' && needs.environment-setup.outputs.enable_rag_testing == 'true' }}
-    uses: IBM/gguf/.github/workflows/reusable-rag-test-embedding-models-gguf.yml@main
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-rag-test-embedding-models-gguf.yml@main
     permissions:
       contents: write
       packages: write
@@ -1203,14 +1209,38 @@ jobs:
     secrets:
       hf_token: ${{ secrets.HF_TOKEN_TEST }}
 
+  embedding-cosine-similarity-test:
+    needs: [ environment-setup, embedding-bvt-quantized-gguf-models ]
+    if: ${{ always() && needs.embedding-bvt-quantized-gguf-models.result == 'success' && needs.environment-setup.outputs.enable_cosine_similarity == 'true' }}
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-cosine-similarity-embedding-gguf.yml@main
+    permissions:
+      contents: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repo_id: ${{ fromJson(needs.environment-setup.outputs.source_embedding_repos) }}
+    with:
+      debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
+      llamacpp_build_tag: ${{ needs.environment-setup.outputs.llamacpp_build_tag_embedding }}
+      enable_cosine_similarity: ${{ needs.environment-setup.outputs.enable_cosine_similarity == 'true' }}
+      transformers_version: ${{ needs.environment-setup.outputs.transformers_version_embedding }}
+      target_repo_owner: "${{ needs.environment-setup.outputs.target_repo_owner }}"
+      target_repo_name_ext: "${{ needs.environment-setup.outputs.target_repo_name_ext }}"
+      repo_id: "${{ matrix.repo_id }}"
+    secrets:
+      hf_token: ${{ secrets.HF_TOKEN_TEST }}
+      ibm_granite_token: ${{ secrets.HF_TOKEN_IBM_GRANITE }}
+
   # TODO: change collection from private to public (on success)
   embedding-create-hf-collections:
     needs: [
       environment-setup,
       embedding-bvt-quantized-gguf-models,
       embedding-rag-test-quantized-gguf-models,
+      embedding-cosine-similarity-test,
     ]
-    uses: IBM/gguf/.github/workflows/reusable-create-hf-collections.yml@main
+    uses: Sanjana-Srikanth/gguf/.github/workflows/reusable-create-hf-collections.yml@main
     with:
       granite_family: "embedding"
       debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
