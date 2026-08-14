@@ -29,6 +29,15 @@ class VALID_PARAMS(StrEnum):
     TOP_P           = "top_p"
     MIN_P           = "min_p"
 
+# Keys from generation_config.json that map to Ollama PARAMETER names.
+# Order matters: keys are written in the order declared here.
+_GENERATION_CONFIG_PARAM_MAP: dict[str, str] = {
+    "temperature":    VALID_PARAMS.TEMPERATURE,
+    "top_p":          VALID_PARAMS.TOP_P,
+    "top_k":          VALID_PARAMS.TOP_K,
+    "max_new_tokens": VALID_PARAMS.NUM_CTX,
+}
+
 if __name__ == "__main__":
     args = None
     try:
@@ -41,6 +50,7 @@ if __name__ == "__main__":
         parser.add_argument("--template-file", "-tf", type=str, required=False, help="Optional chat template file (Go template).")
         parser.add_argument("--system-file", "-sf", type=str, required=False, help="Optional system message file (text).")
         parser.add_argument("--params-file", "-pf", type=str, required=False, help="Optional parameter file (JSON).")
+        parser.add_argument("--generation-config", "-gc", type=str, required=False, help="Optional path to a generation_config.json downloaded from HuggingFace. Known keys (temperature, top_p, top_k, max_new_tokens) are written as PARAMETER directives before --params-file entries.")
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
@@ -54,6 +64,7 @@ if __name__ == "__main__":
             print(f"[DEBUG] args.template_file='{args.template_file}'")
             print(f"[DEBUG] args.system_file='{args.system_file}'")
             print(f"[DEBUG] args.params_file='{args.params_file}'")
+            print(f"[DEBUG] args.generation_config='{args.generation_config}'")
 
         template_file_contents = ""
         system_file_contents = ""
@@ -134,6 +145,22 @@ if __name__ == "__main__":
                 # Write empty SYSTEM directive when no system file is provided
                 # modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\n")
                 print(f"[WARNING] --system-file='{args.system_file}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --generation-config='{args.generation_config}' to Modelfile...")
+
+            if args.generation_config is not None:
+                if os.path.exists(args.generation_config):
+                    with open(args.generation_config, 'r') as file:
+                        gen_cfg = json.load(file)
+                    for src_key, param_name in _GENERATION_CONFIG_PARAM_MAP.items():
+                        if src_key in gen_cfg:
+                            value = gen_cfg[src_key]
+                            if args.debug:
+                                print(f"[DEBUG] generation_config '{src_key}' -> PARAMETER {param_name} {value}")
+                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {param_name} {value}\n")
+                elif args.verbose:
+                    print(f"[WARNING] --generation-config='{args.generation_config}' does not exist")
 
             if args.verbose:
                 print(f"Adding --params-file='{args.params_file}' to Modelfile...")

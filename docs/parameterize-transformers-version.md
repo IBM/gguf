@@ -23,7 +23,7 @@ inputs:
     description: "HuggingFace Transformers version to install (e.g., '4.52.1' or '4.57.3')"
 ```
 
-#### `reusable-convert-hf-to-bf16-gguf.yml`
+#### `reusable-convert-hf-language-to-bf16-gguf.yml`
 ```yaml
 inputs:
   transformers_version:
@@ -77,7 +77,7 @@ environment-setup:
 ```yaml
 language-convert-hf-to-f16-gguf:
   needs: [ environment-setup, language-create-hf-repos ]
-  uses: IBM/gguf/.github/workflows/reusable-convert-hf-to-bf16-gguf.yml@main
+  uses: IBM/gguf/.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml@main
   with:
     debug: ${{ needs.environment-setup.outputs.debug == 'true' }}
     enable_language_jobs: ${{ needs.environment-setup.outputs.enable_language_jobs == 'true' }}
@@ -205,7 +205,7 @@ Use the standard semantic version format for consistency.
    - Updated install commands to use `${{ inputs.transformers_version }}`
    - Added logging for installed version
 
-2. **`.github/workflows/reusable-convert-hf-to-bf16-gguf.yml`**
+2. **`.github/workflows/reusable-convert-hf-language-to-bf16-gguf.yml`**
    - Added `transformers_version` input parameter (required, no default)
    - Removed hardcoded `HF_TRANSFORMERS_VERSION` env var
    - Updated install commands to use `${{ inputs.transformers_version }}`
