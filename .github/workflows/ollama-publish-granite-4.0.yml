@@ -86,7 +86,7 @@ env:
       'ibm-granite/granite-docling-258M'
     ]"
   SOURCE_DOCLING_QUANTIZATIONS: "[
-      'BF16'
+      'bf16'
     ]"
   SOURCE_HF_REPO_NAME_EXT: -GGUF
   SOURCE_HF_REPO_OWNER: ibm-granite

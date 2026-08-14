@@ -97,6 +97,22 @@ jobs:
       HF_HUB_DISABLE_XET: 0
       # HF_HUB_ENABLE_HF_TRANSFER: 0
       HF_HUB_ENABLE_HF_TRANSFER: 0
+      # --- dynamically-set variables (declared here to suppress linter warnings) ---
+      REPO_ORG: ""
+      REPO_NAME: ""
+      SOURCE_HF_REPO_ID: ""
+      TARGET_OLLAMA_ORG: ""
+      BASE_NAME_QUANTIZED: ""
+      BASE_FNAME_QUANTIZED_GGUF: ""
+      LOCAL_MODEL_PATH: ""
+      LOCAL_FNAME_QUANTIZED_GGUF: ""
+      LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF: ""
+      OLLAMA_MODEL_NAME: ""
+      OLLAMA_MODEL_PREFIX: ""
+      OLLAMA_MODEL_RESOURCES: ""
+      QUANTIZED_MODEL_EXISTS: ""
+      OLLAMA_PUSH_START: ""
+      OLLAMA_PUSH_STOP: ""
     steps:
       - uses: actions/checkout@v6
         with:
@@ -114,9 +130,6 @@ jobs:
           echo "runner.arch: ${{ runner.arch }}"
           echo "github.workspace: ${{ github.workspace }}"
           echo "env.EXT_GGUF: ${{ env.EXT_GGUF }}"
-          echo "env.EXT_NAME_F16: ${{ env.EXT_NAME_F16 }}"
-          echo "env.F16_OPT_ENABLED: ${{ env.F16_OPT_ENABLED }}"
-          echo "env.FIND_ARGS: ${{ env.FIND_ARGS }}"
           echo "env.MODEL_DOWNLOAD_DIR: ${{ env.MODEL_DOWNLOAD_DIR }}"
 
       - name: verify-secrets-present
@@ -310,7 +323,10 @@ jobs:
           # Conditionally pass --generation-config if the file was downloaded
           GEN_CFG_ARG=""
           if [ -n "${{ env.GENERATION_CONFIG_LOCAL_PATH }}" ] && [ -f "${{ env.GENERATION_CONFIG_LOCAL_PATH }}" ]; then
-            echo "generation_config.json found — injecting hyperparameters into Modelfile."
+            echo "✅ generation_config.json found at '${{ env.GENERATION_CONFIG_LOCAL_PATH }}' — injecting hyperparameters into Modelfile."
+            echo "--- generation_config.json contents ---"
+            cat "${{ env.GENERATION_CONFIG_LOCAL_PATH }}"
+            echo "---------------------------------------"
             GEN_CFG_ARG="-gc ${{ env.GENERATION_CONFIG_LOCAL_PATH }}"
           else
             echo "ℹ️  No generation_config.json — Modelfile will use static params only."
@@ -326,8 +342,16 @@ jobs:
             $GEN_CFG_ARG \
             -pf ${{env.OLLAMA_PARAMS_FILE}} \
             -o ${{env.OLLAMA_MODELFILE}}
-          echo "Verifying Modelfile..."
+
+          echo "========== Modelfile contents =========="
           cat ${{env.OLLAMA_MODELFILE}}
+          echo "========================================"
+
+          if [ -n "$GEN_CFG_ARG" ]; then
+            echo "✅ generation_config.json hyperparameters successfully applied to Modelfile."
+          else
+            echo "ℹ️  Modelfile generated without generation_config.json hyperparameters."
+          fi
 
       - name: ollama-server-start-macos
         if: ${{ (inputs.enable_ollama_model_create == true || inputs.enable_ollama_model_push == true) && runner.os == 'macOS' }}

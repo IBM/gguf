@@ -236,7 +236,7 @@ jobs:
       DEF_CONVERTED_QUANT_SPEECH: "bf16"
       DEF_CONVERTED_QUANT_GUARDIAN: "bf16"
       DEF_CONVERTED_QUANT_EMBEDDING: "bf16"
-      DEF_CONVERTED_QUANT_DOCLING: "f16"
+      DEF_CONVERTED_QUANT_DOCLING: "bf16"
     steps:
       - name: Determine valid model build paths
         id: determine-valid-model-build-paths
@@ -442,7 +442,7 @@ jobs:
               fi
               echo "target_embedding_quantizations_bvt=$TARGET_EMBEDDING_QUANTIZATIONS_BVT" >> "$GITHUB_OUTPUT"
 
-              # Docling models (F16)
+              # Docling models (BF16)
               echo "Appending ${{env.DEF_CONVERTED_QUANT_DOCLING}} to TARGET_DOCLING_QUANTIZATIONS for BVT"
               TEMP_ARRAY_STRING="${{ join(fromJSON(env.TARGET_DOCLING_QUANTIZATIONS), env.ARRAY_SEP) }}"
               if [ "$TEMP_ARRAY_STRING" != "None" ]; then
