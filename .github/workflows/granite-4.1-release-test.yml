@@ -24,7 +24,6 @@ env:
   ###############################################
   # Workflow jobs enable/disable flags
   ###############################################
-  ENABLE_UAT_WORKFLOW: false
 
   # Enable/disable BVT testing for specific model types (default: true)
   ENABLE_BVT_VISION: true
@@ -35,9 +34,11 @@ env:
   # Enable LM Eval workflow (not yet fully functional, default: false)
   ENABLE_LM_EVAL: false
 
-  # Enable/disable convert and quantize steps (default: true)
-  ENABLE_CONVERT_STEP: true
-  ENABLE_QUANTIZE_STEP: true
+  # Enable/disable convert, quantize, and BVT steps (default: true)
+  ENABLE_CONVERT_STEP: false
+  ENABLE_QUANTIZE_STEP: false
+  ENABLE_BVT_STEP: false
+  ENABLE_UAT_WORKFLOW: false
 
   ###############################################
   # Repo. configuration
@@ -193,6 +194,7 @@ jobs:
       enable_uat: ${{ steps.set-vars.outputs.enable_uat }}
       enable_convert_step: ${{ steps.set-vars.outputs.enable_convert_step }}
       enable_quantize_step: ${{ steps.set-vars.outputs.enable_quantize_step }}
+      enable_bvt_step: ${{ steps.set-vars.outputs.enable_bvt_step }}
       hf_collection_config: ${{ steps.set-vars.outputs.hf_collection_config }}
       target_repo_private: ${{ steps.set-vars.outputs.target_repo_private }}
       target_repo_owner: ${{ steps.set-vars.outputs.target_repo_owner }}
@@ -353,6 +355,7 @@ jobs:
             echo "enable_lm_eval=$ENABLE_LM_EVAL" >> "$GITHUB_OUTPUT"
             echo "enable_convert_step=$ENABLE_CONVERT_STEP" >> "$GITHUB_OUTPUT"
             echo "enable_quantize_step=$ENABLE_QUANTIZE_STEP" >> "$GITHUB_OUTPUT"
+            echo "enable_bvt_step=$ENABLE_BVT_STEP" >> "$GITHUB_OUTPUT"
             echo "enable_uat=$ENABLE_UAT_WORKFLOW" >> "$GITHUB_OUTPUT"
             echo "hf_collection_config=$COLLECTION_CONFIG" >> "$GITHUB_OUTPUT"
             echo "target_repo_owner=$TARGET_HF_REPO_OWNER" >> "$GITHUB_OUTPUT"
@@ -600,7 +603,7 @@ jobs:
 
   language-bvt-quantized-gguf-models:
     needs: [ environment-setup, language-convert-hf-to-f16-gguf, language-quantize-upload-gguf ]
-    if: ${{ always() && needs.language-convert-hf-to-f16-gguf.result != 'failure' && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && needs.language-convert-hf-to-f16-gguf.result != 'failure' && (needs.language-quantize-upload-gguf.result == 'success' || needs.language-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-language-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -803,7 +806,7 @@ jobs:
 
   vision-bvt-quantized-gguf-models:
     needs: [ environment-setup, convert-hf-llava-to-f16-gguf, quantize-vision-llm-and-upload-gguf ]
-    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && needs.environment-setup.outputs.enable_bvt_vision == 'true' && (needs.convert-hf-llava-to-f16-gguf.result == 'success' || needs.convert-hf-llava-to-f16-gguf.result == 'skipped') && (needs.quantize-vision-llm-and-upload-gguf.result == 'success' || needs.quantize-vision-llm-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-vision-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -945,7 +948,7 @@ jobs:
 
   speech-bvt-quantized-gguf-models:
     needs: [ environment-setup, quantize-speech-and-upload-gguf ]
-    if: ${{ always() && (needs.quantize-speech-and-upload-gguf.result == 'success' || needs.quantize-speech-and-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && (needs.quantize-speech-and-upload-gguf.result == 'success' || needs.quantize-speech-and-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-speech-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -1059,7 +1062,7 @@ jobs:
 
   guardian-bvt-quantized-gguf-models:
     needs: [ environment-setup, guardian-quantize-upload-gguf ]
-    if: ${{ always() && (needs.guardian-quantize-upload-gguf.result == 'success' || needs.guardian-quantize-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && (needs.guardian-quantize-upload-gguf.result == 'success' || needs.guardian-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-guardian-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -1179,7 +1182,7 @@ jobs:
 
   embedding-bvt-quantized-gguf-models:
     needs: [ environment-setup, embedding-quantize-upload-gguf ]
-    if: ${{ always() && (needs.embedding-quantize-upload-gguf.result == 'success' || needs.embedding-quantize-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && (needs.embedding-quantize-upload-gguf.result == 'success' || needs.embedding-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-embedding-quantized-models-gguf.yml@main
     permissions:
       contents: write
@@ -1320,7 +1323,7 @@ jobs:
   # TODO: no idea how to test...
   docling-bvt-quantized-gguf-models:
     needs: [ environment-setup, docling-quantize-upload-gguf ]
-    if: ${{ always() && (needs.docling-quantize-upload-gguf.result == 'success' || needs.docling-quantize-upload-gguf.result == 'skipped') }}
+    if: ${{ always() && needs.environment-setup.outputs.enable_bvt_step == 'true' && (needs.docling-quantize-upload-gguf.result == 'success' || needs.docling-quantize-upload-gguf.result == 'skipped') }}
     uses: IBM/gguf/.github/workflows/reusable-bvt-docling-quantized-models-gguf.yml@main
     permissions:
       contents: write
