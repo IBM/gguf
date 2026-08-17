@@ -85,6 +85,8 @@ jobs:
       OLLAMA_SYSTEM_FILE: system.txt
       GENERATION_CONFIG_FILENAME: generation_config.json
       GENERATION_CONFIG_LOCAL_PATH: ""
+      MODEL_CONFIG_FILENAME: config.json
+      MODEL_CONFIG_LOCAL_PATH: ""
       OLLAMA_DEBUG: 0 # TODO: allow setting at workflow level...
       OLLAMA_PORT: 11434
       OLLAMA_HOST: http://127.0.0.1:11434
@@ -264,19 +266,37 @@ jobs:
             exit 1
           fi
 
-      - name: customize-readme-macos
-        if: runner.os == 'macOS'
+      # ---------------------------------------------------------------------------
+      # Fetch config.json from the *source* (non-GGUF) HF model repo for non-multimodal
+      # models (language, guardian, embedding).
+      # Vision and speech models are excluded here — they use num_ctx from their
+      # params.json file in resources/ollama/<model-prefix>/params.json instead.
+      # The file is optional — if it does not exist MODEL_CONFIG_LOCAL_PATH stays empty.
+      # ---------------------------------------------------------------------------
+      - name: hf-fetch-model-config
+        if: ${{ inputs.enable_vision_jobs != true && inputs.enable_speech_jobs != true }}
         run: |
-          sed -i '' 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
-          sed -i '' 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
-          cat ./resources/README.md
-
-      - name: customize-readme-linux
-        if: runner.os == 'Linux'
-        run: |
-          sed -i 's/\<BASE_MODEL_REPO_ORG\>/${{env.REPO_ORG}}/g' ./resources/README.md
-          sed -i 's/\<BASE_MODEL_REPO_NAME\>/${{env.REPO_NAME}}/g' ./resources/README.md
-          cat ./resources/README.md
+          SOURCE_BASE_REPO_ID="${{ inputs.source_repo_owner }}/${{ env.REPO_NAME }}"
+          echo "Checking for ${{ env.MODEL_CONFIG_FILENAME }} in '${SOURCE_BASE_REPO_ID}'..."
+          exists=$(python ./scripts/hf_model_file_exists.py \
+            "${SOURCE_BASE_REPO_ID}" \
+            "${{ env.MODEL_CONFIG_FILENAME }}" \
+            "${{ secrets.hf_token }}")
+          echo "exists: '$exists'"
+          if [[ "$exists" == "True" ]]; then
+            LOCAL_MODEL_CFG_PATH="${{ env.MODEL_DOWNLOAD_DIR }}/${SOURCE_BASE_REPO_ID}/${{ env.MODEL_CONFIG_FILENAME }}"
+            echo "Downloading to: '${LOCAL_MODEL_CFG_PATH}'..."
+            python ./scripts/hf_file_download.py \
+              "${{ env.MODEL_DOWNLOAD_DIR }}" \
+              "${SOURCE_BASE_REPO_ID}" \
+              "${{ env.MODEL_CONFIG_FILENAME }}" \
+              "${{ secrets.hf_token }}"
+            echo "MODEL_CONFIG_LOCAL_PATH=${LOCAL_MODEL_CFG_PATH}" >> $GITHUB_ENV
+            echo "Contents:"
+            cat "${LOCAL_MODEL_CFG_PATH}"
+          else
+            echo "ℹ️  ${{ env.MODEL_CONFIG_FILENAME }} not found in '${SOURCE_BASE_REPO_ID}' — skipping."
+          fi
 
       # ---------------------------------------------------------------------------
       # Fetch generation_config.json from the *source* (non-GGUF) HF model repo.
@@ -332,6 +352,15 @@ jobs:
             echo "ℹ️  No generation_config.json — Modelfile will use static params only."
           fi
 
+          # Conditionally pass --model-config if the file was downloaded (non-vision/speech only)
+          MODEL_CFG_ARG=""
+          if [ -n "${{ env.MODEL_CONFIG_LOCAL_PATH }}" ] && [ -f "${{ env.MODEL_CONFIG_LOCAL_PATH }}" ]; then
+            echo "✅ config.json found at '${{ env.MODEL_CONFIG_LOCAL_PATH }}' — injecting num_ctx into Modelfile."
+            MODEL_CFG_ARG="-mc ${{ env.MODEL_CONFIG_LOCAL_PATH }}"
+          else
+            echo "ℹ️  No config.json — num_ctx will not be set from model config."
+          fi
+
           python ./scripts/create_ollama_model_file.py \
             -m ${{env.LOCAL_FNAME_QUANTIZED_GGUF}} \
             -mp ${{env.LOCAL_FNAME_QUANTIZED_MMPROJ_GGUF}} \
@@ -340,6 +369,7 @@ jobs:
             -tf ${{env.OLLAMA_TEMPLATE_FILE}} \
             $SYSTEM_FILE_ARG \
             $GEN_CFG_ARG \
+            $MODEL_CFG_ARG \
             -pf ${{env.OLLAMA_PARAMS_FILE}} \
             -o ${{env.OLLAMA_MODELFILE}}
 

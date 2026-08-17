@@ -367,7 +367,7 @@ jobs:
         ELAPSED=0
 
         while [ $ELAPSED -lt $TIMEOUT ]; do
-          if docker logs llama-server 2>&1 | grep -q "main: server is listening"; then
+          if docker logs llama-server 2>&1 | grep -qE "llama_server: listening on http://|main: server is listening"; then
             echo "Server startup detected in logs!"
             break
           fi

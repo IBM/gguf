@@ -32,10 +32,9 @@ class VALID_PARAMS(StrEnum):
 # Keys from generation_config.json that map to Ollama PARAMETER names.
 # Order matters: keys are written in the order declared here.
 _GENERATION_CONFIG_PARAM_MAP: dict[str, str] = {
-    "temperature":    VALID_PARAMS.TEMPERATURE,
-    "top_p":          VALID_PARAMS.TOP_P,
-    "top_k":          VALID_PARAMS.TOP_K,
-    "max_new_tokens": VALID_PARAMS.NUM_CTX,
+    "temperature": VALID_PARAMS.TEMPERATURE,
+    "top_p":       VALID_PARAMS.TOP_P,
+    "top_k":       VALID_PARAMS.TOP_K,
 }
 
 if __name__ == "__main__":
@@ -50,7 +49,8 @@ if __name__ == "__main__":
         parser.add_argument("--template-file", "-tf", type=str, required=False, help="Optional chat template file (Go template).")
         parser.add_argument("--system-file", "-sf", type=str, required=False, help="Optional system message file (text).")
         parser.add_argument("--params-file", "-pf", type=str, required=False, help="Optional parameter file (JSON).")
-        parser.add_argument("--generation-config", "-gc", type=str, required=False, help="Optional path to a generation_config.json downloaded from HuggingFace. Known keys (temperature, top_p, top_k, max_new_tokens) are written as PARAMETER directives before --params-file entries.")
+        parser.add_argument("--generation-config", "-gc", type=str, required=False, help="Optional path to a generation_config.json downloaded from HuggingFace. Known keys (temperature, top_p, top_k) are written as PARAMETER directives before --params-file entries.")
+        parser.add_argument("--model-config", "-mc", type=str, required=False, help="Optional path to a config.json downloaded from HuggingFace. max_position_embeddings is read and written as PARAMETER num_ctx.")
         parser.add_argument('--verbose', default=True, action='store_true', help='Enable verbose output')
         parser.add_argument('--debug', default=False, action='store_true', help='Enable debug output')
         args = parser.parse_args()
@@ -65,6 +65,7 @@ if __name__ == "__main__":
             print(f"[DEBUG] args.system_file='{args.system_file}'")
             print(f"[DEBUG] args.params_file='{args.params_file}'")
             print(f"[DEBUG] args.generation_config='{args.generation_config}'")
+            print(f"[DEBUG] args.model_config='{args.model_config}'")
 
         template_file_contents = ""
         system_file_contents = ""
@@ -92,6 +93,66 @@ if __name__ == "__main__":
                     modelfile.write(f"{MODELFILE_INSTRUCTIONS.FROM} {args.model_projector}\n")
                 elif args.verbose:
                     print(f"[WARNING] --model-projector='{args.model_projector}' does not exist")
+
+            # Track which PARAMETER names have been written so later sources skip duplicates.
+            params_written: set[str] = set()
+
+            if args.verbose:
+                print(f"Adding --generation-config='{args.generation_config}' to Modelfile...")
+
+            if args.generation_config is not None:
+                if os.path.exists(args.generation_config):
+                    with open(args.generation_config, 'r') as file:
+                        gen_cfg = json.load(file)
+                    for src_key, param_name in _GENERATION_CONFIG_PARAM_MAP.items():
+                        if src_key in gen_cfg:
+                            value = gen_cfg[src_key]
+                            if args.debug:
+                                print(f"[DEBUG] generation_config '{src_key}' -> PARAMETER {param_name} {value}")
+                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {param_name} {value}\n")
+                            params_written.add(param_name)
+                elif args.verbose:
+                    print(f"[WARNING] --generation-config='{args.generation_config}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --model-config='{args.model_config}' to Modelfile...")
+
+            if args.model_config is not None:
+                if os.path.exists(args.model_config):
+                    with open(args.model_config, 'r') as file:
+                        model_cfg = json.load(file)
+                    if VALID_PARAMS.NUM_CTX not in params_written:
+                        num_ctx = model_cfg.get("max_position_embeddings")
+                        if num_ctx is not None:
+                            if args.debug:
+                                print(f"[DEBUG] config.json 'max_position_embeddings' -> PARAMETER {VALID_PARAMS.NUM_CTX} {num_ctx}")
+                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {VALID_PARAMS.NUM_CTX} {num_ctx}\n")
+                            params_written.add(VALID_PARAMS.NUM_CTX)
+                        elif args.verbose:
+                            print(f"[WARNING] --model-config: 'max_position_embeddings' not found in '{args.model_config}'")
+                elif args.verbose:
+                    print(f"[WARNING] --model-config='{args.model_config}' does not exist")
+
+            if args.verbose:
+                print(f"Adding --params-file='{args.params_file}' to Modelfile...")
+
+            if args.params_file is not None:
+                filename = args.metadata_path + "/" + args.params_file
+                if os.path.exists(filename):
+                    with open(filename, 'r') as file:
+                        params_dict = json.load(file)
+                        for key, value in params_dict.items():
+                            if key in params_written:
+                                if args.verbose:
+                                    print(f"Skipping PARAMETER '{key}' from params-file (already set by generation_config.json or model config)")
+                                continue
+                            if args.debug:
+                                print(f"{key}: {value}")
+                            if key not in [param.value for param in VALID_PARAMS]:
+                                print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
+                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
+                elif args.verbose:
+                    print(f"[WARNING] --params-file='{args.params_file}' does not exist")
 
             # TBD: Would prefer using SPDX License ID
             # if args.license is not None:
@@ -146,38 +207,6 @@ if __name__ == "__main__":
                 # modelfile.write(f"{MODELFILE_INSTRUCTIONS.SYSTEM} \"\"\n")
                 print(f"[WARNING] --system-file='{args.system_file}' does not exist")
 
-            if args.verbose:
-                print(f"Adding --generation-config='{args.generation_config}' to Modelfile...")
-
-            if args.generation_config is not None:
-                if os.path.exists(args.generation_config):
-                    with open(args.generation_config, 'r') as file:
-                        gen_cfg = json.load(file)
-                    for src_key, param_name in _GENERATION_CONFIG_PARAM_MAP.items():
-                        if src_key in gen_cfg:
-                            value = gen_cfg[src_key]
-                            if args.debug:
-                                print(f"[DEBUG] generation_config '{src_key}' -> PARAMETER {param_name} {value}")
-                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {param_name} {value}\n")
-                elif args.verbose:
-                    print(f"[WARNING] --generation-config='{args.generation_config}' does not exist")
-
-            if args.verbose:
-                print(f"Adding --params-file='{args.params_file}' to Modelfile...")
-
-            if args.params_file is not None:
-                filename = args.metadata_path + "/" + args.params_file
-                if os.path.exists(filename):
-                    with open(filename, 'r') as file:
-                        params_dict = json.load(file)
-                        for key, value in params_dict.items():
-                            if args.debug:
-                                print(f"{key}: {value}")
-                            if key not in [param.value for param in VALID_PARAMS]:
-                                print(f"Warning: PARAMETER '{key}' is not a valid key for an Ollama Modelfile")
-                            modelfile.write(f"{MODELFILE_INSTRUCTIONS.PARAMETER} {key} {value}\n")
-                elif args.verbose:
-                    print(f"[WARNING] --params-file='{args.params_file}' does not exist")
     except FileNotFoundError as e:
         error_msg = f"Error: File not found: {e}"
         if args and hasattr(args, 'model_file'):
