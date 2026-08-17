@@ -66,6 +66,18 @@ env:
   EXT_GGUF: .gguf
   CONVERTED_FILE_EXISTS: "0"
   UPLOAD_CONVERTED_ENABLED: true
+  # DELETE_PREVIOUS_SHARD_UPLOAD controls whether the delete-previous-upload step runs.
+  # It must be set to 'true' when a re-run could produce a different shard layout than the
+  # previous run — for example when the quantized GGUF crosses the 45 GiB split threshold
+  # due to a model update or a change in llama.cpp quantization output.  Without this
+  # cleanup, the HF repo is left in an inconsistent state: stale single-file and shard
+  # artifacts coexist, confusing consumers.  Examples of mismatches that require cleanup:
+  #   • Previous run: single file  →  Current run: 2+ shards  (old .gguf file orphaned)
+  #   • Previous run: 2 shards     →  Current run: single file (old shard files orphaned)
+  #   • Previous run: 2 shards     →  Current run: 3 shards    (shard -00002-of-00002 orphaned)
+  # Set to 'false' to skip deletion (faster, safe for first-time uploads or guaranteed
+  # single-file outputs that will never be split).
+  DELETE_PREVIOUS_SHARD_UPLOAD: "true"
   FIND_ARGS: "-not -path '*/.*' -print | sed -e 's;[^/]*/;|___;g;s;___|; |;g'"
   LLAMACPP_DIR: llama.cpp
   MODEL_DOWNLOAD_DIR: models
@@ -495,7 +507,7 @@ jobs:
         echo "GGUF_QUANTIZED_UPLOAD_FILES=$GGUF_QUANTIZED_UPLOAD_FILES" >> $GITHUB_ENV
 
     - name: delete-previous-upload
-      if: env.UPLOAD_CONVERTED_ENABLED == 'true'
+      if: env.DELETE_PREVIOUS_SHARD_UPLOAD == 'true'
       run: |
         # Delete any previously uploaded file(s) matching the quantized GGUF base name.
         # Handles both single-file and split-shard cases.
