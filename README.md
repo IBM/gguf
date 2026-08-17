@@ -78,6 +78,7 @@ The following table shows which model types are supported by each Granite releas
 | **Granite 3.3** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Granite 4.0** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Granite 4.1** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Granite 4.2** | ✅ | — | — | — | — | — |
 
 **Legend:**
 - ✅ = Workflow supports this model type with full CI/CD pipeline
@@ -88,7 +89,8 @@ The following table shows which model types are supported by each Granite releas
 - **Granite 3.2**: Added vision and embedding model support
 - **Granite 3.3**: Added docling models, speech models, RAG testing for embeddings, llama.cpp validation for vision
 - **Granite 4.0**: Added UAT (User Acceptance Testing) for language models, full vision and speech model support
-- **Granite 4.1**: Continued language, vision, and speech model support with updated architectures
+- **Granite 4.1**: Continued language, vision, and speech model support with updated architectures; added `granite-speech-4.1-2b-plus`
+- **Granite 4.2**: Language models (`granite-4.2-3b`, `granite-4.2-8b`, `granite-4.2-30b`) with updated HF Transformers 5.8.0 and llama.cpp b9850
 
 **Workflow Files:**
 - Test workflows: `.github/workflows/granite-{version}-release-test.yml`
@@ -147,16 +149,18 @@ Typically, this model category includes "base" and "instruct" models.
 | ibm-granite/granite-4.0-h-tiny-base | GraniteMoeHybridForCausalLM | Hybrid MoE Mamba-2/Transformer (7B, 1B active) | 5.6.1 | b8742 |
 | ibm-granite/granite-4.0-h-small | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
 | ibm-granite/granite-4.0-h-small-base | GraniteMoeHybridForCausalLM | Hybrid Mamba-2/Transformer | 4.52.4 | b6569 |
-
-<!--
-| ibm-granite/granite-4.0-3b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
+| ibm-granite/granite-4.1-3b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
 | ibm-granite/granite-4.1-3b | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
 | ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
 | ibm-granite/granite-4.1-8b | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
-| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
-| ibm-granite/granite-4.1-8b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
-| ibm-granite/granite-4.1-30b | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
 | ibm-granite/granite-4.1-30b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
+| ibm-granite/granite-4.1-30b | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
+| ibm-granite/granite-4.2-3b | GraniteForCausalLM | Dense Transformer | 5.8.0 | b9850 |
+| ibm-granite/granite-4.2-8b | GraniteForCausalLM | Dense Transformer | 5.8.0 | b9850 |
+| ibm-granite/granite-4.2-30b | GraniteForCausalLM | Dense Transformer | 5.8.0 | b9850 |
+
+<!--
+| ibm-granite/granite-4.0-3b-base | GraniteForCausalLM | Dense Transformer | 5.6.1 | b8742 |
 -->
 
 - Supported quantizations: `bf16`, `Q2_K`, `Q3_K_L`, `Q3_K_M`, `Q3_K_S`, `Q4_0`, `Q4_1`, `Q4_K_M`, `Q4_K_S`, `Q5_0`, `Q5_1`, `Q5_K_M`, `Q5_K_S`, `Q6_K`, `Q8_0`
@@ -222,6 +226,7 @@ Typically, this model category includes "base" and "instruct" models.
 | --- | --- | --- | --- | --- |
 | ibm-granite/granite-4.0-1b-speech (4.0) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0 | b9045 |
 | ibm-granite/granite-speech-4.1-2b (4.1) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition | 5.8.0 | b9045 |
+| ibm-granite/granite-speech-4.1-2b-plus (4.1) | GraniteSpeechForConditionalGeneration | Granite Speech Recognition (Plus) | 5.8.0 | b9850 |
 
 - Supported quantizations: `Q4_K_M`, `Q5_K_M`, `Q6_K`, `Q8_0`, `bf16`
 
@@ -1184,61 +1189,49 @@ python scripts/hf_file_download.py \
 
 ### File Upload Script
 
-Upload files to Hugging Face Hub repositories.
+Upload model files to Hugging Face Hub with workflow tracking metadata, retry logic, and pre-upload validation.
 
-**Script:** `scripts/hf_file_upload.py`
+**Script:** `scripts/hf_file_safe_upload.py`
 
 **Usage:**
 ```bash
-python scripts/hf_file_upload.py <local_file_path> <repo_id> <hf_token> [options]
+python scripts/hf_file_safe_upload.py <repo_name> <model_file> <hf_token> [<workflow_ref>] [<run_id>]
 ```
 
 **Arguments:**
-- `local_file_path`: Path to the local file to upload
-- `repo_id`: Hugging Face repository ID (e.g., `mrutkows/granite-4.0-3b-vision-GGUF`)
+- `repo_name`: Hugging Face repository ID (e.g., `ibm-granite/granite-4.1-3b-GGUF`)
+- `model_file`: Path to the local model file to upload
 - `hf_token`: Hugging Face API access token
-
-**Options:**
-- `--path-in-repo`: Destination path in the repository (defaults to basename of local file)
-- `--repo-type`: Repository type: `model`, `dataset`, or `space` (default: `model`)
-- `--commit-message`: Custom commit message for the upload
-- `--debug`: Enable debug output
+- `workflow_ref`: (Optional) GitHub workflow reference for commit tracking
+- `run_id`: (Optional) GitHub workflow run ID for commit tracking
 
 **Examples:**
 
-Basic upload (filename automatically extracted from local path):
+Basic upload (workflow tracking optional):
 ```bash
-python scripts/hf_file_upload.py \
-  /path/to/local/granite-4.0-3b-vision-lora-f16.gguf \
-  mrutkows/granite-4.0-3b-vision-GGUF \
+python scripts/hf_file_safe_upload.py \
+  ibm-granite/granite-4.1-3b-GGUF \
+  /path/to/granite-4.1-3b-Q4_K_M.gguf \
   $HF_TOKEN
 ```
 
-Upload with custom destination path and commit message:
+Upload with workflow tracking metadata:
 ```bash
-python scripts/hf_file_upload.py \
-  /path/to/local/model.gguf \
-  mrutkows/granite-4.0-3b-vision-GGUF \
+python scripts/hf_file_safe_upload.py \
+  ibm-granite/granite-4.1-8b-GGUF \
+  granite-4.1-8b-Q4_K_M.gguf \
   $HF_TOKEN \
-  --path-in-repo models/granite-4.0-3b-vision-lora-f16.gguf \
-  --commit-message "Upload quantized vision model"
-```
-
-Upload to a dataset repository:
-```bash
-python scripts/hf_file_upload.py \
-  /path/to/data.csv \
-  myorg/my-dataset \
-  $HF_TOKEN \
-  --repo-type dataset
+  ${{ github.workflow_ref }} \
+  ${{ github.run_id }}
 ```
 
 **Features:**
 - Automatic retry logic (3 attempts with 5-second delays)
 - File existence validation before upload
 - File size display
-- Token validation
-- Support for model, dataset, and space repositories
+- Token format validation
+- Automatic commit message generation with workflow metadata
+- `RepositoryNotFoundError` detection (no retry on permanent errors)
 - Detailed error messages and timestamps
 
 ---

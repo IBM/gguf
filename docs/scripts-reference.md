@@ -8,9 +8,8 @@ This document provides comprehensive documentation for the Python utility script
 
 - [Hugging Face Hub Operations](#hugging-face-hub-operations)
   - [hf_file_download.py](#hf_file_downloadpy)
-  - [hf_file_upload.py](#hf_file_uploadpy)
+  - [hf_file_safe_upload.py](#hf_file_safe_uploadpy)
   - [hf_model_download_snapshot.py](#hf_model_download_snapshotpy)
-  - [hf_model_upload.py](#hf_model_uploadpy)
   - [hf_model_file_exists.py](#hf_model_file_existspy)
   - [hf_repos_create.py](#hf_repos_createpy)
   - [hf_collections_create.py](#hf_collections_createpy)
@@ -74,50 +73,60 @@ python scripts/hf_file_download.py \
 
 ---
 
-### hf_file_upload.py
+### hf_file_safe_upload.py
 
-Upload files to Hugging Face Hub repositories with custom commit messages.
+Upload model files to Hugging Face Hub with workflow tracking metadata, retry logic, and pre-upload validation.
 
 **Usage:**
 ```bash
-python scripts/hf_file_upload.py <local_file_path> <repo_id> <hf_token> [options]
+python scripts/hf_file_safe_upload.py <repo_name> <model_file> <hf_token> [<workflow_ref>] [<run_id>]
 ```
 
 **Arguments:**
-- `local_file_path`: Path to the local file to upload
-- `repo_id`: Hugging Face repository ID
+- `repo_name`: Hugging Face repository ID (e.g., `ibm-granite/granite-4.1-3b-GGUF`)
+- `model_file`: Path to the local model file to upload
 - `hf_token`: Hugging Face API access token
-
-**Options:**
-- `--path-in-repo`: Destination path in the repository (defaults to basename of local file)
-- `--repo-type`: Repository type: `model`, `dataset`, or `space` (default: `model`)
-- `--commit-message`: Custom commit message for the upload
-- `--debug`: Enable debug output
+- `workflow_ref`: (Optional) GitHub workflow reference for commit tracking
+- `run_id`: (Optional) GitHub workflow run ID for commit tracking
 
 **Examples:**
 
-Basic upload (filename automatically extracted):
+Upload quantized model with workflow tracking:
 ```bash
-python scripts/hf_file_upload.py \
-  /path/to/granite-4.1-3b-Q4_K_M.gguf \
-  ibm-granite/granite-4.1-3b-GGUF \
-  $HF_TOKEN
+python scripts/hf_file_safe_upload.py \
+  ibm-granite/granite-4.1-8b-GGUF \
+  granite-4.1-8b-Q4_K_M.gguf \
+  $HF_TOKEN \
+  ${{ github.workflow_ref }} \
+  ${{ github.run_id }}
 ```
 
-Upload vision model with custom commit message:
+Upload vision model mmproj file:
 ```bash
-python scripts/hf_file_upload.py \
-  /path/to/granite-vision-4.1-4b-Q8_0.gguf \
+python scripts/hf_file_safe_upload.py \
   ibm-granite/granite-vision-4.1-4b-GGUF \
+  mmproj-model-f16.gguf \
   $HF_TOKEN \
-  --commit-message "Upload Q8_0 quantization for granite-vision-4.1-4b"
+  ${{ github.workflow_ref }} \
+  ${{ github.run_id }}
+```
+
+Basic upload (workflow tracking optional):
+```bash
+python scripts/hf_file_safe_upload.py \
+  ibm-granite/granite-4.1-3b-GGUF \
+  /path/to/granite-4.1-3b-Q4_K_M.gguf \
+  $HF_TOKEN
 ```
 
 **Features:**
 - Automatic retry logic (3 attempts with 5-second delays)
 - File existence validation before upload
 - File size display
-- Support for model, dataset, and space repositories
+- Token format validation
+- Automatic commit message generation with workflow metadata
+- `RepositoryNotFoundError` detection (no retry on permanent errors)
+- Detailed error messages and timestamps
 
 ---
 
@@ -175,50 +184,6 @@ python scripts/hf_model_download_snapshot.py \
 
 ---
 
-### hf_model_upload.py
-
-Upload model files to Hugging Face Hub with workflow tracking metadata.
-
-**Usage:**
-```bash
-python scripts/hf_model_upload.py <repo_name> <model_file> <hf_token> <workflow_ref> <run_id>
-```
-
-**Arguments:**
-- `repo_name`: Hugging Face repository ID
-- `model_file`: Path to the model file to upload
-- `hf_token`: Hugging Face API access token
-- `workflow_ref`: GitHub workflow reference for tracking
-- `run_id`: GitHub workflow run ID for tracking
-
-**Examples:**
-
-Upload quantized model with workflow tracking:
-```bash
-python scripts/hf_model_upload.py \
-  ibm-granite/granite-4.1-8b-GGUF \
-  granite-4.1-8b-Q4_K_M.gguf \
-  $HF_TOKEN \
-  ${{ github.workflow_ref }} \
-  ${{ github.run_id }}
-```
-
-Upload vision model mmproj file:
-```bash
-python scripts/hf_model_upload.py \
-  ibm-granite/granite-vision-4.1-4b-GGUF \
-  mmproj-model-f16.gguf \
-  $HF_TOKEN \
-  ${{ github.workflow_ref }} \
-  ${{ github.run_id }}
-```
-
-**Features:**
-- Automatic commit message generation with workflow metadata
-- Error handling for HTTP errors
-- Returns commit info on success
-
----
 
 ### hf_model_file_exists.py
 
@@ -786,7 +751,7 @@ The following scripts currently use `sys.argv` directly and should be updated to
 3. `hf_file_delete.py`
 4. `hf_model_download_snapshot.py`
 5. `hf_model_file_exists.py`
-6. `hf_model_upload.py`
+6. `hf_file_safe_upload.py`
 7. `hf_repo_list_files.py`
 8. `test_regex_match_file.py`
 9. `test_regex_match_file_2.py`
