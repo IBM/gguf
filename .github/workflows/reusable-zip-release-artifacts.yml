@@ -95,6 +95,7 @@ jobs:
           echo "ZIP_ARTIFACT_FNAME=${{ inputs.artifacts_root_name }}-${{github.ref_name}}.zip" >> $GITHUB_ENV
 
       - name: find-artifacts
+        id: find-artifacts
         run: |
           echo "Running Python script to find files..."
           echo "  Path: ${{inputs.artifacts_path}}"
@@ -106,9 +107,16 @@ jobs:
             cat ${{env.ARTIFACT_LIST_FILENAME}}
             echo "\n=== ${{env.ARTIFACT_LIST_FILENAME}} ==="
           fi
+          if [ -s "${{env.ARTIFACT_LIST_FILENAME}}" ]; then
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_files=false" >> $GITHUB_OUTPUT
+            echo "[INFO] No artifact files found — skipping zip and upload"
+          fi
 
       - name: Zip artifacts
         id: zip-artifacts
+        if: steps.find-artifacts.outputs.has_files == 'true'
         continue-on-error: false
         run: |
           # ls -alR ${{inputs.artifacts_path}}
@@ -120,6 +128,7 @@ jobs:
 
       - name: Get release upload URL
         id: get-release-upload-url
+        if: steps.find-artifacts.outputs.has_files == 'true'
         run: |
           UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
@@ -128,6 +137,7 @@ jobs:
 
       - name: Check zip file exists
         id: verify-zip-exists
+        if: steps.find-artifacts.outputs.has_files == 'true'
         run: |
           if [ -f "${{env.ZIP_ARTIFACT_FNAME}}" ]; then
             ls -al ${{env.ZIP_ARTIFACT_FNAME}}
@@ -140,7 +150,7 @@ jobs:
 
       - name: Delete existing asset if present
         id: delete-existing-asset
-        if: steps.verify-zip-exists.outputs.zip_file_exists == 'true'
+        if: steps.find-artifacts.outputs.has_files == 'true' && steps.verify-zip-exists.outputs.zip_file_exists == 'true'
         continue-on-error: true
         env:
           ZIP_FNAME: ${{ env.ZIP_ARTIFACT_FNAME }}
@@ -161,7 +171,7 @@ jobs:
 
       - name: Upload zip
         id: upload-zip
-        if: steps.verify-zip-exists.outputs.zip_file_exists == 'true'
+        if: steps.find-artifacts.outputs.has_files == 'true' && steps.verify-zip-exists.outputs.zip_file_exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
