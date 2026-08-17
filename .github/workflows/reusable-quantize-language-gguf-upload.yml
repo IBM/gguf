@@ -98,7 +98,7 @@ env:
 
 jobs:
   quantize:
-    runs-on: macos-latest
+    runs-on: gguf-linux-arm64-32-128GB-1200GB
     if: ${{ inputs.enable_language_jobs == true || inputs.enable_guardian_jobs == true || inputs.enable_embedding_jobs == true || inputs.enable_docling_jobs == true }}
     env:
       HF_HUB_DISABLE_XET: 1
@@ -110,7 +110,7 @@ jobs:
           requirements.txt
           scripts/hf_model_file_exists.py
           scripts/hf_file_download.py
-          scripts/hf_model_upload.py
+          scripts/hf_model_file_upload.py
           scripts/hf_model_download_snapshot.py
           scripts/hf_file_delete.py
           bin/${{ inputs.llamacpp_build_tag }}/**
@@ -540,7 +540,7 @@ jobs:
         for FILE in $GGUF_QUANTIZED_UPLOAD_FILES; do
           echo ">> Uploading: '$FILE'"
           ls -lh "$FILE"
-          python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ env.TARGET_REPO_ID }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
         done
 
 

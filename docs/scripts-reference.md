@@ -8,7 +8,7 @@ This document provides comprehensive documentation for the Python utility script
 
 - [Hugging Face Hub Operations](#hugging-face-hub-operations)
   - [hf_file_download.py](#hf_file_downloadpy)
-  - [hf_file_safe_upload.py](#hf_file_safe_uploadpy)
+  - [hf_model_file_upload.py](#hf_model_file_uploadpy)
   - [hf_model_download_snapshot.py](#hf_model_download_snapshotpy)
   - [hf_model_file_exists.py](#hf_model_file_existspy)
   - [hf_repos_create.py](#hf_repos_createpy)
@@ -73,27 +73,30 @@ python scripts/hf_file_download.py \
 
 ---
 
-### hf_file_safe_upload.py
+### hf_model_file_upload.py
 
-Upload model files to Hugging Face Hub with workflow tracking metadata, retry logic, and pre-upload validation.
+Upload model files to Hugging Face Hub with retry logic, pre-upload validation, and optional workflow tracking metadata.
 
 **Usage:**
 ```bash
-python scripts/hf_file_safe_upload.py <repo_name> <model_file> <hf_token> [<workflow_ref>] [<run_id>]
+python scripts/hf_model_file_upload.py <repo_id> <model_file> <hf_token> \
+  [workflow_ref] [run_id] [--path-in-repo PATH] [--commit-message MSG]
 ```
 
 **Arguments:**
-- `repo_name`: Hugging Face repository ID (e.g., `ibm-granite/granite-4.1-3b-GGUF`)
-- `model_file`: Path to the local model file to upload
+- `repo_id`: Hugging Face repository ID (e.g., `ibm-granite/granite-4.1-3b-GGUF`)
+- `model_file`: Local path to the file to upload
 - `hf_token`: Hugging Face API access token
 - `workflow_ref`: (Optional) GitHub workflow reference for commit tracking
 - `run_id`: (Optional) GitHub workflow run ID for commit tracking
+- `--path-in-repo`: Path within the repository to store the file (defaults to basename of `model_file`)
+- `--commit-message`: Commit message for the upload (auto-generated if omitted)
 
 **Examples:**
 
 Upload quantized model with workflow tracking:
 ```bash
-python scripts/hf_file_safe_upload.py \
+python scripts/hf_model_file_upload.py \
   ibm-granite/granite-4.1-8b-GGUF \
   granite-4.1-8b-Q4_K_M.gguf \
   $HF_TOKEN \
@@ -101,19 +104,19 @@ python scripts/hf_file_safe_upload.py \
   ${{ github.run_id }}
 ```
 
-Upload vision model mmproj file:
+Upload a file to a specific path in the repo:
 ```bash
-python scripts/hf_file_safe_upload.py \
-  ibm-granite/granite-vision-4.1-4b-GGUF \
-  mmproj-model-f16.gguf \
+python scripts/hf_model_file_upload.py \
+  ibm-granite/granite-4.1-3b-GGUF \
+  /tmp/generated-readme.md \
   $HF_TOKEN \
-  ${{ github.workflow_ref }} \
-  ${{ github.run_id }}
+  --path-in-repo README.md \
+  --commit-message "Add README.md from IBM Granite GGUF CI"
 ```
 
-Basic upload (workflow tracking optional):
+Basic upload (workflow tracking omitted):
 ```bash
-python scripts/hf_file_safe_upload.py \
+python scripts/hf_model_file_upload.py \
   ibm-granite/granite-4.1-3b-GGUF \
   /path/to/granite-4.1-3b-Q4_K_M.gguf \
   $HF_TOKEN
@@ -127,6 +130,46 @@ python scripts/hf_file_safe_upload.py \
 - Automatic commit message generation with workflow metadata
 - `RepositoryNotFoundError` detection (no retry on permanent errors)
 - Detailed error messages and timestamps
+
+---
+
+### hf_generate_readmes.py
+
+Generate README files from a Markdown template and upload them to target Hugging Face repositories. Used by the CI pipeline to publish model cards to GGUF repos after conversion.
+
+**Usage:**
+```bash
+python scripts/hf_generate_readmes.py <readme_template> <target_repos> <target_owner> <hf_token> \
+  [--name-ext EXT] [--debug]
+```
+
+**Arguments:**
+- `readme_template`: Path to the Markdown template file (e.g., `resources/hf/README.template.md`)
+- `target_repos`: JSON array string of source repository IDs (e.g., `'["ibm-granite/granite-4.1-3b"]'`)
+- `target_owner`: Target Hugging Face organization or user that owns the GGUF repos
+- `hf_token`: Hugging Face API access token
+- `--name-ext`: Suffix appended to each repo name to form the target repo ID (default: `""`, typically `"-GGUF"`)
+- `--debug`: Enable verbose debug output
+
+**Template variables** replaced in the template file:
+- `${GRANITE_MODEL_VERSION}` — major.minor version extracted from the repo name (e.g., `4.1`)
+- `${HUGGINGFACE_MODEL_ORG_REPO_NAME}` — full source repo ID (e.g., `ibm-granite/granite-4.1-3b`)
+- `${HUGGINGFACE_MODEL_REPO_NAME}` — repo name without org (e.g., `granite-4.1-3b`)
+- `${HUGGINGFACE_BASE_MODEL_URL}` — full HuggingFace URL to the source model
+
+**Example:**
+```bash
+python scripts/hf_generate_readmes.py \
+  resources/hf/README.template.md \
+  '["ibm-granite/granite-4.1-3b", "ibm-granite/granite-4.1-8b"]' \
+  ibm-granite \
+  $HF_TOKEN \
+  --name-ext=-GGUF
+```
+
+**Notes:**
+- Delegates upload to [`hf_model_file_upload.py`](#hf_model_file_uploadpy), uploading the generated README as `README.md` in each target repo.
+- Exits with a non-zero code on the first upload failure.
 
 ---
 
@@ -751,11 +794,10 @@ The following scripts currently use `sys.argv` directly and should be updated to
 3. `hf_file_delete.py`
 4. `hf_model_download_snapshot.py`
 5. `hf_model_file_exists.py`
-6. `hf_file_safe_upload.py`
-7. `hf_repo_list_files.py`
-8. `test_regex_match_file.py`
-9. `test_regex_match_file_2.py`
-10. `torch_llava_save_llm.py`
-11. `torch_llava_validate_tensors.py`
+6. `hf_repo_list_files.py`
+7. `test_regex_match_file.py`
+8. `test_regex_match_file_2.py`
+9. `torch_llava_save_llm.py`
+10. `torch_llava_validate_tensors.py`
 
 **Note:** These scripts are marked for update to standardize argument parsing across the codebase and improve maintainability.

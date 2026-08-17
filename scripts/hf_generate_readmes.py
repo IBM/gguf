@@ -99,12 +99,12 @@ def generate_and_upload_readmes(
             print(f'[INFO] Generated README for {target_repo_id}:')
             print(readme_content)
             
-            # Upload via hf_file_upload.py
+            # Upload via hf_model_file_upload.py
             result = subprocess.run(
                 [
-                    'python', './scripts/hf_file_upload.py',
-                    tmp_path,
+                    'python', './scripts/hf_model_file_upload.py',
                     target_repo_id,
+                    tmp_path,
                     hf_token,
                     '--path-in-repo', 'README.md',
                     '--commit-message', 'Add README.md from IBM Granite GGUF CI',

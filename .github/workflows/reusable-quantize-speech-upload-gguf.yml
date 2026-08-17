@@ -425,7 +425,7 @@ jobs:
         for FILE in $GGUF_QUANTIZED_UPLOAD_FILES; do
           echo ">> Uploading: '$FILE'"
           ls -lh "$FILE"
-          python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ env.TARGET_REPO_ID }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
         done
 
 

@@ -93,7 +93,7 @@ env:
 
 jobs:
   test-quantized-model:
-    runs-on: ubuntu-latest
+    runs-on: gguf-linux-arm64-32-128GB-1200GB
     timeout-minutes: 60
     if: ${{ inputs.enable_language_jobs == true }}
     env:

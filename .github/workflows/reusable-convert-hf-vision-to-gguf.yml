@@ -206,7 +206,7 @@ jobs:
             scripts/hf_model_download_snapshot.py
             scripts/torch_llava_validate_tensors.py
             scripts/torch_llava_save_llm.py
-            scripts/hf_model_upload.py
+            scripts/hf_model_file_upload.py
             scripts/get_vision_config_path.py
             scripts/check_lora_adapter_needed.py
             resources/json/latest/hf_collection_mapping_gguf.json
@@ -338,7 +338,7 @@ jobs:
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: separate-llm-from-vision-model
         run: |
@@ -375,7 +375,7 @@ jobs:
 
       - name: upload-vision-llm-bf16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: convert-lora-adapter-to-gguf-f16
         if: steps.check-lora.outputs.lora_needed == 'true'
@@ -400,7 +400,7 @@ jobs:
         run: |
           LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
-          python ./scripts/hf_model_upload.py \
+          python ./scripts/hf_model_file_upload.py \
             ${{ needs.detect-and-setup.outputs.target_repo_id }} \
             "$LORA_OUTPUT_FILE" \
             ${{secrets.hf_token}} \
@@ -422,7 +422,7 @@ jobs:
           sparse-checkout: |
             requirements.txt
             scripts/hf_model_download_snapshot.py
-            scripts/hf_model_upload.py
+            scripts/hf_model_file_upload.py
             scripts/check_lora_adapter_needed.py
             resources/json/latest/hf_collection_mapping_gguf.json
           sparse-checkout-cone-mode: false
@@ -509,7 +509,7 @@ jobs:
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.visual_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: convert-vision-model-llm-to-gguf-bf16
         run: |
@@ -527,7 +527,7 @@ jobs:
 
       - name: upload-vision-llm-bf16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.base_fname_bf16_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: convert-lora-adapter-to-gguf-f16
         if: steps.check-lora.outputs.lora_needed == 'true'
@@ -552,7 +552,7 @@ jobs:
         run: |
           LORA_OUTPUT_FILE="${{ needs.detect-and-setup.outputs.repo_name }}${{env.EXT_NAME_LORA_F16}}"
           echo "📤 Uploading LoRA adapter: $LORA_OUTPUT_FILE"
-          python ./scripts/hf_model_upload.py \
+          python ./scripts/hf_model_file_upload.py \
             ${{ needs.detect-and-setup.outputs.target_repo_id }} \
             "$LORA_OUTPUT_FILE" \
             ${{secrets.hf_token}} \

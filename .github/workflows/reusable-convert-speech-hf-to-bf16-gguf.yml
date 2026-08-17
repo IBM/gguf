@@ -223,7 +223,7 @@ jobs:
           sparse-checkout: |
             requirements.txt
             scripts/hf_model_download_snapshot.py
-            scripts/hf_model_upload.py
+            scripts/hf_model_file_upload.py
             bin/${{ inputs.llamacpp_build_tag }}/**
           sparse-checkout-cone-mode: false
           fetch-depth: 1
@@ -317,7 +317,7 @@ jobs:
 
       - name: upload-mmproj-f16-gguf-to-target-repo
         run: |
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} ${{ needs.detect-and-setup.outputs.speech_encoder_path }}/${{ needs.detect-and-setup.outputs.base_fname_mmproj_gguf }} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
       - name: convert-speech-model-llm-to-gguf-bf16
         run: |
@@ -373,7 +373,7 @@ jobs:
           echo "GGUF_UPLOAD_FILES='$GGUF_UPLOAD_FILES' (${{ env.GGUF_UPLOAD_FILES }})"
           for FILE in $GGUF_UPLOAD_FILES; do
             echo ">> Uploading: '$FILE'"
-            python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+            python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$FILE" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
           done
 
       - name: check-for-lora-adapter
@@ -408,5 +408,5 @@ jobs:
         if: steps.check-lora.outputs.has_lora == 'true'
         run: |
           LORA_FNAME="${{ needs.detect-and-setup.outputs.repo_name }}-lora${{env.DEF_SEP}}${{ inputs.converted_quantization }}${{env.EXT_GGUF}}"
-          python ./scripts/hf_model_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$LORA_FNAME" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py ${{ needs.detect-and-setup.outputs.target_repo_id }} "$LORA_FNAME" ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 

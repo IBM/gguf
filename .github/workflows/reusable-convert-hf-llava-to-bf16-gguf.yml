@@ -97,7 +97,7 @@ jobs:
           scripts/hf_model_download_snapshot.py
           scripts/torch_llava_validate_tensors.py
           scripts/torch_llava_save_llm.py
-          scripts/hf_model_upload.py
+          scripts/hf_model_file_upload.py
           scripts/check_model_architecture_support.py
           resources/json/granite-3.3/vision_config.json
         sparse-checkout-cone-mode: false
@@ -333,7 +333,7 @@ jobs:
       run: |
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
         echo "LOCAL_VISUAL_GGUF_F16=${{env.LOCAL_VISUAL_GGUF_F16}}"
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        python ./scripts/hf_model_file_upload.py ${{ env.TARGET_REPO_ID }} ${{env.LOCAL_VISUAL_GGUF_F16}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
     - name: separate-llm-from-vision-model
       if: ${{ env.USE_CONVERT_SCRIPT_WITH_MMPROJ != 'true' }}
@@ -423,11 +423,11 @@ jobs:
         echo "--------------------"
 
     # echo "BASE_FNAME_F16_GGUF=${{env.BASE_FNAME_F16_GGUF}}"
-    # python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_F16_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+    # python ./scripts/hf_model_file_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_F16_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
     - name: upload-vision-llm-f16-gguf-to-target-repo
       run: |
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
         echo "BASE_FNAME_BF16_GGUF=${{env.BASE_FNAME_BF16_GGUF}}"
-        python ./scripts/hf_model_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_BF16_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        python ./scripts/hf_model_file_upload.py ${{ env.TARGET_REPO_ID }} ${{env.BASE_FNAME_BF16_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
 

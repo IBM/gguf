@@ -96,7 +96,7 @@ jobs:
       with:
         sparse-checkout: |
           requirements.txt
-          scripts/hf_model_upload.py
+          scripts/hf_model_file_upload.py
           scripts/hf_model_download_snapshot.py
           scripts/check_model_architecture_support.py
           scripts/test_embedding_baseline_hf.py
@@ -337,7 +337,7 @@ jobs:
       run: |
         echo "FNAME_CONVERTED_GGUF='$FNAME_CONVERTED_GGUF' (${{ env.FNAME_CONVERTED_GGUF}})"
         echo "TARGET_REPO_ID='$TARGET_REPO_ID'(${{ env.TARGET_REPO_ID}})"
-        python ./scripts/hf_model_upload.py $TARGET_REPO_ID $FNAME_CONVERTED_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+        python ./scripts/hf_model_file_upload.py $TARGET_REPO_ID $FNAME_CONVERTED_GGUF ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
 
     # DOCLING ONLY: TODO: use JSON config. (still assumes f16)
     - name: convert-and-extract-mmproj-model
@@ -363,7 +363,7 @@ jobs:
           printenv | sort
           ls -al $MODEL_DOWNLOAD_DIR/${{ inputs.repo_id }}/*.gguf
           echo "FNAME_MMPROJ_GGUF='$FNAME_MMPROJ_GGUF' (${{ env.FNAME_MMPROJ_GGUF}})"
-          python ./scripts/hf_model_upload.py $TARGET_REPO_ID ${{env.FNAME_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
+          python ./scripts/hf_model_file_upload.py $TARGET_REPO_ID ${{env.FNAME_MMPROJ_GGUF}} ${{secrets.hf_token}} ${{github.workflow_ref}} ${{github.run_id}}
         else
           echo "NOT a 'docling' model."
         fi
@@ -387,7 +387,7 @@ jobs:
         echo "[INFO] Baseline file: ${{ env.BASELINE_RESULTS_FILE }}"
 
         if [ -f "${{ env.BASELINE_RESULTS_FILE }}" ]; then
-          python ./scripts/hf_model_upload.py \
+          python ./scripts/hf_model_file_upload.py \
             $TARGET_REPO_ID \
             ${{ env.BASELINE_RESULTS_FILE }} \
             ${{secrets.hf_token}} \

@@ -18,6 +18,7 @@ def safe_upload_file(
     commit_desc:str="",
     workflow_ref="",
     run_id="",
+    path_in_repo:str="",
 ) -> CommitInfo | None:
     if repo_id == "":
         print("Please provide a repo_id")
@@ -44,7 +45,7 @@ def safe_upload_file(
     file_size = os.path.getsize(model_file)
     print(f"File to upload: {model_file} (size: {file_size:,} bytes)")
 
-    target_file_name = os.path.basename(model_file)
+    target_file_name = path_in_repo if path_in_repo else os.path.basename(model_file)
 
     # Note: commit_message MUST NOT be empty or None
     if commit_msg is None or commit_msg == "":
@@ -105,32 +106,46 @@ def safe_upload_file(
 
 
 if __name__ == "__main__":
-    arg_len = len(sys.argv)
-    if arg_len < 4:
-        script_name = os.path.basename(__file__)
-        print(f"Usage: python {script_name} <repo_name:str> <model_file:str> <hf_token:str> <workflow_ref:str> <run_id:str>")
-        print(f"Actual: sys.argv[]: '{sys.argv}'")
-        # Exit with an error code
-        sys.exit(1)
+    import argparse
 
-    # Parse input arguments into named params.
-    fx_name = sys.argv[0]
-    repo_name = sys.argv[1]
-    model_file = sys.argv[2]
-    hf_token = sys.argv[3]
-    workflow_ref = sys.argv[4] if arg_len > 4 else ""
-    run_id = sys.argv[5] if arg_len > 5 else ""
+    def _non_empty(value: str) -> str:
+        if not value:
+            raise argparse.ArgumentTypeError("Argument must not be an empty string")
+        return value
 
-    # Print input variables being used for this run
-    print(f">> {fx_name}: repo_name='{repo_name}', model_file='{model_file}', workflow_ref='{workflow_ref}', run_id='{run_id}'")
+    parser = argparse.ArgumentParser(
+        description="Upload a file to a HuggingFace repository",
+        exit_on_error=False,
+    )
+    try:
+        parser.add_argument("repo_id", type=_non_empty, help="HF Hub repo ID (namespace/name)")
+        parser.add_argument("model_file", type=_non_empty, help="Local path to the file to upload")
+        parser.add_argument("hf_token", type=_non_empty, help="Hugging Face Hub API access token")
+        parser.add_argument("workflow_ref", nargs="?", default="", help="GitHub workflow ref (for commit tracking)")
+        parser.add_argument("run_id", nargs="?", default="", help="GitHub run ID (for commit tracking)")
+        parser.add_argument("--path-in-repo", default="", help="Path in the repo to store the file (defaults to basename of model_file)")
+        parser.add_argument("--commit-message", default=None, help="Commit message for the upload")
+        args = parser.parse_args()
 
-    # invoke fx
-    commit_info = safe_upload_file(repo_id=repo_name, model_file=model_file, hf_token=hf_token, workflow_ref=workflow_ref, run_id=run_id)
+        commit_info = safe_upload_file(
+            repo_id=args.repo_id,
+            model_file=args.model_file,
+            hf_token=args.hf_token,
+            commit_msg=args.commit_message,
+            path_in_repo=args.path_in_repo,
+            workflow_ref=args.workflow_ref,
+            run_id=args.run_id,
+        )
 
-    # Print output variables
-    if commit_info is None:
-        sys.exit(1)
+        if commit_info is None:
+            sys.exit(1)
 
-    # Exit successfully
-    print(f"commit_info: {commit_info}")
-    sys.exit(0)
+        print(f"commit_info: {commit_info}")
+        sys.exit(0)
+
+    except SystemExit as se:
+        sys.exit(se.code if se.code is not None else 1)
+    except Exception as e:
+        print(f"Error: {e}")
+        print(f"Usage: {parser.format_usage()}")
+        sys.exit(2)
